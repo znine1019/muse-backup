@@ -1,0 +1,13 @@
+<view class="container">
+  <view class="brand">AUTHORIZED ROLES</view>
+  <view class="title">选择身份</view>
+  <view class="sub">这里只显示服务端会话中已经授权的角色，不提供自行申请或切换未授权角色的入口。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取授权角色...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{!loading && !roles.length}}" class="empty">当前账号没有可用的工作台，请联系开发者检查角色授权。</view>
+
+  <view class="card">
+    <button wx:for="{{roles}}" wx:key="value" class="button-primary" data-route="{{item.route}}" bindtap="selectRole">进入{{item.label}}端</button>
+  </view>
+</view>

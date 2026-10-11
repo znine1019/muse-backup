@@ -1,0 +1,54 @@
+<view class="container">
+  <view class="brand">STUDENT / REGISTRATION</view>
+  <view class="title">首次注册</view>
+  <view class="sub">请使用模拟数据完成开发测试。提交后账号进入待审核状态，审核通过前不能访问内部业务功能。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在加载注册信息...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <form wx:else class="card form-card" bindsubmit="handleSubmit">
+    <view class="field">
+      <text class="field-label">姓名</text>
+      <input class="input" name="name" value="{{form.name}}" data-field="name" bindinput="onFieldInput" placeholder="请输入姓名" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">性别</text>
+      <picker range="{{genderOptions}}" range-key="label" value="{{genderIndex}}" bindchange="onGenderChange">
+        <view class="picker-field">{{genderOptions[genderIndex].label}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="field-label">出生日期</text>
+      <picker mode="date" value="{{form.birthDate}}" end="{{maxDate}}" bindchange="onBirthDateChange">
+        <view class="picker-field">{{form.birthDate || '请选择出生日期'}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <text class="field-label">身高（厘米）</text>
+      <input class="input" type="digit" name="heightCm" value="{{form.heightCm}}" data-field="heightCm" bindinput="onFieldInput" placeholder="例如 175" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">体重（千克）</text>
+      <input class="input" type="digit" name="weightKg" value="{{form.weightKg}}" data-field="weightKg" bindinput="onFieldInput" placeholder="例如 65" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">主要训练项目</text>
+      <input class="input" name="primaryTrainingProject" value="{{form.primaryTrainingProject}}" data-field="primaryTrainingProject" bindinput="onFieldInput" placeholder="例如 100米" />
+    </view>
+
+    <view class="field">
+      <text class="field-label">申请教练员或训练组</text>
+      <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+        <view class="picker-field">{{groupOptions[groupIndex].name}}</view>
+      </picker>
+      <view class="muted">训练组为空时，请联系开发者先在后台建立基础训练组。</view>
+    </view>
+
+    <button class="button-primary" form-type="submit" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
+  </form>
+</view>

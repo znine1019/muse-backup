@@ -1,14 +1,25 @@
 <view class="container">
-  <view class="brand">STUDENT / 个人训练中心</view>
+  <view class="brand">STUDENT / PERSONAL SPACE</view>
   <view class="title">学生端</view>
-  <view class="sub">计划、考勤、请假、成绩与个人成长记录</view>
-  <view class="card">
-    <view class="card-title">个人主页（数据示意）</view>
-    <view class="card-sub">昵称与个性签名 · 实际加入俱乐部天数 · 所属训练组</view>
-    <view class="row"><view><view class="kpi">— 天</view><view class="kpi-label">已加入乔格体育</view></view><view><view class="kpi">— 天</view><view class="kpi-label">累计出勤</view></view></view>
-  </view>
-  <view class="card"><view class="card-title">我的训练</view><view class="card-sub">查看教练员发布的每日／周期训练计划</view></view>
-  <view class="card"><view class="card-title">考勤与请假</view><view class="card-sub">签到签退 · 请假申请 · 历史考勤</view></view>
-  <view class="card"><view class="card-title">成绩与排行榜</view><view class="card-sub">个人申报待审核 · 查看已审核成绩与榜单</view></view>
-  <view class="notice">演示页面：所有信息均为占位，不存在真实学生账号或功能操作。</view>
+  <view class="sub">本页只读取服务端确认属于当前学生的档案，不提供其他学生的数据入口。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取本人资料...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <block wx:if="{{!loading && profile}}">
+    <view class="card">
+      <view class="card-title">{{profile.name}}</view>
+      <view class="card-sub">账号状态：{{statusLabel}}</view>
+      <view class="list-meta">性别：{{genderLabel}}</view>
+      <view class="list-meta">出生日期：{{profile.birthDate}}</view>
+      <view class="list-meta">身高／体重：{{profile.heightCm}} cm / {{profile.weightKg}} kg</view>
+      <view class="list-meta">主要训练项目：{{profile.primaryTrainingProject}}</view>
+      <view class="tag">学生角色已由服务端授权</view>
+    </view>
+
+    <view class="notice">训练计划、考勤、请假、成绩和排行榜属于后续阶段，本阶段不提供这些业务入口。</view>
+  </block>
+
+  <view wx:if="{{!loading && !profile && !error}}" class="empty">当前账号没有可显示的档案。</view>
+  <button class="button-secondary" bindtap="goHome">退出当前会话</button>
 </view>

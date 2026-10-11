@@ -1,14 +1,25 @@
 <view class="container">
   <view class="brand">JOGER SPORTS / INTERNAL</view>
   <view class="title">乔格体育<view>数字化训练管理</view></view>
-  <view class="sub">微信小程序 · V1.6 开发基线<br/>当前仅供界面与项目结构预览</view>
-  <view class="pill">阶段0 · 静态原型</view>
+  <view class="sub">微信小程序 · V1.6 阶段1</view>
+  <view class="pill">{{loading ? '正在识别身份' : '微信可信身份登录'}}</view>
+
   <view class="card">
-    <view class="card-title">预览不同用户界面</view>
-    <view class="card-sub">以下仅为原型跳转，不代表用户已登录、注册或获得对应权限。</view>
-    <button class="action" bindtap="openStudent">学生端预览　→</button>
-    <button class="action" bindtap="openCoach">教练员端预览　→</button>
-    <button class="action" bindtap="openAdmin">开发者端预览　→</button>
+    <view class="card-title">{{session ? '当前账号状态' : '登录乔格训迹'}}</view>
+    <view wx:if="{{session}}" class="card-sub">账号状态：{{statusLabel}}</view>
+    <view wx:else class="card-sub">使用微信身份进入系统。首次登录会创建待完善账号，不会自动获得任何管理权限。</view>
+    <button class="button-primary" loading="{{loading}}" bindtap="{{session ? 'handleContinue' : 'handleLogin'}}">
+      {{session ? actionLabel : '微信一键登录'}}
+    </button>
+    <view wx:if="{{error}}" class="error">{{error}}</view>
   </view>
-  <view class="notice">注意：尚未接入微信登录、数据库或GPS功能，不可用于真实学生信息管理或正式发布。</view>
+
+  <view class="card">
+    <view class="card-title">云开发连接测试</view>
+    <view class="card-sub">仅验证云函数环境与数据库连接，不执行部署或数据写入。</view>
+    <button class="button-secondary" bindtap="handleHealthCheck">检查连接</button>
+    <view wx:if="{{healthText}}" class="muted">{{healthText}}</view>
+  </view>
+
+  <view class="notice">未授权账号不能访问内部数据；页面跳转不代表权限已通过，所有数据操作仍由云函数重新校验。</view>
 </view>

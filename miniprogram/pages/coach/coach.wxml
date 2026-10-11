@@ -1,10 +1,26 @@
 <view class="container">
-  <view class="brand">COACH / 教学管理中心</view>
-  <view class="title">教练员端</view>
-  <view class="sub">管理负责的学生、训练组和训练数据</view>
-  <view class="card"><view class="card-title">学生与训练组</view><view class="card-sub">学生档案 · 注册审核 · 训练组管理</view></view>
-  <view class="card"><view class="card-title">训练计划</view><view class="card-sub">人工制定 · 模板保存 · 组内下发</view></view>
-  <view class="card"><view class="card-title">考勤与请假审批</view><view class="card-sub">考勤异常管理 · 请假审核 · Excel导出</view></view>
-  <view class="card"><view class="card-title">测试成绩与排行</view><view class="card-sub">成绩录入 · 最好成绩审核 · Excel导出</view></view>
-  <view class="notice">演示页面：正式的数据操作与权限校验将在后续开发阶段实现。</view>
+  <view class="brand">COACH / REGISTRATION REVIEW</view>
+  <view class="title">教练员工作台</view>
+  <view class="sub">只显示本人负责训练组内、当前待审核的学生注册资料。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取授权范围内的待审核资料...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{!loading && !registrations.length}}" class="empty">当前没有需要审核的学生。</view>
+
+  <view wx:if="{{registrations.length}}" class="card">
+    <view wx:for="{{registrations}}" wx:key="userId" class="list-item">
+      <view class="list-title">{{item.name}}</view>
+      <view class="list-meta">申请训练组：{{item.requestedTrainingGroupName}}</view>
+      <view class="list-meta">出生日期：{{item.birthDate}}</view>
+      <view class="list-meta">身高／体重：{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+      <view class="list-meta">主要项目：{{item.primaryTrainingProject}}</view>
+      <view class="button-row">
+        <button class="button-primary" data-user-id="{{item.userId}}" data-decision="approve" bindtap="review" loading="{{reviewingUserId === item.userId}}">通过</button>
+        <button class="button-danger" data-user-id="{{item.userId}}" data-decision="reject" bindtap="review" loading="{{reviewingUserId === item.userId}}">驳回</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">审核权限和训练组范围由云函数重新计算，前端页面不传递或决定数据范围。</view>
+  <button class="button-secondary" bindtap="goHome">退出当前会话</button>
 </view>

@@ -1,1 +1,1 @@
-{"desc":"阶段0静态演示，不含正式业务","rules":[{"action":"disallow","page":"*"}]}
+{"desc":"乔格训迹系统内部页面，不允许搜索索引","rules":[{"action":"disallow","page":"*"}]}

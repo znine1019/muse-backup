@@ -1,0 +1,33 @@
+<view class="container">
+  <view class="brand">ACCOUNT / REVIEW</view>
+  <view class="title">{{statusLabel || '账号状态'}}</view>
+  <view class="sub">审核结果和角色授权均以云函数返回为准，前端显示不构成正式权限。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取账号状态...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="card-title">当前状态</view>
+      <view class="card-sub">{{statusLabel}}</view>
+      <view wx:if="{{status === 'pending_review'}}" class="notice">资料已提交，等待负责教练员或开发者审核。</view>
+      <view wx:if="{{status === 'rejected'}}" class="error">审核未通过{{reviewComment ? '：' + reviewComment : '，请修改资料后重新提交。'}}</view>
+      <view wx:if="{{status === 'disabled'}}" class="error">账号已停用，不能访问内部业务数据。</view>
+      <view wx:if="{{status === 'pending_profile'}}" class="notice">尚未提交注册资料。</view>
+    </view>
+
+    <view wx:if="{{profile}}" class="card">
+      <view class="card-title">已提交资料</view>
+      <view class="list-meta">姓名：{{profile.name}}</view>
+      <view class="list-meta">出生日期：{{profile.birthDate}}</view>
+      <view class="list-meta">主要项目：{{profile.primaryTrainingProject}}</view>
+      <view class="list-meta">身高／体重：{{profile.heightCm}} cm / {{profile.weightKg}} kg</view>
+    </view>
+
+    <view class="button-row">
+      <button wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="button-primary" bindtap="goRegister">填写或修改资料</button>
+      <button class="button-secondary" bindtap="refresh">刷新状态</button>
+    </view>
+    <button class="button-secondary" bindtap="goHome">退出当前会话</button>
+  </block>
+</view>

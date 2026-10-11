@@ -1,9 +1,68 @@
 <view class="container">
-  <view class="brand">ADMIN / 平台管理中心</view>
+  <view class="brand">DEVELOPER / AUTHORIZATION</view>
   <view class="title">开发者端</view>
-  <view class="sub">俱乐部内部平台与授权管理</view>
-  <view class="card"><view class="card-title">账号与权限</view><view class="card-sub">教练员授权 · 学生账号审核 · 角色分配</view></view>
-  <view class="card"><view class="card-title">训练组与数据</view><view class="card-sub">训练组归属 · 汇总统计 · 权限范围</view></view>
-  <view class="card"><view class="card-title">运行与审计</view><view class="card-sub">系统配置 · 操作日志 · 数据备份</view></view>
-  <view class="notice">演示页面：这里不是云服务器管理控制台，不具备真实管理员权限。</view>
+  <view class="sub">账号、角色、注册审核和训练组范围均由云函数校验，开发者角色只能通过安全初始化或已授权开发者分配。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取权限管理数据...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <view class="section-title">待审核注册</view>
+  <view wx:if="{{!loading && !registrations.length}}" class="empty">当前没有待审核注册。</view>
+  <view wx:if="{{registrations.length}}" class="card">
+    <view wx:for="{{registrations}}" wx:key="userId" class="list-item">
+      <view class="list-title">{{item.name}}</view>
+      <view class="list-meta">申请训练组：{{item.requestedTrainingGroupName}}</view>
+      <view class="list-meta">主要项目：{{item.primaryTrainingProject}}</view>
+      <view class="button-row">
+        <button class="button-primary" data-user-id="{{item.userId}}" data-decision="approve" bindtap="review">通过</button>
+        <button class="button-danger" data-user-id="{{item.userId}}" data-decision="reject" bindtap="review">驳回</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">用户与角色</view>
+  <view wx:if="{{!loading && !users.length}}" class="empty">暂无用户。</view>
+  <view wx:if="{{users.length}}" class="card">
+    <view wx:for="{{users}}" wx:key="userId" wx:for-item="user" class="list-item">
+      <view class="list-title">{{user.displayName}}</view>
+      <view class="list-meta">账号状态：{{user.statusLabel}}</view>
+      <view class="list-meta">当前角色：{{user.rolesText}}</view>
+      <view class="button-row">
+        <button wx:for="{{user.roleActions}}" wx:key="role" wx:for-item="roleAction" class="{{roleAction.active ? 'button-danger' : 'button-secondary'}}" data-user-id="{{user.userId}}" data-role="{{roleAction.role}}" data-grant="{{roleAction.grantValue}}" bindtap="toggleRole">{{roleAction.actionLabel}}{{roleAction.label}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">训练组与教练范围</view>
+  <view class="card">
+    <view class="field">
+      <text class="field-label">新建训练组</text>
+      <input class="input" value="{{newGroupName}}" bindinput="onNewGroupInput" placeholder="例如 短跑一组" />
+    </view>
+    <button class="button-secondary" bindtap="createGroup">创建训练组</button>
+
+    <view wx:for="{{groups}}" wx:key="id" wx:for-item="group" class="list-item">
+      <view class="list-title">{{group.name}}</view>
+      <view class="list-meta">状态：{{group.enabled ? '启用' : '停用'}}</view>
+      <view class="list-meta">负责教练：{{group.coachNames || '未分配'}}</view>
+    </view>
+
+    <view wx:if="{{coachOptions.length && groupOptions.length}}" class="field">
+      <text class="field-label">分配教练员到训练组</text>
+      <picker range="{{coachOptions}}" range-key="label" value="{{coachIndex}}" bindchange="onCoachChange">
+        <view class="picker-field">教练：{{coachOptions[coachIndex].label}}</view>
+      </picker>
+      <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+        <view class="picker-field">训练组：{{groupOptions[groupIndex].name}}</view>
+      </picker>
+      <view class="button-row">
+        <button class="button-primary" data-active="true" bindtap="assignCoach">启用范围</button>
+        <button class="button-danger" data-active="false" bindtap="assignCoach">移除范围</button>
+      </view>
+    </view>
+    <view wx:else class="muted">至少需要一个教练员账号和一个训练组才能配置数据范围。</view>
+  </view>
+
+  <view class="notice">本页不是云服务器控制台。所有敏感操作由云端重新检查开发者角色并写入审计日志。</view>
+  <button class="button-secondary" bindtap="goHome">退出当前会话</button>
 </view>

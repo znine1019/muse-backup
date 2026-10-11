@@ -1,9 +1,13 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/register/register",
+    "pages/pending/pending",
+    "pages/role-select/role-select",
     "pages/student/student",
     "pages/coach/coach",
-    "pages/admin/admin"
+    "pages/admin/admin",
+    "pages/bootstrap/bootstrap"
   ],
   "window": {
     "navigationBarTitleText": "乔格体育",

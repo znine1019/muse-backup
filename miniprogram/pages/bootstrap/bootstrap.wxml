@@ -1,0 +1,17 @@
+<view class="container">
+  <view class="brand">SECURE BOOTSTRAP</view>
+  <view class="title">开发者初始化</view>
+  <view class="sub">仅用于系统首次建立最高权限账号。普通登录流程不会调用此功能，也不得向普通用户提供入口。</view>
+
+  <view class="notice">初始化码只能配置在云函数环境变量中。使用完成后请立即删除该环境变量并重新部署云函数。</view>
+
+  <view class="card">
+    <view class="field">
+      <text class="field-label">一次性初始化码</text>
+      <input class="input" password value="{{bootstrapCode}}" bindinput="onInput" placeholder="请输入云函数环境中的初始化码" />
+    </view>
+    <button class="button-primary" loading="{{submitting}}" disabled="{{submitting || !bootstrapCode}}" bindtap="handleSubmit">建立首个开发者账号</button>
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+    <view wx:if="{{message}}" class="success">{{message}}</view>
+  </view>
+</view>
