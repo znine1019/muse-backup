@@ -6,7 +6,8 @@ const assert = require('node:assert/strict');
 const {
   canReviewRegistration,
   hasRole,
-  isActiveUser
+  isActiveUser,
+  requireActiveUser
 } = require('../../cloudfunctions/api/lib/policy');
 const { buildSession } = require('../../cloudfunctions/api/lib/session');
 
@@ -44,6 +45,17 @@ test('coach can only review a registration inside an assigned group', () => {
 test('developer can review without a group scope but student cannot', () => {
   assert.equal(canReviewRegistration(developer, '', []), true);
   assert.equal(canReviewRegistration(student, 'group_a', ['group_a']), false);
+});
+
+test('disabled accounts are rejected by server-side active-user checks', () => {
+  assert.throws(
+    () => requireActiveUser({ status: 'disabled', roles: ['student'] }),
+    /ACCOUNT_DISABLED/
+  );
+  assert.throws(
+    () => requireActiveUser({ status: 'pending_review', roles: [] }),
+    /ACCOUNT_PENDING/
+  );
 });
 
 test('session filters unknown roles and keeps only server-known roles', () => {

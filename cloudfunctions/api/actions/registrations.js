@@ -2,13 +2,17 @@
 
 const {
   AUDIT_ACTIONS,
+  COLLECTIONS,
   REVIEW_STATUS,
   ROLES,
   USER_STATUS
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
+const { deterministicId } = require('../lib/repository');
 const { canReviewRegistration } = require('../lib/policy');
 const { loadActiveActor } = require('../lib/session');
+const { assertRegistrationPending } = require('../lib/state-guards');
+const { getDocumentOrNull } = require('../lib/transaction');
 const { validateReviewPayload } = require('../lib/validation');
 
 function createRegistrationActions({ repository }) {
@@ -73,15 +77,13 @@ function createRegistrationActions({ repository }) {
       ROLES.COACH
     ]);
     const reviewInput = validateReviewPayload(payload);
-    const targetUser = await repository.getUserById(reviewInput.targetUserId);
-    if (!targetUser) {
+    const initialUser = await repository.getUserById(reviewInput.targetUserId);
+    if (!initialUser) {
       fail('USER_NOT_FOUND', '未找到待审核用户。');
     }
 
-    const profile = await repository.getProfile(targetUser._id);
-    if (!profile || profile.reviewStatus !== REVIEW_STATUS.PENDING) {
-      fail('REVIEW_NOT_PENDING', '该注册资料当前不在待审核状态。');
-    }
+    const initialProfile = await repository.getProfile(initialUser._id);
+    assertRegistrationPending(initialProfile);
 
     let coachGroupIds = [];
     if (actor.roles.includes(ROLES.COACH) && !actor.roles.includes(ROLES.DEVELOPER)) {
@@ -90,88 +92,153 @@ function createRegistrationActions({ repository }) {
     if (
       !canReviewRegistration(
         actor,
-        profile.requestedTrainingGroupId,
+        initialProfile.requestedTrainingGroupId,
         coachGroupIds
       )
     ) {
       fail('OUT_OF_SCOPE', '只能审核本人负责训练组内的学生。');
     }
 
+    const profileId = repository.profileIdForUser(initialUser._id);
+    const fallbackReview = initialProfile.currentReviewId
+      ? null
+      : await repository.getLatestReview(initialUser._id);
+    const reviewDocumentId =
+      initialProfile.currentReviewId || (fallbackReview && fallbackReview._id) || '';
     const approved = reviewInput.decision === 'approve';
-    const nextRoles = approved
-      ? Array.from(new Set([...(targetUser.roles || []), ROLES.STUDENT]))
-      : targetUser.roles || [];
-    const nextStatus = approved ? USER_STATUS.ACTIVE : USER_STATUS.REJECTED;
 
-    await repository.userCollection.doc(targetUser._id).update({
-      data: {
-        status: nextStatus,
-        roles: nextRoles,
-        updatedAt: repository.db.serverDate()
+    return repository.db.runTransaction(async (transaction) => {
+      const profileReference = transaction
+        .collection(COLLECTIONS.STUDENT_PROFILES)
+        .doc(profileId);
+      const currentProfile = await getDocumentOrNull(profileReference);
+      assertRegistrationPending(currentProfile);
+      if (
+        !canReviewRegistration(
+          actor,
+          currentProfile.requestedTrainingGroupId,
+          coachGroupIds
+        )
+      ) {
+        fail('OUT_OF_SCOPE', '只能审核本人负责训练组内的学生。');
       }
-    });
-    await repository.profileCollection.doc(profile._id).update({
-      data: {
-        reviewStatus: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
-        reviewComment: reviewInput.comment,
-        reviewedBy: actor._id,
-        reviewedAt: repository.db.serverDate(),
-        updatedAt: repository.db.serverDate()
-      }
-    });
 
-    const pendingReviewResult = await repository.reviewCollection
-      .where({ userId: targetUser._id, status: REVIEW_STATUS.PENDING })
-      .limit(10)
-      .get();
-    for (const review of pendingReviewResult.data || []) {
-      await repository.reviewCollection.doc(review._id).update({
+      const userReference = transaction
+        .collection(COLLECTIONS.USERS)
+        .doc(initialUser._id);
+      const currentUser = await getDocumentOrNull(userReference);
+      if (!currentUser) {
+        fail('USER_NOT_FOUND', '未找到待审核用户。');
+      }
+
+      const nextRoles = approved
+        ? Array.from(new Set([...(currentUser.roles || []), ROLES.STUDENT]))
+        : currentUser.roles || [];
+      const nextStatus = approved ? USER_STATUS.ACTIVE : USER_STATUS.REJECTED;
+
+      await userReference.update({
         data: {
-          status: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
-          comment: reviewInput.comment,
-          reviewedBy: actor._id,
-          reviewedAt: repository.db.serverDate()
+          status: nextStatus,
+          roles: nextRoles,
+          updatedAt: repository.db.serverDate()
         }
       });
-    }
-
-    if (approved) {
-      await repository.setRoleBinding({
-        userId: targetUser._id,
-        role: ROLES.STUDENT,
-        grantedBy: actor._id,
-        active: true
+      await profileReference.update({
+        data: {
+          reviewStatus: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
+          reviewComment: reviewInput.comment,
+          reviewedBy: actor._id,
+          reviewedAt: repository.db.serverDate(),
+          updatedAt: repository.db.serverDate()
+        }
       });
-      if (profile.requestedTrainingGroupId) {
-        await repository.setGroupMembership({
-          userId: targetUser._id,
-          groupId: profile.requestedTrainingGroupId,
-          roleInGroup: ROLES.STUDENT,
-          assignedBy: actor._id,
-          active: true
+
+      const currentReviewDocumentId =
+        currentProfile.currentReviewId || reviewDocumentId;
+      if (currentReviewDocumentId) {
+        await transaction
+          .collection(COLLECTIONS.REGISTRATION_REVIEWS)
+          .doc(currentReviewDocumentId)
+          .update({
+            data: {
+              status: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
+              comment: reviewInput.comment,
+              reviewedBy: actor._id,
+              reviewedAt: repository.db.serverDate()
+            }
+          });
+      }
+
+      if (approved) {
+        await transaction
+          .collection(COLLECTIONS.ROLE_BINDINGS)
+          .doc(repository.roleBindingId(currentUser._id, ROLES.STUDENT))
+          .set({
+            data: {
+              userId: currentUser._id,
+              role: ROLES.STUDENT,
+              status: 'active',
+              grantedBy: actor._id,
+              grantedAt: repository.db.serverDate(),
+              updatedAt: repository.db.serverDate()
+            }
+          });
+        if (currentProfile.requestedTrainingGroupId) {
+          await transaction
+            .collection(COLLECTIONS.GROUP_MEMBERSHIPS)
+            .doc(
+              repository.membershipId(
+                currentProfile.requestedTrainingGroupId,
+                currentUser._id
+              )
+            )
+            .set({
+              data: {
+                userId: currentUser._id,
+                groupId: currentProfile.requestedTrainingGroupId,
+                roleInGroup: ROLES.STUDENT,
+                status: 'active',
+                assignedBy: actor._id,
+                assignedAt: repository.db.serverDate(),
+                updatedAt: repository.db.serverDate()
+              }
+            });
+        }
+      }
+
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(
+          deterministicId(
+            'audit_registration',
+            currentUser._id,
+            currentProfile.currentReviewId || 'current',
+            actor._id
+          )
+        )
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: approved
+              ? AUDIT_ACTIONS.REGISTRATION_APPROVED
+              : AUDIT_ACTIONS.REGISTRATION_REJECTED,
+            targetType: 'user',
+            targetId: currentUser._id,
+            result: 'success',
+            metadata: {
+              decision: reviewInput.decision,
+              trainingGroupId: currentProfile.requestedTrainingGroupId || ''
+            },
+            createdAt: repository.db.serverDate()
+          }
         });
-      }
-    }
 
-    await repository.writeAudit({
-      actorUserId: actor._id,
-      action: approved
-        ? AUDIT_ACTIONS.REGISTRATION_APPROVED
-        : AUDIT_ACTIONS.REGISTRATION_REJECTED,
-      targetType: 'user',
-      targetId: targetUser._id,
-      result: 'success',
-      metadata: {
-        decision: reviewInput.decision,
-        trainingGroupId: profile.requestedTrainingGroupId || ''
-      }
+      return {
+        userId: currentUser._id,
+        status: nextStatus,
+        roles: nextRoles
+      };
     });
-
-    return {
-      userId: targetUser._id,
-      status: nextStatus,
-      roles: nextRoles
-    };
   }
 
   return {

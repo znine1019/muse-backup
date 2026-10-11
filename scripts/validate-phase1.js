@@ -46,9 +46,12 @@ const requiredFiles = [
   'cloudfunctions/api/actions/registrations.js',
   'cloudfunctions/api/actions/users.js',
   'cloudfunctions/api/actions/groups.js',
+  'cloudfunctions/api/lib/bootstrap-policy.js',
   'cloudfunctions/api/lib/policy.js',
   'cloudfunctions/api/lib/repository.js',
   'cloudfunctions/api/lib/session.js',
+  'cloudfunctions/api/lib/state-guards.js',
+  'cloudfunctions/api/lib/transaction.js',
   'cloudfunctions/api/lib/validation.js',
   'cloudfunctions/health_check/index.js'
 ];
@@ -97,11 +100,13 @@ check(apiIndex.includes("require('./actions/auth')"), 'API action 已按域拆�
 const healthIndex = readText('cloudfunctions/health_check/index.js');
 check(healthIndex.includes('cloud.DYNAMIC_CURRENT_ENV'), '连接测试云函数使用动态当前环境');
 check(!healthIndex.includes('cloud1-'), '连接测试云函数未硬编码前端环境 ID');
+check(healthIndex.includes('getWXContext'), '连接测试云函数验证可信微信身份');
 
 const authSource = readText('cloudfunctions/api/actions/auth.js');
 check(authSource.includes('BOOTSTRAP_ADMIN_CODE'), '首个开发者使用云函数环境初始化码');
 check(!authSource.includes('payload.role'), '登录初始化未信任前端角色');
-check(authSource.includes('timingSafeEqual'), '初始化码使用恒定时间比较');
+check(authSource.includes('BOOTSTRAP_ADMIN_OPENIDS'), '首个开发者验证预先授权 OpenID');
+check(authSource.includes('runTransaction'), '管理员初始化使用数据库事务');
 
 const frontendFiles = [];
 function collectFiles(directory) {
@@ -116,6 +121,12 @@ function collectFiles(directory) {
 }
 collectFiles(absolute('miniprogram'));
 
+const bootstrapPolicy = readText('cloudfunctions/api/lib/bootstrap-policy.js');
+check(bootstrapPolicy.includes('timingSafeEqual'), '初始化码使用恒定时间比较');
+check(readText('cloudfunctions/api/actions/profile.js').includes('runTransaction'), '重复注册提交使用事务保护');
+check(!readText('cloudfunctions/api/actions/profile.js').includes('payload.targetUserId'), '学生档案接口不接受目标学生 ID');
+check(readText('cloudfunctions/api/actions/registrations.js').includes('runTransaction'), '重复审核使用事务保护');
+
 const forbiddenFrontendPatterns = [
   {
     label: 'AppSecret 或 API Key',
@@ -124,7 +135,8 @@ const forbiddenFrontendPatterns = [
   { label: '私钥', expression: /BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY/ },
   { label: 'DeepSeek Key', expression: /sk-[A-Za-z0-9_-]{16,}/ },
   { label: '客户端数据库直连', expression: /wx\.cloud\.database\s*\(/ },
-  { label: '云函数环境变量', expression: /process\.env/ }
+  { label: '云函数环境变量', expression: /process\.env/ },
+  { label: '开发者初始化配置', expression: /BOOTSTRAP_ADMIN_(?:CODE|OPENIDS)/ }
 ];
 
 for (const filePath of frontendFiles) {

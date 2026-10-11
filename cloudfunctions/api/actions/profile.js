@@ -2,12 +2,15 @@
 
 const {
   AUDIT_ACTIONS,
+  COLLECTIONS,
   REVIEW_STATUS,
   USER_STATUS
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
 const { loadUser, readableProfile } = require('../lib/session');
+const { getProfileSubmissionDecision } = require('../lib/state-guards');
+const { getDocumentOrNull } = require('../lib/transaction');
 const { validateProfilePayload } = require('../lib/validation');
 
 function createProfileActions({ repository }) {
@@ -31,12 +34,14 @@ function createProfileActions({ repository }) {
   }
 
   async function submitProfile({ identity, payload, context }) {
-    const user = await loadUser(repository, identity);
-    if (![USER_STATUS.PENDING_PROFILE, USER_STATUS.REJECTED].includes(user.status)) {
-      if (user.status === USER_STATUS.PENDING_REVIEW) {
-        fail('ALREADY_PENDING_REVIEW', '资料已提交，请等待教练员审核。');
-      }
-      fail('PROFILE_NOT_EDITABLE', '当前账号状态不能重新提交注册资料。');
+    const initialUser = await loadUser(repository, identity);
+    const initialDecision = getProfileSubmissionDecision(initialUser.status);
+    if (initialDecision.action === 'idempotent') {
+      return {
+        userStatus: USER_STATUS.PENDING_REVIEW,
+        reviewStatus: REVIEW_STATUS.PENDING,
+        duplicate: true
+      };
     }
 
     const profile = validateProfilePayload(payload);
@@ -47,60 +52,91 @@ function createProfileActions({ repository }) {
       }
     }
 
-    const profileId = repository.profileIdForUser(user._id);
-    await repository.profileCollection.doc(profileId).set({
-      data: {
-        _id: profileId,
-        userId: user._id,
-        ...profile,
-        reviewStatus: REVIEW_STATUS.PENDING,
-        reviewComment: '',
-        submittedAt: repository.db.serverDate(),
-        updatedAt: repository.db.serverDate(),
-        schemaVersion: 1
-      }
-    });
-
+    const profileId = repository.profileIdForUser(initialUser._id);
     const reviewId = deterministicId(
       'review',
-      user._id,
+      initialUser._id,
       context.requestId || String(Date.now())
     );
-    await repository.reviewCollection.doc(reviewId).set({
-      data: {
-        _id: reviewId,
-        userId: user._id,
-        profileId,
-        status: REVIEW_STATUS.PENDING,
-        comment: '',
-        submittedAt: repository.db.serverDate(),
-        createdAt: repository.db.serverDate()
-      }
-    });
 
-    await repository.userCollection.doc(user._id).update({
-      data: {
-        status: USER_STATUS.PENDING_REVIEW,
-        updatedAt: repository.db.serverDate()
+    return repository.db.runTransaction(async (transaction) => {
+      const userReference = transaction
+        .collection(COLLECTIONS.USERS)
+        .doc(initialUser._id);
+      const currentUser = await getDocumentOrNull(userReference);
+      if (!currentUser) {
+        fail('USER_NOT_FOUND', '当前用户账号不存在。');
       }
-    });
-
-    const updatedUser = await repository.getUserById(user._id);
-    await repository.writeAudit({
-      actorUserId: user._id,
-      action: AUDIT_ACTIONS.PROFILE_SUBMITTED,
-      targetType: 'student_profile',
-      targetId: profileId,
-      result: 'success',
-      metadata: {
-        requestedTrainingGroupId: profile.requestedTrainingGroupId || ''
+      const currentDecision = getProfileSubmissionDecision(currentUser.status);
+      if (currentDecision.action === 'idempotent') {
+        return {
+          userStatus: USER_STATUS.PENDING_REVIEW,
+          reviewStatus: REVIEW_STATUS.PENDING,
+          duplicate: true
+        };
       }
-    });
 
-    return {
-      userStatus: updatedUser.status,
-      reviewStatus: REVIEW_STATUS.PENDING
-    };
+      const profileReference = transaction
+        .collection(COLLECTIONS.STUDENT_PROFILES)
+        .doc(profileId);
+      const submittedAt = repository.db.serverDate();
+
+      await profileReference.set({
+        data: {
+          _id: profileId,
+          userId: currentUser._id,
+          ...profile,
+          reviewStatus: REVIEW_STATUS.PENDING,
+          reviewComment: '',
+          submittedAt,
+          updatedAt: repository.db.serverDate(),
+          currentReviewId: reviewId,
+          schemaVersion: 1
+        }
+      });
+      await transaction
+        .collection(COLLECTIONS.REGISTRATION_REVIEWS)
+        .doc(reviewId)
+        .set({
+          data: {
+            _id: reviewId,
+            userId: currentUser._id,
+            profileId,
+            status: REVIEW_STATUS.PENDING,
+            comment: '',
+            submittedAt: repository.db.serverDate(),
+            createdAt: repository.db.serverDate()
+          }
+        });
+      await userReference.update({
+        data: {
+          status: USER_STATUS.PENDING_REVIEW,
+          updatedAt: repository.db.serverDate()
+        }
+      });
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(`audit_profile_submit_${reviewId}`)
+        .set({
+          data: {
+            actorUserId: currentUser._id,
+            action: AUDIT_ACTIONS.PROFILE_SUBMITTED,
+            targetType: 'student_profile',
+            targetId: profileId,
+            result: 'success',
+            metadata: {
+              requestedTrainingGroupId: profile.requestedTrainingGroupId || ''
+            },
+            createdAt: repository.db.serverDate()
+          }
+        });
+
+      return {
+        userStatus: USER_STATUS.PENDING_REVIEW,
+        reviewStatus: REVIEW_STATUS.PENDING,
+        duplicate: false
+      };
+    });
   }
 
   return {

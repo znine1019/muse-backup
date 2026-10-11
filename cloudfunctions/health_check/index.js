@@ -6,6 +6,17 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
 exports.main = async () => {
+  const wxContext = cloud.getWXContext();
+  if (!wxContext || !wxContext.OPENID) {
+    return {
+      ok: false,
+      error: {
+        code: 'UNAUTHENTICATED',
+        message: '无法获取可信微信身份。'
+      }
+    };
+  }
+
   let databaseReady = false;
 
   try {
