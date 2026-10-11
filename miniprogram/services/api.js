@@ -67,6 +67,7 @@ module.exports = {
   reviewRegistration: (payload) => callApi('admin.review_registration', payload),
   listUsers: () => callApi('admin.list_users'),
   assignRole: (payload) => callApi('admin.assign_role', payload),
+  setUserStatus: (payload) => callApi('admin.set_user_status', payload),
   listAllTrainingGroups: () => callApi('admin.list_training_groups'),
   createTrainingGroup: (name) =>
     callApi('admin.create_training_group', { name }),

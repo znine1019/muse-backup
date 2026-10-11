@@ -6,7 +6,8 @@ const assert = require('node:assert/strict');
 const {
   validateProfilePayload,
   validateReviewPayload,
-  validateRolePayload
+  validateRolePayload,
+  validateUserStatusPayload
 } = require('../../cloudfunctions/api/lib/validation');
 
 test('valid profile input is normalized', () => {
@@ -55,6 +56,10 @@ test('profile input rejects invalid gender and out-of-range body data', () => {
 });
 
 test('review and role payloads reject arbitrary values', () => {
+  assert.throws(
+    () => validateUserStatusPayload({ targetUserId: 'usr_1', status: 'deleted' }),
+    /账号状态不正确/
+  );
   assert.throws(
     () => validateReviewPayload({ targetUserId: 'usr_1', decision: 'approve_all' }),
     /审核结果不正确/

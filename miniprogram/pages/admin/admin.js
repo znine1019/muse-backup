@@ -46,6 +46,8 @@ Page({
       const users = (userResult.users || []).map((user) => ({
         ...user,
         statusLabel: getStatusLabel(user.status),
+        statusActionLabel: user.status === 'disabled' ? '启用账号' : '停用账号',
+        statusActionValue: user.status === 'disabled' ? 'active' : 'disabled',
         rolesText: (user.roles || []).map((role) => getRoleLabel(role)).join('、') || '未授权',
         roleActions: ROLE_OPTIONS.map((role) => ({
           role,
@@ -134,6 +136,35 @@ Page({
       await this.loadPage();
     } catch (error) {
       this.setData({ error: error.message || '角色操作失败。' });
+    } finally {
+      this.setData({ busyUserId: '' });
+    }
+  },
+
+  async toggleUserStatus(event) {
+    const userId = event.currentTarget.dataset.userId;
+    const status = event.currentTarget.dataset.status;
+    const modal = await new Promise((resolve) => {
+      wx.showModal({
+        title: status === 'disabled' ? '确认停用账号' : '确认启用账号',
+        content:
+          status === 'disabled'
+            ? '停用后该账号不能访问内部数据。'
+            : '启用后按已授权角色恢复访问。',
+        success: resolve,
+        fail: () => resolve({ confirm: false })
+      });
+    });
+    if (!modal.confirm) {
+      return;
+    }
+
+    this.setData({ busyUserId: userId, error: '' });
+    try {
+      await api.setUserStatus({ targetUserId: userId, status });
+      await this.loadPage();
+    } catch (error) {
+      this.setData({ error: error.message || '账号状态操作失败。' });
     } finally {
       this.setData({ busyUserId: '' });
     }

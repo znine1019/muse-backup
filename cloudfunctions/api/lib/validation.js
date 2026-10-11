@@ -131,6 +131,18 @@ function validateRolePayload(payload) {
   };
 }
 
+function validateUserStatusPayload(payload) {
+  const input = asObject(payload);
+  const status = requiredString(input.status, '账号状态', 20);
+  if (!['active', 'disabled'].includes(status)) {
+    fail('INVALID_FIELD', '账号状态不正确。');
+  }
+  return {
+    targetUserId: safeId(input.targetUserId, '用户账号'),
+    status
+  };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -151,6 +163,7 @@ module.exports = {
   validateGroupCoachPayload,
   validateGroupName,
   validateProfilePayload,
+  validateUserStatusPayload,
   validateReviewPayload,
   validateRolePayload
 };
