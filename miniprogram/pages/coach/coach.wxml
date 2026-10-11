@@ -1,0 +1,10 @@
+<view class="container">
+  <view class="brand">COACH / 教学管理中心</view>
+  <view class="title">教练员端</view>
+  <view class="sub">管理负责的学生、训练组和训练数据</view>
+  <view class="card"><view class="card-title">学生与训练组</view><view class="card-sub">学生档案 · 注册审核 · 训练组管理</view></view>
+  <view class="card"><view class="card-title">训练计划</view><view class="card-sub">人工制定 · 模板保存 · 组内下发</view></view>
+  <view class="card"><view class="card-title">考勤与请假审批</view><view class="card-sub">考勤异常管理 · 请假审核 · Excel导出</view></view>
+  <view class="card"><view class="card-title">测试成绩与排行</view><view class="card-sub">成绩录入 · 最好成绩审核 · Excel导出</view></view>
+  <view class="notice">演示页面：正式的数据操作与权限校验将在后续开发阶段实现。</view>
+</view>

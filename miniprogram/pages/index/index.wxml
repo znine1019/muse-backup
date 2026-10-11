@@ -1,0 +1,14 @@
+<view class="container">
+  <view class="brand">JOGER SPORTS / INTERNAL</view>
+  <view class="title">乔格体育<view>数字化训练管理</view></view>
+  <view class="sub">微信小程序 · V1.6 开发基线<br/>当前仅供界面与项目结构预览</view>
+  <view class="pill">阶段0 · 静态原型</view>
+  <view class="card">
+    <view class="card-title">预览不同用户界面</view>
+    <view class="card-sub">以下仅为原型跳转，不代表用户已登录、注册或获得对应权限。</view>
+    <button class="action" bindtap="openStudent">学生端预览　→</button>
+    <button class="action" bindtap="openCoach">教练员端预览　→</button>
+    <button class="action" bindtap="openAdmin">开发者端预览　→</button>
+  </view>
+  <view class="notice">注意：尚未接入微信登录、数据库或GPS功能，不可用于真实学生信息管理或正式发布。</view>
+</view>

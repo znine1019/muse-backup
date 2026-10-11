@@ -1,0 +1,26 @@
+# Sensitive local settings
+.env
+.env.*
+!.env.example
+*secret*.json
+*credentials*.json
+*private*.key
+*.pem
+
+# Node
+node_modules/
+miniprogram/miniprogram_npm/
+
+# Local IDE/user-specific configs
+project.private.config.json
+.DS_Store
+Thumbs.db
+
+# Runtime and exports
+logs/
+exports/
+coverage/
+*.log
+*.zip
+*.xlsx
+!docs/*.xlsx

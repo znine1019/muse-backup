@@ -1,0 +1,9 @@
+<view class="container">
+  <view class="brand">ADMIN / 平台管理中心</view>
+  <view class="title">开发者端</view>
+  <view class="sub">俱乐部内部平台与授权管理</view>
+  <view class="card"><view class="card-title">账号与权限</view><view class="card-sub">教练员授权 · 学生账号审核 · 角色分配</view></view>
+  <view class="card"><view class="card-title">训练组与数据</view><view class="card-sub">训练组归属 · 汇总统计 · 权限范围</view></view>
+  <view class="card"><view class="card-title">运行与审计</view><view class="card-sub">系统配置 · 操作日志 · 数据备份</view></view>
+  <view class="notice">演示页面：这里不是云服务器管理控制台，不具备真实管理员权限。</view>
+</view>

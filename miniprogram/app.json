@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/student/student",
+    "pages/coach/coach",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "navigationBarTitleText": "乔格体育",
+    "navigationBarBackgroundColor": "#10263C",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F4F7FA",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
