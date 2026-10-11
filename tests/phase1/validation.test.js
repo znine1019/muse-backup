@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 
 const {
   validateProfilePayload,
+  validateGroupSeasonLabel,
   validateReviewPayload,
   validateRolePayload,
   validateUserStatusPayload
@@ -56,6 +57,9 @@ test('profile input rejects invalid gender and out-of-range body data', () => {
 });
 
 test('review and role payloads reject arbitrary values', () => {
+  assert.equal(validateGroupSeasonLabel(' 2026春季 '), '2026春季');
+  assert.throws(() => validateGroupSeasonLabel(''), /年份或周期/);
+
   assert.throws(
     () => validateUserStatusPayload({ targetUserId: 'usr_1', status: 'deleted' }),
     /账号状态不正确/

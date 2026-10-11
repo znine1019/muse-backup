@@ -9,7 +9,9 @@ function createDirectoryActions({ repository }) {
     return {
       groups: groups.map((group) => ({
         id: group._id,
-        name: group.name
+        groupId: group.groupId || group._id,
+        name: group.name,
+        seasonLabel: group.seasonLabel || '未标注'
       }))
     };
   }

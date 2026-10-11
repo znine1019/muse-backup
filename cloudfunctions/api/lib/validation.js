@@ -147,6 +147,10 @@ function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
 
+function validateGroupSeasonLabel(value) {
+  return requiredString(value, '训练组年份或周期', 20);
+}
+
 function validateGroupCoachPayload(payload) {
   const input = asObject(payload);
   return {
@@ -162,6 +166,7 @@ module.exports = {
   safeId,
   validateGroupCoachPayload,
   validateGroupName,
+  validateGroupSeasonLabel,
   validateProfilePayload,
   validateUserStatusPayload,
   validateReviewPayload,

@@ -123,6 +123,12 @@ collectFiles(absolute('miniprogram'));
 
 const bootstrapPolicy = readText('cloudfunctions/api/lib/bootstrap-policy.js');
 check(bootstrapPolicy.includes('timingSafeEqual'), '初始化码使用恒定时间比较');
+check(bootstrapPolicy.includes("config.state !== 'ready'"), '初始化配置必须先处于 ready 状态');
+const groupSource = readText('cloudfunctions/api/actions/groups.js');
+check(groupSource.includes('groupId') && groupSource.includes('seasonLabel'), '训练组使用独立 groupId 和周期字段');
+check(!groupSource.includes('.where({ name, enabled: true })'), '训练组不再按名称做全局唯一判断');
+const repositorySource = readText('cloudfunctions/api/lib/repository.js');
+check(repositorySource.includes('getUserByOpenId'), '首次登录具备 OpenID 唯一回查兜底');
 check(readText('cloudfunctions/api/actions/profile.js').includes('runTransaction'), '重复注册提交使用事务保护');
 check(!readText('cloudfunctions/api/actions/profile.js').includes('payload.targetUserId'), '学生档案接口不接受目标学生 ID');
 check(readText('cloudfunctions/api/actions/registrations.js').includes('runTransaction'), '重复审核使用事务保护');

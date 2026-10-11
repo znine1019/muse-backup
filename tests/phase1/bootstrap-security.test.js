@@ -39,7 +39,7 @@ test('bootstrap requires both a preauthorized OpenID and the one-time code', () 
       providedCode: CODE,
       expectedCode: CODE,
       allowedOpenIds,
-      config: { developerInitialized: false }
+      config: { developerInitialized: false, state: 'ready' }
     })
   );
   assert.equal(
@@ -49,7 +49,7 @@ test('bootstrap requires both a preauthorized OpenID and the one-time code', () 
         providedCode: CODE,
         expectedCode: CODE,
         allowedOpenIds,
-        config: { developerInitialized: false }
+        config: { developerInitialized: false, state: 'ready' }
       })
     ),
     'BOOTSTRAP_REJECTED'
@@ -61,10 +61,25 @@ test('bootstrap requires both a preauthorized OpenID and the one-time code', () 
         providedCode: 'wrong-code-1234567890',
         expectedCode: CODE,
         allowedOpenIds,
-        config: { developerInitialized: false }
+        config: { developerInitialized: false, state: 'ready' }
       })
     ),
     'BOOTSTRAP_REJECTED'
+  );
+});
+
+test('bootstrap configuration must be in ready state before initialization', () => {
+  assert.equal(
+    captureCode(() =>
+      assertBootstrapAllowed({
+        identity: { openid: PRIMARY_OPENID },
+        providedCode: CODE,
+        expectedCode: CODE,
+        allowedOpenIds: [PRIMARY_OPENID],
+        config: { developerInitialized: false, state: 'initializing' }
+      })
+    ),
+    'BOOTSTRAP_NOT_READY'
   );
 });
 
@@ -90,7 +105,7 @@ test('completed bootstrap configuration permanently rejects initialization', () 
 });
 
 test('serialized concurrent bootstrap attempts allow only one winner', async () => {
-  let config = { developerInitialized: false };
+  let config = { developerInitialized: false, state: 'ready' };
   let transactionTail = Promise.resolve();
 
   function runSerialized(work) {

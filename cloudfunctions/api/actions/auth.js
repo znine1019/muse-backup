@@ -71,7 +71,8 @@ function createAuthActions({ repository }) {
         data: buildCompletedConfig({
           initializedBy: currentUser._id,
           completedAt
-        })
+        }),
+        updatedAt: repository.db.serverDate()
       });
       await userReference.update({
         data: {

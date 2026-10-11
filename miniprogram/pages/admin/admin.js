@@ -22,6 +22,7 @@ Page({
     coachIndex: 0,
     groupIndex: 0,
     newGroupName: '',
+    newGroupSeasonLabel: String(new Date().getFullYear()),
     busyUserId: ''
   },
 
@@ -62,6 +63,7 @@ Page({
         .map((user) => ({ userId: user.userId, label: user.displayName }));
       const groups = (groupResult.groups || []).map((group) => ({
         ...group,
+        displayName: `${group.name}（${group.seasonLabel || '未标注'}）`,
         coachNames: group.coachUserIds
           .map((userId) => (users.find((user) => user.userId === userId) || {}).displayName)
           .filter(Boolean)
@@ -74,7 +76,11 @@ Page({
         users,
         groups,
         coachOptions,
-        groupOptions: groups.map((group) => ({ id: group.id, name: group.name })),
+        groupOptions: groups.map((group) => ({
+          id: group.id,
+          name: group.displayName,
+          seasonLabel: group.seasonLabel
+        })),
         coachIndex: 0,
         groupIndex: 0
       });
@@ -174,13 +180,24 @@ Page({
     this.setData({ newGroupName: event.detail.value });
   },
 
+  onNewGroupSeasonInput(event) {
+    this.setData({ newGroupSeasonLabel: event.detail.value });
+  },
+
   async createGroup() {
     if (!this.data.newGroupName.trim()) {
       this.setData({ error: '请填写训练组名称。' });
       return;
     }
+    if (!this.data.newGroupSeasonLabel.trim()) {
+      this.setData({ error: '请填写训练组年份或周期。' });
+      return;
+    }
     try {
-      await api.createTrainingGroup(this.data.newGroupName);
+      await api.createTrainingGroup({
+        name: this.data.newGroupName,
+        seasonLabel: this.data.newGroupSeasonLabel
+      });
       this.setData({ newGroupName: '' });
       await this.loadPage();
     } catch (error) {

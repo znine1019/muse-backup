@@ -39,11 +39,12 @@
     <view class="field">
       <text class="field-label">新建训练组</text>
       <input class="input" value="{{newGroupName}}" bindinput="onNewGroupInput" placeholder="例如 短跑一组" />
+      <input class="input" value="{{newGroupSeasonLabel}}" bindinput="onNewGroupSeasonInput" placeholder="年份或周期，例如 2026春季" />
     </view>
     <button class="button-secondary" bindtap="createGroup">创建训练组</button>
 
     <view wx:for="{{groups}}" wx:key="id" wx:for-item="group" class="list-item">
-      <view class="list-title">{{group.name}}</view>
+      <view class="list-title">{{group.displayName}}</view>
       <view class="list-meta">状态：{{group.enabled ? '启用' : '停用'}}</view>
       <view class="list-meta">负责教练：{{group.coachNames || '未分配'}}</view>
     </view>

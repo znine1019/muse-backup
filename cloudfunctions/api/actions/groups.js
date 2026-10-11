@@ -6,10 +6,12 @@ const {
   USER_STATUS
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
+const { deterministicId } = require('../lib/repository');
 const { loadActiveActor } = require('../lib/session');
 const {
   validateGroupCoachPayload,
-  validateGroupName
+  validateGroupName,
+  validateGroupSeasonLabel
 } = require('../lib/validation');
 
 function createGroupAdminActions({ repository }) {
@@ -34,7 +36,9 @@ function createGroupAdminActions({ repository }) {
     return {
       groups: groups.map((group) => ({
         id: group._id,
+        groupId: group.groupId || group._id,
         name: group.name,
+        seasonLabel: group.seasonLabel || '未标注',
         enabled: group.enabled === true,
         coachUserIds: coachMemberships
           .filter((membership) => membership.groupId === group._id)
@@ -46,44 +50,55 @@ function createGroupAdminActions({ repository }) {
   async function createTrainingGroup({ identity, payload }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.DEVELOPER]);
     const name = validateGroupName(payload.name);
-    const existingResult = await repository.groupCollection
-      .where({ name, enabled: true })
-      .limit(1)
-      .get();
+    const seasonLabel = validateGroupSeasonLabel(payload.seasonLabel);
+    const groupId = deterministicId(
+      'group',
+      name.toLowerCase(),
+      seasonLabel.toLowerCase()
+    );
+    const existingGroup = await repository.getTrainingGroup(groupId);
 
-    if ((existingResult.data || []).length) {
+    if (existingGroup) {
       return {
         group: {
-          id: existingResult.data[0]._id,
-          name: existingResult.data[0].name,
-          enabled: true,
+          id: existingGroup._id,
+          groupId: existingGroup.groupId || existingGroup._id,
+          name: existingGroup.name,
+          seasonLabel: existingGroup.seasonLabel || '未标注',
+          enabled: existingGroup.enabled === true,
           coachUserIds: []
         }
       };
     }
 
-    const addResult = await repository.groupCollection.add({
+    await repository.groupCollection.doc(groupId).set({
       data: {
+        _id: groupId,
+        groupId,
         name,
+        seasonLabel,
         enabled: true,
         createdBy: actor._id,
         createdAt: repository.db.serverDate(),
-        updatedAt: repository.db.serverDate()
+        updatedAt: repository.db.serverDate(),
+        schemaVersion: 1
       }
     });
     await repository.writeAudit({
       actorUserId: actor._id,
       action: AUDIT_ACTIONS.GROUP_CREATED,
       targetType: 'training_group',
-      targetId: addResult._id,
+      targetId: groupId,
       result: 'success',
-      metadata: { name }
+      metadata: { name, seasonLabel, groupId }
     });
 
     return {
       group: {
-        id: addResult._id,
+        id: groupId,
+        groupId,
         name,
+        seasonLabel,
         enabled: true,
         coachUserIds: []
       }

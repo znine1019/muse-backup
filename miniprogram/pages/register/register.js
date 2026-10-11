@@ -52,8 +52,11 @@ Page({
         api.getProfile().catch(() => ({ profile: null }))
       ]);
       const groupOptions = [
-        { id: '', name: '暂不申请训练组' },
-        ...(groupResult.groups || [])
+        { id: '', name: '暂不申请训练组', label: '暂不申请训练组' },
+        ...(groupResult.groups || []).map((group) => ({
+          ...group,
+          label: `${group.name}（${group.seasonLabel || '未标注'}）`
+        }))
       ];
       const profile = (profileResult && profileResult.profile) || {};
       const form = {

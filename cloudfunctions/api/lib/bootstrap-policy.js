@@ -57,6 +57,9 @@ function assertBootstrapAllowed({
   if (config.developerInitialized === true) {
     fail('BOOTSTRAP_COMPLETED', '开发者账号已经完成初始化。');
   }
+  if (config.state !== 'ready') {
+    fail('BOOTSTRAP_NOT_READY', '开发者初始化配置尚未准备完成。');
+  }
 
   return true;
 }

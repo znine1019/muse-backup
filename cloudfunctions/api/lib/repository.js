@@ -26,6 +26,17 @@ function deterministicId(prefix, ...values) {
   return `${prefix}_${digest}`;
 }
 
+function compareTrainingGroups(left, right) {
+  const seasonOrder = String(right.seasonLabel || '').localeCompare(
+    String(left.seasonLabel || ''),
+    'zh-CN'
+  );
+  if (seasonOrder) {
+    return seasonOrder;
+  }
+  return String(left.name || '').localeCompare(String(right.name || ''), 'zh-CN');
+}
+
 function createRepository(db) {
   const userCollection = db.collection(COLLECTIONS.USERS);
   const profileCollection = db.collection(COLLECTIONS.STUDENT_PROFILES);
@@ -68,10 +79,20 @@ function createRepository(db) {
     return getDoc(userCollection, userId);
   }
 
+  async function getUserByOpenId(openid) {
+    const result = await userCollection.where({ _openid: openid }).limit(1).get();
+    return (result.data || [])[0] || null;
+  }
+
   async function ensureUser(identity) {
     const userId = userIdForIdentity(identity);
     let user = await getUserById(userId);
 
+    if (user) {
+      return user;
+    }
+
+    user = await getUserByOpenId(identity.openid);
     if (user) {
       return user;
     }
@@ -91,6 +112,9 @@ function createRepository(db) {
       await userCollection.add({ data: userData });
     } catch (error) {
       user = await getUserById(userId);
+      if (!user) {
+        user = await getUserByOpenId(identity.openid);
+      }
       if (!user) {
         throw error;
       }
@@ -167,16 +191,12 @@ function createRepository(db) {
 
   async function listEnabledTrainingGroups() {
     const groups = await queryAll(groupCollection, { enabled: true }, 300);
-    return groups.sort((left, right) =>
-      String(left.name || '').localeCompare(String(right.name || ''), 'zh-CN')
-    );
+    return groups.sort(compareTrainingGroups);
   }
 
   async function listAllTrainingGroups() {
     const groups = await queryAll(groupCollection, null, 300);
-    return groups.sort((left, right) =>
-      String(left.name || '').localeCompare(String(right.name || ''), 'zh-CN')
-    );
+    return groups.sort(compareTrainingGroups);
   }
 
   async function getProfilesMap(userIds) {

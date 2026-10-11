@@ -15,6 +15,13 @@ const { assertRegistrationPending } = require('../lib/state-guards');
 const { getDocumentOrNull } = require('../lib/transaction');
 const { validateReviewPayload } = require('../lib/validation');
 
+function formatTrainingGroupName(group) {
+  if (!group) {
+    return '未选择';
+  }
+  return `${group.name}（${group.seasonLabel || '未标注'}）`;
+}
+
 function createRegistrationActions({ repository }) {
   async function listPendingRegistrations({ identity }) {
     const actor = await loadActiveActor(repository, identity, [
@@ -65,7 +72,7 @@ function createRegistrationActions({ repository }) {
           primaryTrainingProject: profile.primaryTrainingProject,
           requestedTrainingGroupId: profile.requestedTrainingGroupId || '',
           requestedTrainingGroupName:
-            (groupMap.get(profile.requestedTrainingGroupId) || {}).name || '未选择',
+            formatTrainingGroupName(groupMap.get(profile.requestedTrainingGroupId)),
           submittedAt: profile.submittedAt
         }))
     };

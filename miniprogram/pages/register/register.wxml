@@ -43,8 +43,8 @@
 
     <view class="field">
       <text class="field-label">申请教练员或训练组</text>
-      <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-        <view class="picker-field">{{groupOptions[groupIndex].name}}</view>
+      <picker range="{{groupOptions}}" range-key="label" value="{{groupIndex}}" bindchange="onGroupChange">
+        <view class="picker-field">{{groupOptions[groupIndex].label}}</view>
       </picker>
       <view class="muted">训练组为空时，请联系开发者先在后台建立基础训练组。</view>
     </view>
