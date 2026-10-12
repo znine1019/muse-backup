@@ -1,0 +1,25 @@
+/* 应用全局公共样式 */
+
+.overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+
+.overview-item {
+  width: 50%;
+  box-sizing: border-box;
+  padding: 12rpx 12rpx 0 0;
+}
+
+.overview-label {
+  color: #718493;
+  font-size: 22rpx;
+}
+
+.overview-value {
+  margin-top: 6rpx;
+  color: #123C4D;
+  font-size: 34rpx;
+  font-weight: 700;
+}

@@ -47,6 +47,9 @@ function createRepository(db) {
   const measurementCollection = db.collection(COLLECTIONS.BODY_MEASUREMENTS);
   const performanceCollection = db.collection(COLLECTIONS.PERFORMANCE_RECORDS);
   const trainingPlanCollection = db.collection(COLLECTIONS.TRAINING_PLANS);
+  const attendanceSessionCollection = db.collection(COLLECTIONS.ATTENDANCE_SESSIONS);
+  const attendanceRecordCollection = db.collection(COLLECTIONS.ATTENDANCE_RECORDS);
+  const leaveRequestCollection = db.collection(COLLECTIONS.LEAVE_REQUESTS);
   const auditCollection = db.collection(COLLECTIONS.AUDIT_LOGS);
   const systemCollection = db.collection(COLLECTIONS.SYSTEM_CONFIG);
 
@@ -114,6 +117,18 @@ function createRepository(db) {
       sourcePlanId,
       clientRequestId
     );
+  }
+
+  function attendanceSessionIdForRequest(actorUserId, clientRequestId) {
+    return deterministicId('att', actorUserId, clientRequestId);
+  }
+
+  function attendanceRecordId(sessionId, studentUserId) {
+    return deterministicId('attend', sessionId, studentUserId);
+  }
+
+  function leaveRequestId(studentUserId, sessionId, clientRequestId) {
+    return deterministicId('leave', studentUserId, sessionId, clientRequestId);
   }
 
   async function getUserById(userId) {
@@ -344,6 +359,135 @@ function createRepository(db) {
     return Array.from(
       new Set((result.data || []).map((item) => item.groupId))
     );
+  }
+
+  async function getAttendanceSession(sessionId) {
+    return getDoc(attendanceSessionCollection, sessionId);
+  }
+
+  async function listAttendanceSessions(options = {}) {
+    if (Array.isArray(options.groupIds) && options.groupIds.length === 0) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const where = {};
+    if (Array.isArray(options.groupIds) && options.groupIds.length) {
+      where.trainingGroupId = db.command.in(options.groupIds);
+    }
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    if (options.fromDate) {
+      where.attendanceDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.attendanceDate = db.command.lte(options.toDate);
+    }
+    return fetchAllOrdered(
+      attendanceSessionCollection,
+      where,
+      [
+        { field: 'attendanceDate', direction: 'asc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getAttendanceRecord(sessionId, studentUserId) {
+    return getDoc(
+      attendanceRecordCollection,
+      attendanceRecordId(sessionId, studentUserId)
+    );
+  }
+
+  async function listAttendanceRecordsBySession(sessionId, options = {}) {
+    return fetchAllOrdered(
+      attendanceRecordCollection,
+      { sessionId },
+      [{ field: 'studentUserId', direction: 'asc' }],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function listAttendanceRecordsByStudent(studentUserId, options = {}) {
+    const where = { studentUserId };
+    if (options.fromDate) {
+      where.attendanceDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.attendanceDate = db.command.lte(options.toDate);
+    }
+    return fetchAllOrdered(
+      attendanceRecordCollection,
+      where,
+      [
+        { field: 'attendanceDate', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getLeaveRequest(leaveId) {
+    return getDoc(leaveRequestCollection, leaveId);
+  }
+
+  async function listLeaveRequests(options = {}) {
+    if (Array.isArray(options.sessionIds) && options.sessionIds.length === 0) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length === 0
+    ) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const where = {};
+    if (Array.isArray(options.sessionIds) && options.sessionIds.length) {
+      where.sessionId = db.command.in(options.sessionIds);
+    }
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length
+    ) {
+      where.studentUserId = db.command.in(options.studentUserIds);
+    }
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    if (options.fromDate) {
+      where.attendanceDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.attendanceDate = db.command.lte(options.toDate);
+    }
+    return fetchAllOrdered(
+      leaveRequestCollection,
+      where,
+      [
+        { field: 'createdAt', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function countPendingLeaveRequests(studentUserIds) {
+    if (!studentUserIds) {
+      return countWhere(leaveRequestCollection, { status: 'pending' });
+    }
+    if (!studentUserIds.length) {
+      return 0;
+    }
+    let total = 0;
+    for (let index = 0; index < studentUserIds.length; index += 100) {
+      const chunk = studentUserIds.slice(index, index + 100);
+      total += await countWhere(leaveRequestCollection, {
+        status: 'pending',
+        studentUserId: db.command.in(chunk)
+      });
+    }
+    return total;
   }
 
   async function listMeasurementsForReport(userId, options = {}) {
@@ -586,6 +730,10 @@ function createRepository(db) {
   }
 
   return {
+    attendanceRecordCollection,
+    attendanceRecordId,
+    attendanceSessionCollection,
+    attendanceSessionIdForRequest,
     auditCollection,
     bodyMeasurementCollection: measurementCollection,
     db,
@@ -593,6 +741,8 @@ function createRepository(db) {
     getMeasurement,
     getPerformanceRecord,
     getCoachGroupIds,
+    getAttendanceRecord,
+    getAttendanceSession,
     getStudentUserIdsForGroups,
     getGroupsMap,
     getLatestReview,
@@ -605,6 +755,9 @@ function createRepository(db) {
     groupCollection,
     getStudentGroupIds,
     listAllProfiles,
+    listAttendanceRecordsBySession,
+    listAttendanceRecordsByStudent,
+    listAttendanceSessions,
     listTrainingPlans,
     listApprovedPerformanceRecords,
     listAllTrainingGroups,
@@ -612,6 +765,11 @@ function createRepository(db) {
     listMeasurements,
     listMeasurementsForReport,
     listPendingPerformanceRecords,
+    getLeaveRequest,
+    leaveRequestCollection,
+    leaveRequestId,
+    listLeaveRequests,
+    countPendingLeaveRequests,
     listPerformanceRecords,
     countPendingPerformanceRecords,
     membershipCollection,

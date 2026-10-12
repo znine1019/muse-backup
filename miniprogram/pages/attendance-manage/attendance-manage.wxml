@@ -1,0 +1,80 @@
+<view class="container">
+  <view class="brand">COACH / ATTENDANCE</view>
+  <view class="title">考勤管理</view>
+  <view class="sub">管理本人负责训练组的考勤场次与请假审批；定位距离与考勤状态均由服务端计算。</view>
+
+  <view class="button-row">
+    <button class="button-primary" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建考勤场次'}}</button>
+  </view>
+
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在读取考勤数据...</view>
+
+  <view wx:if="{{showCreateForm}}" class="card">
+    <view class="section-title">创建考勤场次</view>
+    <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+      <view class="picker-field">训练组：{{groups[groupIndex].name || '请选择训练组'}}</view>
+    </picker>
+    <input class="input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="60" placeholder="场次名称，可选" />
+    <picker mode="date" value="{{form.attendanceDate}}" data-field="attendanceDate" bindchange="onFormInput">
+      <view class="picker-field">考勤日期：{{form.attendanceDate}}</view>
+    </picker>
+    <input class="input" value="{{form.locationName}}" data-field="locationName" bindinput="onFormInput" maxlength="80" placeholder="训练地点名称" />
+    <input class="input" type="digit" value="{{form.latitude}}" data-field="latitude" bindinput="onFormInput" placeholder="地点纬度（工具测量）" />
+    <input class="input" type="digit" value="{{form.longitude}}" data-field="longitude" bindinput="onFormInput" placeholder="地点经度（工具测量）" />
+    <input class="input" type="number" value="{{form.radiusMeters}}" data-field="radiusMeters" bindinput="onFormInput" placeholder="签到范围（米，20-5000）" />
+    <input class="input" type="number" value="{{form.accuracyThresholdMeters}}" data-field="accuracyThresholdMeters" bindinput="onFormInput" placeholder="定位精度阈值（米）" />
+    <input class="input" value="{{form.checkInOpenTime}}" data-field="checkInOpenTime" bindinput="onFormInput" placeholder="签到开始 HH:mm" />
+    <input class="input" value="{{form.checkInCloseTime}}" data-field="checkInCloseTime" bindinput="onFormInput" placeholder="签到结束 HH:mm" />
+    <input class="input" value="{{form.lateAfterTime}}" data-field="lateAfterTime" bindinput="onFormInput" placeholder="迟到判定 HH:mm" />
+    <button class="button-primary" loading="{{creating}}" bindtap="createSession">保存考勤场次</button>
+  </view>
+
+  <view wx:if="{{!loading}}" class="card">
+    <view class="section-title">考勤场次</view>
+    <view wx:if="{{!sessions.length}}" class="empty">暂无考勤场次。</view>
+    <view wx:for="{{sessions}}" wx:key="sessionId" class="list-item">
+      <view class="list-title">{{item.title || item.locationName}}</view>
+      <view class="list-meta">训练组：{{item.trainingGroupName}}</view>
+      <view class="list-meta">日期：{{item.attendanceDate}} · {{item.phaseLabel}}</view>
+      <view class="list-meta">地点：{{item.locationName}} · {{item.radiusMeters}} 米</view>
+      <view class="list-meta">签到时间：{{item.checkInOpenTime}} - {{item.checkInCloseTime}}，迟到线 {{item.lateAfterTime}}</view>
+      <button class="button-secondary" data-session-id="{{item.sessionId}}" bindtap="selectSession" loading="{{busySessionId === item.sessionId}}">{{selectedSessionId === item.sessionId ? '收起名单' : '查看考勤名单'}}</button>
+
+      <view wx:if="{{selectedSessionId === item.sessionId && summary}}" class="plan-detail">
+        <view class="overview-grid">
+          <view class="overview-item"><view class="overview-label">应到</view><view class="overview-value">{{summary.expected}}</view></view>
+          <view class="overview-item"><view class="overview-label">已签到</view><view class="overview-value">{{summary.checkedIn}}</view></view>
+          <view class="overview-item"><view class="overview-label">迟到</view><view class="overview-value">{{summary.late}}</view></view>
+          <view class="overview-item"><view class="overview-label">已批准请假</view><view class="overview-value">{{summary.leaveApproved}}</view></view>
+          <view class="overview-item"><view class="overview-label">待核实异常</view><view class="overview-value">{{summary.pendingVerification}}</view></view>
+          <view class="overview-item"><view class="overview-label">待签到</view><view class="overview-value">{{summary.pending}}</view></view>
+        </view>
+        <view wx:for="{{roster}}" wx:key="studentUserId" class="list-item">
+          <view class="list-title">{{item.studentName || '学生'}} · {{item.statusLabel}}</view>
+          <view class="list-meta" wx:if="{{item.leaveStatusLabel}}">请假状态：{{item.leaveStatusLabel}}</view>
+          <view class="list-meta" wx:if="{{item.record && item.record.distanceMeters !== null}}">距训练点：{{item.record.distanceMeters}} 米 · 精度 {{item.record.accuracyMeters}} 米</view>
+          <view class="list-meta" wx:if="{{item.record && item.record.adjustReason}}">核实说明：{{item.record.adjustReason}}</view>
+          <button class="button-secondary" data-student-user-id="{{item.studentUserId}}" bindtap="manualVerify">人工核实</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading}}" class="card">
+    <view class="section-title">待审批请假（{{pendingCount}}）</view>
+    <view wx:if="{{!pendingLeaves.length}}" class="empty">当前没有待审批请假。</view>
+    <view wx:for="{{pendingLeaves}}" wx:key="leaveId" class="list-item">
+      <view class="list-title">{{item.studentName || '学生'}} · {{item.attendanceDate}}</view>
+      <view class="list-meta">训练组：{{item.trainingGroupName || '未标注'}}</view>
+      <view class="list-meta">请假原因：{{item.reason}}</view>
+      <view class="button-row">
+        <button class="button-primary" data-leave-id="{{item.leaveId}}" data-decision="approve" bindtap="reviewLeave" loading="{{reviewingLeaveId === item.leaveId}}" disabled="{{reviewingLeaveId !== ''}}">通过</button>
+        <button class="button-danger" data-leave-id="{{item.leaveId}}" data-decision="reject" bindtap="reviewLeave" loading="{{reviewingLeaveId === item.leaveId}}" disabled="{{reviewingLeaveId !== ''}}">驳回</button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -9,11 +9,13 @@
     "pages/performance/performance",
     "pages/student-report/student-report",
     "pages/student-plans/student-plans",
+    "pages/student-attendance/student-attendance",
     "pages/profile-view/profile-view",
     "pages/coach/coach",
     "pages/coach-performance-review/coach-performance-review",
     "pages/coach-plan-list/coach-plan-list",
     "pages/coach-plan-edit/coach-plan-edit",
+    "pages/attendance-manage/attendance-manage",
     "pages/admin/admin",
     "pages/bootstrap/bootstrap"
   ],

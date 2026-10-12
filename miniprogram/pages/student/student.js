@@ -81,6 +81,10 @@ Page({
     wx.navigateTo({ url: '/pages/student-report/student-report' });
   },
 
+  goAttendance() {
+    wx.navigateTo({ url: '/pages/student-attendance/student-attendance' });
+  },
+
   goPlans() {
     wx.navigateTo({ url: '/pages/student-plans/student-plans' });
   },

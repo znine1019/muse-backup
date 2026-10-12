@@ -10,6 +10,9 @@ const COLLECTIONS = Object.freeze({
   BODY_MEASUREMENTS: 'body_measurements',
   PERFORMANCE_RECORDS: 'performance_records',
   TRAINING_PLANS: 'training_plans',
+  ATTENDANCE_SESSIONS: 'attendance_sessions',
+  ATTENDANCE_RECORDS: 'attendance_records',
+  LEAVE_REQUESTS: 'leave_requests',
   AUDIT_LOGS: 'audit_logs',
   SYSTEM_CONFIG: 'system_config'
 });
@@ -47,6 +50,27 @@ const PLAN_STATUS = Object.freeze({
   ARCHIVED: 'archived'
 });
 
+const ATTENDANCE_SESSION_STATUS = Object.freeze({
+  SCHEDULED: 'scheduled',
+  CLOSED: 'closed',
+  CANCELLED: 'cancelled'
+});
+
+const ATTENDANCE_RECORD_STATUS = Object.freeze({
+  CHECKED_IN: 'checked_in',
+  LATE: 'late',
+  LEAVE_APPROVED: 'leave_approved',
+  PENDING_VERIFICATION: 'pending_verification',
+  ABSENT: 'absent'
+});
+
+const LEAVE_STATUS = Object.freeze({
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  CANCELLED: 'cancelled'
+});
+
 const AUDIT_ACTIONS = Object.freeze({
   LOGIN_CREATED: 'auth.login.created',
   DEVELOPER_BOOTSTRAPPED: 'auth.bootstrap.developer_created',
@@ -67,6 +91,15 @@ const AUDIT_ACTIONS = Object.freeze({
   PLAN_PUBLISHED: 'coach.training_plan.published',
   PLAN_ARCHIVED: 'coach.training_plan.archived',
   PLAN_COPIED: 'coach.training_plan.copied',
+  ATTENDANCE_SESSION_CREATED: 'coach.attendance_session.created',
+  ATTENDANCE_SESSION_UPDATED: 'coach.attendance_session.updated',
+  ATTENDANCE_SESSION_CANCELLED: 'coach.attendance_session.cancelled',
+  ATTENDANCE_CHECKED_IN: 'student.attendance.checked_in',
+  ATTENDANCE_MANUAL_VERIFIED: 'coach.attendance.manual_verified',
+  LEAVE_SUBMITTED: 'student.leave.submitted',
+  LEAVE_APPROVED: 'coach.leave.approved',
+  LEAVE_REJECTED: 'coach.leave.rejected',
+  LEAVE_CANCELLED: 'student.leave.cancelled',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'
@@ -79,6 +112,9 @@ const LIMITS = Object.freeze({
   planTitleMaxLength: 60,
   planItemNameMaxLength: 60,
   planNotesMaxLength: 300,
+  sessionTitleMaxLength: 60,
+  locationNameMaxLength: 80,
+  leaveReasonMaxLength: 300,
   pageSize: 50,
   heightCmMin: 50,
   heightCmMax: 250,
@@ -87,8 +123,11 @@ const LIMITS = Object.freeze({
 });
 
 module.exports = {
+  ATTENDANCE_RECORD_STATUS,
+  ATTENDANCE_SESSION_STATUS,
   AUDIT_ACTIONS,
   COLLECTIONS,
+  LEAVE_STATUS,
   LIMITS,
   MEMBERSHIP_STATUS,
   PLAN_STATUS,

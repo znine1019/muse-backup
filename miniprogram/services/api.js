@@ -94,6 +94,29 @@ module.exports = {
   copyPlan: (payload) => callApi('plan.copy', payload),
   listStudentPlans: (payload = {}) => callApi('plan.list_student', payload),
   getStudentPlan: (planId) => callApi('plan.get_student', { planId }),
+  listManageAttendanceSessions: (payload = {}) =>
+    callApi('attendance.list_manage_sessions', payload),
+  getAttendanceRoster: (sessionId) =>
+    callApi('attendance.get_session_roster', { sessionId }),
+  createAttendanceSession: (payload) =>
+    callApi('attendance.create_session', payload),
+  updateAttendanceSession: (payload) =>
+    callApi('attendance.update_session', payload),
+  cancelAttendanceSession: (payload) =>
+    callApi('attendance.cancel_session', payload),
+  manualVerifyAttendance: (payload) =>
+    callApi('attendance.manual_verify', payload),
+  getStudentTodayAttendance: () =>
+    callApi('attendance.get_student_today'),
+  listStudentAttendance: (payload = {}) =>
+    callApi('attendance.list_student_records', payload),
+  checkInAttendance: (payload) => callApi('attendance.check_in', payload),
+  createLeave: (payload) => callApi('leave.create', payload),
+  cancelLeave: (payload) => callApi('leave.cancel', payload),
+  listMyLeaves: () => callApi('leave.list_mine'),
+  listPendingLeaves: () => callApi('leave.list_pending'),
+  listReviewedLeaves: () => callApi('leave.list_reviewed'),
+  reviewLeave: (payload) => callApi('leave.review', payload),
   listPendingRegistrations: () => callApi('admin.list_pending_registrations'),
   reviewRegistration: (payload) => callApi('admin.review_registration', payload),
   listUsers: () => callApi('admin.list_users'),

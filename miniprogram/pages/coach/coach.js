@@ -76,6 +76,10 @@ Page({
     }
   },
 
+  goAttendanceManage() {
+    wx.navigateTo({ url: '/pages/attendance-manage/attendance-manage' });
+  },
+
   goPlans() {
     wx.navigateTo({ url: '/pages/coach-plan-list/coach-plan-list' });
   },

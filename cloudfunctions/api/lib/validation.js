@@ -1,6 +1,12 @@
 'use strict';
 
-const { LIMITS, ROLE_VALUES } = require('./constants');
+const {
+  ATTENDANCE_RECORD_STATUS,
+  ATTENDANCE_SESSION_STATUS,
+  LEAVE_STATUS,
+  LIMITS,
+  ROLE_VALUES
+} = require('./constants');
 const { isDateOnly } = require('./dates');
 const { getPerformanceEvent } = require('./performance-events');
 const { fail } = require('./errors');
@@ -511,6 +517,175 @@ function validateStudentPlanQueryPayload(payload) {
   return { scope, date: optionalDateOnly(input.date, '查询日期') };
 }
 
+function requiredTimeValue(value, fieldLabel) {
+  const normalized = requiredString(value, fieldLabel, 5);
+  if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(normalized)) {
+    fail('INVALID_FIELD', `${fieldLabel}格式不正确，应为HH:mm。`);
+  }
+  return normalized;
+}
+
+function optionalPlanId(value) {
+  const planId = optionalString(value, '训练计划', 64);
+  return planId ? safeId(planId, '训练计划') : '';
+}
+
+function normalizeSessionTimes(input) {
+  const checkInOpenTime = requiredTimeValue(input.checkInOpenTime, '签到开始时间');
+  const checkInCloseTime = requiredTimeValue(input.checkInCloseTime, '签到结束时间');
+  const lateAfterTime = input.lateAfterTime
+    ? requiredTimeValue(input.lateAfterTime, '迟到判定时间')
+    : checkInOpenTime;
+  if (checkInOpenTime >= checkInCloseTime) {
+    fail('INVALID_FIELD', '签到结束时间必须晚于开始时间。');
+  }
+  if (lateAfterTime < checkInOpenTime || lateAfterTime > checkInCloseTime) {
+    fail('INVALID_FIELD', '迟到判定时间必须在签到时间窗口内。');
+  }
+  return { checkInOpenTime, checkInCloseTime, lateAfterTime };
+}
+
+function validateAttendanceSessionCreatePayload(payload) {
+  const input = asObject(payload);
+  const attendanceDate = requiredDateOnly(input.attendanceDate, '考勤日期');
+  return {
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    trainingGroupId: safeId(input.trainingGroupId, '训练组'),
+    planId: optionalPlanId(input.planId),
+    title: optionalString(input.title, '场次名称', LIMITS.sessionTitleMaxLength),
+    attendanceDate,
+    locationName: requiredString(input.locationName, '训练地点', LIMITS.locationNameMaxLength),
+    latitude: numberInRange(input.latitude, '纬度', -90, 90),
+    longitude: numberInRange(input.longitude, '经度', -180, 180),
+    radiusMeters: numberInRange(input.radiusMeters, '签到范围', 20, 5000),
+    accuracyThresholdMeters: numberInRange(
+      input.accuracyThresholdMeters,
+      '定位精度阈值',
+      10,
+      1000
+    ),
+    ...normalizeSessionTimes(input)
+  };
+}
+
+function validateAttendanceSessionUpdatePayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '考勤版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少考勤版本，无法安全更新。');
+  }
+  const attendanceDate = requiredDateOnly(input.attendanceDate, '考勤日期');
+  return {
+    sessionId: safeId(input.sessionId, '考勤场次'),
+    expectedVersion,
+    title: optionalString(input.title, '场次名称', LIMITS.sessionTitleMaxLength),
+    attendanceDate,
+    locationName: requiredString(input.locationName, '训练地点', LIMITS.locationNameMaxLength),
+    latitude: numberInRange(input.latitude, '纬度', -90, 90),
+    longitude: numberInRange(input.longitude, '经度', -180, 180),
+    radiusMeters: numberInRange(input.radiusMeters, '签到范围', 20, 5000),
+    accuracyThresholdMeters: numberInRange(
+      input.accuracyThresholdMeters,
+      '定位精度阈值',
+      10,
+      1000
+    ),
+    ...normalizeSessionTimes(input)
+  };
+}
+
+function validateAttendanceSessionActionPayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '考勤版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少考勤版本，无法安全操作。');
+  }
+  return {
+    sessionId: safeId(input.sessionId, '考勤场次'),
+    expectedVersion
+  };
+}
+
+function validateAttendanceQueryPayload(payload) {
+  const input = asObject(payload);
+  return {
+    trainingGroupId: input.trainingGroupId
+      ? safeId(input.trainingGroupId, '训练组')
+      : '',
+    date: optionalDateOnly(input.date, '查询日期'),
+    fromDate: optionalDateOnly(input.fromDate, '开始日期'),
+    toDate: optionalDateOnly(input.toDate, '结束日期')
+  };
+}
+
+function validateAttendanceCheckInPayload(payload) {
+  const input = asObject(payload);
+  const accuracy = optionalNumberInRange(input.accuracy, '定位精度', 0, 10000);
+  return {
+    sessionId: safeId(input.sessionId, '考勤场次'),
+    latitude: numberInRange(input.latitude, '纬度', -90, 90),
+    longitude: numberInRange(input.longitude, '经度', -180, 180),
+    accuracy: accuracy === null ? null : accuracy
+  };
+}
+
+function validateAttendanceManualPayload(payload) {
+  const input = asObject(payload);
+  const status = requiredString(input.status, '考勤状态', 30);
+  if (
+    ![
+      ATTENDANCE_RECORD_STATUS.CHECKED_IN,
+      ATTENDANCE_RECORD_STATUS.LATE,
+      ATTENDANCE_RECORD_STATUS.ABSENT
+    ].includes(status)
+  ) {
+    fail('INVALID_FIELD', '人工核实状态不正确。');
+  }
+  return {
+    sessionId: safeId(input.sessionId, '考勤场次'),
+    studentUserId: safeId(input.studentUserId, '学生账号'),
+    status,
+    reason: requiredString(input.reason, '核实原因', LIMITS.leaveReasonMaxLength)
+  };
+}
+
+function validateLeaveCreatePayload(payload) {
+  const input = asObject(payload);
+  return {
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    sessionId: safeId(input.sessionId, '考勤场次'),
+    reason: requiredString(input.reason, '请假原因', LIMITS.leaveReasonMaxLength)
+  };
+}
+
+function validateLeaveCancelPayload(payload) {
+  const input = asObject(payload);
+  return { leaveId: safeId(input.leaveId, '请假申请') };
+}
+
+function validateLeaveReviewPayload(payload) {
+  const input = asObject(payload);
+  const decision = requiredString(input.decision, '审批结果', 20);
+  if (!['approve', 'reject'].includes(decision)) {
+    fail('INVALID_FIELD', '审批结果不正确。');
+  }
+  const comment = optionalString(input.comment, '审批意见', LIMITS.commentMaxLength);
+  if (decision === 'reject' && !comment) {
+    fail('INVALID_FIELD', '驳回请假时必须填写审批意见。');
+  }
+  return { leaveId: safeId(input.leaveId, '请假申请'), decision, comment };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -540,11 +715,23 @@ function validateGroupCoachPayload(payload) {
 }
 
 module.exports = {
+  ATTENDANCE_RECORD_STATUS,
+  ATTENDANCE_SESSION_STATUS,
+  LEAVE_STATUS,
   MAX_PLAN_ITEMS,
   PLAN_CATEGORIES,
   PLAN_SCOPES,
   PLAN_STATUSES,
   GENDERS,
+  validateAttendanceCheckInPayload,
+  validateAttendanceManualPayload,
+  validateAttendanceQueryPayload,
+  validateAttendanceSessionActionPayload,
+  validateAttendanceSessionCreatePayload,
+  validateAttendanceSessionUpdatePayload,
+  validateLeaveCancelPayload,
+  validateLeaveCreatePayload,
+  validateLeaveReviewPayload,
   asObject,
   safeId,
   validatePlanActionPayload,

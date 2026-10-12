@@ -17,6 +17,29 @@ function clubDateOnly(now = new Date()) {
     .slice(0, 10);
 }
 
+function clubTimeParts(now = new Date()) {
+  const shifted = new Date(
+    now.getTime() + CLUB_UTC_OFFSET_MINUTES * 60 * 1000
+  );
+  return {
+    date: shifted.toISOString().slice(0, 10),
+    minutes: shifted.getUTCHours() * 60 + shifted.getUTCMinutes()
+  };
+}
+
+function timeToMinutes(value) {
+  if (typeof value !== 'string' || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
+    return null;
+  }
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function minutesToTime(minutes) {
+  const normalized = ((Number(minutes) % 1440) + 1440) % 1440;
+  return `${pad(Math.floor(normalized / 60))}:${pad(normalized % 60)}`;
+}
+
 function addDays(dateOnly, days) {
   const date = new Date(`${dateOnly}T00:00:00.000Z`);
   date.setUTCDate(date.getUTCDate() + days);
@@ -43,10 +66,13 @@ function isDateOnly(value) {
 }
 
 module.exports = {
+  clubTimeParts,
   addDays,
   clubDateOnly,
   endOfWeek,
   isDateOnly,
+  minutesToTime,
+  timeToMinutes,
   startOfWeek,
   DAY_MS
 };

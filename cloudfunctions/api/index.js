@@ -7,6 +7,7 @@ const db = cloud.database();
 const { createRepository } = require('./lib/repository');
 const { fail, toPublicError } = require('./lib/errors');
 const createAuthActions = require('./actions/auth');
+const createAttendanceActions = require('./actions/attendance');
 const createDirectoryActions = require('./actions/directory');
 const createGroupAdminActions = require('./actions/groups');
 const createProfileActions = require('./actions/profile');
@@ -19,6 +20,7 @@ const createUserAdminActions = require('./actions/users');
 const repository = createRepository(db);
 const actions = Object.freeze({
   ...createAuthActions({ repository }),
+  ...createAttendanceActions({ repository }),
   ...createDirectoryActions({ repository }),
   ...createProfileActions({ repository }),
   ...createPerformanceActions({ repository }),

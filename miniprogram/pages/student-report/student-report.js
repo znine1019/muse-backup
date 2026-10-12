@@ -18,12 +18,69 @@ function buildSeries(records, field) {
     .map((item) => ({ date: item.date, value: item[field] }));
 }
 
+function formatMetric(value, unit) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return `${value} ${unit}`;
+  }
+  if (unit === '秒' && number >= 60) {
+    const minutes = Math.floor(number / 60);
+    const seconds = Math.round((number % 60) * 100) / 100;
+    return `${minutes}分${String(seconds).padStart(2, '0')}秒`;
+  }
+  return `${number} ${unit}`;
+}
+
+function decorateReport(report) {
+  const performanceSeries = {};
+  for (const [eventCode, series] of Object.entries(report.performanceSeries || {})) {
+    performanceSeries[eventCode] = (series || []).map((item) => ({
+      ...item,
+      displayText: item.displayValue || formatMetric(item.value, item.unit)
+    }));
+  }
+  return {
+    ...report,
+    performanceSeries,
+    personalBests: (report.personalBests || []).map((item) => ({
+      ...item,
+      displayText: item.displayValue || formatMetric(item.value, item.unit)
+    })),
+    stageChanges: (report.stageChanges || []).map((item) => ({
+      ...item,
+      firstDisplayText: formatMetric(item.firstValue, item.unit),
+      latestDisplayText: formatMetric(item.latestValue, item.unit),
+      changeDisplayText: `${item.change > 0 ? '+' : ''}${item.change} ${item.unit}`
+    })),
+    targetComparison: report.targetComparison
+      ? {
+          ...report.targetComparison,
+          targetDisplayText: formatMetric(
+            report.targetComparison.targetValue,
+            report.targetComparison.unit
+          ),
+          currentDisplayText: report.targetComparison.hasCurrentResult
+            ? formatMetric(
+                report.targetComparison.currentValue,
+                report.targetComparison.unit
+              )
+            : '',
+          differenceDisplayText: formatMetric(
+            Math.abs(report.targetComparison.difference),
+            report.targetComparison.unit
+          )
+        }
+      : null
+  };
+}
+
 function formatReportValue(item) {
   if (!item) {
     return '暂无';
   }
-  const value = item.displayValue || item.value;
-  return item.displayValue ? `${value}` : `${value} ${item.unit}`;
+  const hasDisplay = Boolean(item.displayText || item.displayValue);
+  const value = item.displayText || item.displayValue || item.value;
+  return hasDisplay ? `${value}` : `${value} ${item.unit}`;
 }
 
 function buildOverview(report) {
@@ -143,7 +200,8 @@ Page({
     return result.report;
   },
 
-  applyReport(report) {
+  applyReport(rawReport) {
+    const report = decorateReport(rawReport);
     const events = report.supportedEvents || [];
     const selectedEvent =
       events.find(

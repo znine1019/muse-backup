@@ -7,5 +7,5 @@
     <view class="trend-single-note">暂无足够历史数据形成趋势。</view>
   </view>
   <canvas wx:else type="2d" class="chart-canvas"></canvas>
-  <view class="trend-note">{{unit}} · {{comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
+  <view class="trend-note">{{unit}} · {{comparison == 'lower' ? '数值越低越好' : (comparison == 'neutral' ? '身体指标变化趋势' : '数值越高越好')}}</view>
 </view>

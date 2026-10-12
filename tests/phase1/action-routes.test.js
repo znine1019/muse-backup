@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const createAuthActions = require('../../cloudfunctions/api/actions/auth');
+const createAttendanceActions = require('../../cloudfunctions/api/actions/attendance');
 const createDirectoryActions = require('../../cloudfunctions/api/actions/directory');
 const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups');
 const createProfileActions = require('../../cloudfunctions/api/actions/profile');
@@ -17,6 +18,7 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
   const repository = {};
   const routes = {
     ...createAuthActions({ repository }),
+    ...createAttendanceActions({ repository }),
     ...createDirectoryActions({ repository }),
     ...createProfileActions({ repository }),
     ...createPerformanceActions({ repository }),
@@ -63,7 +65,22 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'plan.archive',
     'plan.copy',
     'plan.list_student',
-    'plan.get_student'
+    'plan.get_student',
+    'attendance.list_manage_sessions',
+    'attendance.get_session_roster',
+    'attendance.create_session',
+    'attendance.update_session',
+    'attendance.cancel_session',
+    'attendance.manual_verify',
+    'attendance.get_student_today',
+    'attendance.list_student_records',
+    'attendance.check_in',
+    'leave.create',
+    'leave.cancel',
+    'leave.list_mine',
+    'leave.list_pending',
+    'leave.list_reviewed',
+    'leave.review'
   ]) {
     assert.equal(typeof routes[action], 'function', `${action} should be registered`);
   }
