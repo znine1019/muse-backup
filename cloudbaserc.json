@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "envId": "cloud1-d8g0egkli3191959a",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "api",
+      "handler": "index.main",
+      "runtime": "Nodejs16.13",
+      "installDependency": true,
+      "ignore": [
+        "node_modules/**",
+        ".git/**",
+        "*.log"
+      ]
+    }
+  ]
+}
