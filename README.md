@@ -25,7 +25,7 @@
 
 ## 明确未实现
 
-训练计划、GPS 考勤、请假审批、Excel 导出、排行榜、竞赛报名和 AI 训练系统均未开发。阶段2-A新增的 `body_measurements` 和 `performance_records` 云端集合、索引与 ADMINONLY 权限已创建；包含阶段2-A接口的新版 `api` 尚未部署。
+训练计划、GPS 考勤、请假审批、Excel 导出、排行榜、竞赛报名和 AI 训练系统均未开发。阶段2-A新增的 `body_measurements` 和 `performance_records` 云端集合、索引与 ADMINONLY 权限已创建；包含阶段1、2-A、2-C、2-D接口的新版 `api` 已部署至 cloud1 测试环境，云函数 Active 且关键源码与本地一致，已完成基础云端验证；正式小程序未发布。
 
 ## 本地检查
 
