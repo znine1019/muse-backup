@@ -44,8 +44,15 @@ async function healthCheck() {
   try {
     const response = await wx.cloud.callFunction({ name: HEALTH_FUNCTION_NAME });
     const result = response && response.result;
-    if (!result || !result.ok) {
-      throw createClientError('HEALTH_CHECK_FAILED', '云开发连接测试失败。');
+    if (!result || typeof result.ok !== 'boolean') {
+      throw createClientError('INVALID_RESPONSE', '云函数返回格式不正确，请稍后重试。');
+    }
+    if (!result.ok) {
+      const publicError = result.error || {};
+      throw createClientError(
+        publicError.code || 'HEALTH_CHECK_FAILED',
+        publicError.message || '云开发连接测试失败。'
+      );
     }
     return result.data;
   } catch (error) {

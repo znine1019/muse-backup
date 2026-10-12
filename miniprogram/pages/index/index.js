@@ -76,8 +76,9 @@ Page({
           : '云函数连接正常，但数据库集合尚未初始化。'
       });
     } catch (error) {
+      const code = error.code ? `（${error.code}）` : '';
       this.setData({
-        healthText: error.message || '云开发连接测试失败。'
+        healthText: `${error.message || '云开发连接测试失败。'}${code}`
       });
     }
   }

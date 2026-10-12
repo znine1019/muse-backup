@@ -35,3 +35,29 @@ test('multiple known roles require the role selection page', () => {
   assert.equal(destination.type, 'role_select');
   assert.equal(destination.url, '/pages/role-select/role-select');
 });
+
+test('active single roles route to their matching workbench', () => {
+  assert.equal(
+    getSessionDestination({ user: { status: 'active', roles: ['developer'] } }).url,
+    '/pages/admin/admin'
+  );
+  assert.equal(
+    getSessionDestination({ user: { status: 'active', roles: ['coach'] } }).url,
+    '/pages/coach/coach'
+  );
+  assert.equal(
+    getSessionDestination({ user: { status: 'active', roles: ['student'] } }).url,
+    '/pages/student/student'
+  );
+});
+
+test('inactive accounts route to the review status page', () => {
+  assert.equal(
+    getSessionDestination({ user: { status: 'pending_review', roles: [] } }).url,
+    '/pages/pending/pending'
+  );
+  assert.equal(
+    getSessionDestination({ user: { status: 'disabled', roles: ['student'] } }).url,
+    '/pages/pending/pending'
+  );
+});
