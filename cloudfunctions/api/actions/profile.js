@@ -83,7 +83,6 @@ function createProfileActions({ repository }) {
 
       await profileReference.set({
         data: {
-          _id: profileId,
           userId: currentUser._id,
           ...profile,
           reviewStatus: REVIEW_STATUS.PENDING,
@@ -99,7 +98,6 @@ function createProfileActions({ repository }) {
         .doc(reviewId)
         .set({
           data: {
-            _id: reviewId,
             userId: currentUser._id,
             profileId,
             status: REVIEW_STATUS.PENDING,

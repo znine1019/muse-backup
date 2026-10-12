@@ -22,6 +22,7 @@ test('concurrent pending profile submissions create only one profile and one rev
     audits: new Map()
   };
   let transactionTail = Promise.resolve();
+  const writes = [];
 
   function collectionState(collectionName) {
     if (collectionName === 'users') {
@@ -68,6 +69,7 @@ test('concurrent pending profile submissions create only one profile and one rev
       },
       async set({ data }) {
         collection.set(id, { _id: id, ...data });
+        writes.push({ collectionName, id, data: { ...data } });
       },
       async update({ data }) {
         collection.set(id, { ...(collection.get(id) || {}), ...data });
@@ -127,4 +129,16 @@ test('concurrent pending profile submissions create only one profile and one rev
   assert.equal(state.profiles.size, 1);
   assert.equal(state.reviews.size, 1);
   assert.equal(state.audits.size, 1);
+
+  const profileWrite = writes.find(
+    (write) => write.collectionName === 'student_profiles'
+  );
+  const reviewWrite = writes.find(
+    (write) => write.collectionName === 'registration_reviews'
+  );
+  assert.equal(profileWrite.id, 'profile_student');
+  assert.equal(Object.prototype.hasOwnProperty.call(profileWrite.data, '_id'), false);
+  assert.equal(reviewWrite.id.startsWith('review_'), true);
+  assert.equal(Object.prototype.hasOwnProperty.call(reviewWrite.data, '_id'), false);
+  assert.equal(reviewWrite.data.profileId, 'profile_student');
 });

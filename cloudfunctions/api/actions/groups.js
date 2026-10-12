@@ -74,7 +74,6 @@ function createGroupAdminActions({ repository }) {
 
     await repository.groupCollection.doc(groupId).set({
       data: {
-        _id: groupId,
         groupId,
         name,
         seasonLabel,

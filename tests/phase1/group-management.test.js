@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups');
+const { deterministicId } = require('../../cloudfunctions/api/lib/repository');
 
 const DEVELOPER = {
   _id: 'usr_developer',
@@ -152,9 +153,43 @@ test('developer creates a training group once and writes creation audit', async 
   assert.equal(result.group.name, '模拟短跑组');
   assert.equal(result.group.enabled, true);
   assert.equal(repository.getWrites().length, 1);
+  const expectedGroupId = deterministicId(
+    'group',
+    '模拟短跑组'.toLowerCase(),
+    '2026测试周期'.toLowerCase()
+  );
+  assert.equal(result.group.id, expectedGroupId);
+  assert.equal(repository.getWrites()[0].id, expectedGroupId);
+  assert.equal(repository.getWrites()[0].data.groupId, expectedGroupId);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(repository.getWrites()[0].data, '_id'),
+    false
+  );
   assert.equal(repository.getAudits().length, 1);
   assert.equal(repository.getAudits()[0].action, 'admin.training_group.created');
   assert.equal(repository.getAudits()[0].result, 'success');
+});
+
+test('training group write failure stops creation audit', async () => {
+  const repository = createRepository(null, {
+    groupCollection: {
+      doc: () => ({
+        async set() {
+          throw new Error('simulated training group write failure');
+        }
+      })
+    }
+  });
+  const actions = createGroupAdminActions({ repository });
+
+  await assert.rejects(
+    actions['admin.create_training_group']({
+      identity: IDENTITY,
+      payload: { name: '模拟短跑组', seasonLabel: '2026测试周期' }
+    }),
+    /simulated training group write failure/
+  );
+  assert.equal(repository.getAudits().length, 0);
 });
 
 test('duplicate training group creation is idempotent', async () => {
