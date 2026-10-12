@@ -21,6 +21,7 @@
         <button class="button-primary" bindtap="goEditProfile">完善档案</button>
         <button class="button-secondary" bindtap="goPerformance">申报成绩</button>
         <button class="button-secondary" bindtap="goReport">运动报告</button>
+        <button class="button-secondary" bindtap="goPlans">训练计划</button>
       </view>
     </view>
 

@@ -5,6 +5,7 @@
 
   <view class="button-row">
     <button class="button-primary" bindtap="goPerformanceReview">成绩审核</button>
+    <button class="button-secondary" bindtap="goPlans">训练计划</button>
   </view>
 
   <view wx:if="{{loading}}" class="empty">正在读取授权范围内的待审核资料...</view>

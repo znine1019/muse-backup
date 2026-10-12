@@ -9,6 +9,7 @@ const COLLECTIONS = Object.freeze({
   GROUP_MEMBERSHIPS: 'group_memberships',
   BODY_MEASUREMENTS: 'body_measurements',
   PERFORMANCE_RECORDS: 'performance_records',
+  TRAINING_PLANS: 'training_plans',
   AUDIT_LOGS: 'audit_logs',
   SYSTEM_CONFIG: 'system_config'
 });
@@ -40,6 +41,12 @@ const MEMBERSHIP_STATUS = Object.freeze({
   INACTIVE: 'inactive'
 });
 
+const PLAN_STATUS = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  ARCHIVED: 'archived'
+});
+
 const AUDIT_ACTIONS = Object.freeze({
   LOGIN_CREATED: 'auth.login.created',
   DEVELOPER_BOOTSTRAPPED: 'auth.bootstrap.developer_created',
@@ -55,6 +62,11 @@ const AUDIT_ACTIONS = Object.freeze({
   PERFORMANCE_SUBMITTED: 'performance.submitted',
   PERFORMANCE_APPROVED: 'admin.performance.approved',
   PERFORMANCE_REJECTED: 'admin.performance.rejected',
+  PLAN_CREATED: 'coach.training_plan.created',
+  PLAN_UPDATED: 'coach.training_plan.updated',
+  PLAN_PUBLISHED: 'coach.training_plan.published',
+  PLAN_ARCHIVED: 'coach.training_plan.archived',
+  PLAN_COPIED: 'coach.training_plan.copied',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'
@@ -64,6 +76,9 @@ const LIMITS = Object.freeze({
   nameMaxLength: 40,
   projectMaxLength: 80,
   commentMaxLength: 300,
+  planTitleMaxLength: 60,
+  planItemNameMaxLength: 60,
+  planNotesMaxLength: 300,
   pageSize: 50,
   heightCmMin: 50,
   heightCmMax: 250,
@@ -76,6 +91,7 @@ module.exports = {
   COLLECTIONS,
   LIMITS,
   MEMBERSHIP_STATUS,
+  PLAN_STATUS,
   REVIEW_STATUS,
   ROLES,
   ROLE_VALUES,

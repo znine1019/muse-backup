@@ -8,6 +8,7 @@ const createDirectoryActions = require('../../cloudfunctions/api/actions/directo
 const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups');
 const createProfileActions = require('../../cloudfunctions/api/actions/profile');
 const createPerformanceActions = require('../../cloudfunctions/api/actions/performance');
+const createPlanActions = require('../../cloudfunctions/api/actions/plans');
 const createRegistrationActions = require('../../cloudfunctions/api/actions/registrations');
 const createReportActions = require('../../cloudfunctions/api/actions/report');
 const createUserAdminActions = require('../../cloudfunctions/api/actions/users');
@@ -19,6 +20,7 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     ...createDirectoryActions({ repository }),
     ...createProfileActions({ repository }),
     ...createPerformanceActions({ repository }),
+    ...createPlanActions({ repository }),
     ...createRegistrationActions({ repository }),
     ...createReportActions({ repository }),
     ...createUserAdminActions({ repository }),
@@ -51,7 +53,17 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'report.get_my_report',
     'admin.get_student_report',
     'admin.list_pending_performances',
-    'admin.review_performance'
+    'admin.review_performance',
+    'plan.list_meta',
+    'plan.list_manage',
+    'plan.get_manage_detail',
+    'plan.create',
+    'plan.update',
+    'plan.publish',
+    'plan.archive',
+    'plan.copy',
+    'plan.list_student',
+    'plan.get_student'
   ]) {
     assert.equal(typeof routes[action], 'function', `${action} should be registered`);
   }

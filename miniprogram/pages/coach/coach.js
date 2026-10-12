@@ -76,6 +76,10 @@ Page({
     }
   },
 
+  goPlans() {
+    wx.navigateTo({ url: '/pages/coach-plan-list/coach-plan-list' });
+  },
+
   goPerformanceReview() {
     wx.navigateTo({
       url: '/pages/coach-performance-review/coach-performance-review'

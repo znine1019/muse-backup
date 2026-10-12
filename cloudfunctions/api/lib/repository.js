@@ -46,6 +46,7 @@ function createRepository(db) {
   const membershipCollection = db.collection(COLLECTIONS.GROUP_MEMBERSHIPS);
   const measurementCollection = db.collection(COLLECTIONS.BODY_MEASUREMENTS);
   const performanceCollection = db.collection(COLLECTIONS.PERFORMANCE_RECORDS);
+  const trainingPlanCollection = db.collection(COLLECTIONS.TRAINING_PLANS);
   const auditCollection = db.collection(COLLECTIONS.AUDIT_LOGS);
   const systemCollection = db.collection(COLLECTIONS.SYSTEM_CONFIG);
 
@@ -99,6 +100,19 @@ function createRepository(db) {
       eventCode,
       achievedAt,
       String(value)
+    );
+  }
+
+  function planIdForRequest(actorUserId, clientRequestId) {
+    return deterministicId('plan', actorUserId, clientRequestId);
+  }
+
+  function copyPlanIdForRequest(actorUserId, sourcePlanId, clientRequestId) {
+    return deterministicId(
+      'plan_copy',
+      actorUserId,
+      sourcePlanId,
+      clientRequestId
     );
   }
 
@@ -283,6 +297,53 @@ function createRepository(db) {
 
   async function getPerformanceRecord(performanceId) {
     return getDoc(performanceCollection, performanceId);
+  }
+
+  async function getTrainingPlan(planId) {
+    return getDoc(trainingPlanCollection, planId);
+  }
+
+  async function listTrainingPlans(options = {}) {
+    if (Array.isArray(options.groupIds) && options.groupIds.length === 0) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const where = {};
+    if (Array.isArray(options.groupIds) && options.groupIds.length) {
+      where.trainingGroupId = db.command.in(options.groupIds);
+    }
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    if (options.fromDate) {
+      where.endDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.startDate = db.command.lte(options.toDate);
+    }
+    const direction = options.orderDirection === 'desc' ? 'desc' : 'asc';
+    return fetchAllOrdered(
+      trainingPlanCollection,
+      where,
+      [
+        { field: 'startDate', direction },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getStudentGroupIds(userId) {
+    const result = await membershipCollection
+      .where({
+        userId,
+        roleInGroup: ROLES.STUDENT,
+        status: MEMBERSHIP_STATUS.ACTIVE
+      })
+      .limit(100)
+      .get();
+    return Array.from(
+      new Set((result.data || []).map((item) => item.groupId))
+    );
   }
 
   async function listMeasurementsForReport(userId, options = {}) {
@@ -539,9 +600,12 @@ function createRepository(db) {
     getProfilesMap,
     getSystemConfig,
     getTrainingGroup,
+    getTrainingPlan,
     getUserById,
     groupCollection,
+    getStudentGroupIds,
     listAllProfiles,
+    listTrainingPlans,
     listApprovedPerformanceRecords,
     listAllTrainingGroups,
     listEnabledTrainingGroups,
@@ -556,7 +620,10 @@ function createRepository(db) {
     measurementIdForUser,
     performanceCollection,
     performanceIdForSubmission,
+    planIdForRequest,
+    copyPlanIdForRequest,
     profileCollection,
+    trainingPlanCollection,
     profileIdForUser,
     reviewCollection,
     queryAll,

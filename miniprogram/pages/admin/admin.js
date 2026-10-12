@@ -280,6 +280,10 @@ Page({
       url: `/pages/profile-view/profile-view?userId=${userId}`
     });
   },
+  goPlans() {
+    wx.navigateTo({ url: '/pages/coach-plan-list/coach-plan-list' });
+  },
+
   goPerformanceReview() {
     wx.navigateTo({
       url: '/pages/coach-performance-review/coach-performance-review'

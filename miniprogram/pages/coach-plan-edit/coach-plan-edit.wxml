@@ -1,0 +1,70 @@
+<view class="container">
+  <view class="brand">COACH / PLAN EDITOR</view>
+  <view class="title">{{planId ? '编辑训练计划' : '新建训练计划'}}</view>
+  <view class="sub">草稿仅教练可见；发布后所属训练组学生可以查看。组数、次数、距离、时长和负荷按需填写。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取计划信息...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="loadPage">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="section-title">计划信息</view>
+      <view class="field">
+        <text class="field-label">计划名称</text>
+        <input class="input" value="{{title}}" data-field="title" bindinput="onFieldInput" maxlength="60" placeholder="例如 第1周速度训练" />
+      </view>
+      <view class="field">
+        <text class="field-label">训练组</text>
+        <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+          <view class="picker-field">{{groups[groupIndex].name || '请选择训练组'}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">开始日期</text>
+        <picker mode="date" value="{{startDate}}" data-field="startDate" bindchange="onFieldInput">
+          <view class="picker-field">{{startDate}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">结束日期</text>
+        <picker mode="date" value="{{endDate}}" data-field="endDate" bindchange="onFieldInput">
+          <view class="picker-field">{{endDate}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">训练注意事项</text>
+        <textarea class="textarea" value="{{notes}}" data-field="notes" bindinput="onFieldInput" maxlength="300" placeholder="训练前热身、伤病提醒等，可选" />
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">训练内容</view>
+      <view wx:for="{{items}}" wx:key="order" class="list-item">
+        <view class="list-title">第 {{index + 1}} 项</view>
+        <picker range="{{categories}}" range-key="label" value="{{item.categoryIndex}}" data-index="{{index}}" bindchange="onItemCategoryChange">
+          <view class="picker-field">分类：{{categories[item.categoryIndex].label || '请选择'}}</view>
+        </picker>
+        <input class="input" value="{{item.name}}" data-index="{{index}}" data-field="name" bindinput="onItemFieldInput" maxlength="60" placeholder="训练名称，例如 30米加速跑" />
+        <input class="input" value="{{item.target}}" data-index="{{index}}" data-field="target" bindinput="onItemFieldInput" maxlength="80" placeholder="训练目标，可选" />
+        <input class="input" type="number" value="{{item.sets}}" data-index="{{index}}" data-field="sets" bindinput="onItemFieldInput" placeholder="组数" />
+        <input class="input" type="number" value="{{item.reps}}" data-index="{{index}}" data-field="reps" bindinput="onItemFieldInput" placeholder="每组次数" />
+        <input class="input" type="digit" value="{{item.distanceMeters}}" data-index="{{index}}" data-field="distanceMeters" bindinput="onItemFieldInput" placeholder="距离（米）" />
+        <input class="input" type="number" value="{{item.durationSeconds}}" data-index="{{index}}" data-field="durationSeconds" bindinput="onItemFieldInput" placeholder="持续时间（秒）" />
+        <input class="input" type="number" value="{{item.restSeconds}}" data-index="{{index}}" data-field="restSeconds" bindinput="onItemFieldInput" placeholder="组间休息（秒）" />
+        <input class="input" value="{{item.load}}" data-index="{{index}}" data-field="load" bindinput="onItemFieldInput" maxlength="40" placeholder="负荷，例如 70% 1RM" />
+        <textarea class="textarea" value="{{item.notes}}" data-index="{{index}}" data-field="notes" bindinput="onItemFieldInput" maxlength="200" placeholder="该项训练注意事项，可选" />
+        <button class="button-danger" data-index="{{index}}" bindtap="removeItem">删除该项</button>
+      </view>
+      <button class="button-secondary" bindtap="addItem">添加训练内容</button>
+    </view>
+
+    <view class="button-row">
+      <button class="button-secondary" loading="{{saving}}" disabled="{{publishing}}" bindtap="saveDraft">保存草稿</button>
+      <button class="button-primary" loading="{{publishing}}" disabled="{{saving}}" bindtap="publishPlan">发布计划</button>
+    </view>
+    <button class="button-secondary" bindtap="goBack">返回计划列表</button>
+  </block>
+</view>

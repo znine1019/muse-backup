@@ -1,6 +1,7 @@
 'use strict';
 
 const { LIMITS, ROLE_VALUES } = require('./constants');
+const { isDateOnly } = require('./dates');
 const { getPerformanceEvent } = require('./performance-events');
 const { fail } = require('./errors');
 
@@ -8,6 +9,19 @@ const GENDERS = Object.freeze(['male', 'female', 'unspecified']);
 const REVIEW_DECISIONS = Object.freeze(['approve', 'reject']);
 const PERFORMANCE_REVIEW_DECISIONS = REVIEW_DECISIONS;
 const MAX_SECONDARY_EVENTS = 3;
+const PLAN_CATEGORIES = Object.freeze([
+  'sprint',
+  'middle_long_distance',
+  'strength',
+  'jump',
+  'throw',
+  'recovery',
+  'technique',
+  'other'
+]);
+const PLAN_STATUSES = Object.freeze(['draft', 'published', 'archived']);
+const PLAN_SCOPES = Object.freeze(['today', 'week', 'history']);
+const MAX_PLAN_ITEMS = 20;
 
 function asObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -300,6 +314,203 @@ function validatePerformanceReviewPayload(payload) {
   };
 }
 
+function requiredDateOnly(value, fieldLabel) {
+  const date = requiredString(value, fieldLabel, 10);
+  if (!isDateOnly(date)) {
+    fail('INVALID_FIELD', `${fieldLabel}格式不正确。`);
+  }
+  return date;
+}
+
+function optionalDateOnly(value, fieldLabel) {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+  return requiredDateOnly(value, fieldLabel);
+}
+
+function normalizePlanItem(item, index) {
+  if (!item || typeof item !== 'object' || Array.isArray(item)) {
+    fail('INVALID_FIELD', `第${index + 1}项训练内容格式不正确。`);
+  }
+  const category = requiredString(
+    item.category,
+    `第${index + 1}项训练分类`,
+    30
+  );
+  if (!PLAN_CATEGORIES.includes(category)) {
+    fail('INVALID_FIELD', `第${index + 1}项训练分类不在支持列表中。`);
+  }
+  const eventInput = optionalString(
+    item.eventCode,
+    `第${index + 1}项关联项目`,
+    40
+  );
+  const event = eventInput
+    ? normalizePerformanceEventCode(eventInput, `第${index + 1}项关联项目`)
+    : null;
+  const order = optionalIntegerInRange(
+    item.order,
+    `第${index + 1}项顺序`,
+    0,
+    99
+  );
+  return {
+    order: order === null ? index + 1 : order,
+    category,
+    name: requiredString(
+      item.name,
+      `第${index + 1}项训练名称`,
+      LIMITS.planItemNameMaxLength
+    ),
+    eventCode: event ? event.code : '',
+    eventName: event ? event.name : '',
+    target: optionalString(item.target, `第${index + 1}项训练目标`, 80),
+    sets: optionalIntegerInRange(item.sets, `第${index + 1}项组数`, 1, 50),
+    reps: optionalIntegerInRange(item.reps, `第${index + 1}项次数`, 1, 200),
+    distanceMeters: optionalNumberInRange(
+      item.distanceMeters,
+      `第${index + 1}项距离`,
+      0.5,
+      50000
+    ),
+    durationSeconds: optionalIntegerInRange(
+      item.durationSeconds,
+      `第${index + 1}项持续时间`,
+      1,
+      36000
+    ),
+    restSeconds: optionalIntegerInRange(
+      item.restSeconds,
+      `第${index + 1}项组间休息`,
+      0,
+      3600
+    ),
+    load: optionalString(item.load, `第${index + 1}项负荷`, 40),
+    notes: optionalString(item.notes, `第${index + 1}项注意事项`, 200)
+  };
+}
+
+function validatePlanItems(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    fail('INVALID_FIELD', '至少需要一项训练内容。');
+  }
+  if (value.length > MAX_PLAN_ITEMS) {
+    fail('INVALID_FIELD', `训练内容不能超过${MAX_PLAN_ITEMS}项。`);
+  }
+  const normalized = value.map(normalizePlanItem);
+  const orders = new Set();
+  for (const item of normalized) {
+    if (orders.has(item.order)) {
+      fail('INVALID_FIELD', '训练顺序不能重复。');
+    }
+    orders.add(item.order);
+  }
+  return normalized.sort((left, right) => left.order - right.order);
+}
+
+function normalizePlanDates(input) {
+  const startDate = requiredDateOnly(input.startDate, '计划开始日期');
+  const endDate =
+    input.endDate === undefined || input.endDate === null || input.endDate === ''
+      ? startDate
+      : requiredDateOnly(input.endDate, '计划结束日期');
+  if (endDate < startDate) {
+    fail('INVALID_FIELD', '计划结束日期不能早于开始日期。');
+  }
+  return { startDate, endDate };
+}
+
+function validatePlanCreatePayload(payload) {
+  const input = asObject(payload);
+  const dates = normalizePlanDates(input);
+  return {
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    trainingGroupId: safeId(input.trainingGroupId, '训练组'),
+    title: requiredString(input.title, '计划名称', LIMITS.planTitleMaxLength),
+    ...dates,
+    notes: optionalString(input.notes, '训练注意事项', LIMITS.planNotesMaxLength),
+    items: validatePlanItems(input.items)
+  };
+}
+
+function validatePlanUpdatePayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '计划版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少计划版本，无法安全更新。');
+  }
+  const dates = normalizePlanDates(input);
+  return {
+    planId: safeId(input.planId, '训练计划'),
+    expectedVersion,
+    title: requiredString(input.title, '计划名称', LIMITS.planTitleMaxLength),
+    ...dates,
+    notes: optionalString(input.notes, '训练注意事项', LIMITS.planNotesMaxLength),
+    items: validatePlanItems(input.items)
+  };
+}
+
+function validatePlanActionPayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '计划版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少计划版本，无法安全操作。');
+  }
+  return { planId: safeId(input.planId, '训练计划'), expectedVersion };
+}
+
+function validatePlanCopyPayload(payload) {
+  const input = asObject(payload);
+  const startDate = optionalDateOnly(input.startDate, '计划开始日期');
+  const endDate = optionalDateOnly(input.endDate, '计划结束日期');
+  if (startDate && endDate && endDate < startDate) {
+    fail('INVALID_FIELD', '计划结束日期不能早于开始日期。');
+  }
+  return {
+    sourcePlanId: safeId(input.sourcePlanId, '源训练计划'),
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    title: optionalString(input.title, '计划名称', LIMITS.planTitleMaxLength),
+    startDate,
+    endDate
+  };
+}
+
+function validatePlanManageQueryPayload(payload) {
+  const input = asObject(payload);
+  const status = optionalString(input.status, '计划状态', 20);
+  if (status && !PLAN_STATUSES.includes(status)) {
+    fail('INVALID_FIELD', '计划状态不正确。');
+  }
+  return {
+    status,
+    trainingGroupId: input.trainingGroupId
+      ? safeId(input.trainingGroupId, '训练组')
+      : '',
+    fromDate: optionalDateOnly(input.fromDate, '开始日期'),
+    toDate: optionalDateOnly(input.toDate, '结束日期')
+  };
+}
+
+function validateStudentPlanQueryPayload(payload) {
+  const input = asObject(payload);
+  const scope = optionalString(input.scope, '查询范围', 20) || 'today';
+  if (!PLAN_SCOPES.includes(scope)) {
+    fail('INVALID_FIELD', '训练计划查询范围不正确。');
+  }
+  return { scope, date: optionalDateOnly(input.date, '查询日期') };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -329,9 +540,20 @@ function validateGroupCoachPayload(payload) {
 }
 
 module.exports = {
+  MAX_PLAN_ITEMS,
+  PLAN_CATEGORIES,
+  PLAN_SCOPES,
+  PLAN_STATUSES,
   GENDERS,
   asObject,
   safeId,
+  validatePlanActionPayload,
+  validatePlanCopyPayload,
+  validatePlanCreatePayload,
+  validatePlanItems,
+  validatePlanManageQueryPayload,
+  validatePlanUpdatePayload,
+  validateStudentPlanQueryPayload,
   validateGroupCoachPayload,
   validateGroupName,
   validateTrainingGroupStatusPayload,

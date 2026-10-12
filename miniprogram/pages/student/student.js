@@ -80,6 +80,10 @@ Page({
   goReport() {
     wx.navigateTo({ url: '/pages/student-report/student-report' });
   },
+
+  goPlans() {
+    wx.navigateTo({ url: '/pages/student-plans/student-plans' });
+  },
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
