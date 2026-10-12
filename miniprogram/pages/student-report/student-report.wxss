@@ -1,1 +1,56 @@
 /* 应用全局公共样式 */
+
+.demo-banner {
+  margin-top: 22rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx solid #F0B429;
+  border-radius: 12rpx;
+  background: #FFF7E6;
+}
+
+.demo-title {
+  color: #8A5A00;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.demo-sub {
+  margin-top: 8rpx;
+  color: #8A5A00;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+
+.overview-card {
+  background: #123C4D;
+}
+
+.overview-card .card-title {
+  color: #FFFFFF;
+}
+
+.overview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+}
+
+.overview-item {
+  width: 50%;
+  box-sizing: border-box;
+  padding: 14rpx 12rpx 0 0;
+}
+
+.overview-label {
+  color: #9FB8C2;
+  font-size: 22rpx;
+}
+
+.overview-value {
+  margin-top: 6rpx;
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 650;
+  line-height: 1.4;
+  word-break: break-all;
+}

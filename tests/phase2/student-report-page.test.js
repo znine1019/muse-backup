@@ -72,6 +72,19 @@ function loadPage(apiStub, roles = ['student']) {
         if (request.includes('services/api')) {
           return apiStub;
         }
+        if (request.includes('utils/demo-mode')) {
+          return {
+            isDemoAllowed: () => false,
+            isDemoRequest: (options) => Boolean(options && options.demo === '1')
+          };
+        }
+        if (request.includes('demo/sport-report-demo')) {
+          return {
+            DEMO_MARKER: 'DEMO',
+            DEMO_NOTICE: 'demo only',
+            buildDemoReport: () => ({ demo: { isDemo: true } })
+          };
+        }
         return {
           getSessionDestination: () => ({ url: '/pages/index/index' }),
           sessionHasRole: (session, role) => roles.includes(role)

@@ -3,6 +3,11 @@
   <view class="title">运动数据报告</view>
   <view class="sub">报告只使用系统实际保存的身体记录和已审核成绩；待审、拒绝和未录入数据不会进入正式趋势。</view>
 
+  <view wx:if="{{isDemoMode}}" class="demo-banner">
+    <view class="demo-title">{{demoMarker}}</view>
+    <view class="demo-sub">{{demoNotice}}</view>
+  </view>
+
   <view wx:if="{{loading}}" class="empty">正在生成报告...</view>
   <view wx:if="{{error}}" class="error">
     <view>{{error}}</view>
@@ -10,6 +15,27 @@
   </view>
 
   <block wx:if="{{!loading && report}}">
+    <view class="card overview-card">
+      <view class="card-title">个人运动数据概览</view>
+      <view class="overview-grid">
+        <view class="overview-item">
+          <view class="overview-label">专项</view>
+          <view class="overview-value">{{overview.primaryEventName}}</view>
+        </view>
+        <view class="overview-item">
+          <view class="overview-label">当前PB</view>
+          <view class="overview-value">{{overview.pbText}}</view>
+        </view>
+        <view class="overview-item">
+          <view class="overview-label">近期变化</view>
+          <view class="overview-value">{{overview.changeText}}</view>
+        </view>
+        <view class="overview-item">
+          <view class="overview-label">体考目标</view>
+          <view class="overview-value">{{overview.targetText}}</view>
+        </view>
+      </view>
+    </view>
     <view class="card">
       <view class="card-title">{{report.profile.name}}</view>
       <view class="list-meta">身体指标记录：{{report.dataQuality.measurementCount}} 条</view>
@@ -58,7 +84,7 @@
       <view class="section-title">正式个人最好成绩</view>
       <view wx:if="{{!report.personalBests.length}}" class="muted">暂无已审核的正式PB。</view>
       <view wx:for="{{report.personalBests}}" wx:key="eventCode" class="list-item">
-        <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+        <view class="list-title">{{item.eventName}}：{{item.displayValue || item.value}} {{item.displayValue ? '' : item.unit}}</view>
         <view class="list-meta">取得日期：{{item.date}}</view>
       </view>
     </view>
@@ -68,8 +94,8 @@
       <view wx:if="{{!report.targetComparison}}" class="muted">尚未设置数值化体考目标。</view>
       <view wx:else class="list-item">
         <view class="list-title">{{report.targetComparison.eventName}}</view>
-        <view class="list-meta">目标：{{report.targetComparison.targetValue}} {{report.targetComparison.unit}}</view>
-        <view class="list-meta" wx:if="{{report.targetComparison.hasCurrentResult}}">当前正式成绩：{{report.targetComparison.currentValue}} {{report.targetComparison.unit}}</view>
+        <view class="list-meta">目标：{{report.targetComparison.targetDisplayValue || report.targetComparison.targetValue}} {{report.targetComparison.targetDisplayValue ? '' : report.targetComparison.unit}}</view>
+        <view class="list-meta" wx:if="{{report.targetComparison.hasCurrentResult}}">当前正式成绩：{{report.targetComparison.currentDisplayValue || report.targetComparison.currentValue}} {{report.targetComparison.currentDisplayValue ? '' : report.targetComparison.unit}}</view>
         <view class="list-meta" wx:else>暂无对应项目的正式成绩。</view>
         <view class="tag" wx:if="{{report.targetComparison.achieved}}">当前成绩已达到目标</view>
       </view>
@@ -80,9 +106,9 @@
       <view wx:if="{{!report.stageChanges.length}}" class="muted">暂无可比较的正式成绩。</view>
       <view wx:for="{{report.stageChanges}}" wx:key="eventCode" class="list-item">
         <view class="list-title">{{item.eventName}}</view>
-        <view class="list-meta">首次：{{item.firstValue}} {{item.unit}}（{{item.firstDate}}）</view>
-        <view class="list-meta">最新：{{item.latestValue}} {{item.unit}}（{{item.latestDate}}）</view>
-        <view class="list-meta">变化：{{item.change}} {{item.unit}}（{{item.changePercent}}%）</view>
+        <view class="list-meta">首次：{{item.firstDisplayValue || item.firstValue}} {{item.firstDisplayValue ? '' : item.unit}}（{{item.firstDate}}）</view>
+        <view class="list-meta">最新：{{item.latestDisplayValue || item.latestValue}} {{item.latestDisplayValue ? '' : item.unit}}（{{item.latestDate}}）</view>
+        <view class="list-meta">变化：{{item.changeDisplayValue || item.change}} {{item.changeDisplayValue ? '' : item.unit}}（{{item.changePercent}}%）</view>
       </view>
     </view>
   </block>

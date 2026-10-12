@@ -7,6 +7,7 @@ const {
   getStatusLabel,
   sessionHasRole
 } = require('../../utils/session');
+const { isDemoAllowed } = require('../../utils/demo-mode');
 
 const ROLE_OPTIONS = Object.freeze(['student', 'coach', 'developer']);
 
@@ -23,6 +24,7 @@ Page({
     groupIndex: 0,
     newGroupName: '',
     newGroupSeasonLabel: String(new Date().getFullYear()),
+    demoAvailable: false,
     busyUserId: ''
   },
 
@@ -86,7 +88,8 @@ Page({
           seasonLabel: group.seasonLabel
         })),
         coachIndex: 0,
-        groupIndex: 0
+        groupIndex: 0,
+        demoAvailable: isDemoAllowed()
       });
     } catch (error) {
       this.setData({
@@ -280,6 +283,15 @@ Page({
       url: `/pages/profile-view/profile-view?userId=${userId}`
     });
   },
+  goDemoReport() {
+    if (!this.data.demoAvailable) {
+      return;
+    }
+    wx.navigateTo({
+      url: '/pages/student-report/student-report?demo=1'
+    });
+  },
+
   goPlans() {
     wx.navigateTo({ url: '/pages/coach-plan-list/coach-plan-list' });
   },

@@ -2,7 +2,7 @@
   <view class="trend-title">{{title}}</view>
   <view wx:if="{{series.length === 0}}" class="trend-empty">{{emptyText}}</view>
   <view wx:elif="{{series.length === 1}}" class="trend-single">
-    <view class="trend-single-value">{{series[0].value}} {{unit}}</view>
+    <view class="trend-single-value">{{series[0].displayValue || series[0].value}} {{series[0].displayValue ? '' : unit}}</view>
     <view class="trend-single-date">{{series[0].date}}</view>
     <view class="trend-single-note">暂无足够历史数据形成趋势。</view>
   </view>
