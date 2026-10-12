@@ -12,12 +12,34 @@
       <view class="card-sub">账号状态：{{statusLabel}}</view>
       <view class="list-meta">性别：{{genderLabel}}</view>
       <view class="list-meta">出生日期：{{profile.birthDate}}</view>
-      <view class="list-meta">身高／体重：{{profile.heightCm}} cm / {{profile.weightKg}} kg</view>
-      <view class="list-meta">主要训练项目：{{profile.primaryTrainingProject}}</view>
-      <view class="tag">学生角色已由服务端授权</view>
+      <view class="list-meta">当前身高／体重：{{profile.currentHeightCm || profile.heightCm}} cm / {{profile.currentWeightKg || profile.weightKg}} kg</view>
+      <view class="list-meta">主项：{{profile.primaryEventName || profile.primaryTrainingProject || '未填写'}}</view>
+      <view class="list-meta">训练年限：{{profile.trainingYears || 0}} 年</view>
+      <view class="list-meta">训练经历：{{profile.trainingExperienceSummary || '未填写'}}</view>
+      <view class="list-meta">体考目标：{{profile.examGoal.targetScore || '未填写'}}</view>
+      <view class="button-row">
+        <button class="button-primary" bindtap="goEditProfile">完善档案</button>
+        <button class="button-secondary" bindtap="goPerformance">申报成绩</button>
+      </view>
     </view>
 
-    <view class="notice">训练计划、考勤、请假、成绩和排行榜属于后续阶段，本阶段不提供这些业务入口。</view>
+    <view class="card">
+      <view class="section-title">最近身体指标</view>
+      <view wx:if="{{!measurements.length}}" class="muted">暂无身体指标记录。</view>
+      <view wx:for="{{measurements}}" wx:key="id" wx:if="{{index < 3}}" class="list-item">
+        <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+        <view class="list-meta">记录日期：{{item.measuredAt}}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">我的成绩申报</view>
+      <view wx:if="{{!performances.length}}" class="muted">暂无成绩申报。</view>
+      <view wx:for="{{performances}}" wx:key="id" wx:if="{{index < 3}}" class="list-item">
+        <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+        <view class="list-meta">状态：{{item.statusLabel}}</view>
+      </view>
+    </view>
   </block>
 
   <view wx:if="{{!loading && !profile && !error}}" class="empty">当前账号没有可显示的档案。</view>

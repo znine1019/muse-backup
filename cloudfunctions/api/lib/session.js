@@ -49,6 +49,20 @@ function readableProfile(profile) {
   }
   return {
     id: profile._id,
+    primaryEventCode: profile.primaryEventCode || '',
+    primaryEventName: profile.primaryEventName || '',
+    secondaryEventCodes: Array.isArray(profile.secondaryEventCodes)
+      ? profile.secondaryEventCodes
+      : [],
+    trainingStartYear: profile.trainingStartYear || null,
+    trainingYears: profile.trainingStartYear
+      ? Math.max(0, new Date().getFullYear() - profile.trainingStartYear)
+      : null,
+    trainingExperienceSummary: profile.trainingExperienceSummary || '',
+    examGoal: profile.examGoal || {},
+    currentHeightCm: profile.currentHeightCm || profile.heightCm || null,
+    currentWeightKg: profile.currentWeightKg || profile.weightKg || null,
+    latestMeasurementAt: profile.latestMeasurementAt || null,
     userId: profile.userId,
     name: profile.name,
     gender: profile.gender,

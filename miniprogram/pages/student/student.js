@@ -19,6 +19,8 @@ Page({
     error: '',
     statusLabel: '',
     profile: null,
+    measurements: [],
+    performances: [],
     genderLabel: ''
   },
 
@@ -35,11 +37,25 @@ Page({
         return;
       }
 
-      const result = await api.getProfile();
+      const [result, measurementResult, performanceResult] = await Promise.all([
+        api.getProfile(),
+        api.listMeasurements(),
+        api.listMyPerformances()
+      ]);
+      const statusLabels = {
+        pending: '待审核',
+        approved: '已通过',
+        rejected: '已拒绝'
+      };
       this.setData({
         loading: false,
         statusLabel: getStatusLabel(result.userStatus),
         profile: result.profile,
+        measurements: measurementResult.measurements || [],
+        performances: (performanceResult.performances || []).map((item) => ({
+          ...item,
+          statusLabel: statusLabels[item.status] || item.status
+        })),
         genderLabel: result.profile
           ? GENDER_LABELS[result.profile.gender] || '未说明'
           : ''
@@ -52,6 +68,14 @@ Page({
     }
   },
 
+
+  goEditProfile() {
+    wx.navigateTo({ url: '/pages/profile-edit/profile-edit' });
+  },
+
+  goPerformance() {
+    wx.navigateTo({ url: '/pages/performance/performance' });
+  },
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

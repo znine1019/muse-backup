@@ -1,10 +1,13 @@
 'use strict';
 
 const { LIMITS, ROLE_VALUES } = require('./constants');
+const { getPerformanceEvent } = require('./performance-events');
 const { fail } = require('./errors');
 
 const GENDERS = Object.freeze(['male', 'female', 'unspecified']);
 const REVIEW_DECISIONS = Object.freeze(['approve', 'reject']);
+const PERFORMANCE_REVIEW_DECISIONS = REVIEW_DECISIONS;
+const MAX_SECONDARY_EVENTS = 3;
 
 function asObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -143,6 +146,133 @@ function validateUserStatusPayload(payload) {
   };
 }
 
+function optionalIntegerInRange(value, fieldLabel, min, max) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < min || number > max) {
+    fail('INVALID_FIELD', `${fieldLabel}应在${min}至${max}之间。`);
+  }
+  return number;
+}
+
+function normalizePerformanceEventCode(value, fieldLabel) {
+  const eventCode = requiredString(value, fieldLabel, 40);
+  const event = getPerformanceEvent(eventCode);
+  if (!event) {
+    fail('INVALID_PERFORMANCE_EVENT', `${fieldLabel}不在支持的项目列表中。`);
+  }
+  return event;
+}
+
+function validateStudentProfileUpdatePayload(payload) {
+  const input = asObject(payload);
+  const primaryEventCode = optionalString(input.primaryEventCode, '主项', 40);
+  const primaryEvent = primaryEventCode
+    ? normalizePerformanceEventCode(primaryEventCode, '主项')
+    : null;
+
+  const secondaryInput = input.secondaryEventCodes === undefined
+    ? []
+    : input.secondaryEventCodes;
+  if (!Array.isArray(secondaryInput)) {
+    fail('INVALID_FIELD', '副项格式不正确。');
+  }
+  const secondaryEvents = secondaryInput.map((eventCode) =>
+    normalizePerformanceEventCode(eventCode, '副项')
+  );
+  const secondaryEventCodes = Array.from(
+    new Set(secondaryEvents.map((event) => event.code))
+  );
+  if (secondaryEventCodes.length > MAX_SECONDARY_EVENTS) {
+    fail('INVALID_FIELD', `副项不能超过${MAX_SECONDARY_EVENTS}项。`);
+  }
+  if (primaryEvent && secondaryEventCodes.includes(primaryEvent.code)) {
+    fail('INVALID_FIELD', '副项不能与主项重复。');
+  }
+
+  const goalInput = input.examGoal && typeof input.examGoal === 'object'
+    ? input.examGoal
+    : {};
+  return {
+    primaryEventCode: primaryEvent ? primaryEvent.code : '',
+    primaryEventName: primaryEvent ? primaryEvent.name : '',
+    secondaryEventCodes,
+    trainingStartYear: optionalIntegerInRange(
+      input.trainingStartYear,
+      '开始训练年份',
+      1950,
+      2100
+    ),
+    trainingExperienceSummary: optionalString(
+      input.trainingExperienceSummary,
+      '训练经历',
+      500
+    ),
+    examGoal: {
+      targetScore: optionalString(goalInput.targetScore, '体考目标成绩', 80),
+      examYear: optionalIntegerInRange(goalInput.examYear, '体考年份', 2026, 2100),
+      targetSchool: optionalString(goalInput.targetSchool, '目标院校', 100),
+      note: optionalString(goalInput.note, '体考目标说明', 300)
+    }
+  };
+}
+
+function validateMeasurementPayload(payload) {
+  const input = asObject(payload);
+  const measuredAt = requiredString(input.measuredAt, '测量日期', 10);
+  if (!isValidIsoDate(measuredAt)) {
+    fail('INVALID_FIELD', '测量日期格式不正确。');
+  }
+  return {
+    heightCm: numberInRange(
+      input.heightCm,
+      '身高',
+      LIMITS.heightCmMin,
+      LIMITS.heightCmMax
+    ),
+    weightKg: numberInRange(
+      input.weightKg,
+      '体重',
+      LIMITS.weightKgMin,
+      LIMITS.weightKgMax
+    ),
+    measuredAt
+  };
+}
+
+function validatePerformanceSubmissionPayload(payload) {
+  const input = asObject(payload);
+  const event = normalizePerformanceEventCode(input.eventCode, '体育项目');
+  const achievedAt = requiredString(input.achievedAt, '成绩取得日期', 10);
+  if (!isValidIsoDate(achievedAt)) {
+    fail('INVALID_FIELD', '成绩取得日期格式不正确。');
+  }
+  return {
+    eventCode: event.code,
+    eventName: event.name,
+    unit: event.unit,
+    comparison: event.comparison,
+    value: numberInRange(input.value, '成绩', event.min, event.max),
+    achievedAt,
+    note: optionalString(input.note, '成绩说明', 200)
+  };
+}
+
+function validatePerformanceReviewPayload(payload) {
+  const input = asObject(payload);
+  const decision = requiredString(input.decision, '审核结果', 20);
+  if (!PERFORMANCE_REVIEW_DECISIONS.includes(decision)) {
+    fail('INVALID_FIELD', '审核结果不正确。');
+  }
+  return {
+    performanceId: safeId(input.performanceId, '成绩记录'),
+    decision,
+    comment: optionalString(input.comment, '审核意见', LIMITS.commentMaxLength)
+  };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -180,6 +310,10 @@ module.exports = {
   validateTrainingGroupStatusPayload,
   validateGroupSeasonLabel,
   validateProfilePayload,
+  validateMeasurementPayload,
+  validatePerformanceReviewPayload,
+  validatePerformanceSubmissionPayload,
+  validateStudentProfileUpdatePayload,
   validateUserStatusPayload,
   validateReviewPayload,
   validateRolePayload

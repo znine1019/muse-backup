@@ -1,0 +1,57 @@
+<view class="container">
+  <view class="brand">STUDENT / PROFILE</view>
+  <view class="title">完善档案</view>
+  <view class="sub">学生只能更新本人档案，训练组归属和账号角色仍由服务端控制。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取档案...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="section-title">专项与经历</view>
+      <view class="field">
+        <text class="field-label">主项</text>
+        <picker range="{{events}}" range-key="name" value="{{primaryEventIndex}}" bindchange="onPrimaryEventChange">
+          <view class="picker-field">{{events[primaryEventIndex].name || '请选择主项'}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">副项（最多3项）</text>
+        <checkbox-group bindchange="onSecondaryEventChange">
+          <label wx:for="{{secondaryEvents}}" wx:key="code" class="list-meta">
+            <checkbox value="{{item.code}}" checked="{{item.checked}}" />
+            {{item.name}}
+          </label>
+        </checkbox-group>
+      </view>
+      <view class="field">
+        <text class="field-label">开始训练年份</text>
+        <input class="input" type="number" value="{{trainingStartYear}}" data-field="trainingStartYear" bindinput="onFieldInput" placeholder="例如 2023" />
+      </view>
+      <view class="field">
+        <text class="field-label">训练经历</text>
+        <textarea class="textarea" value="{{trainingExperienceSummary}}" data-field="trainingExperienceSummary" bindinput="onFieldInput" maxlength="500" placeholder="训练经历、比赛经历或教练说明" />
+      </view>
+      <view class="section-title">体考目标</view>
+      <input class="input" value="{{examGoal.targetScore}}" data-field="targetScore" bindinput="onExamGoalInput" placeholder="目标成绩" />
+      <input class="input" type="number" value="{{examGoal.examYear}}" data-field="examYear" bindinput="onExamGoalInput" placeholder="体考年份" />
+      <input class="input" value="{{examGoal.targetSchool}}" data-field="targetSchool" bindinput="onExamGoalInput" placeholder="目标院校" />
+      <textarea class="textarea" value="{{examGoal.note}}" data-field="note" bindinput="onExamGoalInput" maxlength="300" placeholder="其他目标说明" />
+      <button class="button-primary" loading="{{saving}}" bindtap="saveProfile">保存档案</button>
+    </view>
+
+    <view class="card">
+      <view class="section-title">身高与体重记录</view>
+      <input class="input" type="digit" value="{{measurementHeight}}" data-field="measurementHeight" bindinput="onFieldInput" placeholder="身高（cm）" />
+      <input class="input" type="digit" value="{{measurementWeight}}" data-field="measurementWeight" bindinput="onFieldInput" placeholder="体重（kg）" />
+      <input class="input" type="date" value="{{measuredAt}}" data-field="measuredAt" bindinput="onFieldInput" />
+      <button class="button-secondary" loading="{{saving}}" bindtap="addMeasurement">记录本次身高体重</button>
+
+      <view wx:if="{{measurements.length}}" class="list-item" wx:for="{{measurements}}" wx:key="id">
+        <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+        <view class="list-meta">记录时间：{{item.measuredAt}}</view>
+      </view>
+      <view wx:else class="muted">暂无身体指标历史。</view>
+    </view>
+  </block>
+</view>

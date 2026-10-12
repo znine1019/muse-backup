@@ -44,6 +44,8 @@ function createRepository(db) {
   const roleCollection = db.collection(COLLECTIONS.ROLE_BINDINGS);
   const groupCollection = db.collection(COLLECTIONS.TRAINING_GROUPS);
   const membershipCollection = db.collection(COLLECTIONS.GROUP_MEMBERSHIPS);
+  const measurementCollection = db.collection(COLLECTIONS.BODY_MEASUREMENTS);
+  const performanceCollection = db.collection(COLLECTIONS.PERFORMANCE_RECORDS);
   const auditCollection = db.collection(COLLECTIONS.AUDIT_LOGS);
   const systemCollection = db.collection(COLLECTIONS.SYSTEM_CONFIG);
 
@@ -73,6 +75,31 @@ function createRepository(db) {
 
   function membershipId(groupId, userId) {
     return deterministicId('member', groupId, userId);
+  }
+
+  function measurementIdForUser(userId, measuredAt, heightCm, weightKg) {
+    return deterministicId(
+      'measure',
+      userId,
+      measuredAt,
+      String(heightCm),
+      String(weightKg)
+    );
+  }
+
+  function performanceIdForSubmission(
+    studentUserId,
+    eventCode,
+    achievedAt,
+    value
+  ) {
+    return deterministicId(
+      'perf',
+      studentUserId,
+      eventCode,
+      achievedAt,
+      String(value)
+    );
   }
 
   async function getUserById(userId) {
@@ -189,6 +216,72 @@ function createRepository(db) {
     return records;
   }
 
+
+  async function getMeasurement(measurementId) {
+    return getDoc(measurementCollection, measurementId);
+  }
+
+  async function listMeasurements(userId, maxRecords = 100) {
+    const result = await measurementCollection
+      .where({ userId })
+      .limit(Math.min(maxRecords, 100))
+      .get();
+    return (result.data || []).sort(
+      (left, right) =>
+        new Date(right.measuredAt || 0).getTime() -
+        new Date(left.measuredAt || 0).getTime()
+    );
+  }
+
+  async function getPerformanceRecord(performanceId) {
+    return getDoc(performanceCollection, performanceId);
+  }
+
+  async function listPerformanceRecords(userId, maxRecords = 100) {
+    const result = await performanceCollection
+      .where({ studentUserId: userId })
+      .limit(Math.min(maxRecords, 100))
+      .get();
+    return (result.data || []).sort(
+      (left, right) =>
+        new Date(right.achievedAt || 0).getTime() -
+        new Date(left.achievedAt || 0).getTime()
+    );
+  }
+
+  async function listPendingPerformanceRecords(maxRecords = 300) {
+    return queryAll(
+      performanceCollection,
+      { status: 'pending' },
+      maxRecords
+    );
+  }
+
+  async function getStudentUserIdsForGroups(groupIds) {
+    if (!groupIds.length) {
+      return [];
+    }
+    const userIds = new Set();
+    for (let index = 0; index < groupIds.length; index += 100) {
+      const chunk = groupIds.slice(index, index + 100);
+      const result = await membershipCollection
+        .where({
+          groupId: db.command.in(chunk),
+          roleInGroup: ROLES.STUDENT,
+          status: MEMBERSHIP_STATUS.ACTIVE
+        })
+        .limit(100)
+        .get();
+      for (const item of result.data || []) {
+        userIds.add(item.userId);
+      }
+    }
+    return Array.from(userIds);
+  }
+
+  async function listAllProfiles(maxRecords = 300) {
+    return queryAll(profileCollection, null, maxRecords);
+  }
   async function listEnabledTrainingGroups() {
     const groups = await queryAll(groupCollection, { enabled: true }, 300);
     return groups.sort(compareTrainingGroups);
@@ -297,9 +390,13 @@ function createRepository(db) {
 
   return {
     auditCollection,
+    bodyMeasurementCollection: measurementCollection,
     db,
     ensureUser,
+    getMeasurement,
+    getPerformanceRecord,
     getCoachGroupIds,
+    getStudentUserIdsForGroups,
     getGroupsMap,
     getLatestReview,
     getProfile,
@@ -308,10 +405,17 @@ function createRepository(db) {
     getTrainingGroup,
     getUserById,
     groupCollection,
+    listAllProfiles,
     listAllTrainingGroups,
     listEnabledTrainingGroups,
+    listMeasurements,
+    listPendingPerformanceRecords,
+    listPerformanceRecords,
     membershipCollection,
     membershipId,
+    measurementIdForUser,
+    performanceCollection,
+    performanceIdForSubmission,
     profileCollection,
     profileIdForUser,
     reviewCollection,

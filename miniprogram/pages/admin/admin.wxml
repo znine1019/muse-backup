@@ -30,6 +30,7 @@
       <view class="button-row">
         <button wx:for="{{user.roleActions}}" wx:key="role" wx:for-item="roleAction" class="{{roleAction.active ? 'button-danger' : 'button-secondary'}}" data-user-id="{{user.userId}}" data-role="{{roleAction.role}}" data-grant="{{roleAction.grantValue}}" bindtap="toggleRole">{{roleAction.actionLabel}}{{roleAction.label}}</button>
         <button class="{{user.statusActionValue === 'disabled' ? 'button-danger' : 'button-secondary'}}" data-user-id="{{user.userId}}" data-status="{{user.statusActionValue}}" bindtap="toggleUserStatus">{{user.statusActionLabel}}</button>
+        <button wx:if="{{user.canViewProfile}}" class="button-secondary" data-user-id="{{user.userId}}" bindtap="goStudentProfile">查看档案</button>
       </view>
     </view>
   </view>

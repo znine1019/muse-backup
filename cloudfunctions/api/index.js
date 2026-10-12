@@ -10,6 +10,7 @@ const createAuthActions = require('./actions/auth');
 const createDirectoryActions = require('./actions/directory');
 const createGroupAdminActions = require('./actions/groups');
 const createProfileActions = require('./actions/profile');
+const createPerformanceActions = require('./actions/performance');
 const createRegistrationActions = require('./actions/registrations');
 const createUserAdminActions = require('./actions/users');
 
@@ -18,6 +19,7 @@ const actions = Object.freeze({
   ...createAuthActions({ repository }),
   ...createDirectoryActions({ repository }),
   ...createProfileActions({ repository }),
+  ...createPerformanceActions({ repository }),
   ...createRegistrationActions({ repository }),
   ...createUserAdminActions({ repository }),
   ...createGroupAdminActions({ repository })

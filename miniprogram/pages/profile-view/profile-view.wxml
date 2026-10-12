@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="brand">COACH / STUDENT PROFILE</view>
+  <view class="title">学生档案</view>
+  <view class="sub">教练只能查看本人负责训练组内的学生，开发者可查看全部学生档案。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取学生档案...</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+
+  <block wx:if="{{!loading && profile}}">
+    <view class="card">
+      <view class="card-title">{{profile.name}}</view>
+      <view class="list-meta">性别：{{profile.gender}}</view>
+      <view class="list-meta">出生日期：{{profile.birthDate}}</view>
+      <view class="list-meta">主项：{{profile.primaryEventName || profile.primaryTrainingProject || '未填写'}}</view>
+      <view class="list-meta">副项：{{secondaryEventsText || '未填写'}}</view>
+      <view class="list-meta">训练年限：{{profile.trainingYears || 0}} 年</view>
+      <view class="list-meta">训练经历：{{profile.trainingExperienceSummary || '未填写'}}</view>
+      <view class="list-meta">体考目标：{{profile.examGoal.targetScore || '未填写'}}</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">身体记录</view>
+      <view wx:if="{{!measurements.length}}" class="empty">暂无身体记录。</view>
+      <view wx:for="{{measurements}}" wx:key="id" class="list-item">
+        <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+        <view class="list-meta">记录日期：{{item.measuredAt}}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">成绩申报与审核</view>
+      <view wx:if="{{!performances.length}}" class="empty">暂无成绩记录。</view>
+      <view wx:for="{{performances}}" wx:key="id" class="list-item">
+        <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+        <view class="list-meta">取得日期：{{item.achievedAt}}</view>
+        <view class="list-meta">状态：{{item.statusLabel}}</view>
+        <view class="list-meta">审核意见：{{item.reviewComment || '无'}}</view>
+      </view>
+    </view>
+  </block>
+</view>

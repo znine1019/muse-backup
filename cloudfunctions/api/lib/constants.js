@@ -7,6 +7,8 @@ const COLLECTIONS = Object.freeze({
   REGISTRATION_REVIEWS: 'registration_reviews',
   TRAINING_GROUPS: 'training_groups',
   GROUP_MEMBERSHIPS: 'group_memberships',
+  BODY_MEASUREMENTS: 'body_measurements',
+  PERFORMANCE_RECORDS: 'performance_records',
   AUDIT_LOGS: 'audit_logs',
   SYSTEM_CONFIG: 'system_config'
 });
@@ -48,6 +50,11 @@ const AUDIT_ACTIONS = Object.freeze({
   ROLE_REVOKED: 'admin.role.revoked',
   USER_ENABLED: 'admin.user.enabled',
   USER_DISABLED: 'admin.user.disabled',
+  PROFILE_UPDATED: 'profile.updated',
+  MEASUREMENT_RECORDED: 'profile.measurement_recorded',
+  PERFORMANCE_SUBMITTED: 'performance.submitted',
+  PERFORMANCE_APPROVED: 'admin.performance.approved',
+  PERFORMANCE_REJECTED: 'admin.performance.rejected',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'

@@ -138,7 +138,7 @@ check(apiServiceSource.includes('admin.set_training_group_enabled'), '前端 API
 const repositorySource = readText('cloudfunctions/api/lib/repository.js');
 check(repositorySource.includes('getUserByOpenId'), '首次登录具备 OpenID 唯一回查兜底');
 check(readText('cloudfunctions/api/actions/profile.js').includes('runTransaction'), '重复注册提交使用事务保护');
-check(!readText('cloudfunctions/api/actions/profile.js').includes('payload.targetUserId'), '学生档案接口不接受目标学生 ID');
+check(readText('cloudfunctions/api/actions/profile.js').includes('async function getProfile({ identity })'), '学生本人档案接口不接收目标学生 ID');
 check(readText('cloudfunctions/api/actions/registrations.js').includes('runTransaction'), '重复审核使用事务保护');
 
 const forbiddenFrontendPatterns = [

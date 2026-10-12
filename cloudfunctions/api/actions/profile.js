@@ -4,14 +4,52 @@ const {
   AUDIT_ACTIONS,
   COLLECTIONS,
   REVIEW_STATUS,
+  ROLES,
   USER_STATUS
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
-const { loadUser, readableProfile } = require('../lib/session');
+const { loadActiveActor, loadUser, readableProfile } = require('../lib/session');
 const { getProfileSubmissionDecision } = require('../lib/state-guards');
 const { getDocumentOrNull } = require('../lib/transaction');
-const { validateProfilePayload } = require('../lib/validation');
+const {
+  safeId,
+  validateMeasurementPayload,
+  validateProfilePayload,
+  validateStudentProfileUpdatePayload
+} = require('../lib/validation');
+
+function toDateOnly(value) {
+  return new Date(`${value}T00:00:00.000Z`);
+}
+
+function readableMeasurement(record) {
+  return {
+    id: record._id,
+    userId: record.userId,
+    heightCm: record.heightCm,
+    weightKg: record.weightKg,
+    measuredAt: record.measuredAt,
+    createdAt: record.createdAt || null
+  };
+}
+
+function readablePerformanceRecord(record) {
+  return {
+    id: record._id,
+    studentUserId: record.studentUserId,
+    eventCode: record.eventCode,
+    eventName: record.eventName,
+    value: record.value,
+    unit: record.unit,
+    comparison: record.comparison,
+    achievedAt: record.achievedAt,
+    status: record.status,
+    reviewComment: record.reviewComment || '',
+    reviewedAt: record.reviewedAt || null,
+    createdAt: record.createdAt || null
+  };
+}
 
 function createProfileActions({ repository }) {
   async function getProfile({ identity }) {
@@ -137,8 +175,197 @@ function createProfileActions({ repository }) {
     });
   }
 
+
+  async function updateProfile({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const update = validateStudentProfileUpdatePayload(payload);
+    const profileId = repository.profileIdForUser(actor._id);
+    const completedAt = new Date();
+    const auditId = deterministicId(
+      'audit_profile_update',
+      actor._id,
+      completedAt.toISOString()
+    );
+
+    await repository.db.runTransaction(async (transaction) => {
+      const profileReference = transaction
+        .collection(COLLECTIONS.STUDENT_PROFILES)
+        .doc(profileId);
+      const profile = await getDocumentOrNull(profileReference);
+      if (!profile) {
+        fail('PROFILE_NOT_FOUND', '学生档案不存在。');
+      }
+      await profileReference.update({
+        data: {
+          ...update,
+          updatedAt: completedAt
+        }
+      });
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(auditId)
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: AUDIT_ACTIONS.PROFILE_UPDATED,
+            targetType: 'student_profile',
+            targetId: profileId,
+            result: 'success',
+            metadata: { fields: Object.keys(update) },
+            createdAt: completedAt
+          }
+        });
+    });
+
+    const profile = await repository.getProfile(actor._id);
+    return { profile: readableProfile(profile) };
+  }
+
+  async function addMeasurement({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const measurement = validateMeasurementPayload(payload);
+    const measurementId = repository.measurementIdForUser(
+      actor._id,
+      measurement.measuredAt,
+      measurement.heightCm,
+      measurement.weightKg
+    );
+    const completedAt = new Date();
+    const measuredAt = toDateOnly(measurement.measuredAt);
+
+    const result = await repository.db.runTransaction(async (transaction) => {
+      const measurementReference = transaction
+        .collection(COLLECTIONS.BODY_MEASUREMENTS)
+        .doc(measurementId);
+      const existing = await getDocumentOrNull(measurementReference);
+      if (existing) {
+        return { duplicate: true };
+      }
+
+      const profileReference = transaction
+        .collection(COLLECTIONS.STUDENT_PROFILES)
+        .doc(repository.profileIdForUser(actor._id));
+      const profile = await getDocumentOrNull(profileReference);
+      if (!profile) {
+        fail('PROFILE_NOT_FOUND', '学生档案不存在。');
+      }
+
+      await measurementReference.set({
+        data: {
+          userId: actor._id,
+          heightCm: measurement.heightCm,
+          weightKg: measurement.weightKg,
+          measuredAt,
+          source: 'student_report',
+          submittedBy: actor._id,
+          createdAt: completedAt,
+          schemaVersion: 1
+        }
+      });
+      await profileReference.update({
+        data: {
+          heightCm: measurement.heightCm,
+          weightKg: measurement.weightKg,
+          currentHeightCm: measurement.heightCm,
+          currentWeightKg: measurement.weightKg,
+          latestMeasurementAt: measuredAt,
+          updatedAt: completedAt
+        }
+      });
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(`audit_measurement_${measurementId}`)
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: AUDIT_ACTIONS.MEASUREMENT_RECORDED,
+            targetType: 'body_measurement',
+            targetId: measurementId,
+            result: 'success',
+            metadata: { measuredAt: measurement.measuredAt },
+            createdAt: completedAt
+          }
+        });
+      return { duplicate: false };
+    });
+
+    return {
+      measurementId,
+      duplicate: result.duplicate,
+      ...measurement
+    };
+  }
+
+  async function listMeasurements({ identity }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const measurements = await repository.listMeasurements(actor._id, 100);
+    return { measurements: measurements.map(readableMeasurement) };
+  }
+
+  async function listStudentProfiles({ identity }) {
+    const actor = await loadActiveActor(repository, identity, [
+      ROLES.DEVELOPER,
+      ROLES.COACH
+    ]);
+    let profiles;
+    if (actor.roles.includes(ROLES.DEVELOPER)) {
+      profiles = await repository.listAllProfiles(300);
+    } else {
+      const groupIds = await repository.getCoachGroupIds(actor._id);
+      const studentIds = await repository.getStudentUserIdsForGroups(groupIds);
+      const profileMap = await repository.getProfilesMap(studentIds);
+      profiles = Array.from(profileMap.values());
+    }
+    return {
+      profiles: profiles
+        .filter((profile) => profile.reviewStatus === REVIEW_STATUS.APPROVED)
+        .map(readableProfile)
+    };
+  }
+
+  async function getStudentProfile({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [
+      ROLES.DEVELOPER,
+      ROLES.COACH
+    ]);
+    const targetUserId = safeId(payload && payload.targetUserId, '学生账号');
+    const targetUser = await repository.getUserById(targetUserId);
+    if (
+      !targetUser ||
+      targetUser.status !== USER_STATUS.ACTIVE ||
+      !(targetUser.roles || []).includes(ROLES.STUDENT)
+    ) {
+      fail('STUDENT_NOT_FOUND', '未找到有效学生账号。');
+    }
+    if (actor.roles.includes(ROLES.COACH) && !actor.roles.includes(ROLES.DEVELOPER)) {
+      const groupIds = await repository.getCoachGroupIds(actor._id);
+      const studentIds = await repository.getStudentUserIdsForGroups(groupIds);
+      if (!studentIds.includes(targetUserId)) {
+        fail('OUT_OF_SCOPE', '只能查看本人负责训练组内的学生档案。');
+      }
+    }
+    const profile = await repository.getProfile(targetUserId);
+    if (!profile) {
+      fail('PROFILE_NOT_FOUND', '学生档案不存在。');
+    }
+    const [measurements, performances] = await Promise.all([
+      repository.listMeasurements(targetUserId, 20),
+      repository.listPerformanceRecords(targetUserId, 20)
+    ]);
+    return {
+      profile: readableProfile(profile),
+      measurements: measurements.map(readableMeasurement),
+      performances: performances.map(readablePerformanceRecord)
+    };
+  }
+
   return {
     'profile.get': getProfile,
+    'profile.update': updateProfile,
+    'profile.add_measurement': addMeasurement,
+    'profile.list_measurements': listMeasurements,
+    'admin.list_student_profiles': listStudentProfiles,
+    'admin.get_student_profile': getStudentProfile,
     'profile.submit': submitProfile
   };
 }

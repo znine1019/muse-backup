@@ -50,6 +50,8 @@ Page({
         statusActionLabel: user.status === 'disabled' ? '启用账号' : '停用账号',
         statusActionValue: user.status === 'disabled' ? 'active' : 'disabled',
         rolesText: (user.roles || []).map((role) => getRoleLabel(role)).join('、') || '未授权',
+        canViewProfile:
+          user.status === 'active' && (user.roles || []).includes('student'),
         roleActions: ROLE_OPTIONS.map((role) => ({
           role,
           label: getRoleLabel(role),
@@ -268,6 +270,16 @@ Page({
     }
   },
 
+
+  goStudentProfile(event) {
+    const userId = event.currentTarget.dataset.userId;
+    if (!userId) {
+      return;
+    }
+    wx.navigateTo({
+      url: `/pages/profile-view/profile-view?userId=${userId}`
+    });
+  },
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

@@ -5,6 +5,9 @@
     "pages/pending/pending",
     "pages/role-select/role-select",
     "pages/student/student",
+    "pages/profile-edit/profile-edit",
+    "pages/performance/performance",
+    "pages/profile-view/profile-view",
     "pages/coach/coach",
     "pages/admin/admin",
     "pages/bootstrap/bootstrap"
