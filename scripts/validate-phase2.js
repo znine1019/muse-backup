@@ -121,4 +121,4 @@ if (errors.length) {
 }
 
 console.log(`阶段2结构校验通过，共 ${passed} 项。`);
-console.log('未创建云端集合，未部署云函数，未写入真实学生数据。');
+console.log('本校验不执行云端部署、集合变更或业务数据写入。');
