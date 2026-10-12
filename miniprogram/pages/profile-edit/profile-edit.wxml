@@ -51,10 +51,12 @@
       <input class="input" type="date" value="{{measuredAt}}" data-field="measuredAt" bindinput="onFieldInput" />
       <button class="button-secondary" loading="{{saving}}" bindtap="addMeasurement">记录本次身高体重</button>
 
-      <view wx:if="{{measurements.length}}" class="list-item" wx:for="{{measurements}}" wx:key="id">
-        <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-        <view class="list-meta">记录时间：{{item.measuredAt}}</view>
-      </view>
+      <block wx:if="{{measurements.length}}">
+        <view wx:for="{{measurements}}" wx:key="id" class="list-item">
+          <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+          <view class="list-meta">记录时间：{{item.measuredAt}}</view>
+        </view>
+      </block>
       <view wx:else class="muted">暂无身体指标历史。</view>
     </view>
   </block>

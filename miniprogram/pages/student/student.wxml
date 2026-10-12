@@ -28,19 +28,27 @@
     <view class="card">
       <view class="section-title">最近身体指标</view>
       <view wx:if="{{!measurements.length}}" class="muted">暂无身体指标记录。</view>
-      <view wx:for="{{measurements}}" wx:key="id" wx:if="{{index < 3}}" class="list-item">
-        <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-        <view class="list-meta">记录日期：{{item.measuredAt}}</view>
-      </view>
+      <block wx:else>
+        <block wx:for="{{measurements}}" wx:key="id">
+          <view wx:if="{{index < 3}}" class="list-item">
+            <view class="list-title">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+            <view class="list-meta">记录日期：{{item.measuredAt}}</view>
+          </view>
+        </block>
+      </block>
     </view>
 
     <view class="card">
       <view class="section-title">我的成绩申报</view>
       <view wx:if="{{!performances.length}}" class="muted">暂无成绩申报。</view>
-      <view wx:for="{{performances}}" wx:key="id" wx:if="{{index < 3}}" class="list-item">
-        <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
-        <view class="list-meta">状态：{{item.statusLabel}}</view>
-      </view>
+      <block wx:else>
+        <block wx:for="{{performances}}" wx:key="id">
+          <view wx:if="{{index < 3}}" class="list-item">
+            <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+            <view class="list-meta">状态：{{item.statusLabel}}</view>
+          </view>
+        </block>
+      </block>
     </view>
   </block>
 

@@ -35,6 +35,7 @@ GPS 考勤、请假审批、Excel 导出、排行榜、竞赛报名和 AI 训练
 
 ```powershell
 node scripts\validate-phase1.js
+node scripts\wxml-lint.js
 node scripts\validate-phase2.js
 node --test tests\phase1\*.test.js tests\phase2\*.test.js
 ```
