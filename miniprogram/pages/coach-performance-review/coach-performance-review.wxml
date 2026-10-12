@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="brand">COACH / PERFORMANCE REVIEW</view>
+  <view class="title">成绩审核</view>
+  <view class="sub">只显示本人负责训练组内学生提交的待审核成绩；通过后进入正式成绩和PB统计。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取待审核成绩...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <view wx:if="{{!loading && !error}}" class="card">
+    <view class="card-title">待审核 {{pendingCount}} 条</view>
+    <view wx:if="{{truncated}}" class="muted">当前仅显示前 {{performances.length}} 条，审核后会自动刷新继续处理。</view>
+    <view wx:if="{{!performances.length}}" class="muted">当前没有待审核成绩。</view>
+
+    <view wx:for="{{performances}}" wx:key="id" class="list-item">
+      <view class="list-title">{{item.studentName || '学生'}} · {{item.eventName}}</view>
+      <view class="list-meta">训练组：{{item.groupText || '未分组'}}</view>
+      <view class="list-meta">申报成绩：{{item.value}} {{item.unit}}</view>
+      <view class="list-meta">取得日期：{{item.achievedAt}}</view>
+      <view class="list-meta">成绩来源：{{item.sourceLabel}}</view>
+      <view class="list-meta" wx:if="{{item.note}}">学生说明：{{item.note}}</view>
+      <view class="tag">待审核</view>
+      <view class="button-row">
+        <button class="button-primary" data-performance-id="{{item.id}}" data-decision="approve" bindtap="review" loading="{{reviewingId === item.id}}" disabled="{{reviewingId !== ''}}">通过</button>
+        <button class="button-danger" data-performance-id="{{item.id}}" data-decision="reject" bindtap="review" loading="{{reviewingId === item.id}}" disabled="{{reviewingId !== ''}}">驳回</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">审核权限、训练组范围和审核结果均由云函数重新校验，前端不参与范围判断。</view>
+  <button class="button-secondary" bindtap="goHome">退出当前会话</button>
+</view>

@@ -76,6 +76,12 @@ Page({
     }
   },
 
+  goPerformanceReview() {
+    wx.navigateTo({
+      url: '/pages/coach-performance-review/coach-performance-review'
+    });
+  },
+
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

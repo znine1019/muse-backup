@@ -10,6 +10,7 @@
     "pages/student-report/student-report",
     "pages/profile-view/profile-view",
     "pages/coach/coach",
+    "pages/coach-performance-review/coach-performance-review",
     "pages/admin/admin",
     "pages/bootstrap/bootstrap"
   ],

@@ -47,6 +47,7 @@ function createHarness(initialRecords = []) {
     audits: new Map()
   };
   let transactionCalls = 0;
+  let transactionQueue = Promise.resolve();
 
   function collectionState(collectionName) {
     if (collectionName === 'performance_records') {
@@ -104,6 +105,29 @@ function createHarness(initialRecords = []) {
       Array.from(state.performanceRecords.values()).filter(
         (record) => record.status === 'pending'
       ),
+    getProfilesMap: async (userIds) =>
+      new Map(
+        userIds.map((userId) => [
+          userId,
+          {
+            userId,
+            name: userId === 'usr_student_a' ? '模拟学生甲' : '模拟学生乙'
+          }
+        ])
+      ),
+    getStudentGroupNamesMap: async (userIds) =>
+      new Map(
+        userIds.map((userId) => [
+          userId,
+          [userId === 'usr_student_a' ? '短跑组（2026）' : '跳远组（2026）']
+        ])
+      ),
+    countPendingPerformanceRecords: async (studentUserIds) =>
+      Array.from(state.performanceRecords.values()).filter(
+        (record) =>
+          record.status === 'pending' &&
+          (!studentUserIds || studentUserIds.includes(record.studentUserId))
+      ).length,
     getCoachGroupIds: async () => ['group_a'],
     getStudentUserIdsForGroups: async (groupIds) => {
       const map = {
@@ -114,17 +138,21 @@ function createHarness(initialRecords = []) {
     },
     db: {
       serverDate: () => new Date(),
-      async runTransaction(work) {
+      runTransaction(work) {
         transactionCalls += 1;
-        return work({
-          collection(collectionName) {
-            return {
-              doc(id) {
-                return createReference(collectionName, id);
-              }
-            };
-          }
-        });
+        const run = transactionQueue.then(() =>
+          work({
+            collection(collectionName) {
+              return {
+                doc(id) {
+                  return createReference(collectionName, id);
+                }
+              };
+            }
+          })
+        );
+        transactionQueue = run.catch(() => {});
+        return run;
       }
     }
   };
@@ -267,4 +295,154 @@ test('coach approves an in-scope PB and student cannot self-approve', async () =
     })
   );
   assert.equal(error.code, 'FORBIDDEN');
+});
+
+test('pending list is enriched and scoped, with a true pending count', async () => {
+  const harness = createHarness([
+    {
+      _id: 'perf_a',
+      studentUserId: STUDENT._id,
+      eventCode: '100m',
+      eventName: '100米',
+      value: 12.4,
+      unit: '秒',
+      comparison: 'lower',
+      achievedAt: '2026-10-01',
+      source: 'student_report',
+      note: '模拟备注',
+      status: 'pending',
+      createdAt: new Date('2026-10-01T01:00:00.000Z')
+    },
+    {
+      _id: 'perf_b',
+      studentUserId: 'usr_student_b',
+      eventCode: 'long_jump',
+      eventName: '跳远',
+      value: 5.5,
+      unit: '米',
+      comparison: 'higher',
+      achievedAt: '2026-10-02',
+      source: 'student_report',
+      note: '',
+      status: 'pending',
+      createdAt: new Date('2026-10-02T01:00:00.000Z')
+    }
+  ]);
+  const actions = createPerformanceActions({ repository: harness.repository });
+
+  const coachResult = await actions['admin.list_pending_performances']({
+    identity: IDENTITIES.coach,
+    payload: {}
+  });
+  assert.equal(coachResult.pendingCount, 1);
+  assert.equal(coachResult.truncated, false);
+  assert.equal(coachResult.performances.length, 1);
+  assert.equal(coachResult.performances[0].studentName, '模拟学生甲');
+  assert.deepEqual(coachResult.performances[0].trainingGroupNames, ['短跑组（2026）']);
+  assert.equal(coachResult.performances[0].source, 'student_report');
+  assert.equal(coachResult.performances[0].note, '模拟备注');
+
+  const developerResult = await actions['admin.list_pending_performances']({
+    identity: IDENTITIES.developer,
+    payload: {}
+  });
+  assert.equal(developerResult.pendingCount, 2);
+  assert.equal(developerResult.performances.length, 2);
+});
+
+test('coach can reject a pending record with a review comment', async () => {
+  const recordId = 'perf_reject';
+  const harness = createHarness([
+    {
+      _id: recordId,
+      studentUserId: STUDENT._id,
+      eventCode: '100m',
+      eventName: '100米',
+      value: 12.4,
+      unit: '秒',
+      comparison: 'lower',
+      achievedAt: '2026-10-01',
+      status: 'pending'
+    }
+  ]);
+  const actions = createPerformanceActions({ repository: harness.repository });
+
+  const result = await actions['admin.review_performance']({
+    identity: IDENTITIES.coach,
+    payload: {
+      performanceId: recordId,
+      decision: 'reject',
+      comment: '成绩材料不清晰'
+    }
+  });
+
+  assert.equal(result.status, 'rejected');
+  const saved = harness.state.performanceRecords.get(recordId);
+  assert.equal(saved.status, 'rejected');
+  assert.equal(saved.reviewComment, '成绩材料不清晰');
+  assert.equal(saved.reviewedBy, COACH._id);
+  assert.ok(saved.reviewedAt instanceof Date);
+});
+
+test('developer can review a record outside coach group scope', async () => {
+  const recordId = 'perf_student_b';
+  const harness = createHarness([
+    {
+      _id: recordId,
+      studentUserId: 'usr_student_b',
+      eventCode: '100m',
+      eventName: '100米',
+      value: 12.1,
+      unit: '秒',
+      comparison: 'lower',
+      achievedAt: '2026-10-01',
+      status: 'pending'
+    }
+  ]);
+  const actions = createPerformanceActions({ repository: harness.repository });
+
+  const result = await actions['admin.review_performance']({
+    identity: IDENTITIES.developer,
+    payload: { performanceId: recordId, decision: 'approve' }
+  });
+  assert.equal(result.status, 'approved');
+});
+
+test('concurrent reviews cannot overwrite each other', async () => {
+  const recordId = 'perf_concurrent';
+  const harness = createHarness([
+    {
+      _id: recordId,
+      studentUserId: STUDENT._id,
+      eventCode: '100m',
+      eventName: '100米',
+      value: 12.4,
+      unit: '秒',
+      comparison: 'lower',
+      achievedAt: '2026-10-01',
+      status: 'pending'
+    }
+  ]);
+  const actions = createPerformanceActions({ repository: harness.repository });
+
+  const settled = await Promise.allSettled([
+    actions['admin.review_performance']({
+      identity: IDENTITIES.coach,
+      payload: { performanceId: recordId, decision: 'approve' }
+    }),
+    actions['admin.review_performance']({
+      identity: IDENTITIES.developer,
+      payload: { performanceId: recordId, decision: 'reject' }
+    })
+  ]);
+
+  const fulfilled = settled.filter((item) => item.status === 'fulfilled');
+  const rejected = settled.filter((item) => item.status === 'rejected');
+  assert.equal(fulfilled.length, 1);
+  assert.equal(rejected.length, 1);
+  assert.equal(rejected[0].reason.code, 'PERFORMANCE_NOT_PENDING');
+  assert.notEqual(
+    harness.state.performanceRecords.get(recordId).status,
+    'pending'
+  );
 });

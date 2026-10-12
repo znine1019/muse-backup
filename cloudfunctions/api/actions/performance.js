@@ -26,6 +26,7 @@ function readablePerformanceRecord(record) {
     comparison: record.comparison,
     achievedAt: record.achievedAt,
     source: record.source,
+    note: record.note || '',
     status: record.status,
     reviewedBy: record.reviewedBy || '',
     reviewedAt: record.reviewedAt || null,
@@ -116,6 +117,7 @@ function createPerformanceActions({ repository }) {
       ROLES.COACH
     ]);
     let records = await repository.listPendingPerformanceRecords(300);
+    let scopedStudentIds = null;
 
     if (actor.roles.includes(ROLES.COACH) && !actor.roles.includes(ROLES.DEVELOPER)) {
       const groupIds = await repository.getCoachGroupIds(actor._id);
@@ -124,9 +126,28 @@ function createPerformanceActions({ repository }) {
       records = records.filter((record) =>
         allowedStudents.has(record.studentUserId)
       );
+      scopedStudentIds = studentIds;
     }
 
-    return { performances: records.map(readablePerformanceRecord) };
+    const studentUserIds = Array.from(
+      new Set(records.map((record) => record.studentUserId))
+    );
+    const [profilesMap, groupNamesMap, pendingCount] = await Promise.all([
+      repository.getProfilesMap(studentUserIds),
+      repository.getStudentGroupNamesMap(studentUserIds),
+      repository.countPendingPerformanceRecords(scopedStudentIds)
+    ]);
+    const performances = records.map((record) => ({
+      ...readablePerformanceRecord(record),
+      studentName: (profilesMap.get(record.studentUserId) || {}).name || '',
+      trainingGroupNames: groupNamesMap.get(record.studentUserId) || []
+    }));
+
+    return {
+      performances,
+      pendingCount,
+      truncated: pendingCount > performances.length
+    };
   }
 
   async function reviewPerformance({ identity, payload }) {

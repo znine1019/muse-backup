@@ -3,6 +3,10 @@
   <view class="title">教练员工作台</view>
   <view class="sub">只显示本人负责训练组内、当前待审核的学生注册资料。</view>
 
+  <view class="button-row">
+    <button class="button-primary" bindtap="goPerformanceReview">成绩审核</button>
+  </view>
+
   <view wx:if="{{loading}}" class="empty">正在读取授权范围内的待审核资料...</view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
   <view wx:if="{{!loading && !registrations.length}}" class="empty">当前没有需要审核的学生。</view>
