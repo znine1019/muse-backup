@@ -8,6 +8,7 @@ const {
   validateGroupSeasonLabel,
   validateReviewPayload,
   validateRolePayload,
+  validateTrainingGroupStatusPayload,
   validateUserStatusPayload
 } = require('../../cloudfunctions/api/lib/validation');
 
@@ -71,5 +72,23 @@ test('review and role payloads reject arbitrary values', () => {
   assert.throws(
     () => validateRolePayload({ targetUserId: 'usr_1', role: 'owner', grant: true }),
     /角色不正确/
+  );
+});
+
+test('training group status payload requires a boolean state', () => {
+  assert.deepEqual(
+    validateTrainingGroupStatusPayload({
+      trainingGroupId: 'group_test',
+      enabled: false
+    }),
+    { trainingGroupId: 'group_test', enabled: false }
+  );
+  assert.throws(
+    () =>
+      validateTrainingGroupStatusPayload({
+        trainingGroupId: 'group_test',
+        enabled: 'false'
+      }),
+    /训练组状态不正确/
   );
 });

@@ -126,7 +126,15 @@ check(bootstrapPolicy.includes('timingSafeEqual'), '初始化码使用恒定时�
 check(bootstrapPolicy.includes("config.state !== 'ready'"), '初始化配置必须先处于 ready 状态');
 const groupSource = readText('cloudfunctions/api/actions/groups.js');
 check(groupSource.includes('groupId') && groupSource.includes('seasonLabel'), '训练组使用独立 groupId 和周期字段');
+check(groupSource.includes('admin.set_training_group_enabled'), '开发者端支持训练组启用与停用');
+check(groupSource.includes('GROUP_STATUS_CHANGED'), '训练组状态变更写入审计');
 check(!groupSource.includes('.where({ name, enabled: true })'), '训练组不再按名称做全局唯一判断');
+const validationSource = readText('cloudfunctions/api/lib/validation.js');
+check(validationSource.includes('validateTrainingGroupStatusPayload'), '训练组状态参数经过服务端校验');
+const adminPageSource = readText('miniprogram/pages/admin/admin.js');
+check(adminPageSource.includes('toggleGroupStatus'), '开发者页面提供训练组状态切换入口');
+const apiServiceSource = readText('miniprogram/services/api.js');
+check(apiServiceSource.includes('admin.set_training_group_enabled'), '前端 API 已接入训练组状态切换')
 const repositorySource = readText('cloudfunctions/api/lib/repository.js');
 check(repositorySource.includes('getUserByOpenId'), '首次登录具备 OpenID 唯一回查兜底');
 check(readText('cloudfunctions/api/actions/profile.js').includes('runTransaction'), '重复注册提交使用事务保护');

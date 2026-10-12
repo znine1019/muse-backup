@@ -75,6 +75,7 @@ test('student and coach cannot call developer-only admin actions', async () => {
     'admin.list_training_groups',
     'admin.list_users',
     'admin.set_group_coach',
+    'admin.set_training_group_enabled',
     'admin.set_user_status'
   ];
   const studentBlockedActions = [

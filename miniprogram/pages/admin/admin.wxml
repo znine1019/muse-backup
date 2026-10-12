@@ -47,6 +47,9 @@
       <view class="list-title">{{group.displayName}}</view>
       <view class="list-meta">状态：{{group.enabled ? '启用' : '停用'}}</view>
       <view class="list-meta">负责教练：{{group.coachNames || '未分配'}}</view>
+      <view class="button-row">
+        <button class="{{group.enabled ? 'button-danger' : 'button-secondary'}}" data-group-id="{{group.id}}" data-enabled="{{group.statusActionValue}}" bindtap="toggleGroupStatus">{{group.statusActionLabel}}</button>
+      </view>
     </view>
 
     <view wx:if="{{coachOptions.length && groupOptions.length}}" class="field">

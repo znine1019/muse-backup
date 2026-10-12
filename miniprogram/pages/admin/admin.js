@@ -64,6 +64,8 @@ Page({
       const groups = (groupResult.groups || []).map((group) => ({
         ...group,
         displayName: `${group.name}（${group.seasonLabel || '未标注'}）`,
+        statusActionLabel: group.enabled ? '停用训练组' : '启用训练组',
+        statusActionValue: group.enabled ? 'false' : 'true',
         coachNames: group.coachUserIds
           .map((userId) => (users.find((user) => user.userId === userId) || {}).displayName)
           .filter(Boolean)
@@ -176,6 +178,38 @@ Page({
     }
   },
 
+
+  async toggleGroupStatus(event) {
+    const groupId = event.currentTarget.dataset.groupId;
+    const enabled = event.currentTarget.dataset.enabled === 'true';
+    if (!groupId) {
+      return;
+    }
+
+    const modal = await new Promise((resolve) => {
+      wx.showModal({
+        title: enabled ? '确认启用训练组' : '确认停用训练组',
+        content: enabled
+          ? '启用后学生可重新申请该训练组。'
+          : '停用后该训练组不再接受新的学生申请，已有数据不会被删除。',
+        success: resolve,
+        fail: () => resolve({ confirm: false })
+      });
+    });
+    if (!modal.confirm) {
+      return;
+    }
+
+    try {
+      await api.setTrainingGroupEnabled({
+        trainingGroupId: groupId,
+        enabled
+      });
+      await this.loadPage();
+    } catch (error) {
+      this.setData({ error: error.message || '训练组状态更新失败。' });
+    }
+  },
   onNewGroupInput(event) {
     this.setData({ newGroupName: event.detail.value });
   },

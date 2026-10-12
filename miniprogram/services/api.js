@@ -78,6 +78,8 @@ module.exports = {
   listAllTrainingGroups: () => callApi('admin.list_training_groups'),
   createTrainingGroup: (payload) =>
     callApi('admin.create_training_group', payload),
+  setTrainingGroupEnabled: (payload) =>
+    callApi('admin.set_training_group_enabled', payload),
   setGroupCoach: (payload) => callApi('admin.set_group_coach', payload),
   healthCheck
 };

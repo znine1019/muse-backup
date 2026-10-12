@@ -11,6 +11,7 @@ const { loadActiveActor } = require('../lib/session');
 const {
   validateGroupCoachPayload,
   validateGroupName,
+  validateTrainingGroupStatusPayload,
   validateGroupSeasonLabel
 } = require('../lib/validation');
 
@@ -105,6 +106,43 @@ function createGroupAdminActions({ repository }) {
     };
   }
 
+
+  async function setTrainingGroupEnabled({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.DEVELOPER]);
+    const input = validateTrainingGroupStatusPayload(payload);
+    const group = await repository.getTrainingGroup(input.trainingGroupId);
+    if (!group) {
+      fail('TRAINING_GROUP_NOT_FOUND', '训练组不存在。');
+    }
+
+    const groupResult = {
+      id: group._id,
+      groupId: group.groupId || group._id,
+      name: group.name,
+      seasonLabel: group.seasonLabel || '未标注',
+      enabled: input.enabled
+    };
+    if (group.enabled === input.enabled) {
+      return { group: groupResult };
+    }
+
+    await repository.groupCollection.doc(group._id).update({
+      data: {
+        enabled: input.enabled,
+        updatedAt: repository.db.serverDate()
+      }
+    });
+    await repository.writeAudit({
+      actorUserId: actor._id,
+      action: AUDIT_ACTIONS.GROUP_STATUS_CHANGED,
+      targetType: 'training_group',
+      targetId: group._id,
+      result: 'success',
+      metadata: { enabled: input.enabled }
+    });
+
+    return { group: groupResult };
+  }
   async function setGroupCoach({ identity, payload }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.DEVELOPER]);
     const input = validateGroupCoachPayload(payload);
@@ -144,6 +182,7 @@ function createGroupAdminActions({ repository }) {
   return {
     'admin.create_training_group': createTrainingGroup,
     'admin.list_training_groups': listTrainingGroups,
+    'admin.set_training_group_enabled': setTrainingGroupEnabled,
     'admin.set_group_coach': setGroupCoach
   };
 }

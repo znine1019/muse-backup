@@ -49,6 +49,7 @@ const AUDIT_ACTIONS = Object.freeze({
   USER_ENABLED: 'admin.user.enabled',
   USER_DISABLED: 'admin.user.disabled',
   GROUP_CREATED: 'admin.training_group.created',
+  GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'
 });
 

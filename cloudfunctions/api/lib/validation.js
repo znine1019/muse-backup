@@ -151,6 +151,17 @@ function validateGroupSeasonLabel(value) {
   return requiredString(value, '训练组年份或周期', 20);
 }
 
+function validateTrainingGroupStatusPayload(payload) {
+  const input = asObject(payload);
+  if (typeof input.enabled !== 'boolean') {
+    fail('INVALID_FIELD', '训练组状态不正确。');
+  }
+  return {
+    trainingGroupId: safeId(input.trainingGroupId, '训练组'),
+    enabled: input.enabled
+  };
+}
+
 function validateGroupCoachPayload(payload) {
   const input = asObject(payload);
   return {
@@ -166,6 +177,7 @@ module.exports = {
   safeId,
   validateGroupCoachPayload,
   validateGroupName,
+  validateTrainingGroupStatusPayload,
   validateGroupSeasonLabel,
   validateProfilePayload,
   validateUserStatusPayload,
