@@ -17,10 +17,14 @@ Page({
     error: '',
     events: [],
     primaryEventIndex: 0,
+    targetEventOptions: [],
+    targetEventIndex: 0,
     secondaryEvents: [],
     trainingStartYear: '',
     trainingExperienceSummary: '',
     examGoal: {
+      targetEventCode: '',
+      targetValue: '',
       targetScore: '',
       examYear: '',
       targetSchool: '',
@@ -57,22 +61,36 @@ Page({
         events.findIndex((event) => event.code === profile.primaryEventCode)
       );
       const secondaryCodes = new Set(profile.secondaryEventCodes || []);
+      const targetEventOptions = [
+        { code: '', name: '暂不设置数值化目标' },
+        ...events
+      ];
+      const targetEventCode = (profile.examGoal || {}).targetEventCode || '';
+      const matchedTargetIndex = targetEventCode
+        ? targetEventOptions.findIndex((event) => event.code === targetEventCode)
+        : 0;
+      const targetIndex = matchedTargetIndex > 0 ? matchedTargetIndex : 0;
 
       this.setData({
         loading: false,
         events,
+        targetEventOptions,
         primaryEventIndex: primaryIndex,
+        targetEventIndex: targetIndex,
         secondaryEvents: events.map((event) => ({
           ...event,
           checked: secondaryCodes.has(event.code)
         })),
         trainingStartYear: profile.trainingStartYear || '',
         trainingExperienceSummary: profile.trainingExperienceSummary || '',
-        examGoal: profile.examGoal || {
+        examGoal: {
+          targetEventCode: '',
+          targetValue: '',
           targetScore: '',
           examYear: '',
           targetSchool: '',
-          note: ''
+          note: '',
+          ...(profile.examGoal || {})
         },
         measurementHeight: profile.currentHeightCm || profile.heightCm || '',
         measurementWeight: profile.currentWeightKg || profile.weightKg || '',
@@ -88,6 +106,10 @@ Page({
 
   onPrimaryEventChange(event) {
     this.setData({ primaryEventIndex: Number(event.detail.value) });
+  },
+
+  onTargetEventChange(event) {
+    this.setData({ targetEventIndex: Number(event.detail.value) });
   },
 
   onSecondaryEventChange(event) {
@@ -115,20 +137,34 @@ Page({
     });
   },
 
-  async saveProfile() {
-    this.setData({ saving: true, error: '' });
+  buildProfilePayload() {
     const primary = this.data.events[this.data.primaryEventIndex];
     const secondaryEventCodes = this.data.secondaryEvents
       .filter((event) => event.checked)
       .map((event) => event.code);
+    const targetEvent =
+      this.data.targetEventOptions[this.data.targetEventIndex] || null;
+    const examGoal = {
+      ...this.data.examGoal,
+      targetEventCode: targetEvent ? targetEvent.code : ''
+    };
+    if (!examGoal.targetEventCode) {
+      examGoal.targetValue = '';
+    }
+    // targetUnit/targetComparison 由服务端按项目目录派生，客户端不提交。
+    return {
+      primaryEventCode: primary ? primary.code : '',
+      secondaryEventCodes,
+      trainingStartYear: this.data.trainingStartYear,
+      trainingExperienceSummary: this.data.trainingExperienceSummary,
+      examGoal
+    };
+  },
+
+  async saveProfile() {
+    this.setData({ saving: true, error: '' });
     try {
-      await api.updateStudentProfile({
-        primaryEventCode: primary ? primary.code : '',
-        secondaryEventCodes,
-        trainingStartYear: this.data.trainingStartYear,
-        trainingExperienceSummary: this.data.trainingExperienceSummary,
-        examGoal: this.data.examGoal
-      });
+      await api.updateStudentProfile(this.buildProfilePayload());
       wx.showToast({ title: '档案已保存', icon: 'success' });
       await this.loadPage();
     } catch (error) {

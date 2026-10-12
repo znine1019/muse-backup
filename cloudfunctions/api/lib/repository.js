@@ -221,6 +221,54 @@ function createRepository(db) {
     return getDoc(measurementCollection, measurementId);
   }
 
+  async function countWhere(collection, where) {
+    const result = await collection.where(where).count();
+    return Number(result.total) || 0;
+  }
+
+  async function fetchAllOrdered(collection, where, orderBy, options = {}) {
+    const batchSize = options.batchSize || 100;
+    const maxRecords = options.maxRecords || 5000;
+    const total = await countWhere(collection, where);
+    if (!total) {
+      return { records: [], total: 0, incomplete: false };
+    }
+
+    const records = [];
+    const seen = new Set();
+    let offset = 0;
+    while (offset < total && records.length < maxRecords) {
+      let query = collection.where(where);
+      for (const order of orderBy) {
+        query = query.orderBy(order.field, order.direction);
+      }
+      const limit = Math.min(
+        batchSize,
+        total - offset,
+        maxRecords - records.length
+      );
+      const result = await query.skip(offset).limit(limit).get();
+      const batch = result.data || [];
+      if (!batch.length) {
+        break;
+      }
+      for (const record of batch) {
+        const key = record._id || `${offset}:${records.length}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          records.push(record);
+        }
+      }
+      offset += batch.length;
+    }
+
+    return {
+      records,
+      total,
+      incomplete: records.length !== total
+    };
+  }
+
   async function listMeasurements(userId, maxRecords = 100) {
     const result = await measurementCollection
       .where({ userId })
@@ -237,6 +285,18 @@ function createRepository(db) {
     return getDoc(performanceCollection, performanceId);
   }
 
+  async function listMeasurementsForReport(userId, options = {}) {
+    return fetchAllOrdered(
+      measurementCollection,
+      { userId },
+      [
+        { field: 'measuredAt', direction: 'asc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 5000 }
+    );
+  }
+
   async function listPerformanceRecords(userId, maxRecords = 100) {
     const result = await performanceCollection
       .where({ studentUserId: userId })
@@ -250,13 +310,29 @@ function createRepository(db) {
   }
 
   async function listPendingPerformanceRecords(maxRecords = 300) {
-    return queryAll(
+    const result = await fetchAllOrdered(
       performanceCollection,
       { status: 'pending' },
-      maxRecords
+      [
+        { field: 'createdAt', direction: 'asc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords }
     );
+    return result.records;
   }
 
+  async function listApprovedPerformanceRecords(userId, options = {}) {
+    return fetchAllOrdered(
+      performanceCollection,
+      { studentUserId: userId, status: 'approved' },
+      [
+        { field: 'achievedAt', direction: 'asc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 5000 }
+    );
+  }
   async function getStudentUserIdsForGroups(groupIds) {
     if (!groupIds.length) {
       return [];
@@ -264,19 +340,79 @@ function createRepository(db) {
     const userIds = new Set();
     for (let index = 0; index < groupIds.length; index += 100) {
       const chunk = groupIds.slice(index, index + 100);
-      const result = await membershipCollection
-        .where({
+      const result = await fetchAllOrdered(
+        membershipCollection,
+        {
           groupId: db.command.in(chunk),
           roleInGroup: ROLES.STUDENT,
           status: MEMBERSHIP_STATUS.ACTIVE
-        })
-        .limit(100)
-        .get();
-      for (const item of result.data || []) {
+        },
+        [
+          { field: 'groupId', direction: 'asc' },
+          { field: '_id', direction: 'asc' }
+        ],
+        { maxRecords: 5000 }
+      );
+      for (const item of result.records) {
         userIds.add(item.userId);
       }
     }
     return Array.from(userIds);
+  }
+
+  async function getStudentGroupNamesMap(userIds) {
+    const resultMap = new Map();
+    if (!userIds.length) {
+      return resultMap;
+    }
+
+    const memberships = [];
+    for (let index = 0; index < userIds.length; index += 100) {
+      const chunk = userIds.slice(index, index + 100);
+      const batch = await queryAll(
+        membershipCollection,
+        {
+          userId: db.command.in(chunk),
+          roleInGroup: ROLES.STUDENT,
+          status: MEMBERSHIP_STATUS.ACTIVE
+        },
+        Math.max(chunk.length * 10, 100)
+      );
+      memberships.push(...batch);
+    }
+
+    const groupIds = Array.from(
+      new Set(memberships.map((item) => item.groupId))
+    );
+    const groupsMap = await getGroupsMap(groupIds);
+    for (const membership of memberships) {
+      const group = groupsMap.get(membership.groupId);
+      if (!group) {
+        continue;
+      }
+      const names = resultMap.get(membership.userId) || [];
+      names.push(`${group.name}（${group.seasonLabel || '未标注'}）`);
+      resultMap.set(membership.userId, names);
+    }
+    return resultMap;
+  }
+
+  async function countPendingPerformanceRecords(studentUserIds) {
+    if (!studentUserIds) {
+      return countWhere(performanceCollection, { status: 'pending' });
+    }
+    if (!studentUserIds.length) {
+      return 0;
+    }
+    let total = 0;
+    for (let index = 0; index < studentUserIds.length; index += 100) {
+      const chunk = studentUserIds.slice(index, index + 100);
+      total += await countWhere(performanceCollection, {
+        status: 'pending',
+        studentUserId: db.command.in(chunk)
+      });
+    }
+    return total;
   }
 
   async function listAllProfiles(maxRecords = 300) {
@@ -406,12 +542,16 @@ function createRepository(db) {
     getUserById,
     groupCollection,
     listAllProfiles,
+    listApprovedPerformanceRecords,
     listAllTrainingGroups,
     listEnabledTrainingGroups,
     listMeasurements,
+    listMeasurementsForReport,
     listPendingPerformanceRecords,
     listPerformanceRecords,
+    countPendingPerformanceRecords,
     membershipCollection,
+    getStudentGroupNamesMap,
     membershipId,
     measurementIdForUser,
     performanceCollection,

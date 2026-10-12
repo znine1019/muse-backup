@@ -1,0 +1,57 @@
+.trend-chart {
+  margin-top: 16rpx;
+}
+
+.trend-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #10263c;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 360rpx;
+  margin-top: 10rpx;
+}
+
+.trend-empty {
+  margin-top: 12rpx;
+  padding: 24rpx;
+  border: 1rpx dashed #cbd5e0;
+  border-radius: 8rpx;
+  color: #718096;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.trend-note {
+  margin-top: 6rpx;
+  color: #718096;
+  font-size: 24rpx;
+}
+
+.trend-single {
+  margin-top: 12rpx;
+  padding: 28rpx 24rpx;
+  border: 1rpx solid #d8e1e7;
+  border-radius: 12rpx;
+  text-align: center;
+}
+
+.trend-single-value {
+  color: #123c4d;
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.trend-single-date {
+  margin-top: 8rpx;
+  color: #718493;
+  font-size: 24rpx;
+}
+
+.trend-single-note {
+  margin-top: 10rpx;
+  color: #718493;
+  font-size: 24rpx;
+}

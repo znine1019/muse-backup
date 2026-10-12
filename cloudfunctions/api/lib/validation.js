@@ -157,6 +157,13 @@ function optionalIntegerInRange(value, fieldLabel, min, max) {
   return number;
 }
 
+function optionalNumberInRange(value, fieldLabel, min, max) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  return numberInRange(value, fieldLabel, min, max);
+}
+
 function normalizePerformanceEventCode(value, fieldLabel) {
   const eventCode = requiredString(value, fieldLabel, 40);
   const event = getPerformanceEvent(eventCode);
@@ -195,6 +202,21 @@ function validateStudentProfileUpdatePayload(payload) {
   const goalInput = input.examGoal && typeof input.examGoal === 'object'
     ? input.examGoal
     : {};
+  const targetEventCode = optionalString(goalInput.targetEventCode, '体考目标项目', 40);
+  const targetEvent = targetEventCode
+    ? normalizePerformanceEventCode(targetEventCode, '体考目标项目')
+    : null;
+  const targetValue = targetEvent
+    ? optionalNumberInRange(
+        goalInput.targetValue,
+        '体考目标值',
+        targetEvent.min,
+        targetEvent.max
+      )
+    : null;
+  if (goalInput.targetValue !== undefined && goalInput.targetValue !== '' && !targetEvent) {
+    fail('INVALID_FIELD', '填写体考目标值前请选择体考目标项目。');
+  }
   return {
     primaryEventCode: primaryEvent ? primaryEvent.code : '',
     primaryEventName: primaryEvent ? primaryEvent.name : '',
@@ -211,6 +233,11 @@ function validateStudentProfileUpdatePayload(payload) {
       500
     ),
     examGoal: {
+      targetEventCode: targetEvent ? targetEvent.code : '',
+      targetEventName: targetEvent ? targetEvent.name : '',
+      targetValue,
+      targetUnit: targetEvent ? targetEvent.unit : '',
+      targetComparison: targetEvent ? targetEvent.comparison : '',
       targetScore: optionalString(goalInput.targetScore, '体考目标成绩', 80),
       examYear: optionalIntegerInRange(goalInput.examYear, '体考年份', 2026, 2100),
       targetSchool: optionalString(goalInput.targetSchool, '目标院校', 100),

@@ -1,0 +1,11 @@
+<view class="trend-chart">
+  <view class="trend-title">{{title}}</view>
+  <view wx:if="{{series.length === 0}}" class="trend-empty">{{emptyText}}</view>
+  <view wx:elif="{{series.length === 1}}" class="trend-single">
+    <view class="trend-single-value">{{series[0].value}} {{unit}}</view>
+    <view class="trend-single-date">{{series[0].date}}</view>
+    <view class="trend-single-note">暂无足够历史数据形成趋势。</view>
+  </view>
+  <canvas wx:else type="2d" class="chart-canvas"></canvas>
+  <view class="trend-note">{{unit}} · {{comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
+</view>

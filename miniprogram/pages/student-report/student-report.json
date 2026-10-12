@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "运动数据报告",
+  "usingComponents": {
+    "trend-chart": "/components/trend-chart/trend-chart"
+  }
+}

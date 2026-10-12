@@ -81,6 +81,9 @@ module.exports = {
   listStudentProfiles: () => callApi('admin.list_student_profiles'),
   getStudentProfile: (targetUserId) =>
     callApi('admin.get_student_profile', { targetUserId }),
+  getMyReport: () => callApi('report.get_my_report'),
+  getStudentReport: (targetUserId) =>
+    callApi('admin.get_student_report', { targetUserId }),
   listPendingRegistrations: () => callApi('admin.list_pending_registrations'),
   reviewRegistration: (payload) => callApi('admin.review_registration', payload),
   listUsers: () => callApi('admin.list_users'),

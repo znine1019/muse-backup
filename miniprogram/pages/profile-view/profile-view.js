@@ -23,6 +23,12 @@ Page({
     performances: []
   },
 
+  goReport() {
+    wx.navigateTo({
+      url: `/pages/student-report/student-report?userId=${this.data.userId}`
+    });
+  },
+
   onLoad(options) {
     this.setData({ userId: options.userId || '' });
     this.loadPage();

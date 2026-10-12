@@ -9,6 +9,7 @@ const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups
 const createProfileActions = require('../../cloudfunctions/api/actions/profile');
 const createPerformanceActions = require('../../cloudfunctions/api/actions/performance');
 const createRegistrationActions = require('../../cloudfunctions/api/actions/registrations');
+const createReportActions = require('../../cloudfunctions/api/actions/report');
 const createUserAdminActions = require('../../cloudfunctions/api/actions/users');
 
 test('phase 1 and phase 2 business action routes remain registered', () => {
@@ -19,6 +20,7 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     ...createProfileActions({ repository }),
     ...createPerformanceActions({ repository }),
     ...createRegistrationActions({ repository }),
+    ...createReportActions({ repository }),
     ...createUserAdminActions({ repository }),
     ...createGroupAdminActions({ repository })
   };
@@ -46,6 +48,8 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'performance.list_events',
     'performance.submit',
     'performance.list_mine',
+    'report.get_my_report',
+    'admin.get_student_report',
     'admin.list_pending_performances',
     'admin.review_performance'
   ]) {

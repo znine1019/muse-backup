@@ -1,0 +1,89 @@
+<view class="container">
+  <view class="brand">STUDENT / DATA REPORT</view>
+  <view class="title">运动数据报告</view>
+  <view class="sub">报告只使用系统实际保存的身体记录和已审核成绩；待审、拒绝和未录入数据不会进入正式趋势。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在生成报告...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="reload">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading && report}}">
+    <view class="card">
+      <view class="card-title">{{report.profile.name}}</view>
+      <view class="list-meta">身体指标记录：{{report.dataQuality.measurementCount}} 条</view>
+      <view class="list-meta">正式审核成绩：{{report.dataQuality.approvedPerformanceCount}} 条</view>
+      <view class="tag">仅使用实际保存的数据</view>
+    </view>
+
+    <view class="card">
+      <trend-chart
+        title="身高变化"
+        unit="cm"
+        comparison="higher"
+        series="{{heightSeries}}"
+        emptyText="至少需要两次身高记录才能生成趋势。"
+      />
+    </view>
+    <view class="card">
+      <trend-chart
+        title="体重变化"
+        unit="kg"
+        comparison="higher"
+        series="{{weightSeries}}"
+        emptyText="至少需要两次体重记录才能生成趋势。"
+      />
+    </view>
+
+    <view wx:if="{{report.measurementMeta.truncated}}" class="muted">图表展示最近 {{report.measurementMeta.displayed}} 条，共 {{report.measurementMeta.total}} 条身体记录。</view>
+
+    <view class="card">
+      <view class="section-title">正式成绩趋势</view>
+      <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
+        <view class="picker-field">{{selectedEvent.name || '请选择项目'}}</view>
+      </picker>
+      <view class="list-meta" wx:if="{{selectedEvent}}">单位：{{selectedEvent.unit}}，{{selectedEvent.comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
+      <trend-chart
+        title="成绩变化"
+        unit="{{selectedEvent.unit}}"
+        comparison="{{selectedEvent.comparison}}"
+        series="{{selectedSeries}}"
+        emptyText="该项目至少需要两条已审核成绩才能生成趋势。"
+      />
+      <view wx:if="{{report.performanceMeta.truncatedEvents.length}}" class="muted">部分项目图表展示最近 {{report.performanceMeta.chartPointLimit}} 条已审核成绩，正式PB按全部已审核成绩计算。</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">正式个人最好成绩</view>
+      <view wx:if="{{!report.personalBests.length}}" class="muted">暂无已审核的正式PB。</view>
+      <view wx:for="{{report.personalBests}}" wx:key="eventCode" class="list-item">
+        <view class="list-title">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+        <view class="list-meta">取得日期：{{item.date}}</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">体考目标对比</view>
+      <view wx:if="{{!report.targetComparison}}" class="muted">尚未设置数值化体考目标。</view>
+      <view wx:else class="list-item">
+        <view class="list-title">{{report.targetComparison.eventName}}</view>
+        <view class="list-meta">目标：{{report.targetComparison.targetValue}} {{report.targetComparison.unit}}</view>
+        <view class="list-meta" wx:if="{{report.targetComparison.hasCurrentResult}}">当前正式成绩：{{report.targetComparison.currentValue}} {{report.targetComparison.unit}}</view>
+        <view class="list-meta" wx:else>暂无对应项目的正式成绩。</view>
+        <view class="tag" wx:if="{{report.targetComparison.achieved}}">当前成绩已达到目标</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">阶段变化</view>
+      <view wx:if="{{!report.stageChanges.length}}" class="muted">暂无可比较的正式成绩。</view>
+      <view wx:for="{{report.stageChanges}}" wx:key="eventCode" class="list-item">
+        <view class="list-title">{{item.eventName}}</view>
+        <view class="list-meta">首次：{{item.firstValue}} {{item.unit}}（{{item.firstDate}}）</view>
+        <view class="list-meta">最新：{{item.latestValue}} {{item.unit}}（{{item.latestDate}}）</view>
+        <view class="list-meta">变化：{{item.change}} {{item.unit}}（{{item.changePercent}}%）</view>
+      </view>
+    </view>
+  </block>
+</view>

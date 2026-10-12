@@ -76,6 +76,10 @@ Page({
   goPerformance() {
     wx.navigateTo({ url: '/pages/performance/performance' });
   },
+
+  goReport() {
+    wx.navigateTo({ url: '/pages/student-report/student-report' });
+  },
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

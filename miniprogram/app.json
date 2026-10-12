@@ -7,6 +7,7 @@
     "pages/student/student",
     "pages/profile-edit/profile-edit",
     "pages/performance/performance",
+    "pages/student-report/student-report",
     "pages/profile-view/profile-view",
     "pages/coach/coach",
     "pages/admin/admin",

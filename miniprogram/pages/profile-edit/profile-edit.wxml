@@ -33,6 +33,10 @@
         <textarea class="textarea" value="{{trainingExperienceSummary}}" data-field="trainingExperienceSummary" bindinput="onFieldInput" maxlength="500" placeholder="训练经历、比赛经历或教练说明" />
       </view>
       <view class="section-title">体考目标</view>
+      <picker range="{{targetEventOptions}}" range-key="name" value="{{targetEventIndex}}" bindchange="onTargetEventChange">
+        <view class="picker-field">目标项目：{{targetEventOptions[targetEventIndex].name || '暂不设置'}}</view>
+      </picker>
+      <input class="input" type="digit" value="{{examGoal.targetValue}}" data-field="targetValue" bindinput="onExamGoalInput" placeholder="数值目标（可选）" />
       <input class="input" value="{{examGoal.targetScore}}" data-field="targetScore" bindinput="onExamGoalInput" placeholder="目标成绩" />
       <input class="input" type="number" value="{{examGoal.examYear}}" data-field="examYear" bindinput="onExamGoalInput" placeholder="体考年份" />
       <input class="input" value="{{examGoal.targetSchool}}" data-field="targetSchool" bindinput="onExamGoalInput" placeholder="目标院校" />

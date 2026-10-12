@@ -47,6 +47,27 @@ test('extended profile rejects duplicate primary/secondary and unsupported event
   );
 });
 
+
+test('structured exam target is numeric and bound to a supported event', () => {
+  const result = validateStudentProfileUpdatePayload({
+    primaryEventCode: '100m',
+    examGoal: {
+      targetEventCode: '100m',
+      targetValue: 12.5,
+      targetScore: '目标12.5秒'
+    }
+  });
+  assert.equal(result.examGoal.targetEventCode, '100m');
+  assert.equal(result.examGoal.targetValue, 12.5);
+  assert.equal(result.examGoal.targetUnit, '秒');
+  assert.throws(
+    () =>
+      validateStudentProfileUpdatePayload({
+        examGoal: { targetValue: 12.5 }
+      }),
+    /填写体考目标值前请选择体考目标项目/
+  );
+});
 test('measurement and performance payloads validate dates, units and ranges', () => {
   assert.deepEqual(
     validateMeasurementPayload({

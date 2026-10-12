@@ -16,6 +16,7 @@
       <view class="list-meta">训练年限：{{profile.trainingYears || 0}} 年</view>
       <view class="list-meta">训练经历：{{profile.trainingExperienceSummary || '未填写'}}</view>
       <view class="list-meta">体考目标：{{profile.examGoal.targetScore || '未填写'}}</view>
+      <button class="button-secondary" bindtap="goReport">查看运动报告</button>
     </view>
 
     <view class="card">
