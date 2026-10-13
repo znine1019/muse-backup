@@ -15,6 +15,7 @@ const createPerformanceActions = require('../../cloudfunctions/api/actions/perfo
 const createPlanActions = require('../../cloudfunctions/api/actions/plans');
 const createRegistrationActions = require('../../cloudfunctions/api/actions/registrations');
 const createReportActions = require('../../cloudfunctions/api/actions/report');
+const createStatisticsActions = require('../../cloudfunctions/api/actions/statistics');
 const createUserAdminActions = require('../../cloudfunctions/api/actions/users');
 
 test('phase 1 and phase 2 business action routes remain registered', () => {
@@ -31,6 +32,7 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     ...createPlanActions({ repository }),
     ...createRegistrationActions({ repository }),
     ...createReportActions({ repository }),
+    ...createStatisticsActions({ repository }),
     ...createUserAdminActions({ repository }),
     ...createGroupAdminActions({ repository })
   };
@@ -120,7 +122,14 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'feedback.submit',
     'feedback.update',
     'feedback.list_manage',
-    'feedback.review'
+    'feedback.review',
+    'statistics.get_meta',
+    'statistics.get_my_overview',
+    'statistics.get_manage_overview',
+    'leaderboard.performance',
+    'leaderboard.attendance',
+    'export.performance_rows',
+    'export.attendance_rows'
   ]) {
     assert.equal(typeof routes[action], 'function', `${action} should be registered`);
   }

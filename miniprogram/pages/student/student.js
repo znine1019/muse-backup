@@ -101,6 +101,18 @@ Page({
     wx.navigateTo({ url: '/pages/student-feedback/student-feedback' });
   },
 
+  goStatistics() {
+    wx.navigateTo({ url: '/pages/student-statistics/student-statistics' });
+  },
+
+  goPerformanceLeaderboard() {
+    wx.navigateTo({ url: '/pages/performance-leaderboard/performance-leaderboard' });
+  },
+
+  goAttendanceStatistics() {
+    wx.navigateTo({ url: '/pages/attendance-statistics/attendance-statistics' });
+  },
+
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

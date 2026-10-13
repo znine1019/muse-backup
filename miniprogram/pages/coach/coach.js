@@ -102,6 +102,10 @@ Page({
     });
   },
 
+  goStatsWorkbench() {
+    wx.navigateTo({ url: '/pages/stats-workbench/stats-workbench' });
+  },
+
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

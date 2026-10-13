@@ -27,6 +27,11 @@
         <button class="button-secondary" bindtap="goFeedback">训练反馈</button>
         <button class="button-primary" bindtap="goAttendance">今日签到</button>
       </view>
+      <view class="button-row">
+        <button class="button-secondary" bindtap="goStatistics">训练统计</button>
+        <button class="button-secondary" bindtap="goPerformanceLeaderboard">成绩排行榜</button>
+        <button class="button-secondary" bindtap="goAttendanceStatistics">考勤统计</button>
+      </view>
     </view>
 
     <view class="card">

@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="brand">STATISTICS / PERFORMANCE RANKING</view>
+  <view class="title">正式成绩排行榜</view>
+  <view class="sub">只使用审核通过的正式成绩，按实际成绩发生日期归属统计周期。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在计算排行榜...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading && metaLoaded}}">
+    <view class="card">
+      <view class="section-title">筛选条件</view>
+      <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
+        <view class="picker-field">项目：{{events[eventIndex].name}}</view>
+      </picker>
+      <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+        <view class="picker-field">训练组：{{groupOptions[groupIndex].name}}</view>
+      </picker>
+      <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+        <view class="picker-field">周期：{{periodTypeOptions[periodTypeIndex].label}}</view>
+      </picker>
+      <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+        <view class="picker-field">年份：{{yearOptions[yearIndex].label}}</view>
+      </picker>
+      <picker wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+        <view class="picker-field">月份：{{monthOptions[monthIndex].label}}</view>
+      </picker>
+      <picker wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+        <view class="picker-field">季度：{{quarterOptions[quarterIndex].label}}</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{leaderboard}}" class="card">
+      <view class="section-title">{{leaderboard.event.name}} · {{leaderboard.period.label}}</view>
+      <view class="list-meta">{{leaderboard.rows.length}} 名有正式成绩的学生</view>
+      <view class="list-meta">排序方向：{{leaderboard.event.comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
+      <view wx:if="{{!rows.length}}" class="empty">该周期暂无已审核的正式成绩。</view>
+      <view wx:for="{{rows}}" wx:key="studentUserId" class="ranking-row {{item.isSelf ? 'ranking-self' : ''}}">
+        <view class="rank-number">{{item.rank}}</view>
+        <view class="rank-main">
+          <view class="list-title">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
+          <view class="list-meta">周期最好成绩：{{item.valueText}} · {{item.achievedAt}}</view>
+          <view class="list-meta">训练组：{{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}} · 教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}}</view>
+          <view class="list-meta">历史PB（不参与本周期排名）：{{item.historicalText}}</view>
+        </view>
+      </view>
+      <view class="notice">历史PB单独显示；周期榜只使用该周期内实际发生且审核通过的最好成绩。并列成绩使用相同名次，后续名次按标准竞赛排名规则跳号。</view>
+    </view>
+  </block>
+</view>

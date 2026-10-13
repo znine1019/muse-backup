@@ -436,6 +436,31 @@ function createRepository(db) {
     );
   }
 
+  async function listAttendanceRecordsBySessions(sessionIds, options = {}) {
+    if (!sessionIds.length) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const records = [];
+    let total = 0;
+    let incomplete = false;
+    for (let index = 0; index < sessionIds.length; index += 100) {
+      const chunk = sessionIds.slice(index, index + 100);
+      const result = await fetchAllOrdered(
+        attendanceRecordCollection,
+        { sessionId: db.command.in(chunk) },
+        [
+          { field: 'sessionId', direction: 'asc' },
+          { field: '_id', direction: 'asc' }
+        ],
+        { maxRecords: options.maxRecords || 10000 }
+      );
+      records.push(...result.records);
+      total += result.total;
+      incomplete = incomplete || result.incomplete;
+    }
+    return { records, total, incomplete };
+  }
+
   async function listAttendanceRecordsByStudent(studentUserId, options = {}) {
     const where = { studentUserId };
     if (options.fromDate) {
@@ -730,6 +755,97 @@ function createRepository(db) {
       { maxRecords: options.maxRecords || 5000 }
     );
   }
+
+  async function listApprovedPerformanceRecordsForStatistics(options = {}) {
+    const baseWhere = { status: 'approved' };
+    if (options.eventCode) {
+      baseWhere.eventCode = options.eventCode;
+    }
+    if (options.fromDate) {
+      baseWhere.achievedAt = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      baseWhere.achievedAt = db.command.lte(options.toDate);
+    }
+    const maxRecords = options.maxRecords || 10000;
+    const orderBy = [
+      { field: 'achievedAt', direction: 'asc' },
+      { field: '_id', direction: 'asc' }
+    ];
+    if (Array.isArray(options.studentUserIds)) {
+      if (!options.studentUserIds.length) {
+        return { records: [], total: 0, incomplete: false };
+      }
+      const records = [];
+      let total = 0;
+      let incomplete = false;
+      for (let index = 0; index < options.studentUserIds.length; index += 100) {
+        const chunk = options.studentUserIds.slice(index, index + 100);
+        const result = await fetchAllOrdered(
+          performanceCollection,
+          { ...baseWhere, studentUserId: db.command.in(chunk) },
+          orderBy,
+          { maxRecords }
+        );
+        records.push(...result.records);
+        total += result.total;
+        incomplete = incomplete || result.incomplete;
+      }
+      const unique = new Map(records.map((record) => [record._id, record]));
+      const merged = Array.from(unique.values()).sort((left, right) => {
+        const leftDate = new Date(left.achievedAt || 0).getTime();
+        const rightDate = new Date(right.achievedAt || 0).getTime();
+        if (leftDate !== rightDate) {
+          return leftDate - rightDate;
+        }
+        return String(left._id).localeCompare(String(right._id));
+      });
+      return { records: merged, total, incomplete };
+    }
+    return fetchAllOrdered(
+      performanceCollection,
+      baseWhere,
+      orderBy,
+      { maxRecords }
+    );
+  }
+  async function listMembershipsForGroups(groupIds, options = {}) {
+    if (!groupIds.length) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const records = [];
+    let total = 0;
+    let incomplete = false;
+    for (let index = 0; index < groupIds.length; index += 100) {
+      const chunk = groupIds.slice(index, index + 100);
+      const where = {
+        groupId: db.command.in(chunk),
+        roleInGroup: ROLES.STUDENT
+      };
+      if (Array.isArray(options.statuses) && options.statuses.length) {
+        where.status = db.command.in(options.statuses);
+      }
+      const result = await fetchAllOrdered(
+        membershipCollection,
+        where,
+        [
+          { field: 'groupId', direction: 'asc' },
+          { field: '_id', direction: 'asc' }
+        ],
+        { maxRecords: options.maxRecords || 5000 }
+      );
+      records.push(...result.records);
+      total += result.total;
+      incomplete = incomplete || result.incomplete;
+    }
+    const unique = new Map(records.map((record) => [record._id, record]));
+    return {
+      records: Array.from(unique.values()),
+      total,
+      incomplete
+    };
+  }
+
   async function getStudentUserIdsForGroups(groupIds) {
     if (!groupIds.length) {
       return [];
@@ -842,6 +958,23 @@ function createRepository(db) {
     return new Map(profiles.map((profile) => [profile.userId, profile]));
   }
 
+  async function getUsersMap(userIds) {
+    if (!userIds.length) {
+      return new Map();
+    }
+    const users = [];
+    for (let index = 0; index < userIds.length; index += 100) {
+      const chunk = userIds.slice(index, index + 100);
+      const batch = await queryAll(
+        userCollection,
+        { _id: db.command.in(chunk) },
+        chunk.length
+      );
+      users.push(...batch);
+    }
+    return new Map(users.map((user) => [user._id, user]));
+  }
+
   async function getGroupsMap(groupIds) {
     if (!groupIds.length) {
       return new Map();
@@ -952,6 +1085,8 @@ function createRepository(db) {
     getAttendanceRecord,
     getAttendanceSession,
     getStudentUserIdsForGroups,
+    getUsersMap,
+    listMembershipsForGroups,
     listClubNotices,
     listCompetitions,
     listNoticeReads,
@@ -969,10 +1104,12 @@ function createRepository(db) {
     getStudentGroupIds,
     listAllProfiles,
     listAttendanceRecordsBySession,
+    listAttendanceRecordsBySessions,
     listAttendanceRecordsByStudent,
     listAttendanceSessions,
     listTrainingPlans,
     listApprovedPerformanceRecords,
+    listApprovedPerformanceRecordsForStatistics,
     listAllTrainingGroups,
     listEnabledTrainingGroups,
     listMeasurements,

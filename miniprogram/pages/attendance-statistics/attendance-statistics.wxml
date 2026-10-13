@@ -1,0 +1,65 @@
+<view class="container">
+  <view class="brand">STATISTICS / ATTENDANCE</view>
+  <view class="title">训练考勤统计与排行</view>
+  <view class="sub">出勤率仅基于已结束的有效训练场次；未签到不等同于已核实无故缺勤。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在计算考勤统计...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading && metaLoaded}}">
+    <view class="card">
+      <view class="section-title">筛选条件</view>
+      <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+        <view class="picker-field">训练组：{{groups[groupIndex].name}}</view>
+      </picker>
+      <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+        <view class="picker-field">周期：{{periodTypeOptions[periodTypeIndex].label}}</view>
+      </picker>
+      <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+        <view class="picker-field">年份：{{yearOptions[yearIndex].label}}</view>
+      </picker>
+      <picker wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+        <view class="picker-field">月份：{{monthOptions[monthIndex].label}}</view>
+      </picker>
+      <picker wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+        <view class="picker-field">季度：{{quarterOptions[quarterIndex].label}}</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{summary}}" class="card">
+      <view class="section-title">出勤概览</view>
+      <view class="overview-grid">
+        <view class="overview-item"><view class="overview-label">计划应到</view><view class="overview-value">{{summary.plannedExpected}}</view></view>
+        <view class="overview-item"><view class="overview-label">已批准请假</view><view class="overview-value">{{summary.approvedLeave}}</view></view>
+        <view class="overview-item"><view class="overview-label">有效出勤</view><view class="overview-value">{{summary.validAttendance}}</view></view>
+        <view class="overview-item"><view class="overview-label">出勤率</view><view class="overview-value">{{summary.attendanceRateText}}</view></view>
+        <view class="overview-item"><view class="overview-label">迟到</view><view class="overview-value">{{summary.late}}</view></view>
+        <view class="overview-item"><view class="overview-label">待核实</view><view class="overview-value">{{summary.pendingVerification}}</view></view>
+        <view class="overview-item"><view class="overview-label">未签到</view><view class="overview-value">{{summary.absent}}</view></view>
+        <view class="overview-item"><view class="overview-label">迟到率</view><view class="overview-value">{{summary.lateRateText}}</view></view>
+      </view>
+    </view>
+
+    <view wx:if="{{dataQuality}}" class="notice">
+      {{dataQuality.membershipHistoryNote}} 当前出勤率基于已结束场次计算，最低样本门槛 {{dataQuality.minSampleSessions}} 场。
+    </view>
+
+    <view class="card">
+      <view class="section-title">个人出勤排行</view>
+      <view wx:if="{{!rows.length}}" class="empty">当前范围暂无有效考勤统计。</view>
+      <view wx:for="{{rows}}" wx:key="studentUserId" class="ranking-row {{item.isSelf ? 'ranking-self' : ''}}">
+        <view class="rank-number">{{item.rankText}}</view>
+        <view class="rank-main">
+          <view class="list-title">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
+          <view class="list-meta">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}} · {{item.attendanceRateText}}</view>
+          <view class="list-meta">迟到：{{item.late}} · 待核实：{{item.pendingVerification}} · 未签到：{{item.absent}}</view>
+          <view class="list-meta">样本场次：{{item.sampleSessions}}{{item.sampleSufficient ? '' : '（样本不足，不参与排名）'}}</view>
+        </view>
+      </view>
+      <view class="notice">不以请假次数、RPE或身体指标制作惩罚榜；样本不足时只显示数据，不给出领先名次。</view>
+    </view>
+  </block>
+</view>

@@ -84,6 +84,19 @@ module.exports = {
   getMyReport: () => callApi('report.get_my_report'),
   getStudentReport: (targetUserId) =>
     callApi('admin.get_student_report', { targetUserId }),
+  getStatisticsMeta: () => callApi('statistics.get_meta'),
+  getMyStatistics: (payload = {}) =>
+    callApi('statistics.get_my_overview', payload),
+  getManageStatistics: (payload = {}) =>
+    callApi('statistics.get_manage_overview', payload),
+  getPerformanceLeaderboard: (payload = {}) =>
+    callApi('leaderboard.performance', payload),
+  getAttendanceLeaderboard: (payload = {}) =>
+    callApi('leaderboard.attendance', payload),
+  exportPerformanceRows: (payload = {}) =>
+    callApi('export.performance_rows', payload),
+  exportAttendanceRows: (payload = {}) =>
+    callApi('export.attendance_rows', payload),
   listPlanMeta: () => callApi('plan.list_meta'),
   listManagePlans: (payload = {}) => callApi('plan.list_manage', payload),
   getManagePlan: (planId) => callApi('plan.get_manage_detail', { planId }),

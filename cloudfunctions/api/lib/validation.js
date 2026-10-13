@@ -14,6 +14,7 @@ const {
   ROLE_VALUES
 } = require('./constants');
 const { isDateOnly, isDateTimeString } = require('./dates');
+const { PERIOD_TYPES } = require('./dates');
 const { getPerformanceEvent } = require('./performance-events');
 const { fail } = require('./errors');
 
@@ -1112,6 +1113,48 @@ function validateFeedbackQueryPayload(payload) {
   };
 }
 
+function validateStatisticsPeriodPayload(payload) {
+  const input = asObject(payload || {});
+  const periodType = optionalString(input.periodType, '统计周期', 20) || 'month';
+  if (!PERIOD_TYPES.includes(periodType)) {
+    fail('INVALID_FIELD', '统计周期不正确。');
+  }
+  return {
+    periodType,
+    year: optionalIntegerInRange(input.year, '统计年份', 2000, 2100),
+    month: optionalIntegerInRange(input.month, '统计月份', 1, 12),
+    quarter: optionalIntegerInRange(input.quarter, '统计季度', 1, 4),
+    trainingGroupId: input.trainingGroupId
+      ? safeId(input.trainingGroupId, '训练组')
+      : ''
+  };
+}
+
+function validatePerformanceLeaderboardPayload(payload) {
+  const input = asObject(payload || {});
+  const period = validateStatisticsPeriodPayload(input);
+  return {
+    ...period,
+    eventCode: normalizePerformanceEventCode(input.eventCode, '排行榜项目').code
+  };
+}
+
+function validateAttendanceLeaderboardPayload(payload) {
+  return validateStatisticsPeriodPayload(asObject(payload || {}));
+}
+
+function validateExportPayload(payload) {
+  const input = asObject(payload || {});
+  const period = validateStatisticsPeriodPayload(input);
+  return {
+    ...period,
+    eventCode: input.eventCode
+      ? normalizePerformanceEventCode(input.eventCode, '导出项目').code
+      : '',
+    maxRows: optionalIntegerInRange(input.maxRows, '导出上限', 1, 5000)
+  };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -1141,6 +1184,10 @@ function validateGroupCoachPayload(payload) {
 }
 
 module.exports = {
+  validateStatisticsPeriodPayload,
+  validatePerformanceLeaderboardPayload,
+  validateAttendanceLeaderboardPayload,
+  validateExportPayload,
   validateCompetitionActionPayload,
   validateCompetitionCreatePayload,
   validateCompetitionQueryPayload,

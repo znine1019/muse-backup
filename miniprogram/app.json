@@ -13,6 +13,9 @@
     "pages/student-competitions/student-competitions",
     "pages/student-notices/student-notices",
     "pages/student-feedback/student-feedback",
+    "pages/student-statistics/student-statistics",
+    "pages/performance-leaderboard/performance-leaderboard",
+    "pages/attendance-statistics/attendance-statistics",
     "pages/profile-view/profile-view",
     "pages/coach/coach",
     "pages/coach-performance-review/coach-performance-review",
@@ -22,6 +25,7 @@
     "pages/competition-manage/competition-manage",
     "pages/notice-manage/notice-manage",
     "pages/feedback-manage/feedback-manage",
+    "pages/stats-workbench/stats-workbench",
     "pages/admin/admin",
     "pages/bootstrap/bootstrap"
   ],

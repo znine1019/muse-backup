@@ -15,6 +15,11 @@ const {
   timeToMinutes
 } = require('../lib/dates');
 const { fail } = require('../lib/errors');
+const {
+  buildRosterSummary,
+  deriveStudentStatus,
+  sessionPhase
+} = require('../lib/attendance-rules');
 const { haversineMeters, roundCoordinate } = require('../lib/geo');
 const { loadActiveActor } = require('../lib/session');
 const { getDocumentOrNull } = require('../lib/transaction');
@@ -34,27 +39,6 @@ function isDeveloper(actor) {
   return actor.roles.includes(ROLES.DEVELOPER);
 }
 
-function sessionPhase(session, now = new Date()) {
-  if (session.status === ATTENDANCE_SESSION_STATUS.CANCELLED) {
-    return 'cancelled';
-  }
-  const parts = clubTimeParts(now);
-  if (parts.date < session.attendanceDate) {
-    return 'not_started';
-  }
-  if (parts.date > session.attendanceDate) {
-    return 'closed';
-  }
-  const openMinutes = timeToMinutes(session.checkInOpenTime);
-  const closeMinutes = timeToMinutes(session.checkInCloseTime);
-  if (parts.minutes < openMinutes) {
-    return 'not_started';
-  }
-  if (parts.minutes > closeMinutes) {
-    return 'closed';
-  }
-  return 'open';
-}
 
 function readableSession(session, extra = {}) {
   return {
@@ -125,54 +109,7 @@ function readableLeave(leave, extra = {}) {
   };
 }
 
-function deriveStudentStatus(session, record, leave) {
-  if (session.status === ATTENDANCE_SESSION_STATUS.CANCELLED) {
-    return 'cancelled';
-  }
-  if (record) {
-    return record.status;
-  }
-  if (leave && leave.status === LEAVE_STATUS.APPROVED) {
-    return ATTENDANCE_RECORD_STATUS.LEAVE_APPROVED;
-  }
-  const phase = sessionPhase(session);
-  if (phase === 'not_started') {
-    return 'not_started';
-  }
-  if (phase === 'open') {
-    return 'pending';
-  }
-  return ATTENDANCE_RECORD_STATUS.ABSENT;
-}
 
-function buildSummary(records) {
-  const summary = {
-    expected: 0,
-    checkedIn: 0,
-    late: 0,
-    leaveApproved: 0,
-    pendingVerification: 0,
-    pending: 0,
-    absent: 0
-  };
-  for (const item of records) {
-    summary.expected += 1;
-    if (item.status === ATTENDANCE_RECORD_STATUS.CHECKED_IN) {
-      summary.checkedIn += 1;
-    } else if (item.status === ATTENDANCE_RECORD_STATUS.LATE) {
-      summary.late += 1;
-    } else if (item.status === ATTENDANCE_RECORD_STATUS.LEAVE_APPROVED) {
-      summary.leaveApproved += 1;
-    } else if (item.status === ATTENDANCE_RECORD_STATUS.PENDING_VERIFICATION) {
-      summary.pendingVerification += 1;
-    } else if (item.status === ATTENDANCE_RECORD_STATUS.ABSENT) {
-      summary.absent += 1;
-    } else {
-      summary.pending += 1;
-    }
-  }
-  return summary;
-}
 
 function createAttendanceActions({ repository }) {
   async function loadManageActor(identity) {
@@ -272,7 +209,7 @@ function createAttendanceActions({ repository }) {
     return {
       session: readableSession(session, { trainingGroupName: group.name }),
       roster,
-      summary: buildSummary(roster)
+      summary: buildRosterSummary(roster)
     };
   }
 
