@@ -384,17 +384,20 @@ function createParentActions({ repository }) {
       fail('INVALID_INVITE_CODE', '关联凭证无效或已被使用，请向学生确认最新凭证。');
     }
 
-    const expired =
-      invite.expiresAt && new Date(invite.expiresAt).getTime() < Date.now();
-    if (expired) {
-      await repository.expireParentInvite(invite._id);
-      fail('INVITE_EXPIRED', '关联凭证已过期，请让学生重新生成。');
-    }
+    /* 单张凭证自身的失败次数上限（已知凭证在无效状态被反复提交时累计） */
     if (
       Number(invite.attempts || 0) >=
       Number(invite.maxAttempts || LIMITS.parentInviteMaxAttempts)
     ) {
       fail('INVITE_LOCKED', '该关联凭证失败次数过多，已失效，请让学生重新生成。');
+    }
+
+    const expired =
+      invite.expiresAt && new Date(invite.expiresAt).getTime() < Date.now();
+    if (expired) {
+      await repository.incrementInviteAttempts(invite._id);
+      await repository.expireParentInvite(invite._id);
+      fail('INVITE_EXPIRED', '关联凭证已过期，请让学生重新生成。');
     }
     if (invite.studentUserId === actor._id) {
       fail('INVALID_INVITE_CODE', '不能使用自己生成的关联凭证。');

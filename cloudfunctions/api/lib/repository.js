@@ -285,15 +285,43 @@ function createRepository(db) {
       ? new Date(user.inviteFailWindowAt).getTime()
       : 0;
     const inWindow = windowAt && Date.now() - windowAt < 15 * 60 * 1000;
-    const nextCount = inWindow ? Number(user.inviteFailCount || 0) + 1 : 1;
+    if (inWindow) {
+      /*
+       * 窗口期内使用原子自增（inc）：并发失败请求不会互相覆盖计数，
+       * 避免“读-改-写”丢更新导致限流被绕过。
+       */
+      await userCollection.doc(userId).update({
+        data: {
+          inviteFailCount: db.command.inc(1),
+          updatedAt: db.serverDate()
+        }
+      });
+      return Number(user.inviteFailCount || 0) + 1;
+    }
+    /* 窗口已过期：重置计数并开启新窗口 */
     await userCollection.doc(userId).update({
       data: {
-        inviteFailCount: nextCount,
-        inviteFailWindowAt: inWindow ? user.inviteFailWindowAt : db.serverDate(),
+        inviteFailCount: 1,
+        inviteFailWindowAt: db.serverDate(),
         updatedAt: db.serverDate()
       }
     });
-    return nextCount;
+    return 1;
+  }
+
+  /* 已知凭证在无效状态被再次提交时，累计该凭证自身的失败次数 */
+  async function incrementInviteAttempts(inviteId) {
+    const invite = await getDoc(parentLinkCollection, inviteId);
+    if (!invite) {
+      return 0;
+    }
+    await parentLinkCollection.doc(inviteId).update({
+      data: {
+        attempts: db.command.inc(1),
+        updatedAt: db.serverDate()
+      }
+    });
+    return Number(invite.attempts || 0) + 1;
   }
 
   async function getLatestReview(userId) {
@@ -1138,6 +1166,7 @@ function createRepository(db) {
     countParentLinksByStatus,
     expireParentInvite,
     recordParentInviteFailure,
+    incrementInviteAttempts,
     attendanceRecordId,
     attendanceSessionCollection,
     attendanceSessionIdForRequest,

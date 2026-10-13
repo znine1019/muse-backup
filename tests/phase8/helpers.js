@@ -208,6 +208,15 @@ function createFakeRepository(seed = {}) {
         });
       }
     },
+    async incrementInviteAttempts(inviteId) {
+      const existing = collection('parent_links').get(inviteId);
+      if (!existing) {
+        return 0;
+      }
+      const next = Number(existing.attempts || 0) + 1;
+      collection('parent_links').set(inviteId, { ...existing, attempts: next });
+      return next;
+    },
     async recordParentInviteFailure(userId) {
       /* 与生产实现一致：计数写在 users 文档上 */
       const user = usersById.get(userId);
