@@ -80,7 +80,7 @@ const COACHES = Object.freeze([
 const STUDENTS = Object.freeze([
   {
     id: 'stu_lin',
-    name: '林越',
+    name: '王浩樊',
     tag: '虚构演示学生',
     genderLabel: '男',
     birthDate: '2009-04-12',
@@ -94,7 +94,7 @@ const STUDENTS = Object.freeze([
   },
   {
     id: 'stu_su',
-    name: '苏晴',
+    name: '乔格送髋王',
     tag: '虚构演示学生',
     genderLabel: '女',
     birthDate: '2010-01-08',
@@ -108,7 +108,7 @@ const STUDENTS = Object.freeze([
   },
   {
     id: 'stu_chen',
-    name: '陈昊',
+    name: '乔格舞王',
     tag: '虚构演示学生',
     genderLabel: '男',
     birthDate: '2008-09-21',

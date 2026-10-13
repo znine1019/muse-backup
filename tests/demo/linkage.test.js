@@ -78,8 +78,8 @@ test('D1-B 三个角色共用同一份虚构数据源', () => {
   /* 教练名册由"学生所属训练组"派生，而不是各自独立维护 */
   const linRoster = store.studentsOfCoach(COACH_LIN).map((item) => item.id).sort();
   const suRoster = store.studentsOfCoach(COACH_SU).map((item) => item.id).sort();
-  assert.ok(linRoster.includes(STUDENT_LIN), '林教练应带队专项组（含林越）');
-  assert.ok(suRoster.includes(STUDENT_SU), '苏教练应带队四项组（含苏晴）');
+  assert.ok(linRoster.includes(STUDENT_LIN), '林教练应带队专项组（含王浩樊）');
+  assert.ok(suRoster.includes(STUDENT_SU), '苏教练应带队四项组（含乔格送髋王）');
   assert.notDeepEqual(linRoster, suRoster, '两位教练的名册应不同（教练轮换带队）');
 
   /* 家长关联同样来自同一数据源 */
@@ -90,7 +90,7 @@ test('D1-B 三个角色共用同一份虚构数据源', () => {
 test('D1-B 预置授权不依赖任何模拟审批', () => {
   /* 教练授权、家长关联都在初始数据里直接可用 */
   assert.ok(store.groupsOfCoach(COACH_LIN).length > 0, '教练授权应为预置');
-  assert.equal(store.isLinkActive('parent_lin', STUDENT_LIN), true, '林越的家长关联应预置为已生效');
+  assert.equal(store.isLinkActive('parent_lin', STUDENT_LIN), true, '王浩樊的家长关联应预置为已生效');
   /* 数据源里不存在任何"待开发者审批"的中间态阻断 */
   const state = store.getState();
   assert.ok(!state.parentReviews, 'DEMO 数据源不应包含开发者审批队列');
@@ -117,7 +117,7 @@ test('D1-B 联动：教练发布草稿后学生端立即可见', () => {
 test('D1-B 联动：教练通过成绩后才进入 PB 与排行榜', () => {
   store.resetState();
   const pending = findPendingPerformance(STUDENT_LIN, '100m');
-  assert.ok(pending, '林越应有待审核的 100 米成绩');
+  assert.ok(pending, '王浩樊应有待审核的 100 米成绩');
 
   const pbBefore = store.personalBests(STUDENT_LIN).find((item) => item.eventCode === '100m');
   const boardBefore = store.performanceLeaderboard('100m', 'group_sprint');
@@ -138,7 +138,7 @@ test('D1-B 联动：教练通过成绩后才进入 PB 与排行榜', () => {
 test('D1-B 联动：教练驳回成绩不会进入正式数据', () => {
   store.resetState();
   const pending = findPendingPerformance(STUDENT_SU, 'long_jump');
-  assert.ok(pending, '苏晴应有待审核的跳远成绩');
+  assert.ok(pending, '乔格送髋王应有待审核的跳远成绩');
 
   const pbBefore = store.personalBests(STUDENT_SU).find((item) => item.eventCode === 'long_jump');
   const result = store.reviewPerformance(pending.performanceId, 'reject');

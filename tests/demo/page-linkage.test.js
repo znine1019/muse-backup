@@ -184,7 +184,7 @@ test('页面联动｜教练通过成绩后学生 PB 与家长成绩同步更新'
   const pending = STORE
     .getState()
     .performances.find((item) => item.studentId === 'stu_lin' && item.eventCode === '100m' && item.status === 'pending');
-  assert.ok(pending, '林越应有待审核 100 米成绩');
+  assert.ok(pending, '王浩樊应有待审核 100 米成绩');
 
   const before = await render('student');
   const pbBefore = before.instance.data.student.pb.value;
@@ -239,7 +239,7 @@ test('页面联动｜教练驳回成绩后学生 PB 不变', async () => {
 test('页面联动｜教练批准请假后学生与家长页面显示对应状态', async () => {
   STORE.resetState();
   const leave = STORE.coachTodos('coach_lin').leaves.find((item) => item.studentId === 'stu_lin');
-  assert.ok(leave, '林越应有待批请假');
+  assert.ok(leave, '王浩樊应有待批请假');
 
   const coachPage = await render('coach');
   const result = coachPage.instance.runDemoAction('approve-leave', leave.leaveId);
@@ -294,7 +294,7 @@ test('页面联动｜教练发布通知后学生页面显示该通知', async ()
 test('页面联动｜家长以未授权详情 ID 直接打开会被拒绝', async () => {
   STORE.resetState();
 
-  /* notice_3 仅面向 group_four（苏晴），其家长关联仍为待核验 → 未授权 */
+  /* notice_3 仅面向 group_four（乔格送髋王），其家长关联仍为待核验 → 未授权 */
   const page = await render('parent', { params: { detail: 'notice', id: 'notice_3' } });
   assert.ok(page.instance.data.restrictedDetail, '应进入"无权查看"状态');
   assert.match(page.instance.data.restrictedDetail.message, /授权/);
@@ -386,7 +386,7 @@ test('BUG-06 学生计划：点击列表行打开完整详情，返回后收起'
   });
   assert.equal(detail.instance.data.view, 'detail');
   assert.equal(detail.instance.data.detail.title, planRow.t);
-  assert.match(detail.instance.data.detail.metaLine, /林越（虚构）/);
+  assert.match(detail.instance.data.detail.metaLine, /王浩樊（虚构）/);
   assert.match(detail.instance.data.detail.metaLine, /2026-06-15 至 2026-06-21/);
   assert.match(detail.instance.data.detail.body, /起跑器调试/);
   const detailText = detail.instance.data.detail.items.join('\n');
@@ -437,7 +437,7 @@ test('BUG-07 家长计划：点击已授权学生计划打开完整详情并正�
   });
   assert.equal(detail.instance.data.view, 'detail');
   assert.equal(detail.instance.data.detail.title, planRow.t);
-  assert.match(detail.instance.data.detail.metaLine, /林越（虚构）/);
+  assert.match(detail.instance.data.detail.metaLine, /王浩樊（虚构）/);
   assert.match(detail.instance.data.detail.metaLine, /2026-06-15 至 2026-06-21/);
   assert.match(detail.instance.data.detail.body, /起跑器调试/);
   assert.match(detail.instance.data.detail.items.join('\n'), /6 组/);
