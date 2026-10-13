@@ -158,3 +158,49 @@
 
 未修改：后端 API、云函数、数据库、鉴权逻辑、统计口径、训练组权限、亲子授权规则、`bootstrap`、AppID、`feature-catalog.js`、`active-role.js`、任何正式业务页面的 `.js` 业务逻辑（本轮仅 `admin.js` 新增两个演示跳转方法 + `admin.wxml` 两个入口 + `app.json` 注册演示页）。
 未执行：云端部署、集合/索引创建、真实账号角色变更、体验版上传、套餐升级、阶段T、F1-B。
+
+---
+
+## 12. 真机验收后修复（BUG-01 / BUG-02）
+
+真机人工验收发现两项演示与正式业务规则不一致的问题，已修复（**仅改演示层，未动正式业务代码**）。
+
+### 12.1 正式业务规则只读核查（结论：正式代码正确，无需修改）
+
+| 核查项 | 结论 | 依据 |
+|---|---|---|
+| 家长读取前重新验证关联生效 | PASS | `parent.js` 的 `assertActiveLink()` 是家长读取学生的唯一入口，要求 `kind=RELATION && status=active`，不满足则 `LINK_NOT_ACTIVE` |
+| 待审 / 驳回 / 撤销一律拒绝 | PASS | `getStudentOverview` 在拉取任何业务数据前先 `assertActiveLink` + 学生账号状态校验；`listStudents` 只返回 `status=active` 的关联 |
+| 学生计划排除草稿 | PASS | `plan.list_student` 使用 `statuses:[published]`；`getStudentPlanDetail` 要求 `status===published` 否则 `PLAN_NOT_FOUND` |
+| 详情参数绕过列表过滤 | PASS | 详情同样校验 published + 训练组范围 + 训练组启用 |
+| 既有测试覆盖 | PASS | phase8：「关联流程：学生拒绝与开发者驳回都会终止授权」「解除关联：任一方解除后家长立即失去读取权限」「越权防护」「授权失效」；phase3：「student cannot see drafts or other groups published plans」「student week query returns overlapping published plans only」 |
+
+因此本轮**未修改任何云函数、权限或数据库**，只修正演示层。
+
+### 12.2 BUG-01 修复：家长待审核关联不得展示学生数据
+- 在 `parent-demo.js` 新增与正式系统一致的 `PARENT_LINK_STATUS` 常量（测试与 `cloudfunctions/api/lib/constants.js` 交叉校验）、`isLinkActive()` 与 `PROTECTED_MODULE_IDS`，把授权判断收敛到**数据构建层**而不是靠 WXML 隐藏。
+- `buildParentWorkbench(index)`：关联未生效时直接返回 `overview: null` 与六个受保护集合全空数组，并附带 `accessNotice`；不返回上一位学生的任何数据。
+- `buildParentModule(id, index, {linkState})`：受保护模块（概览/计划/成绩/考勤/反馈/赛事）在关联未生效时返回 `restricted: true` 且 `rows: []`、无 `summary`，因此**直接以参数打开详情也无法绕过**；`link`/`account` 仍可访问。
+- `demo.wxml` 家长视图：受保护区块整体包在 `wx:if="{{parent.linkActive}}"` 内；`wx:else` 只展示学生标识、关联状态、授权说明与切换操作。
+- 切换学生时整体替换 `parent` 对象，不残留上一位学生数据；切回已生效学生数据正常恢复。
+
+### 12.3 BUG-02 修复：学生端不得出现教练草稿
+- `student-demo.js` 新增 `PLAN_STATUS`、`ALL_PLANS`（含 1 份草稿）与 `visibleStudentPlans()`（仅 `published`），与正式系统 `statuses:[published]` 规则一致。
+- 计划模块的行与统计数量均来自同一份过滤结果，原先混入的“草稿”行已移除；工作台新增的“训练计划（演示周期）”概览也使用同一过滤。
+- 演示数据中**保留**那份草稿，使“过滤确实生效”可被测试验证（而非删掉了数据而无法证明规则）。教练端草稿管理能力未受影响。
+
+### 12.4 演示时间口径修正
+- 固定 6 月数据不再称为“本月”，统一改为“**演示周期**”（家长与学生的周期类标签、统计标签）。
+- 原“签到中”改为“**模拟签到状态**”，避免在真实签到窗口之外声称正在签到；演示仍不获取定位、不写考勤。
+
+### 12.5 新增测试与结果
+`tests/f1/demo-preview.test.js` 由 19 项增至 **27 项**，新增项均直接断言返回的数据结构：
+- 演示状态取值与正式 `PARENT_LINK_STATUS` 一致；
+- 仅 `active` 可读受保护数据（active 返回非空，其余 8 种状态返回 `overview:null` + 六个空集合）；
+- 待审核学生默认预置确实被隔离；
+- 待审/驳回/撤销下受保护模块 `restricted:true` 且无数据行、无数值卡；
+- 页面级切换：已生效 → 待审核后无数据残留，切回后数据恢复；
+- 学生计划：草稿存在但可见集合不含草稿，列表/概览/统计数量一致；
+- 演示口径：无“本月”、无“签到中”，且工作台实际数据为“模拟签到状态”。
+
+**全量结果：371 项通过 / 0 失败 / 0 TODO**（原 363 + 新增 8）。结构校验 1883 项、JS 语法 141 文件、WXML/JSON/diff 全部通过。

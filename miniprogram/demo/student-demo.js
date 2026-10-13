@@ -28,7 +28,8 @@ const TODAY_SESSIONS = Object.freeze([
     title: '速度课 · 60米加速跑',
     locationName: '田径场（虚构）',
     windowText: '16:00 – 18:00',
-    phaseLabel: '签到中',
+    /* 不声称“签到中”：演示不获取定位，也不受真实签到窗口约束 */
+    phaseLabel: '模拟签到状态',
     statusLabel: '去签到',
     canCheckIn: true
   },
@@ -78,11 +79,34 @@ const NOTICES = Object.freeze([
   },
   {
     title: '队内测试通知',
-    content: '本月底进行 100 米与跳远队内测试。',
+    content: '月底将进行 100 米与跳远队内测试。',
     isImportant: false,
     isRead: true
   }
 ]);
+
+/*
+ * 训练计划演示数据：刻意保留一份“教练草稿”。
+ * 正式系统 plan.list_student 使用 statuses:[published]、详情也要求 published，
+ * 因此学生端演示一律只展示已发布计划，草稿不得出现在任何学生可见区域。
+ */
+const PLAN_STATUS = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  ARCHIVED: 'archived'
+});
+
+const ALL_PLANS = Object.freeze([
+  { title: '周一 · 速度耐力', meta: '60米 × 6 组，组间 3 分钟', status: PLAN_STATUS.PUBLISHED },
+  { title: '周三 · 下肢力量', meta: '深蹲 4×6、跳箱 4×5', status: PLAN_STATUS.PUBLISHED },
+  { title: '周五 · 技术课', meta: '起跑与加速跑技术', status: PLAN_STATUS.PUBLISHED },
+  { title: '周六 · 补强课', meta: '教练尚未发布（草稿）', status: PLAN_STATUS.DRAFT }
+]);
+
+/** 学生可见计划：仅正式发布（与正式系统可见性规则一致） */
+function visibleStudentPlans() {
+  return ALL_PLANS.filter((item) => item.status === PLAN_STATUS.PUBLISHED);
+}
 
 const CATALOG = Object.freeze([
   { id: 'plans', name: '训练计划', group: '训练与计划', tone: 'brand', icon: '计', desc: '本周安排与训练内容' },
@@ -120,6 +144,11 @@ function buildStudentWorkbench() {
     monthStats: { ...MONTH_STATS },
     progress: PROGRESS.map((item) => ({ ...item })),
     notices: NOTICES.map((item) => ({ ...item })),
+    /* 今日/本周训练计划概览：与训练计划列表使用同一份可见性过滤，草稿不会出现 */
+    planOverview: {
+      publishedCount: visibleStudentPlans().length,
+      items: visibleStudentPlans().map((item) => ({ title: item.title, meta: item.meta }))
+    },
     catalogGroups: groupCatalog(CATALOG)
   };
 }
@@ -160,21 +189,23 @@ function buildStudentModule(moduleId) {
 
 const MODULE_BUILDERS = {
   plans() {
+    const visible = visibleStudentPlans();
     return {
-      subtitle: '本周训练安排（虚构）',
-      summary: { label: '本周已发布', value: '3', unit: '份计划', meta: '短跑组（虚构）' },
-      rows: [
-        row('周一 · 速度耐力', '60米 × 6 组，组间 3 分钟', { chip: '已发布', tone: 'ok' }),
-        row('周三 · 下肢力量', '深蹲 4×6、跳箱 4×5', { chip: '已发布', tone: 'ok' }),
-        row('周五 · 技术课', '起跑与加速跑技术', { chip: '草稿', tone: 'warn' })
-      ],
-      note: '演示数据，不代表真实训练计划。'
+      subtitle: '训练安排（演示周期）',
+      summary: {
+        label: '已发布计划',
+        value: String(visible.length),
+        unit: '份',
+        meta: '短跑组（虚构）'
+      },
+      rows: visible.map((item) => row(item.title, item.meta, { chip: '已发布', tone: 'ok' })),
+      note: '仅展示教练已正式发布的计划；未发布草稿不会出现在学生端。'
     };
   },
   attendance() {
     return {
       subtitle: '签到与请假（虚构）',
-      summary: { label: '本月有效出勤', value: '11', unit: '/ 12', meta: '出勤率 92%' },
+      summary: { label: '演示周期有效出勤', value: '11', unit: '/ 12', meta: '出勤率 92%' },
       rows: [
         row('06-11 速度课', '16:00 – 18:00 · 田径场（虚构）', { chip: '已签到', tone: 'ok' }),
         row('06-13 力量课', '18:30 – 20:00 · 力量房（虚构）', { chip: '迟到', tone: 'warn' }),
@@ -235,7 +266,7 @@ const MODULE_BUILDERS = {
   statistics() {
     return {
       subtitle: '训练统计（虚构）',
-      summary: { label: '本月出勤率', value: '92', unit: '%', meta: '应签到 12 次' },
+      summary: { label: '演示周期出勤率', value: '92', unit: '%', meta: '应签到 12 次' },
       rows: [
         row('有效出勤', '已结束场次口径', { v: '11 次' }),
         row('迟到', '迟到线之后签到', { v: '1 次' }),
@@ -283,7 +314,7 @@ const MODULE_BUILDERS = {
       subtitle: '俱乐部通知（虚构）',
       rows: [
         row('本周训练调整', '周三改至室内力量房，注意带好训练鞋。', { chip: '重要 · 未读', tone: 'danger' }),
-        row('队内测试通知', '本月底进行 100 米与跳远队内测试。', { chip: '已读', tone: '' })
+        row('队内测试通知', '月底将进行 100 米与跳远队内测试。', { chip: '已读', tone: '' })
       ],
       note: '重要通知置顶展示。'
     };
@@ -315,9 +346,12 @@ const MODULE_BUILDERS = {
 };
 
 module.exports = {
+  ALL_PLANS,
+  PLAN_STATUS,
   STUDENT,
   buildStudentModule,
   buildStudentWorkbench,
   catalog: CATALOG,
+  visibleStudentPlans,
   DemoModuleError
 };

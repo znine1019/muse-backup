@@ -370,6 +370,182 @@ test('演示页：退出预览回到开发者工作台并清理演示状态', as
 });
 
 /* --------------------------------------------------- 开发者工作台入口 */
+/* ------------------------------------------- BUG-01 家长授权隔离修正 */
+
+test('家长授权：演示状态取值与正式系统 PARENT_LINK_STATUS 完全一致', () => {
+  const server = require(path.join(PROJECT_ROOT, 'cloudfunctions/api/lib/constants.js'));
+  assert.deepEqual(
+    { ...PARENT_DEMO.PARENT_LINK_STATUS },
+    { ...server.PARENT_LINK_STATUS },
+    '演示不得自创正式状态名'
+  );
+});
+
+test('家长授权：仅“已生效”状态允许读取受保护数据', () => {
+  /* 已生效：工作台返回完整业务数据 */
+  const active = PARENT_DEMO.buildParentWorkbench(0);
+  assert.equal(active.linkActive, true);
+  assert.ok(active.overview && active.overview.pb.value, '已生效应返回概览');
+  assert.ok(active.plans.length > 0, '已生效应返回训练计划');
+  assert.ok(active.performanceRows.length > 0, '已生效应返回已审核成绩');
+  assert.ok(active.attendanceRows.length > 0, '已生效应返回考勤记录');
+  assert.ok(active.feedbackRows.length > 0, '已生效应返回训练反馈');
+  assert.ok(active.noticeRows.length > 0, '已生效应返回通知');
+
+  /* 非生效状态：六个受保护集合全部为空，且不返回概览 */
+  const status = PARENT_DEMO.PARENT_LINK_STATUS;
+  const blocked = [
+    status.PENDING_STUDENT,
+    status.PENDING_REVIEW,
+    status.REJECTED,
+    status.REVOKED,
+    status.EXPIRED,
+    status.OPEN,
+    status.USED,
+    status.LOCKED
+  ];
+  for (const linkState of blocked) {
+    const view = PARENT_DEMO.buildParentWorkbench(0, { linkState });
+    assert.equal(view.linkActive, false, `${linkState} 不应视为生效`);
+    assert.equal(view.overview, null, `${linkState} 不得返回概览数据`);
+    for (const key of [
+      'plans',
+      'performanceRows',
+      'attendanceRows',
+      'feedbackRows',
+      'competitionRows',
+      'noticeRows'
+    ]) {
+      assert.deepEqual(view[key], [], `${linkState} 不得返回 ${key}`);
+    }
+    assert.ok(view.accessNotice, `${linkState} 应给出授权说明`);
+  }
+});
+
+test('家长授权：待审核学生（默认预置）确实被隔离', () => {
+  const pending = PARENT_DEMO.buildParentWorkbench(1);
+  assert.equal(pending.linkState, PARENT_DEMO.PARENT_LINK_STATUS.PENDING_REVIEW);
+  assert.equal(pending.linkActive, false);
+  assert.equal(pending.overview, null);
+  assert.deepEqual(pending.plans, []);
+  assert.deepEqual(pending.performanceRows, []);
+  assert.deepEqual(pending.attendanceRows, []);
+  /* 但学生标识与状态必须保留，供家长辨认 */
+  assert.ok(pending.currentStudent.name);
+  assert.equal(pending.linkStateLabel, '待开发者核验');
+});
+
+test('家长授权：受保护模块的详情直达不能绕过隔离', () => {
+  const status = PARENT_DEMO.PARENT_LINK_STATUS;
+  for (const linkState of [status.PENDING_REVIEW, status.REJECTED, status.REVOKED]) {
+    for (const moduleId of PARENT_DEMO.PROTECTED_MODULE_IDS) {
+      const module = PARENT_DEMO.buildParentModule(moduleId, 0, { linkState });
+      assert.equal(module.restricted, true, `${linkState}/${moduleId} 应被限制`);
+      assert.deepEqual(module.rows, [], `${linkState}/${moduleId} 不得返回数据行`);
+      assert.equal(module.summary, undefined, `${linkState}/${moduleId} 不得返回数值卡`);
+      assert.ok(module.restrictedReason, `${linkState}/${moduleId} 应给出限制原因`);
+    }
+  }
+  /* 授权管理类模块仍可访问（只展示状态） */
+  const link = PARENT_DEMO.buildParentModule('link', 1);
+  assert.notEqual(link.restricted, true);
+  assert.ok(link.rows.length >= 2, '关联管理应展示各学生状态');
+});
+
+test('家长授权：切换到待审核学生后不残留上一位学生的数据', async () => {
+  const { instance } = loadDemoPage();
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  /* 第一名为已生效：有数据 */
+  const before = instance.data.parent;
+  assert.equal(before.linkActive, true);
+  const previousPb = before.overview.pb.value;
+  assert.ok(previousPb);
+  assert.ok(before.performanceRows.length > 0);
+
+  /* 切到待审核学生：上一个学生的数据必须全部消失 */
+  instance.onStudentChange({ detail: { value: '1' } });
+  const after = instance.data.parent;
+  assert.equal(after.linkActive, false);
+  assert.equal(after.overview, null, '不得用上一位学生的数据填充');
+  assert.deepEqual(after.performanceRows, []);
+  assert.deepEqual(after.plans, []);
+  assert.deepEqual(after.attendanceRows, []);
+  assert.notEqual(after.currentStudent.name, before.currentStudent.name);
+
+  /* 切回已生效学生：数据恢复 */
+  instance.onStudentChange({ detail: { value: '0' } });
+  const restored = instance.data.parent;
+  assert.equal(restored.linkActive, true);
+  assert.equal(restored.overview.pb.value, previousPb, '切回后应恢复同一份已授权数据');
+});
+
+/* ------------------------------------------- BUG-02 学生计划可见性 */
+
+test('学生计划：演示数据确实包含草稿，但学生可见集合不含草稿', () => {
+  const draftCount = STUDENT_DEMO.ALL_PLANS.filter(
+    (item) => item.status === STUDENT_DEMO.PLAN_STATUS.DRAFT
+  ).length;
+  assert.ok(draftCount > 0, '演示数据应包含草稿，用于验证过滤确实生效');
+
+  const visible = STUDENT_DEMO.visibleStudentPlans();
+  assert.ok(visible.length > 0, '应存在已发布计划');
+  for (const item of visible) {
+    assert.equal(item.status, STUDENT_DEMO.PLAN_STATUS.PUBLISHED);
+  }
+  assert.equal(
+    visible.length,
+    STUDENT_DEMO.ALL_PLANS.length - draftCount,
+    '可见集合应等于全部计划减去草稿'
+  );
+});
+
+test('学生计划：列表、概览与统计数量一致且均无草稿', () => {
+  const workbench = STUDENT_DEMO.buildStudentWorkbench();
+  const module = STUDENT_DEMO.buildStudentModule('plans');
+  const visible = STUDENT_DEMO.visibleStudentPlans();
+
+  /* 计划列表 */
+  assert.equal(module.rows.length, visible.length, '计划列表条数应与可见计划一致');
+  assert.equal(module.summary.value, String(visible.length), '计划统计数量应与列表一致');
+  for (const item of module.rows) {
+    assert.notEqual(item.chip, '草稿', '学生计划列表不得出现草稿');
+    assert.ok(!/草稿/.test(item.t) && !/草稿/.test(item.m), '列表内容不得包含草稿条目');
+  }
+
+  /* 工作台概览使用同一份过滤结果 */
+  assert.equal(workbench.planOverview.publishedCount, visible.length);
+  assert.equal(workbench.planOverview.items.length, visible.length);
+  for (const item of workbench.planOverview.items) {
+    assert.ok(!/草稿/.test(item.title) && !/草稿/.test(item.meta), '工作台概览不得包含草稿');
+  }
+
+  /* 全部功能目录中也没有草稿痕迹 */
+  const catalogText = JSON.stringify(STUDENT_DEMO.catalog);
+  assert.ok(!/草稿/.test(catalogText), '学生端目录不应出现草稿字样');
+});
+
+/* ------------------------------------------- 演示时间口径一致性 */
+
+test('演示口径：固定周期不声称“本月”，签到状态不声称“签到中”', () => {
+  const studentSource = read('miniprogram/demo/student-demo.js');
+  const parentSource = read('miniprogram/demo/parent-demo.js');
+  const pageSource = read('miniprogram/pages/demo/demo.wxml');
+
+  for (const source of [studentSource, parentSource, pageSource]) {
+    assert.ok(!/本月/.test(source), '固定 6 月数据不得标记为“本月”');
+    assert.ok(!/'签到中'/.test(source) && !/>签到中</.test(source), '演示不得声称真实“签到中”');
+  }
+  assert.ok(/演示周期/.test(parentSource), '周期类文案应使用“演示周期”');
+  assert.ok(/模拟签到状态/.test(studentSource), '签到状态应明确标识为模拟');
+
+  /* 工作台实际渲染的数据也必须是模拟标识 */
+  const workbench = STUDENT_DEMO.buildStudentWorkbench();
+  assert.equal(workbench.todaySessions[0].phaseLabel, '模拟签到状态');
+});
+
+/* --------------------------------------------------- 开发者工作台入口 */
 
 test('开发者工作台提供两个 DEMO 入口且受 demoAvailable 控制', () => {
   const js = read('miniprogram/pages/admin/admin.js');

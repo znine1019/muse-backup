@@ -26,6 +26,11 @@
   <block wx:if="{{ready && !error}}">
     <!-- ========== 1. 模块详情 ========== -->
     <block wx:if="{{view === 'module'}}">
+      <!-- 受保护模块在关联未生效时只展示拒绝说明，不展示任何业务数据 -->
+      <view wx:if="{{module.restricted}}" class="jg-state-err">
+        <view class="jg-state-err-t">该学生尚未授权</view>
+        <view class="jg-state-err-m">{{module.restrictedReason}}</view>
+      </view>
       <view wx:if="{{module.summary}}" class="jg-data-card">
         <view class="jg-data-k">{{module.summary.label}}</view>
         <view class="jg-data-v">
@@ -116,6 +121,16 @@
         </view>
       </view>
 
+      <!-- 训练计划概览：与计划列表使用同一可见性过滤，未发布草稿不会出现 -->
+      <view class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">训练计划（演示周期）</text>
+          <text class="jg-card-c">已发布 {{student.planOverview.publishedCount}} 份</text>
+        </view>
+        <view wx:for="{{student.planOverview.items}}" wx:key="title" class="jg-row-m">{{item.title}} · {{item.meta}}</view>
+        <view class="jg-sub jg-mt-8">仅展示教练已正式发布的计划；未发布草稿不会出现在学生端。</view>
+      </view>
+
       <view class="jg-data-card">
         <view class="jg-data-k">{{student.pb.eventName}} · 个人最好成绩 PB</view>
         <view class="jg-data-v">
@@ -131,7 +146,7 @@
 
       <view class="jg-kpi-row">
         <view class="jg-kpi">
-          <view class="jg-kpi-l">本月出勤率</view>
+          <view class="jg-kpi-l">演示周期出勤率</view>
           <view class="jg-kpi-v jg-kpi-v-ok">{{student.monthStats.attendanceRateText}}</view>
           <view class="jg-prog">
             <view class="jg-prog-in jg-prog-in-ok" style="width:{{student.monthStats.attendanceRatePercent}}%"></view>
@@ -139,7 +154,7 @@
           <view class="jg-kpi-s">有效出勤 {{student.monthStats.validAttendance}} / 应签到 {{student.monthStats.actualExpected}}</view>
         </view>
         <view class="jg-kpi">
-          <view class="jg-kpi-l">本月出勤明细</view>
+          <view class="jg-kpi-l">演示周期出勤明细</view>
           <view class="jg-kpi-v">{{student.monthStats.late}}</view>
           <view class="jg-kpi-s">迟到 {{student.monthStats.late}} · 未签到 {{student.monthStats.absent}} · 待核实 {{student.monthStats.pendingVerification}}</view>
         </view>
@@ -233,6 +248,8 @@
         </view>
       </view>
 
+      <!-- 关联已生效：才展示受保护的学生业务数据 -->
+      <block wx:if="{{parent.linkActive}}">
       <view class="jg-jump">
         <text class="jg-jump-chip {{activeSection === 'performance' ? 'jg-jump-chip-active' : ''}}" data-section="performance" bindtap="goSection">成绩</text>
         <text class="jg-jump-chip {{activeSection === 'attendance' ? 'jg-jump-chip-active' : ''}}" data-section="attendance" bindtap="goSection">考勤</text>
@@ -253,7 +270,7 @@
 
       <view class="jg-kpi-row">
         <view class="jg-kpi">
-          <view class="jg-kpi-l">本月有效出勤</view>
+          <view class="jg-kpi-l">演示周期有效出勤</view>
           <view class="jg-kpi-v">{{parent.overview.attendance.validAttendance}}</view>
           <view class="jg-kpi-s">应签到 {{parent.overview.attendance.actualExpected}} · 迟到 {{parent.overview.attendance.late}} · 未签到 {{parent.overview.attendance.absent}}</view>
         </view>
@@ -266,7 +283,7 @@
 
       <view class="jg-sect">
         <view class="jg-sect-h">
-          <text class="jg-sect-t">训练计划（本月）</text>
+          <text class="jg-sect-t">训练计划（演示周期）</text>
           <text class="jg-sect-c">{{parent.plans.length}} 份</text>
         </view>
         <view class="jg-list">
@@ -298,7 +315,7 @@
 
       <view class="jg-sect" id="sec-attendance">
         <view class="jg-sect-h">
-          <text class="jg-sect-t">本月考勤记录</text>
+          <text class="jg-sect-t">演示周期考勤记录</text>
           <text class="jg-sect-c">{{parent.attendanceRows.length}} 条</text>
         </view>
         <view class="jg-list">
@@ -351,6 +368,34 @@
         </view>
         <view class="jg-note"><view><view class="jg-note-m">报名意向不等于官方报名成功。</view></view></view>
       </view>
+      </block>
+
+      <!-- 关联未生效：只展示学生标识、当前状态与授权进度，不展示任何受保护数据 -->
+      <block wx:else>
+        <view class="jg-note jg-note-warn">
+          <view>
+            <view class="jg-note-t">关联状态：{{parent.linkStateLabel}}</view>
+            <view class="jg-note-m">{{parent.accessNotice}}</view>
+          </view>
+        </view>
+
+        <view class="jg-list">
+          <view class="jg-row">
+            <view class="jg-row-ic jg-row-ic-accent">生</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{parent.currentStudent.name}}</view>
+              <view class="jg-row-m">{{parent.currentStudent.tag}} · {{parent.currentStudent.primaryEventName}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chip jg-chip-warn">{{parent.linkStateLabel}}</text></view>
+          </view>
+        </view>
+
+        <view class="jg-note">
+          <view>
+            <view class="jg-note-m">关联正式生效前不展示成绩、训练计划、考勤、训练反馈与赛事等业务数据；可用上方选择器切换到关联已生效的虚构学生。家长端始终为只读。</view>
+          </view>
+        </view>
+      </block>
 
       <view class="jg-sect">
         <view class="jg-sect-h"><text class="jg-sect-t">个人中心（演示）</text></view>

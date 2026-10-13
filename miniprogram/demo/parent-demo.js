@@ -15,8 +15,7 @@ const STUDENTS = Object.freeze([
     tag: '虚构演示学生',
     primaryEventName: '100米',
     trainingGroupName: '短跑组（虚构）',
-    linkState: 'active',
-    linkStateLabel: '关联已生效'
+    linkState: 'active'
   },
   {
     id: 'demo_child_2',
@@ -24,9 +23,55 @@ const STUDENTS = Object.freeze([
     tag: '虚构演示学生',
     primaryEventName: '跳远',
     trainingGroupName: '跳跃组（虚构）',
-    linkState: 'pending_review',
-    linkStateLabel: '待开发者核验'
+    linkState: 'pending_review'
   }
+]);
+
+/*
+ * 与 cloudfunctions/api/lib/constants.js 的 PARENT_LINK_STATUS 完全一致；
+ * 测试会交叉校验两边取值相同，避免前端演示自创正式状态名。
+ */
+const PARENT_LINK_STATUS = Object.freeze({
+  OPEN: 'open',
+  USED: 'used',
+  EXPIRED: 'expired',
+  LOCKED: 'locked',
+  PENDING_STUDENT: 'pending_student',
+  PENDING_REVIEW: 'pending_review',
+  ACTIVE: 'active',
+  REJECTED: 'rejected',
+  REVOKED: 'revoked'
+});
+
+const LINK_STATE_LABELS = Object.freeze({
+  [PARENT_LINK_STATUS.PENDING_STUDENT]: '待学生确认',
+  [PARENT_LINK_STATUS.PENDING_REVIEW]: '待开发者核验',
+  [PARENT_LINK_STATUS.ACTIVE]: '关联已生效',
+  [PARENT_LINK_STATUS.REJECTED]: '关联已驳回',
+  [PARENT_LINK_STATUS.REVOKED]: '关联已解除'
+});
+
+/**
+ * 授权判断（与正式系统 assertActiveLink 同一规则）：
+ * 仅“正式生效”的关联关系允许读取学生业务数据；
+ * 待审核 / 已驳回 / 已解除 / 凭证类状态一律不授予访问。
+ */
+function isLinkActive(linkState) {
+  return linkState === PARENT_LINK_STATUS.ACTIVE;
+}
+
+function linkStateLabel(linkState) {
+  return LINK_STATE_LABELS[linkState] || '关联状态未知';
+}
+
+/** 需要“关联生效”才能展示的受保护模块（其余模块仅作授权管理/说明） */
+const PROTECTED_MODULE_IDS = Object.freeze([
+  'overview',
+  'plans',
+  'performance',
+  'attendance',
+  'feedback',
+  'events'
 ]);
 
 const DATA_BY_STUDENT = Object.freeze({
@@ -150,14 +195,43 @@ function studentsPayload() {
   return STUDENTS.map((item) => ({ ...item }));
 }
 
-function buildParentWorkbench(index) {
+/**
+ * 构建家长演示工作台。
+ * options.linkState 仅用于验证不同授权状态（含驳回/解除）时的隔离表现。
+ */
+function buildParentWorkbench(index, options = {}) {
   const safeIndex = normalizeIndex(index);
   const student = STUDENTS[safeIndex];
-  const data = DATA_BY_STUDENT[student.id];
-  return {
+  const linkState = options.linkState || student.linkState;
+  const active = isLinkActive(linkState);
+
+  const base = {
     students: studentsPayload(),
     studentIndex: safeIndex,
-    currentStudent: { ...student },
+    currentStudent: { ...student, linkState, linkStateLabel: linkStateLabel(linkState) },
+    linkState,
+    linkStateLabel: linkStateLabel(linkState),
+    linkActive: active,
+    catalogGroups: groupCatalog(CATALOG)
+  };
+
+  /* 关联未生效：不构建任何受保护业务数据（不返回旧数据兜底） */
+  if (!active) {
+    return Object.assign(base, {
+      accessNotice: `该学生的关联状态为“${linkStateLabel(linkState)}”，在关联正式生效前不展示成绩、训练计划、考勤、训练反馈与赛事等受保护数据。`,
+      overview: null,
+      plans: [],
+      performanceRows: [],
+      attendanceRows: [],
+      feedbackRows: [],
+      competitionRows: [],
+      noticeRows: []
+    });
+  }
+
+  const data = DATA_BY_STUDENT[student.id];
+  return Object.assign(base, {
+    accessNotice: '',
     overview: {
       pb: { ...data.overview.pb },
       approvedCount: data.overview.approvedCount,
@@ -168,20 +242,25 @@ function buildParentWorkbench(index) {
     attendanceRows: data.attendanceRows.map((item) => ({ ...item })),
     feedbackRows: data.feedbackRows.map((item) => ({ ...item })),
     competitionRows: data.competitionRows.map((item) => ({ ...item })),
-    noticeRows: data.noticeRows.map((item) => ({ ...item })),
-    catalogGroups: groupCatalog(CATALOG),
-    linkStateLabel: student.linkStateLabel
-  };
+    noticeRows: data.noticeRows.map((item) => ({ ...item }))
+  });
 }
 
-function buildParentModule(moduleId, index) {
+/**
+ * 构建家长演示子模块。
+ * 受保护模块（成绩/计划/考勤/反馈/赛事/概览）在关联未生效时一律返回“未授权”结果，
+ * 因此即使直接以参数打开详情页也无法绕过隔离。
+ * options.linkState 仅用于验证不同授权状态下的隔离表现。
+ */
+function buildParentModule(moduleId, index, options = {}) {
   const safeIndex = normalizeIndex(index);
   const definition = CATALOG.find((item) => item.id === moduleId);
   if (!definition) {
     throw new DemoModuleError(`演示模块不存在：${moduleId}`);
   }
   const student = STUDENTS[safeIndex];
-  const data = DATA_BY_STUDENT[student.id];
+  const linkState = options.linkState || student.linkState;
+  const active = isLinkActive(linkState);
 
   const header = {
     id: definition.id,
@@ -192,6 +271,18 @@ function buildParentModule(moduleId, index) {
     subtitle: `${student.name}（虚构）· ${student.primaryEventName}`
   };
 
+  if (!active && PROTECTED_MODULE_IDS.indexOf(moduleId) !== -1) {
+    return Object.assign(header, {
+      subtitle: `${student.name}（虚构）· ${linkStateLabel(linkState)}`,
+      restricted: true,
+      restrictedReason: `该学生的关联状态为“${linkStateLabel(linkState)}”，关联正式生效前不展示成绩、训练计划、考勤、训练反馈与赛事等受保护数据。`,
+      rows: [],
+      note: '可切换到关联已生效的学生查看业务数据，或先完成关联授权流程。'
+    });
+  }
+
+  const data = DATA_BY_STUDENT[student.id];
+
   if (moduleId === 'overview') {
     return Object.assign(header, {
       summary: {
@@ -201,7 +292,7 @@ function buildParentModule(moduleId, index) {
         meta: `${data.overview.pb.eventName} · 教练已审核的正式成绩`
       },
       rows: [
-        row('本月有效出勤', `应签到 ${data.overview.attendance.actualExpected} 次`, {
+        row('演示周期有效出勤', `应签到 ${data.overview.attendance.actualExpected} 次`, {
           v: `${data.overview.attendance.validAttendance} 次`
         }),
         row('已批准请假', '请假原因不向家长展示', { v: `${data.overview.attendance.approvedLeave} 次` }),
@@ -252,8 +343,8 @@ function buildParentModule(moduleId, index) {
     return Object.assign(header, {
       rows: STUDENTS.map((item) =>
         row(item.name, `${item.tag} · 监护关系（虚构）`, {
-          chip: item.linkStateLabel,
-          tone: item.linkState === 'active' ? 'ok' : 'warn'
+          chip: linkStateLabel(item.linkState),
+          tone: isLinkActive(item.linkState) ? 'ok' : 'warn'
         })
       ),
       note: '演示环境不生成真实关联凭证、不修改任何授权关系；家长端始终保持只读。'
@@ -286,9 +377,13 @@ function statusTone(label) {
 }
 
 module.exports = {
+  PARENT_LINK_STATUS,
+  PROTECTED_MODULE_IDS,
   STUDENTS,
   buildParentModule,
   buildParentWorkbench,
   catalog: CATALOG,
+  isLinkActive,
+  linkStateLabel,
   DemoModuleError
 };
