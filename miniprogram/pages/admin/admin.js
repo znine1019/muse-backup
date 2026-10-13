@@ -593,6 +593,12 @@ Page({
     wx.navigateTo({ url: '/pages/attendance-manage/attendance-manage' });
   },
 
+  /* V1.6 家长关联核验：进入页面只读取待核验列表，不自动修改任何申请状态 */
+  goLinkReview() {
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/link-review/link-review' });
+  },
+
   goStatsWorkbench() {
     wx.navigateTo({ url: '/pages/stats-workbench/stats-workbench' });
   },
@@ -626,6 +632,8 @@ Page({
   async review(event) {
     const userId = event.currentTarget.dataset.userId;
     const decision = event.currentTarget.dataset.decision;
+    /* 注册类型：student（默认，保持既有兼容）或 parent */
+    const profileType = event.currentTarget.dataset.profileType || 'student';
     if (!userId || this.data.reviewingUserId) {
       return;
     }
@@ -647,6 +655,7 @@ Page({
       await api.reviewRegistration({
         targetUserId: userId,
         decision,
+        profileType,
         comment: modal.content || ''
       });
       wx.showToast({ title: '已处理', icon: 'success' });

@@ -353,12 +353,10 @@ function createParentActions({ repository }) {
     const input = validateParentInviteRedeemPayload(payload);
 
     /* 防枚举：同一家长在窗口期内失败次数过多时直接拒绝，不再查找凭证 */
-    const parentProfile = await repository.getParentProfile(actor._id);
-    const failWindowAt =
-      parentProfile && parentProfile.inviteFailWindowAt
-        ? new Date(parentProfile.inviteFailWindowAt).getTime()
-        : 0;
-    const failCount = Number((parentProfile && parentProfile.inviteFailCount) || 0);
+    const failWindowAt = actor.inviteFailWindowAt
+      ? new Date(actor.inviteFailWindowAt).getTime()
+      : 0;
+    const failCount = Number(actor.inviteFailCount || 0);
     if (
       failWindowAt &&
       Date.now() - failWindowAt < INVITE_FAIL_WINDOW_MINUTES * 60 * 1000 &&

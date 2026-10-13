@@ -271,23 +271,25 @@ function createRepository(db) {
     }
   }
 
-  /* 凭证失败计数（防枚举）：窗口期外自动重置 */
+  /*
+   * 凭证失败计数（防枚举）：窗口期外自动重置。
+   * 计数写在 users 文档上而不是家长档案上：账号一定存在，避免“家长档案缺失时限流失效”；
+   * 调用方（loadActiveActor）已经读到该用户文档，因此不额外增加读请求。
+   */
   async function recordParentInviteFailure(userId) {
-    const profile = await getParentProfile(userId);
-    if (!profile) {
+    const user = await getDoc(userCollection, userId);
+    if (!user) {
       return 0;
     }
-    const windowAt = profile.inviteFailWindowAt
-      ? new Date(profile.inviteFailWindowAt).getTime()
+    const windowAt = user.inviteFailWindowAt
+      ? new Date(user.inviteFailWindowAt).getTime()
       : 0;
     const inWindow = windowAt && Date.now() - windowAt < 15 * 60 * 1000;
-    const nextCount = inWindow ? Number(profile.inviteFailCount || 0) + 1 : 1;
-    await parentProfileCollection.doc(profile._id).update({
+    const nextCount = inWindow ? Number(user.inviteFailCount || 0) + 1 : 1;
+    await userCollection.doc(userId).update({
       data: {
         inviteFailCount: nextCount,
-        inviteFailWindowAt: inWindow
-          ? profile.inviteFailWindowAt
-          : db.serverDate(),
+        inviteFailWindowAt: inWindow ? user.inviteFailWindowAt : db.serverDate(),
         updatedAt: db.serverDate()
       }
     });

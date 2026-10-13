@@ -97,14 +97,16 @@
       <view wx:for="{{registrations}}" wx:key="userId" class="jg-todo jg-todo-p1">
         <view class="jg-todo-bar"></view>
         <view class="jg-todo-main">
-          <view class="jg-todo-t">{{item.name}}</view>
-          <view class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
-          <view class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}}</view>
+          <view class="jg-todo-t">{{item.name}}<text class="jg-chip {{item.profileType === 'parent' ? 'jg-chip-accent' : 'jg-chip-brand'}}">{{item.profileType === 'parent' ? '家长注册' : '学生注册'}}</text></view>
+          <view wx:if="{{item.profileType === 'parent'}}" class="jg-todo-m">监护人关系：{{item.parentRelation}} · 无需训练组归属</view>
+          <view wx:else class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
+          <view wx:if="{{item.profileType !== 'parent'}}" class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}}</view>
         </view>
         <view class="jg-todo-a">
           <button
             class="jg-btn jg-btn-sm"
             data-user-id="{{item.userId}}"
+            data-profile-type="{{item.profileType}}"
             data-decision="approve"
             loading="{{reviewingUserId === item.userId}}"
             bindtap="review"
@@ -112,6 +114,7 @@
           <button
             class="jg-btn jg-btn-sm jg-btn-danger"
             data-user-id="{{item.userId}}"
+            data-profile-type="{{item.profileType}}"
             data-decision="reject"
             loading="{{reviewingUserId === item.userId}}"
             bindtap="review"
@@ -301,6 +304,15 @@
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goPerformanceReview">
+      <!-- 家长关联审核：进入页面只读取待核验列表，通过/驳回均需二次确认并写审计日志 -->
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goLinkReview">
+        <view class="jg-row-ic jg-row-ic-accent">亲</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">家长关联审核</view>
+          <view class="jg-row-m">核验学生已确认的家长关联申请（监护关系）</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
         <view class="jg-row-ic jg-row-ic-ok">审</view>
         <view class="jg-row-main">
           <view class="jg-row-t">成绩审核（全局）</view>
