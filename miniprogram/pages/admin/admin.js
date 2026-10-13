@@ -15,6 +15,8 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
+const { clearActiveRole } = require('../../utils/active-role');
+
 const ROLE_OPTIONS = Object.freeze(['student', 'coach', 'developer']);
 
 const SECTION_STATE_KEYS = Object.freeze({
@@ -578,6 +580,12 @@ Page({
   },
 
   /* 开发者已有合法访问教练工作台的权限（云函数允许 coach/developer），无需授予 coach 角色 */
+  /* V1.6 阶段8：进入按业务分类的全部功能目录（只做导航，不写入数据） */
+  goAllFeatures() {
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/all-features/all-features' });
+  },
+
   goCoachWorkbench() {
     this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/coach/coach' });
@@ -838,6 +846,7 @@ Page({
     }
     this.clearCachedData();
     this.getController().reset();
+    clearActiveRole();
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
   }

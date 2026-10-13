@@ -12,6 +12,8 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
+const { clearActiveRole } = require('../../utils/active-role');
+
 const GENDER_LABELS = Object.freeze({
   male: '男',
   female: '女',
@@ -593,6 +595,12 @@ Page({
     wx.navigateTo({ url: '/pages/link-manage/link-manage' });
   },
 
+  /* V1.6 阶段8：进入按业务分类的全部功能目录（只做导航，不写入数据） */
+  goAllFeatures() {
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/all-features/all-features' });
+  },
+
   async goHome() {
     const modal = await new Promise((resolve) => {
       wx.showModal({
@@ -607,6 +615,7 @@ Page({
     }
     this.clearCachedData();
     this.getController().reset();
+    clearActiveRole();
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
   }

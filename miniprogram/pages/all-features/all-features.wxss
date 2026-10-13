@@ -1,0 +1,9 @@
+/* V1.6 阶段8｜全部功能分类页（复用阶段7-1 jg- 设计系统，不新增全局主题） */
+.jg-page .jg-note + .jg-sect { margin-top: 8rpx; }
+.jg-page .jg-tile-t { line-height: 1.35; }
+
+/* 功能名称较长时换行显示，避免溢出卡片 */
+.jg-page .jg-tile-t,
+.jg-page .jg-tile-d {
+  word-break: break-word;
+}

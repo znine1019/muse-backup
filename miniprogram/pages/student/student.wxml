@@ -280,6 +280,14 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAllFeatures">
+        <view class="jg-row-ic jg-row-ic-brand">全</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">全部功能</view>
+          <view class="jg-row-m">按业务分类查看全部已实现的学生端功能</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">

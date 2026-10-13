@@ -2,6 +2,7 @@
 
 const api = require('../../services/api');
 const { getSessionDestination, sessionHasRole } = require('../../utils/session');
+const { clearActiveRole } = require('../../utils/active-role');
 
 const COMPLETION_LABELS = Object.freeze({
   completed: '全部完成',
@@ -106,7 +107,13 @@ Page({
     wx.navigateTo({ url: '/pages/parent-bind/parent-bind' });
   },
 
+  /* V1.6 阶段8：进入按业务分类的全部功能目录（只做导航，家长端仍为只读） */
+  goAllFeatures() {
+    wx.navigateTo({ url: '/pages/all-features/all-features' });
+  },
+
   goHome() {
+    clearActiveRole();
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
   },

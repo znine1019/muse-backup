@@ -1,0 +1,76 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="全部功能"
+    meta="{{headMeta}}"
+    role-label="{{roleLabel}}"
+    role-tone="{{roleTone}}"
+  />
+
+  <!-- 多角色账号：只展示服务端会话中已授权的角色 -->
+  <view wx:if="{{roleChips.length > 1}}" class="jg-chips jg-mb-12">
+    <block wx:for="{{roleChips}}" wx:key="role">
+      <text
+        class="jg-chip {{item.active ? 'jg-chip-brand' : ''}}"
+        data-role="{{item.role}}"
+        bindtap="onRoleTap"
+      >{{item.label}}</text>
+    </block>
+  </view>
+
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">暂时无法查看功能目录</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <block wx:if="{{!loading}}">
+    <view wx:if="{{roleNote}}" class="jg-note">
+      <view>
+        <view class="jg-note-t">当前身份：{{roleLabel}}</view>
+        <view class="jg-note-m">{{roleNote}}</view>
+      </view>
+    </view>
+
+    <jg-empty
+      wx:if="{{!categories.length}}"
+      title="暂无可展示的功能"
+      message="当前身份没有配置任何已实现的功能入口。"
+    />
+
+    <view wx:else class="jg-sect">
+      <block wx:for="{{categories}}" wx:key="key">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">{{item.label}}</text>
+          <text class="jg-sect-c">{{item.count}} 项</text>
+        </view>
+        <view class="jg-tiles jg-mb-12">
+          <view wx:for="{{item.items}}" wx:for-item="feature" wx:key="id" class="jg-tile jg-tile-{{feature.tone}}">
+            <view
+              class="jg-tile-in"
+              hover-class="jg-row-hover"
+              data-url="{{feature.url}}"
+              bindtap="onItemTap"
+            >
+              <view class="jg-tile-ic">{{feature.badge}}</view>
+              <view class="jg-tile-t">{{feature.name}}</view>
+              <view class="jg-tile-d">{{feature.desc}}</view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="jg-btn-row">
+      <button class="jg-btn jg-btn-ghost" bindtap="goWorkbench">返回{{roleLabel}}工作台</button>
+    </view>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-t">权限说明</view>
+        <view class="jg-note-m">这里只显示当前身份可用的入口；实际数据范围与操作权限始终由云函数按可信微信身份重新校验，隐藏入口不等于授权。</view>
+      </view>
+    </view>
+  </block>
+</view>

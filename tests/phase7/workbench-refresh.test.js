@@ -66,6 +66,20 @@ function loadWorkbench(relativePath, apiStub, options = {}) {
         if (request.includes('utils/demo-mode')) {
           return require(path.join(PROJECT_ROOT, 'miniprogram/utils/demo-mode.js'));
         }
+        if (request.includes('utils/active-role')) {
+          /* 宿主环境无 wx.storage：只保留纯函数语义，存储读写均为空操作 */
+          return {
+            ACTIVE_ROLE_KEY: 'jogger_active_role_v1',
+            clearActiveRole: () => {},
+            readActiveRole: () => '',
+            resolveActiveRole: (session, available) =>
+              Array.isArray(available) && available.length ? available[0] : '',
+            saveActiveRole: () => {},
+            sessionToken: () => ({ userId: '', roles: [] }),
+            isTokenValid: () => false,
+            tokenOf: () => ({ userId: '', roles: [] })
+          };
+        }
         if (request.includes('config/env')) {
           return {
             CLOUD_ENV_ID: 'cloud1-test',

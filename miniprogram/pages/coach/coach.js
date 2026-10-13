@@ -12,6 +12,8 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
+const { clearActiveRole } = require('../../utils/active-role');
+
 const PHASE_LABELS = Object.freeze({
   not_started: '未开始',
   open: '签到中',
@@ -634,6 +636,12 @@ Page({
     wx.navigateTo({ url: '/pages/feedback-manage/feedback-manage' });
   },
 
+  /* V1.6 阶段8：进入按业务分类的全部功能目录（只做导航，不写入数据） */
+  goAllFeatures() {
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/all-features/all-features' });
+  },
+
   async review(event) {
     const userId = event.currentTarget.dataset.userId;
     const decision = event.currentTarget.dataset.decision;
@@ -692,6 +700,7 @@ Page({
     }
     this.clearCachedData();
     this.getController().reset();
+    clearActiveRole();
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
   }

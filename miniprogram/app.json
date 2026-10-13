@@ -4,6 +4,7 @@
     "pages/register/register",
     "pages/pending/pending",
     "pages/role-select/role-select",
+    "pages/all-features/all-features",
     "pages/parent-register/parent-register",
     "pages/parent/parent",
     "pages/parent-bind/parent-bind",

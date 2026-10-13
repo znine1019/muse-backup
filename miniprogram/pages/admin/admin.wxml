@@ -294,6 +294,15 @@
       <text class="jg-sect-c">按职责排序</text>
     </view>
     <view class="jg-list">
+      <!-- V1.6 阶段8：按业务分类的全部功能目录（只做导航） -->
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAllFeatures">
+        <view class="jg-row-ic jg-row-ic-accent">全</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">全部功能</view>
+          <view class="jg-row-m">按业务分类查看全部已实现的开发者管理功能</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <!-- 开发者已有合法访问教练工作台的权限（云函数允许 coach/developer），此处仅做跳转，不授予额外角色 -->
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goCoachWorkbench">
         <view class="jg-row-ic jg-row-ic-accent">教</view>
@@ -303,7 +312,6 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goPerformanceReview">
       <!-- 家长关联审核：进入页面只读取待核验列表，通过/驳回均需二次确认并写审计日志 -->
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goLinkReview">
         <view class="jg-row-ic jg-row-ic-accent">亲</view>
@@ -313,6 +321,7 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goPerformanceReview">
         <view class="jg-row-ic jg-row-ic-ok">审</view>
         <view class="jg-row-main">
           <view class="jg-row-t">成绩审核（全局）</view>

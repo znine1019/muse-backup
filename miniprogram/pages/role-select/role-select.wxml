@@ -8,6 +8,6 @@
   <view wx:if="{{!loading && !roles.length}}" class="empty">当前账号没有可用的工作台，请联系开发者检查角色授权。</view>
 
   <view class="card">
-    <button wx:for="{{roles}}" wx:key="value" class="button-primary" data-route="{{item.route}}" bindtap="selectRole">进入{{item.label}}端</button>
+    <button wx:for="{{roles}}" wx:key="value" class="button-primary" data-route="{{item.route}}" data-role="{{item.value}}" bindtap="selectRole">进入{{item.label}}端</button>
   </view>
 </view>

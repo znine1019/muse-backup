@@ -1,6 +1,7 @@
 'use strict';
 
 const { getRoleLabel, getRoleRoute } = require('../../utils/session');
+const { saveActiveRole, sessionToken } = require('../../utils/active-role');
 
 Page({
   data: {
@@ -42,6 +43,11 @@ Page({
   selectRole(event) {
     const route = event.currentTarget.dataset.route;
     if (route) {
+      /* 记录当前激活角色，供「全部功能」分类页区分多角色账号 */
+      saveActiveRole(
+        event.currentTarget.dataset.role,
+        sessionToken(getApp().globalData.session)
+      );
       wx.reLaunch({ url: route });
     }
   }

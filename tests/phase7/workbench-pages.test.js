@@ -35,6 +35,17 @@ function loadPage(relativePath, apiStub, roles, wxOverrides = {}, extraModules =
         if (request.includes('utils/demo-mode')) {
           return { isDemoAllowed: () => false };
         }
+        if (request.includes('utils/active-role')) {
+          return {
+            ACTIVE_ROLE_KEY: 'jogger_active_role_v1',
+            clearActiveRole: () => {},
+            readActiveRole: () => '',
+            resolveActiveRole: (session, available) =>
+              Array.isArray(available) && available.length ? available[0] : '',
+            saveActiveRole: () => {},
+            sessionToken: () => ({ userId: '', roles: [] })
+          };
+        }
         if (request.includes('workbench-controller')) {
           return require(path.join(PROJECT_ROOT, 'miniprogram/utils/workbench-controller.js'));
         }
