@@ -1,36 +1,307 @@
-<view class="container">
-  <view class="brand">COACH / REGISTRATION REVIEW</view>
-  <view class="title">教练员工作台</view>
-  <view class="sub">只显示本人负责训练组内、当前待审核的学生注册资料。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="教练工作台"
+    meta="{{headMeta}}"
+    role-label="教练员"
+    role-tone="brand"
+  />
 
-  <view class="button-row">
-    <button class="button-primary" bindtap="goPerformanceReview">成绩审核</button>
-    <button class="button-secondary" bindtap="goPlans">训练计划</button>
-    <button class="button-primary" bindtap="goAttendanceManage">今日考勤</button>
-    <button class="button-secondary" bindtap="goStatsWorkbench">统计与排行</button>
-    <button class="button-secondary" bindtap="goCompetitionManage">赛事管理</button>
-    <button class="button-secondary" bindtap="goNoticeManage">通知管理</button>
-    <button class="button-secondary" bindtap="goFeedbackManage">训练反馈</button>
+  <view wx:if="{{sessionError}}" class="jg-state-err">
+    <view class="jg-state-err-t">身份校验未通过</view>
+    <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <view wx:if="{{loading}}" class="empty">正在读取授权范围内的待审核资料...</view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <view wx:if="{{!loading && !registrations.length}}" class="empty">当前没有需要审核的学生。</view>
+  <!-- 1. 今日训练与考勤 -->
+  <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">今日训练与考勤</text>
+      <text class="jg-sect-c">{{todayDate}}</text>
+    </view>
 
-  <view wx:if="{{registrations.length}}" class="card">
-    <view wx:for="{{registrations}}" wx:key="userId" class="list-item">
-      <view class="list-title">{{item.name}}</view>
-      <view class="list-meta">申请训练组：{{item.requestedTrainingGroupName}}</view>
-      <view class="list-meta">出生日期：{{item.birthDate}}</view>
-      <view class="list-meta">身高／体重：{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-      <view class="list-meta">主要项目：{{item.primaryTrainingProject}}</view>
-      <view class="button-row">
-        <button class="button-primary" data-user-id="{{item.userId}}" data-decision="approve" bindtap="review" loading="{{reviewingUserId === item.userId}}">通过</button>
-        <button class="button-danger" data-user-id="{{item.userId}}" data-decision="reject" bindtap="review" loading="{{reviewingUserId === item.userId}}">驳回</button>
+    <view wx:if="{{todayState.loading}}" class="jg-card">
+      <view class="jg-skeleton" style="height:160rpx"></view>
+    </view>
+
+    <view wx:elif="{{todayState.error}}" class="jg-state-err">
+      <view class="jg-state-err-t">今日考勤加载失败</view>
+      <view class="jg-state-err-m">{{todayState.error}}</view>
+      <view class="jg-retry" bindtap="retryToday">重新加载</view>
+    </view>
+
+    <jg-empty
+      wx:elif="{{todaySessions.length === 0}}"
+      title="今天没有考勤场次"
+      message="在考勤管理中创建场次后，可在这里查看签到进度与名单。"
+      action-text="去考勤管理"
+      bind:action="goAttendanceManage"
+    />
+
+    <block wx:else>
+      <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">{{item.title}}</text>
+          <text class="jg-chip {{item.isOpen ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{item.phaseLabel}}</text>
+        </view>
+        <view class="jg-body-s">训练组：{{item.trainingGroupName || '未标注'}}</view>
+        <view class="jg-body-s jg-mt-8">地点：{{item.locationName || '未填写'}} · 半径 {{item.radiusMeters}} 米</view>
+        <view class="jg-body-s jg-mt-8">签到窗口：{{item.checkInOpenTime}} - {{item.checkInCloseTime}} · 迟到线 {{item.lateAfterTime}}</view>
+
+        <block wx:if="{{item.isFocus}}">
+          <view wx:if="{{rosterSummary}}" class="jg-dstrip jg-mt-12">
+            <view class="jg-ds">
+              <view class="jg-ds-l">应到</view>
+              <view class="jg-ds-v">{{rosterSummary.expected}}</view>
+            </view>
+            <view class="jg-ds">
+              <view class="jg-ds-l">已签到</view>
+              <view class="jg-ds-v jg-ds-v-ok">{{rosterSummary.checkedIn}}</view>
+            </view>
+            <view class="jg-ds">
+              <view class="jg-ds-l">迟到</view>
+              <view class="jg-ds-v jg-ds-v-warn">{{rosterSummary.late}}</view>
+            </view>
+            <view class="jg-ds">
+              <view class="jg-ds-l">待签到</view>
+              <view class="jg-ds-v jg-ds-v-ink">{{rosterSummary.pending}}</view>
+            </view>
+          </view>
+          <view wx:elif="{{rosterState.loading}}" class="jg-skeleton jg-mt-12" style="height:112rpx"></view>
+          <view wx:elif="{{rosterState.error}}" class="jg-note jg-note-warn jg-mt-12">
+            <view>
+              <view class="jg-note-t">考勤统计加载失败</view>
+              <view class="jg-note-m">{{rosterState.error}}</view>
+            </view>
+          </view>
+          <view wx:if="{{rosterSummary}}" class="jg-body-s jg-mt-8">
+            已批准请假 {{rosterSummary.leaveApproved}} · 待核实异常 {{rosterSummary.pendingVerification}}
+          </view>
+        </block>
+
+        <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goSessionRoster">
+          查看名单 · 人工核实 · 请假审批
+        </button>
+      </view>
+    </block>
+  </view>
+
+  <!-- 2. 待办（统一待办列表，行内操作只做跳转，真实写入在业务页面完成） -->
+  <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">待办</text>
+      <text class="jg-sect-c">共 {{todoTotal}} 项</text>
+    </view>
+
+    <view wx:if="{{todoState.loading}}" class="jg-list">
+      <view class="jg-skeleton jg-skeleton-row"></view>
+      <view class="jg-skeleton jg-skeleton-row"></view>
+      <view class="jg-skeleton jg-skeleton-row"></view>
+    </view>
+
+    <view wx:elif="{{todoState.error}}" class="jg-state-err">
+      <view class="jg-state-err-t">待办加载失败</view>
+      <view class="jg-state-err-m">{{todoState.error}}</view>
+      <view class="jg-retry" bindtap="retryTodos">重新加载</view>
+    </view>
+
+    <block wx:else>
+      <view class="jg-chips jg-mb-12">
+        <block wx:for="{{todoFilterChips}}" wx:key="value">
+          <text
+            class="jg-chip {{item.value === todoFilter ? 'jg-chip-brand' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onTodoFilterTap"
+          >{{item.text}}</text>
+        </block>
+      </view>
+
+      <jg-empty
+        wx:if="{{todoVisible.length === 0}}"
+        title="当前没有这类待办"
+        message="新的请假、成绩申报或需关注反馈会出现在这里。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{todoVisible}}" wx:key="key" class="jg-todo {{item.priority}}">
+          <view class="jg-todo-bar"></view>
+          <view class="jg-todo-main">
+            <view class="jg-todo-t">
+              <text>{{item.title}}</text>
+              <text class="jg-chip {{item.typeChip}}">{{item.typeLabel}}</text>
+            </view>
+            <view class="jg-todo-m">{{item.detail}}</view>
+            <view wx:if="{{item.reason}}" class="jg-todo-m">{{item.reason}}</view>
+          </view>
+          <view class="jg-todo-a">
+            <button
+              class="jg-btn jg-btn-sm"
+              data-url="{{item.url}}"
+              bindtap="onTodoTap"
+            >{{item.actionLabel}}</button>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{todoTotal > 6}}" class="jg-note">
+        <view>
+          <view class="jg-note-t">仅显示前 6 条</view>
+          <view class="jg-note-m">其余待办请进入对应的业务页面查看并处理；所有审核与审批都会在业务页面二次确认后写入。</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 3. 赛事报名意向 -->
+  <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">赛事报名意向</text>
+      <text class="jg-sect-a" bindtap="goCompetitionManage">去办理</text>
+    </view>
+
+    <view wx:if="{{competitionState.loading}}" class="jg-card">
+      <view class="jg-skeleton" style="height:96rpx"></view>
+    </view>
+
+    <view wx:elif="{{competitionState.error}}" class="jg-state-err">
+      <view class="jg-state-err-t">赛事信息加载失败</view>
+      <view class="jg-state-err-m">{{competitionState.error}}</view>
+      <view class="jg-retry" bindtap="retryCompetitions">重新加载</view>
+    </view>
+
+    <view wx:else class="jg-card">
+      <view class="jg-body">{{competitionText}}</view>
+      <view class="jg-sub jg-mt-8">报名意向由学生在线提交，正式报名仍需在赛事官方渠道完成并回填办理状态。</view>
+    </view>
+  </view>
+
+  <!-- 4. 待审核注册（保留原有二次确认流程） -->
+  <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">待审核注册</text>
+      <text class="jg-sect-c">{{registrations.length}} 人</text>
+    </view>
+
+    <view wx:if="{{registrationState.loading}}" class="jg-list">
+      <view class="jg-skeleton jg-skeleton-row"></view>
+    </view>
+
+    <view wx:elif="{{registrationState.error}}" class="jg-state-err">
+      <view class="jg-state-err-t">注册审核列表加载失败</view>
+      <view class="jg-state-err-m">{{registrationState.error}}</view>
+      <view class="jg-retry" bindtap="retryRegistrations">重新加载</view>
+    </view>
+
+    <jg-empty
+      wx:elif="{{registrations.length === 0}}"
+      title="没有待审核的学生注册"
+      message="学生提交注册资料后会出现在这里，由负责训练组的教练审核。"
+    />
+
+    <view wx:else class="jg-list">
+      <view wx:for="{{registrations}}" wx:key="userId" class="jg-todo jg-todo-p2">
+        <view class="jg-todo-bar"></view>
+        <view class="jg-todo-main">
+          <view class="jg-todo-t">{{item.name}}</view>
+          <view class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
+          <view class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}} · 出生日期：{{item.birthDate || '未填写'}}</view>
+        </view>
+        <view class="jg-todo-a">
+          <button
+            class="jg-btn jg-btn-sm"
+            data-user-id="{{item.userId}}"
+            data-decision="approve"
+            loading="{{reviewingUserId === item.userId}}"
+            bindtap="review"
+          >通过</button>
+          <button
+            class="jg-btn jg-btn-sm jg-btn-danger"
+            data-user-id="{{item.userId}}"
+            data-decision="reject"
+            loading="{{reviewingUserId === item.userId}}"
+            bindtap="review"
+          >驳回</button>
+        </view>
       </view>
     </view>
   </view>
 
-  <view class="notice">审核权限和训练组范围由云函数重新计算，前端页面不传递或决定数据范围。</view>
-  <button class="button-secondary" bindtap="goHome">退出当前会话</button>
+  <!-- 5. 常用管理入口 -->
+  <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">常用管理入口</text>
+      <text class="jg-sect-c">按使用频率排序</text>
+    </view>
+    <view class="jg-list">
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAttendanceManage">
+        <view class="jg-row-ic jg-row-ic-brand">勤</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">考勤管理</view>
+          <view class="jg-row-m">建场次 · 名单 · 人工核实 · 请假审批</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goPlans">
+        <view class="jg-row-ic jg-row-ic-brand">计</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">训练计划</view>
+          <view class="jg-row-m">草稿、发布与复制</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goPerformanceReview">
+        <view class="jg-row-ic jg-row-ic-ok">审</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">成绩审核</view>
+          <view class="jg-row-m">审核学生申报成绩，通过后计入正式成绩</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goStatsWorkbench">
+        <view class="jg-row-ic jg-row-ic-ok">统</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">统计与排行</view>
+          <view class="jg-row-m">训练组统计与 XLSX 导出</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goCompetitionManage">
+        <view class="jg-row-ic jg-row-ic-accent">赛</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">赛事管理</view>
+          <view class="jg-row-m">发布赛事 · 办理报名 · 导出名单</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goNoticeManage">
+        <view class="jg-row-ic jg-row-ic-accent">通</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">通知管理</view>
+          <view class="jg-row-m">发布与撤回俱乐部通知</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goFeedbackManage">
+        <view class="jg-row-ic jg-row-ic-plain">馈</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">训练反馈管理</view>
+          <view class="jg-row-m">查看反馈并补充教练评价</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
+        <view class="jg-row-ic jg-row-ic-plain">退</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">退出当前会话</view>
+          <view class="jg-row-m">退出后需重新微信登录</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+    </view>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-t">权限与数据范围</view>
+        <view class="jg-note-m">待办与考勤只包含本人负责训练组的数据；审核、审批与办理结果由云函数重新校验范围并写入审计日志。</view>
+      </view>
+    </view>
+  </view>
 </view>

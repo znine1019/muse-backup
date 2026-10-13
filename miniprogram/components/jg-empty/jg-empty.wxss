@@ -1,0 +1,56 @@
+/* 阶段7-1｜空状态（自包含样式，高度受控 ≤ 240rpx 内容 + 内边距） */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 32rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #E3E9F0;
+  border-radius: 32rpx;
+  text-align: center;
+}
+.empty-ic {
+  position: relative;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 24rpx;
+  background: #E9F1FB;
+}
+.empty-ic-lid {
+  position: absolute;
+  left: 30rpx;
+  top: 26rpx;
+  width: 28rpx;
+  height: 14rpx;
+  border: 3rpx solid #17509E;
+  border-bottom: none;
+  border-radius: 8rpx 8rpx 0 0;
+  box-sizing: border-box;
+}
+.empty-ic-body {
+  position: absolute;
+  left: 22rpx;
+  top: 40rpx;
+  width: 44rpx;
+  height: 26rpx;
+  border: 3rpx solid #17509E;
+  border-radius: 6rpx;
+  box-sizing: border-box;
+}
+.empty-t { font-size: 27rpx; font-weight: 700; color: #0E1A28; margin-top: 20rpx; }
+.empty-m { font-size: 24rpx; color: #64748B; line-height: 1.55; margin-top: 10rpx; }
+.empty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  padding: 0 32rpx;
+  margin-top: 20rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid #E3E9F0;
+  background: #FFFFFF;
+  color: #17509E;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+.empty-btn-hover { background: #F4F8FE; }

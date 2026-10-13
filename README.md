@@ -33,6 +33,7 @@
 - 阶段6本地实现统计报表与排行榜：学生个人统计、正式成绩周期榜、考勤统计与出勤率榜、教练/developer统计工作台，以及成绩和考勤XLSX导出。
 - 统计只使用真实业务数据；approved成绩参与正式PB和榜单，pending/rejected与DEMO数据被排除；历史成员限制会在服务端标记为估算口径。
 - 阶段6云端已新增3个非唯一统计索引并部署新版 `api`：统计、排行榜、导出路由已注册；`api` 仍为Nodejs16.13、`index.main`、256MB、3秒、无环境变量。
+- 阶段7（进行中）：F1 融合设计方向（A3 信息架构 + A1 竞技数据视觉 + A2 学生端体验）已完成三套候选方案对比与融合终版原型（`docs/ui-phase7/`）；阶段7-1 设计系统已落地（`app.wxss` 的 `jg-` 设计令牌与公共类 + `jg-page-head`/`jg-empty` 两个自包含组件，旧公共样式全部保留）；阶段7-2 三个工作台样板已完成（学生/教练/developer 均复用现有真实接口，逐区块加载与重试、空状态、下拉刷新、待办只跳转不写入、敏感操作保留二次确认，开发者页面统一显示开发者角色）。本轮未新增或修改任何后端接口，未部署云端，未改动其余 25 个页面。
 
 ## 明确未实现
 
@@ -50,14 +51,16 @@ node scripts\validate-phase3.js
 node scripts\validate-phase4.js
 node scripts\validate-phase5.js
 node scripts\validate-phase6.js
+node scripts\validate-phase7.js
 node --test tests\phase1\*.test.js tests\phase2\*.test.js tests\phase3\*.test.js tests\phase4\*.test.js
 node --test tests\phase5\*.test.js
 node --test tests\phase6\*.test.js
+node --test tests\phase7\*.test.js
 ```
 
 结构校验检查环境 ID、页面结构、云函数模块拆分、服务端身份入口和常见密钥泄露问题。单元测试使用完全虚构数据。
 
-当前阶段1至阶段6本地测试共 255 项（阶段1 50 项、阶段2 75 项、阶段3 29 项、阶段4 28 项、阶段5 47 项、阶段6 26 项），覆盖身份权限、成绩与报告、演示模式、训练计划、GPS签到与请假、赛事意向、通知、训练反馈、统计分析、排行榜、XLSX导出和页面路由。结构校验：阶段1 928 项、阶段2 120 项、阶段3 63 项、阶段4 69 项、阶段5 153 项、阶段6 73 项。另有 `node scripts\wxml-lint.js` 全站模板结构检查。
+当前阶段1至阶段7本地测试共 271 项（阶段1 50 项、阶段2 75 项、阶段3 29 项、阶段4 28 项、阶段5 47 项、阶段6 26 项、阶段7 16 项），覆盖身份权限、成绩与报告、演示模式、训练计划、GPS签到与请假、赛事意向、通知、训练反馈、统计分析、排行榜、XLSX导出、页面路由，以及阶段7设计系统与三个工作台样板。结构校验：阶段1 976 项、阶段2 120 项、阶段3 63 项、阶段4 69 项、阶段5 153 项、阶段6 73 项、阶段7 162 项，合计 1616 项。另有 `node scripts\wxml-lint.js` 全站模板结构检查。
 
 ## Windows 验证
 

@@ -1,0 +1,14 @@
+<view class="empty">
+  <view class="empty-ic">
+    <view class="empty-ic-lid"></view>
+    <view class="empty-ic-body"></view>
+  </view>
+  <view class="empty-t">{{title}}</view>
+  <view class="empty-m" wx:if="{{message}}">{{message}}</view>
+  <view
+    class="empty-btn"
+    wx:if="{{actionText}}"
+    hover-class="empty-btn-hover"
+    bindtap="onAction"
+  >{{actionText}}</view>
+</view>
