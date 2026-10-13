@@ -27,5 +27,11 @@
     "backgroundTextStyle": "light"
   },
   "style": "v2",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于学生训练签到时判断是否在教练设置的训练地点范围内"
+    }
+  },
+  "requiredPrivateInfos": ["getLocation"],
   "sitemapLocation": "sitemap.json"
 }
