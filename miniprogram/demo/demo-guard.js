@@ -26,6 +26,7 @@ const DEMO_STATE_KEYS = Object.freeze(['demo_preview_state_v1']);
 
 const ROLE_LABELS = Object.freeze({
   student: '学生端',
+  coach: '教练员端',
   parent: '家长端'
 });
 

@@ -34,10 +34,18 @@ const {
   getParentCompetition,
   catalog: PARENT_CATALOG
 } = require('../../demo/parent-demo');
+const {
+  buildCoachWorkbench,
+  buildCoachModule,
+  buildCoachDetail,
+  catalog: COACH_CATALOG
+} = require('../../demo/coach-demo');
+const store = require('../../demo/showcase-store');
 const { getSessionDestination } = require('../../utils/session');
 
 const ROLE_TONES = Object.freeze({
   student: 'brand',
+  coach: 'ok',
   parent: 'accent'
 });
 
@@ -62,6 +70,7 @@ Page({
     localRead: false,
 
     student: null,
+    coach: null,
     parent: null,
     module: null,
     catalogGroups: [],
@@ -83,9 +92,10 @@ Page({
       ? 'catalog'
       : 'workbench';
     const studentIndex = Number(options.student) || 0;
+    const coachIndex = Number(options.coach) || 0;
     const section = options.section || '';
 
-    this.routeState = { role, moduleId, detailType, detailId, studentIndex, section };
+    this.routeState = { role, moduleId, detailType, detailId, studentIndex, coachIndex, section };
 
     this.setData({
       role,
@@ -142,9 +152,10 @@ Page({
   },
 
   applyDemoData() {
-    const { role, moduleId, detailType, studentIndex } = this.routeState;
+    const { role, moduleId, detailType, studentIndex, coachIndex } = this.routeState;
     const isParent = role === 'parent';
-    const catalog = isParent ? PARENT_CATALOG : STUDENT_CATALOG;
+    const isCoach = role === 'coach';
+    const catalog = isCoach ? COACH_CATALOG : isParent ? PARENT_CATALOG : STUDENT_CATALOG;
     const catalogGroups = groupCatalog(catalog);
 
     /* 演示详情（通知正文 / 赛事意向）：同样复用本演示页 */
@@ -167,7 +178,9 @@ Page({
     }
 
     if (moduleId) {
-      const module = isParent
+      const module = isCoach
+        ? buildCoachModule(moduleId, (this.data.coach && this.data.coach.coach.id) || undefined)
+        : isParent
         ? buildParentModule(moduleId, studentIndex)
         : buildStudentModule(moduleId);
       this.setData({
@@ -196,6 +209,23 @@ Page({
         module: null,
         pageTitle: `${roleLabel(role)}全部功能`,
         pageMeta: `共 ${catalog.length} 项已实现的演示功能`
+      });
+      return;
+    }
+
+    if (isCoach) {
+      const coach = buildCoachWorkbench();
+      this.setData({
+        loading: false,
+        ready: true,
+        error: '',
+        denied: false,
+        isCoach,
+        catalogGroups,
+        module: null,
+        coach,
+        pageTitle: '教练员工作台（演示）',
+        pageMeta: `${coach.coach.name} · ${coach.coach.groupNames.join('、')}（虚构授权）`
       });
       return;
     }
@@ -238,6 +268,11 @@ Page({
    */
   buildDemoDetail() {
     const { role, detailType, detailId } = this.routeState;
+
+    /* 教练端：计划 / 请假 / 成绩 / 反馈 / 赛事意向 详情 + 模拟操作按钮 */
+    if (role === 'coach') {
+      return buildCoachDetail(detailType, detailId);
+    }
 
     if (role === 'parent') {
       if (detailType === 'competition') {
@@ -313,6 +348,9 @@ Page({
     }
     if (role === 'parent') {
       parts.push(`student=${student}`);
+    }
+    if (role === 'coach') {
+      parts.push(`coach=${this.data.coach ? this.data.coach.coachIndex : 0}`);
     }
     wx.navigateTo({ url: `/pages/demo/demo?${parts.join('&')}` });
   },
@@ -421,9 +459,76 @@ Page({
       .exec();
   },
 
-  /* 演示中的"模拟提交"：只改变本地状态，绝不调用业务接口 */
+  /*
+   * 演示中的"模拟提交"：只写入本地模拟数据源，绝不调用业务接口。
+   * 带 submitKind 的模块（如教练发布通知）会真正写入统一数据源，以便联动到其他角色。
+   */
   simulateSubmit() {
+    const kind = this.data.module && this.data.module.submitKind;
+    if (kind) {
+      const result = this.runDemoAction(kind, '');
+      this.setData({ simulatedSubmit: result.ok ? '已在本地模拟数据源中生效（未写入任何正式数据）' : `模拟失败：${result.reason}` });
+      if (result.ok) {
+        this.applyDemoData();
+      }
+      return;
+    }
     this.setData({ simulatedSubmit: '本地模拟已完成（未写入任何业务数据）' });
+  },
+
+  /* 教练端模拟操作入口：全部写入本地统一数据源 */
+  onDemoAction(event) {
+    const kind = event.currentTarget.dataset.kind;
+    const id = event.currentTarget.dataset.id || '';
+    const result = this.runDemoAction(kind, id);
+    wx.showToast({ title: result.ok ? '已在本地演示数据中生效' : (result.reason || '操作未生效'), icon: 'none' });
+    if (result.ok) {
+      /* 重新构建当前视图，让列表与详情反映最新模拟状态 */
+      this.applyDemoData();
+    }
+  },
+
+  runDemoAction(kind, id) {
+    switch (kind) {
+      case 'publish-plan':
+        return store.publishPlan(id);
+      case 'approve-leave':
+        return store.reviewLeave(id, 'approve');
+      case 'reject-leave':
+        return store.reviewLeave(id, 'reject');
+      case 'approve-performance':
+        return store.reviewPerformance(id, 'approve');
+      case 'reject-performance':
+        return store.reviewPerformance(id, 'reject');
+      case 'comment-feedback':
+        return store.reviewFeedback(id);
+      case 'register-intent':
+        return store.advanceCompetitionIntent(id, store.COMPETITION_STATUS.REGISTERED, '教练已在赛事官方渠道完成报名（虚构）。');
+      case 'publish-notice':
+        return store.publishNotice({
+          title: '演示：训练时间调整',
+          categoryLabel: '训练安排',
+          publishedAt: '2026-06-20 10:00',
+          publisherText: '教练（虚构）',
+          priority: 'normal',
+          content: '因场地安排，本周训练顺延 30 分钟，请提前到场热身。',
+          groupIds: store.GROUPS.map((group) => group.id)
+        });
+      default:
+        return { ok: false, reason: '未知的演示操作' };
+    }
+  },
+
+  /* 教练切换：按预置授权展示不同训练组与名册 */
+  onCoachChange(event) {
+    const index = Number(event.detail.value);
+    const option = (this.data.coach && this.data.coach.coachOptions[index]) || null;
+    if (!option) {
+      return;
+    }
+    this.routeState.coachIndex = index;
+    const coach = buildCoachWorkbench(option.id);
+    this.setData({ coach, simulatedSubmit: '' });
   },
 
   retry() {

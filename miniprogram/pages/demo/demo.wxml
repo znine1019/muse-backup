@@ -39,6 +39,30 @@
         <view class="demo-detail-body">{{detail.body}}</view>
       </view>
 
+      <!-- 教练端详情：要件列表 + 模拟操作 -->
+      <view wx:if="{{detail.items.length || detail.actions.length || detail.linkageNote}}" class="jg-card">
+        <view wx:if="{{detail.items.length}}" class="jg-list">
+          <view wx:for="{{detail.items}}" wx:key="*this" class="jg-row">
+            <view class="jg-row-main"><view class="jg-row-t">{{item}}</view></view>
+          </view>
+        </view>
+
+        <view wx:if="{{detail.actions.length}}" class="jg-btn-row">
+          <block wx:for="{{detail.actions}}" wx:key="kind">
+            <button
+              class="jg-btn {{item.tone === 'danger' ? 'jg-btn-danger' : (item.tone === 'primary' ? '' : 'jg-btn-ghost')}}"
+              data-kind="{{item.kind}}"
+              data-id="{{item.id}}"
+              bindtap="onDemoAction"
+            >{{item.label}}</button>
+          </block>
+        </view>
+
+        <view wx:if="{{detail.linkageNote}}" class="jg-note">
+          <view><view class="jg-note-m">{{detail.linkageNote}}</view></view>
+        </view>
+      </view>
+
       <view wx:if="{{detail.isNotice}}" class="jg-card">
         <view class="jg-card-h">
           <text class="jg-card-t">阅读状态（演示）</text>
@@ -139,7 +163,7 @@
     </block>
 
     <!-- ========== 3. 学生演示工作台 ========== -->
-    <block wx:elif="{{!isParent}}">
+    <block wx:elif="{{!isParent && !isCoach}}">
       <view class="jg-sect">
         <view class="jg-sect-h">
           <text class="jg-sect-t">今日训练</text>
@@ -276,6 +300,141 @@
             </view>
             <view class="jg-row-e"><text class="jg-chev">›</text></view>
           </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- ========== 5. 教练员演示工作台（D1-B） ========== -->
+    <block wx:elif="{{isCoach}}">
+      <!-- 教练切换：预置带队授权，不依赖任何审批 -->
+      <view class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">当前教练（虚构授权）</text>
+          <text class="jg-chip jg-chip-ok">{{coach.coach.groupNames.length}} 个训练组</text>
+        </view>
+        <picker range="{{coach.coachOptions}}" range-key="label" value="{{coach.coachIndex}}" bindchange="onCoachChange">
+          <view class="jg-input jg-picker">{{coach.coachOptions[coach.coachIndex].label}}</view>
+        </picker>
+        <view class="jg-sub jg-mt-8">负责训练组：{{coach.coach.groupNames.length ? coach.coach.groupNames.join('、') : '未分配'}}</view>
+      </view>
+
+      <!-- 今日训练与考勤 -->
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">今日训练与考勤</text>
+          <text class="jg-sect-c">{{coach.todaySessions.length}} 场</text>
+        </view>
+        <jg-empty wx:if="{{!coach.todaySessions.length}}" title="今天没有考勤场次" message="预置的模拟场次会显示在这里。" />
+        <block wx:else>
+          <view wx:for="{{coach.todaySessions}}" wx:key="sessionId" class="jg-card">
+            <view class="jg-card-h">
+              <text class="jg-card-t">{{item.title}}</text>
+              <text class="jg-chip {{item.phaseLabel === '模拟签到状态' ? 'jg-chip-ok' : ''}}">{{item.phaseLabel}}</text>
+            </view>
+            <view class="jg-body-s">训练组：{{item.trainingGroupName}} · {{item.locationName}}</view>
+            <view class="jg-body-s jg-mt-8">签到窗口：{{item.windowText}}</view>
+            <view class="jg-dstrip jg-mt-12">
+              <view class="jg-ds">
+                <view class="jg-ds-l">应到</view>
+                <view class="jg-ds-v jg-ds-v-ink">{{item.expectedCount}}</view>
+              </view>
+              <view class="jg-ds">
+                <view class="jg-ds-l">已签到</view>
+                <view class="jg-ds-v jg-ds-v-ok">{{item.checkedInCount}}</view>
+              </view>
+              <view class="jg-ds">
+                <view class="jg-ds-l">待签到</view>
+                <view class="jg-ds-v jg-ds-v-warn">{{item.expectedCount - item.checkedInCount}}</view>
+              </view>
+            </view>
+            <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" data-module="attendance" bindtap="goModule">查看名单与签到进度</button>
+          </view>
+        </block>
+      </view>
+
+      <!-- 待办 -->
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">待办</text>
+          <text class="jg-sect-c">共 {{coach.todoSummary.total}} 项</text>
+        </view>
+
+        <view class="jg-chips jg-mb-12">
+          <text class="jg-chip jg-chip-danger">待批请假 {{coach.todoSummary.leave}}</text>
+          <text class="jg-chip jg-chip-warn">待审成绩 {{coach.todoSummary.performance}}</text>
+          <text class="jg-chip jg-chip-accent">待评价反馈 {{coach.todoSummary.feedback}}</text>
+        </view>
+
+        <jg-empty wx:if="{{!coach.todos.length}}" title="当前没有待办" message="新的请假、成绩申报或需评价反馈会出现在这里。" />
+        <view wx:else class="jg-list">
+          <view wx:for="{{coach.todos}}" wx:key="key" class="jg-todo">
+            <view class="jg-todo-bar"></view>
+            <view class="jg-todo-main">
+              <view class="jg-todo-t">
+                <text>{{item.title}}</text>
+                <text class="jg-chip jg-chip-warn">{{item.typeLabel}}</text>
+              </view>
+              <view class="jg-todo-m">{{item.detail}}</view>
+              <view wx:if="{{item.reason}}" class="jg-todo-m">{{item.reason}}</view>
+            </view>
+            <view class="jg-todo-a">
+              <button
+                class="jg-btn jg-btn-sm"
+                data-module="{{item.type === 'leave' ? 'leave' : (item.type === 'performance' ? 'performance-review' : 'feedback')}}"
+                bindtap="goModule"
+              >去处理</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 赛事意向 -->
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">赛事报名意向</text>
+          <text class="jg-sect-c">{{coach.competitionIntents.length}} 条</text>
+        </view>
+        <jg-empty wx:if="{{!coach.competitionIntents.length}}" title="暂无赛事意向" message="学生提交意向或教练发布赛事后会显示在这里。" />
+        <view wx:else class="jg-list">
+          <view wx:for="{{coach.competitionIntents}}" wx:key="registrationId" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.studentName}} · {{item.competitionTitle}}</view>
+              <view class="jg-row-m">{{item.statusLabel}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 学生名册 -->
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">学生名册</text>
+          <text class="jg-sect-c">{{coach.students.length}} 人</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{coach.students}}" wx:key="id" class="jg-row">
+            <view class="jg-row-ic jg-row-ic-brand">{{item.name}}</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.name}}</view>
+              <view class="jg-row-m">{{item.groupNames.join('、')}} · {{item.pbText}}</view>
+            </view>
+            <view class="jg-row-e">
+              <text wx:if="{{item.pendingCount}}" class="jg-chip jg-chip-warn">待审 {{item.pendingCount}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 全部功能 -->
+      <view class="jg-list">
+        <view class="jg-row" hover-class="jg-row-hover" bindtap="goCatalog">
+          <view class="jg-row-ic jg-row-ic-accent">全</view>
+          <view class="jg-row-main">
+            <view class="jg-row-t">全部功能</view>
+            <view class="jg-row-m">计划 · 考勤 · 请假 · 成绩审核 · 名册 · 排行 · 反馈 · 赛事 · 通知</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-chev">›</text></view>
         </view>
       </view>
     </block>

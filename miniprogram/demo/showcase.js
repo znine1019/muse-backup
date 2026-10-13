@@ -15,11 +15,11 @@ const { IS_DEMO_BUILD } = require('./../config/build-mode');
 
 const DEMO_SESSION_STORAGE_KEY = 'jogger_demo_role_v1';
 
+/* D1-B：DEMO 首页只保留学生 / 教练员 / 家长三个体验入口（不再提供开发者端模拟）。 */
 const ROLE_LABELS = Object.freeze({
   student: '学生端',
-  parent: '家长端',
   coach: '教练员端',
-  developer: '开发者端'
+  parent: '家长端'
 });
 
 /**
@@ -37,31 +37,22 @@ const SHOWCASE_ROLES = Object.freeze([
     note: '包含 1 名虚构学生与完整本地演示数据'
   },
   {
+    role: 'coach',
+    label: ROLE_LABELS.coach,
+    icon: '教',
+    tone: 'ok',
+    status: 'ready',
+    desc: '今日训练与考勤、请假审批、成绩审核、学生名册、反馈、赛事与通知',
+    note: '含两名教练轮换带队与预置授权（不依赖任何审批流程）'
+  },
+  {
     role: 'parent',
     label: ROLE_LABELS.parent,
     icon: '家',
     tone: 'accent',
     status: 'ready',
     desc: '家长只读工作台、两名虚构学生切换、成绩/考勤/反馈/赛事通知',
-    note: '含"关联已生效 / 待开发者核验"两种授权状态演示'
-  },
-  {
-    role: 'coach',
-    label: ROLE_LABELS.coach,
-    icon: '教',
-    tone: 'ok',
-    status: 'planned',
-    desc: '训练组管理、学生管理、成绩审核、考勤、赛事与反馈',
-    note: '模拟业务交互计划在 D1-B 提供'
-  },
-  {
-    role: 'developer',
-    label: ROLE_LABELS.developer,
-    icon: '开',
-    tone: 'plain',
-    status: 'planned',
-    desc: '用户审核、角色权限、训练组、系统状态与全局管理',
-    note: '模拟业务交互计划在 D1-B 提供'
+    note: '含“关联已生效 / 待核验”两种授权状态演示'
   }
 ]);
 

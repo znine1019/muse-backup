@@ -250,6 +250,12 @@ function loadDemoPage(options = {}) {
         if (request.includes('demo/parent-demo')) {
           return PARENT_DEMO;
         }
+        if (request.includes('demo/coach-demo')) {
+          return require(path.join(PROJECT_ROOT, 'miniprogram/demo/coach-demo.js'));
+        }
+        if (request.includes('demo/showcase-store')) {
+          return require(path.join(PROJECT_ROOT, 'miniprogram/demo/showcase-store.js'));
+        }
         if (request.includes('utils/session')) {
           return { getSessionDestination: () => ({ url: '/pages/admin/admin' }) };
         }

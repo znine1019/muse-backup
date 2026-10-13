@@ -81,8 +81,10 @@ function wxCloudSpy() {
 /* ============================================================ 1. 四角色入口 */
 
 test('D1-A 展示入口包含四种模拟身份，且不需要真实角色授权', () => {
+  /* D1-B：DEMO 首页只保留三个体验入口，已移除开发者端 */
   const roles = SHOWCASE.SHOWCASE_ROLES.map((item) => item.role).sort();
-  assert.deepEqual(roles, ['coach', 'developer', 'parent', 'student'], '应包含四个角色入口');
+  assert.deepEqual(roles, ['coach', 'parent', 'student'], '应只包含学生/教练员/家长三个入口');
+  assert.ok(!roles.includes('developer'), 'DEMO 不再提供开发者端入口');
 
   for (const item of SHOWCASE.SHOWCASE_ROLES) {
     assert.ok(item.label && item.desc, `${item.role} 入口应有名称与说明`);
