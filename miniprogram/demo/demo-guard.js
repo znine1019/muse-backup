@@ -5,7 +5,7 @@
  *
  * 与既有「预览运动数据报告（DEMO）」保持同一套安全模型：
  *   1. 仅 develop / trial 环境可用（release 隐藏并拒绝）；
- *   2. 仅真实 developer 会话可进入；
+ *   2. DEMO 构建仅接受本机 DEMO 入口签发的模拟会话，正式构建仍要求真实 developer；
  *   3. 演示数据全部来自 miniprogram/demo/ 的本地虚构数据，不读取 CloudBase；
  *   4. 演示页不调用任何业务接口，也不修改真实账号角色。
  *
@@ -39,7 +39,7 @@ function roleLabel(role) {
 }
 
 /**
- * 演示访问校验：环境 + 真实 developer 身份。
+ * 演示访问校验：环境 +（DEMO 模拟会话或正式 developer 身份）。
  * 任何演示页面（含直接以路径打开）都必须先通过此校验。
  */
 function checkDemoAccess(session) {

@@ -243,7 +243,8 @@ test('D1-A DEMO 启动会话不经过正式登录接口', async () => {
 
   assert.equal(loginCalls.length, 0, 'DEMO 构建不得调用正式登录接口');
   assert.equal(session.demo, true, '应返回本地模拟会话');
-  assert.equal(session.user.roles.includes('student'), true, '模拟会话应携带所选模拟角色');
+  assert.equal(session.user.demoRole, 'student', '模拟会话应记录所选体验身份');
+  assert.deepEqual(session.user.roles, [], 'DEMO 模拟会话不得携带任何正式业务角色');
 });
 
 /* ============================================== 4. 真实开发者管理接口 */

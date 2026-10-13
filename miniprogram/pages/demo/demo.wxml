@@ -12,12 +12,12 @@
     role-tone="{{roleTone}}"
   />
 
-  <!-- 拒绝进入（环境不允许 / 非 developer）：只说明原因，不渲染任何演示数据 -->
+<!-- 拒绝进入（环境不允许 / 未选择 DEMO 身份）：只说明原因，不渲染任何演示数据 -->
   <view wx:if="{{error}}" class="jg-state-err">
     <view class="jg-state-err-t">无法进入演示预览</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="demo-state-actions">
-      <view class="jg-retry" bindtap="goDeniedDestination">返回我的工作台</view>
+      <view class="jg-retry" bindtap="goDeniedDestination">返回 DEMO 首页</view>
     </view>
   </view>
 
@@ -670,12 +670,12 @@
     <view class="jg-note">
       <view>
         <view class="jg-note-t">演示预览安全边界</view>
-        <view class="jg-note-m">仅开发版与体验版可用，且只对真实开发者身份开放；全部数据为本地虚构数据，不读取、不写入任何正式业务数据，也不改变真实账号角色。</view>
+        <view class="jg-note-m">仅开发版与体验版可用；三种身份均为本地模拟角色，不需要任何真实业务角色。全部数据为虚构演示数据，不读取、不写入任何正式业务数据，也不改变真实账号角色。退出演示只会回到 DEMO 首页。</view>
       </view>
     </view>
 
     <view class="jg-btn-row">
-      <button class="jg-btn jg-btn-ghost" bindtap="goAdmin">退出演示，返回开发者工作台</button>
+      <button class="jg-btn jg-btn-ghost" bindtap="goDemoHome">退出当前身份，返回 DEMO 首页</button>
     </view>
   </block>
 </view>

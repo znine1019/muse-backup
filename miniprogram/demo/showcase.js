@@ -85,13 +85,40 @@ function buildDemoSession(role) {
       id: `demo_${role}_visitor`,
       name: `${roleLabel(role)}访客`,
       status: 'active',
-      roles: [role]
+      /*
+       * 关键：模拟会话**不携带任何正式业务角色**。
+       * 这样即使访客通过直接路由误入正式工作台，其服务端角色校验也必然失败，
+       * 而失败后的跳转目标（见 utils/session.js）在 DEMO 构建下统一为 DEMO 首页。
+       */
+      roles: [],
+      demoRole: role
+    }
+  };
+}
+
+/* 未选择体验身份时的占位会话：不含角色，只用于让正式页面安全退回 DEMO 首页 */
+function buildDemoVisitorSession() {
+  return {
+    sessionVersion: 1,
+    demo: true,
+    user: {
+      id: 'demo_visitor',
+      name: 'DEMO 访客',
+      status: 'active',
+      roles: [],
+      demoRole: ''
     }
   };
 }
 
 function isDemoSession(session) {
-  return Boolean(session && session.demo === true && session.user && session.user.id);
+  return Boolean(
+    session &&
+      session.demo === true &&
+      session.user &&
+      session.user.id &&
+      isShowcaseRole(session.user.demoRole)
+  );
 }
 
 function readActiveDemoRole() {
@@ -130,6 +157,7 @@ module.exports = {
   ROLE_LABELS,
   SHOWCASE_ROLES,
   buildDemoSession,
+  buildDemoVisitorSession,
   clearActiveDemoRole,
   isDemoSession,
   isRoleReady,

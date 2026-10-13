@@ -65,6 +65,9 @@ function loadDemoPage(role, options = {}) {
         if (request.includes('demo/parent-demo')) return PARENT_DEMO;
         if (request.includes('demo/coach-demo')) return COACH_DEMO;
         if (request.includes('demo/showcase-store')) return STORE;
+        if (request.includes('demo/showcase')) {
+          return { ...SHOWCASE, clearActiveDemoRole: () => {} };
+        }
         if (request.includes('utils/session')) return SESSION_UTILS;
         throw new Error(`未打桩的依赖：${request}`);
       },

@@ -2,6 +2,7 @@ const { CLOUD_ENV_ID } = require('./config/env');
 const { IS_DEMO_BUILD } = require('./config/build-mode');
 const {
   buildDemoSession,
+  buildDemoVisitorSession,
   clearActiveDemoRole,
   readActiveDemoRole
 } = require('./demo/showcase');
@@ -54,13 +55,13 @@ App({
      */
     if (IS_DEMO_BUILD) {
       const demoSession = buildDemoSession(readActiveDemoRole());
-      if (!demoSession) {
-        const error = new Error('请先在 DEMO 入口选择体验身份。');
-        error.code = 'DEMO_ROLE_REQUIRED';
-        return Promise.reject(error);
-      }
-      this.globalData.session = demoSession;
-      return Promise.resolve(demoSession);
+      /*
+       * 未选择身份时也返回一个无角色的 DEMO 会话。
+       * 正式页面会因角色校验失败统一退回 DEMO 首页，而不会停留在正式路由上。
+       */
+      const session = demoSession || buildDemoVisitorSession();
+      this.globalData.session = session;
+      return Promise.resolve(session);
     }
 
     if (this.globalData.requireManualLogin && !force) {

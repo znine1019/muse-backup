@@ -1,6 +1,6 @@
 # D1-B｜三角色全功能 DEMO 实施记录
 
-**分支**：`demo/showcase-v1`　**上一提交**：`a03deee`（D1-A）　**正式 main**：`3274cbb`（本轮仍未改动）
+**分支**：`demo/showcase-v1`　**BUG-05 基线提交**：`c578b28`　**正式 main**：`3274cbb`（本轮仍未改动）
 **工作区**：`C:\Users\Administrator\Desktop\乔格训迹系统-DEMO`
 
 ---
@@ -100,7 +100,7 @@ DEMO 工作区全量测试：**428 项通过 / 0 失败 / 0 TODO**（D1-A 的 41
 ## 8. 已知边界
 
 - 模拟写入仅存在于内存：**重启小程序后回到初始数据**（符合演示预期，也避免残留状态）。
-- 学生端与家长端**页面**仍渲染各自已通过真机验收的演示内容；与本轮的联动发生在统一数据源层，教练端的操作会写入该数据源，学生/家长端**页面级双向渲染**留待后续（D1-C）如需要。
+- 学生端、教练员端、家长端页面均已接入统一数据源；页面级双向渲染已由第 9 节完成。
 - 未上传体验版、未部署云函数、未改数据库、未改任何正式账号权限。
 
 ---
@@ -132,3 +132,36 @@ D1-B 主体只把联动做在数据源层：`student-demo.js` 与 `parent-demo.j
 `tests/demo/page-linkage.test.js`（**9 项**）：真实加载 `pages/demo/demo.js` 并按角色渲染，断言 `instance.data.*`（即 WXML 直接绑定的字段）——发布计划→学生页面出现、通过成绩→学生 PB + 排行榜 + 家长成绩、驳回不变、批准请假→学生与家长状态一致且无原因泄漏、发布通知→学生页面新增、未授权详情 ID 被拒、切换学生后旧 ID 仍受约束、三角色渲染与操作**零云端调用**、既有通知详情与家长快捷导航未受损。
 
 DEMO 工作区全量测试：**437 项通过 / 0 失败 / 0 TODO**（D1-B 主体 428 + 本轮 9）。
+
+---
+
+## 10. BUG-05：退出导航回正式工作台（P0 修复）
+
+### 10.1 问题
+
+学生端 DEMO 底部仍保留“退出演示，返回开发者工作台”。点击后 `reLaunch` 到正式 `pages/admin/admin`，并可从正式工作台继续进入学生、教练员、家长工作台，触发 `DEMO_BUILD_BLOCKED` 页面错误。
+
+### 10.2 修复
+
+1. 删除 `goAdmin()`，新增 `goDemoHome()`：清理演示状态与当前模拟身份后，使用 `wx.reLaunch('/pages/showcase/showcase')` 清空导航栈。
+2. 拒绝进入与退出按钮统一回到 DEMO 首页，不再读取 `demoDestination` 中的正式工作台路由。
+3. DEMO 模拟会话改为 `roles: []`，仅记录 `demoRole`；正式页面无法通过角色校验。
+4. `getSessionDestination()` 在 DEMO 构建下对模拟会话与缺失会话统一返回 `pages/showcase/showcase`；真实正式会话的原有路由逻辑保持不变。
+5. 未选择体验身份时，`app.ensureSession()` 返回无角色的 DEMO 访客会话；直接打开正式路由也会被页面角色守卫送回 DEMO 首页。
+6. 清理 DEMO 页“仅对真实开发者开放/返回开发者工作台”等旧文案与注释。
+7. 修正教练员 DEMO 目录导出名不一致（`COACH_CATALOG`），避免教练员入口因目录为空而渲染失败。
+
+### 10.3 导航闭环
+
+- DEMO 首页 → `/pages/demo/demo?role=student|coach|parent`
+- 页内模块 / 目录 / 工作台 / 详情 / 返回 → 仅 `/pages/demo/demo`（详情优先 `navigateBack`）
+- 退出模拟身份 → `wx.reLaunch('/pages/showcase/showcase')`
+- 正式工作台在 DEMO 会话下 → 实际重定向 `/pages/showcase/showcase` 且正式 API 零调用
+
+### 10.4 回归测试
+
+新增 `tests/demo/navigation.test.js`（6 项行为级测试）覆盖三角色进入、切换、详情返回、退出、正式路由隔离与 APP 无身份访客路径。
+
+DEMO 工作区全量测试：**443 项通过 / 0 失败 / 0 TODO**。JavaScript 全仓库语法检查 153 个文件通过，WXML、JSON、阶段 1-7 结构校验与 `git diff --check` 均通过。
+
+微信开发者工具 CLI 已检测到，但 `wechatide` 服务需要本机扫码授权；本轮未完成官方编译，真机验收前需在开发者工具中手动编译并复测。

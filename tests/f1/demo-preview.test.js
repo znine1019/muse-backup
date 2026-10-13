@@ -256,8 +256,14 @@ function loadDemoPage(options = {}) {
         if (request.includes('demo/showcase-store')) {
           return require(path.join(PROJECT_ROOT, 'miniprogram/demo/showcase-store.js'));
         }
+        if (request.includes('demo/showcase')) {
+          return {
+            ...SHOWCASE,
+            clearActiveDemoRole: () => wx.removeStorageSync(SHOWCASE.DEMO_SESSION_STORAGE_KEY)
+          };
+        }
         if (request.includes('utils/session')) {
-          return { getSessionDestination: () => ({ url: '/pages/admin/admin' }) };
+          return { getSessionDestination: () => ({ url: '/pages/showcase/showcase' }) };
         }
         throw new Error(`未打桩的依赖：${request}`);
       },
@@ -408,14 +414,18 @@ test('演示页：模拟提交只改变本地状态', async () => {
   assert.match(instance.data.simulatedSubmit, /本地模拟/);
 });
 
-test('演示页：退出预览回到开发者工作台并清理演示状态', async () => {
+test('演示页：退出当前身份回到 DEMO 首页并清理演示状态', async () => {
   const { instance, calls } = loadDemoPage();
   await instance.onLoad({ role: 'parent' });
   await flush();
 
-  instance.goAdmin();
-  assert.deepEqual(calls.reLaunch, ['/pages/admin/admin']);
-  assert.deepEqual(calls.removeStorageSync, ['demo_preview_state_v1'], '退出时应清理演示状态');
+  instance.goDemoHome();
+  assert.deepEqual(calls.reLaunch, ['/pages/showcase/showcase']);
+  assert.deepEqual(
+    calls.removeStorageSync,
+    ['demo_preview_state_v1', SHOWCASE.DEMO_SESSION_STORAGE_KEY],
+    '退出时应清理演示状态与当前模拟身份'
+  );
 
   /* 演示页不得出现任何角色变更调用 */
   const source = read('miniprogram/pages/demo/demo.js');

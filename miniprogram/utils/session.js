@@ -1,5 +1,7 @@
 'use strict';
 
+const { IS_DEMO_BUILD } = require('../config/build-mode');
+
 const ROLE_ROUTES = Object.freeze({
   student: '/pages/student/student',
   parent: '/pages/parent/parent',
@@ -29,6 +31,15 @@ function getRoleLabel(role) {
 }
 
 function getSessionDestination(session) {
+  /*
+   * DEMO 展示构建：任何“会话不被接受”的场景（包括误入正式业务页被角色校验拒绝）
+   * 都统一回到 DEMO 首页，绝不把访客送回正式学生 / 教练员 / 家长 / 开发者工作台。
+   * 正式 main 分支不包含 build-mode.js，因此这一分支不会生效。
+   */
+  if (IS_DEMO_BUILD && (!session || !session.user || session.demo === true)) {
+    return { type: 'demo', url: '/pages/showcase/showcase', label: '返回 DEMO 首页' };
+  }
+
   if (!session || !session.user) {
     return { type: 'login', url: '/pages/index/index', label: '返回登录' };
   }

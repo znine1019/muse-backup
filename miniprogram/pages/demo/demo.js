@@ -1,14 +1,14 @@
 'use strict';
 
 /**
- * 开发者专用演示预览页（学生端 / 家长端 DEMO）
+ * DEMO 演示预览页（学生端 / 教练员端 / 家长端）
  *
  * 安全模型（每次进入都执行，含直接以路径打开）：
  *   1. 环境必须是 develop / trial；
- *   2. 会话必须是真实 developer；
+ *   2. 会话必须来自 DEMO 本机入口的模拟身份；
  *   3. 校验通过前不构建、不渲染任何演示数据。
  *
- * 数据来源：miniprogram/demo/student-demo.js 与 parent-demo.js 的本地虚构数据。
+ * 数据来源：showcase-store.js 统一驱动学生、教练员、家长三类本地虚构视图。
  * 本页**不引入 services/api**，因此不存在调用正式业务接口（含写入）的可能。
  * 演示中的"模拟提交"只改变页面内存状态。
  */
@@ -39,10 +39,11 @@ const {
   buildCoachWorkbench,
   buildCoachModule,
   buildCoachDetail,
-  catalog: COACH_CATALOG
+  COACH_CATALOG
 } = require('../../demo/coach-demo');
 const store = require('../../demo/showcase-store');
 const { getSessionDestination } = require('../../utils/session');
+const { clearActiveDemoRole } = require('../../demo/showcase');
 
 const ROLE_TONES = Object.freeze({
   student: 'brand',
@@ -125,7 +126,7 @@ Page({
         loading: false,
         ready: false,
         denied: true,
-        error: '演示参数不正确：仅支持 role=student 或 role=parent。'
+        error: '演示参数不正确：仅支持 role=student、role=coach 或 role=parent。'
       });
       return;
     }
@@ -595,14 +596,19 @@ Page({
     this.loadDemo();
   },
 
+  /* 身份不被接受时：只回 DEMO 首页，绝不回到任何正式业务页面 */
   goDeniedDestination() {
-    wx.reLaunch({ url: this.data.demoDestination || '/pages/index/index' });
+    wx.reLaunch({ url: '/pages/showcase/showcase' });
   },
 
-  /* 退出演示：清理本地演示状态并回到开发者工作台，真实角色不变 */
-  goAdmin() {
+  /*
+   * 退出当前模拟角色：清理本地演示身份并回到 DEMO 首页。
+   * 使用 reLaunch 清除整个导航栈，避免“返回”时回到任何正式业务页面。
+   */
+  goDemoHome() {
     clearDemoState();
-    wx.reLaunch({ url: '/pages/admin/admin' });
+    clearActiveDemoRole();
+    wx.reLaunch({ url: '/pages/showcase/showcase' });
   }
 });
 
