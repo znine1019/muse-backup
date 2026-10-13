@@ -37,9 +37,9 @@
   ],
   "window": {
     "navigationBarTitleText": "乔格体育",
-    "navigationBarBackgroundColor": "#10263C",
+    "navigationBarBackgroundColor": "#103A6B",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#F4F7FA",
+    "backgroundColor": "#F2F5F9",
     "backgroundTextStyle": "light"
   },
   "style": "v2",

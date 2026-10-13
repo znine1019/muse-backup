@@ -38,7 +38,7 @@
     <view class="jg-card" id="sec-overview">
       <view class="jg-card-h"><text class="jg-card-t">关联学生</text><text class="jg-card-c">共 {{students.length}} 人</text></view>
       <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
-        <view class="input jg-picker">{{students[studentIndex].name}}</view>
+        <view class="jg-input jg-picker">{{students[studentIndex].name}}</view>
       </picker>
       <view class="jg-sub jg-mt-8">{{students[studentIndex].primaryEventName || '未填写主项'}} · 训练组：{{students[studentIndex].trainingGroupNames.length ? students[studentIndex].trainingGroupNames[0] : '未标注'}}</view>
     </view>

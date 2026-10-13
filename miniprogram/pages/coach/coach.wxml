@@ -25,7 +25,7 @@
     </view>
 
     <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-card">
-      <view class="jg-skeleton" style="height:160rpx"></view>
+      <view class="jg-skeleton jg-skel-160"></view>
     </view>
 
     <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
@@ -71,7 +71,7 @@
               <view class="jg-ds-v jg-ds-v-ink">{{rosterSummary.pending}}</view>
             </view>
           </view>
-          <view wx:elif="{{rosterState.loading}}" class="jg-skeleton jg-mt-12" style="height:112rpx"></view>
+          <view wx:elif="{{rosterState.loading}}" class="jg-skeleton jg-mt-12 jg-skel-112"></view>
           <view wx:elif="{{rosterState.error}}" class="jg-note jg-note-warn jg-mt-12">
             <view>
               <view class="jg-note-t">考勤统计加载失败</view>
@@ -112,8 +112,9 @@
     <block wx:else>
       <view class="jg-chips jg-mb-12">
         <block wx:for="{{todoFilterChips}}" wx:key="value">
+          <!-- 可点击筛选标签：视觉保持 chip，触控区域提升到 88rpx -->
           <text
-            class="jg-chip {{item.value === todoFilter ? 'jg-chip-brand' : ''}}"
+            class="jg-chip jg-chip-tap {{item.value === todoFilter ? 'jg-chip-brand' : ''}}"
             data-value="{{item.value}}"
             bindtap="onTodoFilterTap"
           >{{item.text}}</text>
@@ -164,7 +165,7 @@
     </view>
 
     <view wx:if="{{competitionState.loading && !competitionState.ready}}" class="jg-card">
-      <view class="jg-skeleton" style="height:96rpx"></view>
+      <view class="jg-skeleton jg-skel-96"></view>
     </view>
 
     <view wx:elif="{{competitionState.error && !competitionState.ready}}" class="jg-state-err">

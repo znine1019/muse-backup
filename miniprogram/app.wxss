@@ -58,7 +58,8 @@ button::after { border: none; }
   --jg-brand-050: #F4F8FE;
   --jg-accent: #00A7C4;
   --jg-accent-2: #F2711C;
-  --jg-accent-2-strong: #D95F0E;
+  /* 浅色背景上的橙色文字：需满足 ≥4.5:1 对比度 */
+  --jg-accent-2-strong: #B54A07;
   --jg-success: #0F7B5A;
   --jg-success-bg: #E8F6F0;
   --jg-warning: #B45309;
@@ -107,6 +108,16 @@ button::after { border: none; }
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
+}
+
+/* 数字等宽兼容：部分 iOS 微信不识别 font-variant-numeric，用 font-feature-settings 兜底 */
+.jg-num,
+.jg-data-num,
+.jg-data-col-v,
+.jg-kpi-v,
+.jg-ds-v,
+.jg-row-v {
+  font-feature-settings: 'tnum';
 }
 
 /* ---------- 页面头部 ---------- */
@@ -236,12 +247,12 @@ button::after { border: none; }
 /* ---------- 状态标签 ---------- */
 .jg-chips { display: flex; flex-wrap: wrap; }
 
-/* 页内跳转（长页面分区定位）：触控目标≥56rpx，不遮挡内容 */
+/* 页内跳转（长页面分区定位）：触控目标≥88rpx，不遮挡内容 */
 .jg-jump { display: flex; flex-wrap: wrap; margin-bottom: 8rpx; }
 .jg-jump-chip {
   display: inline-flex;
   align-items: center;
-  min-height: 56rpx;
+  min-height: 88rpx;
   padding: 0 20rpx;
   margin: 0 12rpx 12rpx 0;
   border-radius: 999rpx;
@@ -272,7 +283,7 @@ button::after { border: none; }
 .jg-chip-ok { background: var(--jg-success-bg, #E8F6F0); border-color: #C6E7D8; color: var(--jg-success, #0F7B5A); }
 .jg-chip-warn { background: var(--jg-warning-bg, #FEF6E7); border-color: #F1DDB6; color: var(--jg-warning, #B45309); }
 .jg-chip-danger { background: var(--jg-danger-bg, #FDEDEB); border-color: #EFC8C3; color: var(--jg-danger, #C0392B); }
-.jg-chip-accent { background: #FDEDE2; border-color: #F7D0B4; color: var(--jg-accent-2-strong, #D95F0E); }
+.jg-chip-accent { background: #FDEDE2; border-color: #F7D0B4; color: var(--jg-accent-2-strong, #B54A07); }
 .jg-badge {
   min-width: 36rpx;
   height: 36rpx;
@@ -313,7 +324,7 @@ button::after { border: none; }
   line-height: 72rpx;
   margin-right: 20rpx;
 }
-.jg-row-ic-accent { background: #FDEDE2; color: #D95F0E; }
+.jg-row-ic-accent { background: #FDEDE2; color: #B54A07; }
 .jg-row-ic-ok { background: #E8F6F0; color: #0F7B5A; }
 .jg-row-ic-plain { background: #F1F4F8; color: #4B5B6C; }
 .jg-row-ic-brand { background: #E9F1FB; color: #17509E; }
@@ -360,7 +371,8 @@ button::after { border: none; }
   box-sizing: border-box;
 }
 .jg-btn::after { border: none; }
-.jg-btn-accent { background: var(--jg-accent-2, #F2711C); color: #FFFFFF; }
+/* 强调按钮：保留批准的能量橙填色，文字改用深海军蓝（白字在 #F2711C 上仅 2.94:1，不达 AA） */
+.jg-btn-accent { background: var(--jg-accent-2, #F2711C); color: #08203F; }
 .jg-btn-ghost { background: #FFFFFF; border: 2rpx solid #E3E9F0; color: #3B4A5A; }
 .jg-btn-danger { background: #FFFFFF; border: 2rpx solid #EFC8C3; color: #C0392B; }
 .jg-btn-block { width: 100%; }
@@ -479,22 +491,62 @@ button::after { border: none; }
 }
 .jg-tile-ok .jg-tile-ic { background: #E8F6F0; color: #0F7B5A; }
 .jg-tile-brand .jg-tile-ic { background: #E9F1FB; color: #17509E; }
-.jg-tile-accent .jg-tile-ic { background: #FDEDE2; color: #D95F0E; }
+.jg-tile-accent .jg-tile-ic { background: #FDEDE2; color: #B54A07; }
 .jg-tile-plain .jg-tile-ic { background: #F1F4F8; color: #4B5B6C; }
 .jg-tile-t { font-size: 27rpx; font-weight: 700; color: #0E1A28; margin-top: 16rpx; }
 .jg-tile-d { font-size: 22rpx; color: #94A3B8; margin-top: 6rpx; line-height: 1.4; }
+
+/* 三列入口瓦片（学生首页 6 入口：两行 × 三列）：覆盖 2 列布局的奇偶列内边距 */
+.jg-tiles-3 { display: flex; flex-wrap: wrap; margin: 0 -6rpx; }
+.jg-tiles-3 .jg-tile,
+.jg-tiles-3 .jg-tile:nth-child(2n) {
+  width: 33.3333%;
+  padding: 0 6rpx 16rpx;
+}
+.jg-tiles-3 .jg-tile-in { min-height: 208rpx; padding: 22rpx 18rpx; }
+.jg-tiles-3 .jg-tile-ic { width: 60rpx; height: 60rpx; line-height: 60rpx; font-size: 25rpx; border-radius: 18rpx; }
+.jg-tiles-3 .jg-tile-t { font-size: 25rpx; margin-top: 14rpx; }
+.jg-tiles-3 .jg-tile-d { font-size: 21rpx; line-height: 1.35; }
 
 /* ---------- 刷新状态条（stale-while-revalidate 提示） ---------- */
 .jg-refbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
   padding: 12rpx 20rpx;
   margin-bottom: 20rpx;
   border-radius: 20rpx;
   background: var(--jg-card-2, #F7F9FC);
   border: 2rpx solid var(--jg-line, #E3E9F0);
 }
-.jg-refbar-t { font-size: 22rpx; color: var(--jg-ink-3, #64748B); }
+/* 不用 flex gap（旧版 iOS 微信不生效），改用 margin 兜底 */
+.jg-refbar-t { font-size: 22rpx; color: var(--jg-ink-3, #64748B); margin-right: 16rpx; }
 .jg-refbar-warn { font-size: 22rpx; color: var(--jg-warning, #B45309); text-align: right; }
+
+/* ---------- 骨架屏高度工具类（替代 WXML 内联 style 高度） ---------- */
+.jg-skel-96 { height: 96rpx; }
+.jg-skel-112 { height: 112rpx; }
+.jg-skel-120 { height: 120rpx; }
+.jg-skel-132 { height: 132rpx; }
+.jg-skel-160 { height: 160rpx; }
+
+/* 数据卡内的次级大数值（如系统运行状态文字），替代内联 font-size */
+.jg-data-num-sm { font-size: 52rpx; }
+
+/* 可点击标签：在保留 chip 视觉的同时把有效触控区域提升到 ≥88rpx ---------- */
+.jg-chip-tap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88rpx;
+  padding: 0 28rpx;
+  font-size: 25rpx;
+}
+
+/* 多行文本省略（小程序不支持 line-clamp 简写，需 -webkit- 前缀 + box 显示） */
+.jg-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}

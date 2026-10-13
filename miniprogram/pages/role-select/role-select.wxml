@@ -1,13 +1,35 @@
-<view class="container">
-  <view class="brand">AUTHORIZED ROLES</view>
-  <view class="title">选择身份</view>
-  <view class="sub">这里只显示服务端会话中已经授权的角色，不提供自行申请或切换未授权角色的入口。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="选择身份"
+    meta="这里只显示服务端会话中已经授权的角色，不提供自行申请或切换未授权角色的入口。"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在读取授权角色...</view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
-  <view wx:if="{{!loading && !roles.length}}" class="empty">当前账号没有可用的工作台，请联系开发者检查角色授权。</view>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view class="card">
-    <button wx:for="{{roles}}" wx:key="value" class="button-primary" data-route="{{item.route}}" data-role="{{item.value}}" bindtap="selectRole">进入{{item.label}}端</button>
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">角色信息加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
   </view>
+
+  <jg-empty
+    wx:if="{{!loading && !error && !roles.length}}"
+    title="当前账号没有可用的工作台"
+    message="请联系开发者检查角色授权，授权完成后重新登录即可看到对应工作台。"
+  />
+
+  <block wx:if="{{!loading && roles.length}}">
+    <view wx:for="{{roles}}" wx:key="value" class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">{{item.label}}端</text>
+        <text class="jg-chip jg-chip-brand">已授权</text>
+      </view>
+      <view class="jg-sub">进入后可使用该身份对应的功能，数据范围由服务端按可信微信身份判定。</view>
+      <button
+        class="jg-btn jg-btn-block jg-mt-12"
+        data-route="{{item.route}}"
+        data-role="{{item.value}}"
+        bindtap="selectRole"
+      >进入{{item.label}}端</button>
+    </view>
+  </block>
 </view>

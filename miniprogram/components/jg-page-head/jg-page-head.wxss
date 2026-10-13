@@ -15,5 +15,5 @@
   color: #3B4A5A;
 }
 .role-brand { background: #E9F1FB; border-color: #CBDCF3; color: #103A6B; }
-.role-accent { background: #FDEDE2; border-color: #F7D0B4; color: #D95F0E; }
+.role-accent { background: #FDEDE2; border-color: #F7D0B4; color: #B54A07; }
 .role-mute { background: #F1F4F8; border-color: #E3E9F0; color: #4B5B6C; }

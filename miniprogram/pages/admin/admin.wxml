@@ -29,7 +29,7 @@
   <view wx:else class="jg-data-card">
     <view class="jg-data-k">系统运行状态</view>
     <view class="jg-data-v">
-      <text class="jg-data-num" style="font-size: 52rpx;">{{system.overallText}}</text>
+      <text class="jg-data-num jg-data-num-sm">{{system.overallText}}</text>
     </view>
     <view class="jg-data-meta">云环境 {{system.envId}}</view>
     <view class="jg-data-meta">云函数健康检查：{{system.cloudFunctionReady ? '正常' : '异常'}}</view>
@@ -59,7 +59,7 @@
     </view>
 
     <view wx:if="{{pendingState.loading && !pendingState.ready}}" class="jg-card">
-      <view class="jg-skeleton" style="height:96rpx"></view>
+      <view class="jg-skeleton jg-skel-96"></view>
     </view>
 
     <view wx:elif="{{pendingState.error && !pendingState.ready}}" class="jg-state-err">
@@ -126,11 +126,11 @@
 
   <!-- 3. 账号与角色 -->
   <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">账号与角色</text>
+      <text class="jg-sect-a" bindtap="toggleUserPanel">{{showUserPanel ? '收起管理' : '展开管理'}}</text>
+    </view>
     <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">账号与角色</text>
-        <text class="jg-card-a" bindtap="toggleUserPanel">{{showUserPanel ? '收起管理' : '展开管理'}}</text>
-      </view>
       <view class="jg-kpi-row jg-mt-0">
         <view class="jg-kpi">
           <view class="jg-kpi-l">学生</view>
@@ -151,7 +151,7 @@
       </view>
 
       <block wx:if="{{showUserPanel}}">
-        <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
+        <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
         <view wx:elif="{{accountState.error && !accountState.ready}}" class="jg-state-err jg-mt-12">
           <view class="jg-state-err-t">账号数据加载失败</view>
           <view class="jg-state-err-m">{{accountState.error}}</view>
@@ -203,15 +203,15 @@
 
   <!-- 4. 训练组与教练范围 -->
   <view class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">训练组与教练范围</text>
+      <text class="jg-sect-a" bindtap="toggleGroupPanel">{{showGroupPanel ? '收起管理' : '展开管理'}}</text>
+    </view>
     <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">训练组与教练范围</text>
-        <text class="jg-card-a" bindtap="toggleGroupPanel">{{showGroupPanel ? '收起管理' : '展开管理'}}</text>
-      </view>
       <view class="jg-body-s">训练组 {{groupSummary.total}} 个 · 已启用 {{groupSummary.enabled}} 个 · 教练账号 {{groupSummary.coaches}} 个</view>
 
       <block wx:if="{{showGroupPanel}}">
-        <view wx:if="{{groupState.loading && !groupState.ready}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
+        <view wx:if="{{groupState.loading && !groupState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
         <view wx:elif="{{groupState.error && !groupState.ready}}" class="jg-state-err jg-mt-12">
           <view class="jg-state-err-t">训练组数据加载失败</view>
           <view class="jg-state-err-m">{{groupState.error}}</view>

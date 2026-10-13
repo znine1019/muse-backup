@@ -10,7 +10,7 @@
   <view wx:if="{{roleChips.length > 1}}" class="jg-chips jg-mb-12">
     <block wx:for="{{roleChips}}" wx:key="role">
       <text
-        class="jg-chip {{item.active ? 'jg-chip-brand' : ''}}"
+        class="jg-chip jg-chip-tap {{item.active ? 'jg-chip-brand' : ''}}"
         data-role="{{item.role}}"
         bindtap="onRoleTap"
       >{{item.label}}</text>
@@ -55,7 +55,7 @@
             >
               <view class="jg-tile-ic">{{feature.badge}}</view>
               <view class="jg-tile-t">{{feature.name}}</view>
-              <view class="jg-tile-d">{{feature.desc}}</view>
+              <view class="jg-tile-d jg-clamp-2">{{feature.desc}}</view>
             </view>
           </view>
         </view>
