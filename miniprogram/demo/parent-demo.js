@@ -106,12 +106,39 @@ const DATA_BY_STUDENT = Object.freeze({
       { dateText: '06-13 力量课', metaText: '部分完成 · RPE 8/10' }
     ],
     competitionRows: [
-      { title: '春季田径公开赛（虚构）', metaText: '100米 · 教练处理中', chip: '教练处理中' },
-      { title: '市青少年锦标赛（虚构）', metaText: '100米 · 已完成内部报名', chip: '教练已代报' }
+      {
+        id: 'p1_comp_1',
+        title: '春季田径公开赛（虚构）',
+        metaText: '100米 · 教练处理中',
+        chip: '教练处理中',
+        detailText:
+          '已提交参赛意向，教练正在核对报名项目与参赛资格。内部意向不等于官方报名成功，正式报名由教练在赛事官方渠道完成。'
+      },
+      {
+        id: 'p1_comp_2',
+        title: '市青少年锦标赛（虚构）',
+        metaText: '100米 · 已完成内部报名',
+        chip: '教练已代报',
+        detailText: '教练已在赛事官方渠道完成报名并回填办理进度，请赛前关注集合时间与装备要求。'
+      }
     ],
     noticeRows: [
-      { title: '本周训练调整', chip: '重要' },
-      { title: '队内测试通知', chip: '普通' }
+      {
+        id: 'p1_notice_1',
+        title: '本周训练调整',
+        categoryLabel: '训练安排',
+        publishedAt: '2026-06-15 09:20',
+        chip: '重要',
+        detailText: '因田径场维护，本周三训练调整至室内力量房，集合时间不变，请提前到场热身。'
+      },
+      {
+        id: 'p1_notice_2',
+        title: '队内测试通知',
+        categoryLabel: '测试安排',
+        publishedAt: '2026-06-12 18:05',
+        chip: '普通',
+        detailText: '月底将进行 100 米与跳远队内测试，成绩经教练审核后计入正式成绩。'
+      }
     ]
   },
   demo_child_2: {
@@ -141,9 +168,24 @@ const DATA_BY_STUDENT = Object.freeze({
       { dateText: '06-10 跳跃课', metaText: '全部完成 · RPE 6/10' }
     ],
     competitionRows: [
-      { title: '市青少年锦标赛（虚构）', metaText: '跳远 · 待教练办理', chip: '已提交意向' }
+      {
+        id: 'p2_comp_1',
+        title: '市青少年锦标赛（虚构）',
+        metaText: '跳远 · 待教练办理',
+        chip: '已提交意向',
+        detailText: '已提交跳远项目参赛意向，等待教练办理。内部意向不等于官方报名成功。'
+      }
     ],
-    noticeRows: [{ title: '本周训练调整', chip: '重要' }]
+    noticeRows: [
+      {
+        id: 'p2_notice_1',
+        title: '本周训练调整',
+        categoryLabel: '训练安排',
+        publishedAt: '2026-06-15 09:20',
+        chip: '重要',
+        detailText: '因场地调整，本周跳跃组训练时间顺延半小时，请按教练通知到场地集合。'
+      }
+    ]
   }
 });
 
@@ -166,7 +208,10 @@ function row(t, m, options = {}) {
     m,
     v: options.v || '',
     chip: options.chip || '',
-    tone: options.tone || ''
+    tone: options.tone || '',
+    /* 可选：点击该行打开演示详情（通知正文 / 赛事意向） */
+    detailType: options.detail ? options.detail.type : '',
+    detailId: options.detail ? options.detail.id : ''
   };
 }
 
@@ -334,8 +379,22 @@ function buildParentModule(moduleId, index, options = {}) {
   if (moduleId === 'events') {
     return Object.assign(header, {
       rows: data.competitionRows
-        .map((item) => row(item.title, item.metaText, { chip: item.chip, tone: statusTone(item.chip) }))
-        .concat(data.noticeRows.map((item) => row(item.title, '俱乐部通知', { chip: item.chip, tone: item.chip === '重要' ? 'danger' : '' }))),
+        .map((item) =>
+          row(item.title, item.metaText, {
+            chip: item.chip,
+            tone: statusTone(item.chip),
+            detail: { type: 'competition', id: item.id }
+          })
+        )
+        .concat(
+          data.noticeRows.map((item) =>
+            row(item.title, '俱乐部通知', {
+              chip: item.chip,
+              tone: item.chip === '重要' ? 'danger' : '',
+              detail: { type: 'notice', id: item.id }
+            })
+          )
+        ),
       note: '报名意向不等于官方报名成功，正式报名由教练在赛事官方渠道完成。'
     });
   }
@@ -376,6 +435,35 @@ function statusTone(label) {
   return '';
 }
 
+/** 在全部（含非生效关联的）演示学生的赛事/通知中查找目标条目 */
+function findParentEntry(collectionKey, entryId) {
+  for (const student of STUDENTS) {
+    const found = (DATA_BY_STUDENT[student.id][collectionKey] || []).find(
+      (item) => item.id === entryId
+    );
+    if (found) {
+      return { entry: { ...found }, student: { ...student } };
+    }
+  }
+  return null;
+}
+
+function getParentNotice(noticeId) {
+  const found = findParentEntry('noticeRows', noticeId);
+  if (!found) {
+    throw new DemoModuleError(`演示通知不存在：${noticeId}`);
+  }
+  return found;
+}
+
+function getParentCompetition(competitionId) {
+  const found = findParentEntry('competitionRows', competitionId);
+  if (!found) {
+    throw new DemoModuleError(`演示赛事不存在：${competitionId}`);
+  }
+  return found;
+}
+
 module.exports = {
   PARENT_LINK_STATUS,
   PROTECTED_MODULE_IDS,
@@ -383,6 +471,8 @@ module.exports = {
   buildParentModule,
   buildParentWorkbench,
   catalog: CATALOG,
+  getParentCompetition,
+  getParentNotice,
   isLinkActive,
   linkStateLabel,
   DemoModuleError

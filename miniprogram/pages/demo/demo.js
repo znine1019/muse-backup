@@ -21,8 +21,19 @@ const {
   isSupportedDemoRole,
   roleLabel
 } = require('../../demo/demo-guard');
-const { buildStudentWorkbench, buildStudentModule, catalog: STUDENT_CATALOG } = require('../../demo/student-demo');
-const { buildParentWorkbench, buildParentModule, catalog: PARENT_CATALOG } = require('../../demo/parent-demo');
+const {
+  buildStudentWorkbench,
+  buildStudentModule,
+  getStudentNotice,
+  catalog: STUDENT_CATALOG
+} = require('../../demo/student-demo');
+const {
+  buildParentWorkbench,
+  buildParentModule,
+  getParentNotice,
+  getParentCompetition,
+  catalog: PARENT_CATALOG
+} = require('../../demo/parent-demo');
 const { getSessionDestination } = require('../../utils/session');
 
 const ROLE_TONES = Object.freeze({
@@ -47,6 +58,8 @@ Page({
     view: 'workbench',
     pageTitle: '演示预览',
     pageMeta: '',
+    detail: null,
+    localRead: false,
 
     student: null,
     parent: null,
@@ -59,11 +72,20 @@ Page({
   onLoad(options = {}) {
     const role = isSupportedDemoRole(options.role) ? options.role : '';
     const moduleId = options.module || '';
-    const view = moduleId ? 'module' : options.view === 'catalog' ? 'catalog' : 'workbench';
+    /* 详情类型：notice（通知正文）/ competition（赛事意向），均在同一演示页内渲染 */
+    const detailType = options.detail || '';
+    const detailId = options.id || '';
+    const view = detailType
+      ? 'detail'
+      : moduleId
+      ? 'module'
+      : options.view === 'catalog'
+      ? 'catalog'
+      : 'workbench';
     const studentIndex = Number(options.student) || 0;
     const section = options.section || '';
 
-    this.routeState = { role, moduleId, studentIndex, section };
+    this.routeState = { role, moduleId, detailType, detailId, studentIndex, section };
 
     this.setData({
       role,
@@ -75,7 +97,9 @@ Page({
       loading: true,
       ready: false,
       error: '',
-      denied: false
+      denied: false,
+      detail: null,
+      localRead: false
     });
 
     this.loadDemo();
@@ -118,10 +142,29 @@ Page({
   },
 
   applyDemoData() {
-    const { role, moduleId, studentIndex } = this.routeState;
+    const { role, moduleId, detailType, studentIndex } = this.routeState;
     const isParent = role === 'parent';
     const catalog = isParent ? PARENT_CATALOG : STUDENT_CATALOG;
     const catalogGroups = groupCatalog(catalog);
+
+    /* 演示详情（通知正文 / 赛事意向）：同样复用本演示页 */
+    if (detailType) {
+      const detail = this.buildDemoDetail();
+      this.setData({
+        loading: false,
+        ready: true,
+        error: '',
+        denied: false,
+        isParent,
+        catalogGroups,
+        module: null,
+        detail,
+        localRead: detail.isRead === true,
+        pageTitle: detail.title,
+        pageMeta: detail.metaLine
+      });
+      return;
+    }
 
     if (moduleId) {
       const module = isParent
@@ -189,6 +232,59 @@ Page({
     });
   },
 
+  /*
+   * 构建演示详情（学生端通知正文 / 家长端通知与赛事意向）。
+   * 数据全部来自本地演示层；找不到条目直接报错，不返回空壳内容。
+   */
+  buildDemoDetail() {
+    const { role, detailType, detailId } = this.routeState;
+
+    if (role === 'parent') {
+      if (detailType === 'competition') {
+        const found = getParentCompetition(detailId);
+        return {
+          isNotice: false,
+          typeLabel: '赛事意向',
+          title: found.entry.title,
+          chip: found.entry.chip,
+          tone: 'accent',
+          metaLine: `${found.student.name}（虚构）· ${found.entry.metaText}`,
+          body: found.entry.detailText,
+          isRead: true
+        };
+      }
+      if (detailType !== 'notice') {
+        throw new Error('演示详情类型不支持。');
+      }
+      const found = getParentNotice(detailId);
+      return {
+        isNotice: true,
+        typeLabel: '俱乐部通知',
+        title: found.entry.title,
+        chip: found.entry.chip === '重要' ? '重要通知' : '普通通知',
+        tone: found.entry.chip === '重要' ? 'danger' : '',
+        metaLine: `${found.entry.categoryLabel} · 发布于 ${found.entry.publishedAt} · ${found.student.name}（虚构）`,
+        body: found.entry.detailText,
+        isRead: true
+      };
+    }
+
+    if (detailType !== 'notice') {
+      throw new Error('演示详情类型不支持。');
+    }
+    const notice = getStudentNotice(detailId);
+    return {
+      isNotice: true,
+      typeLabel: '俱乐部通知',
+      title: notice.title,
+      chip: notice.isImportant ? '重要通知' : notice.isRead ? '已读' : '未读',
+      tone: notice.isImportant ? 'danger' : notice.isRead ? '' : 'brand',
+      metaLine: `${notice.categoryLabel} · 发布于 ${notice.publishedAt} · ${notice.publisherText}`,
+      body: notice.content,
+      isRead: notice.isRead
+    };
+  },
+
   /* 进入演示子模块（同一演示页 + module 参数，返回上一级可用） */
   goModule(event) {
     const moduleId = event.currentTarget.dataset.module || event.currentTarget.dataset.id;
@@ -219,6 +315,45 @@ Page({
       parts.push(`student=${student}`);
     }
     wx.navigateTo({ url: `/pages/demo/demo?${parts.join('&')}` });
+  },
+
+  /*
+   * 打开演示详情（通知正文 / 赛事意向）：仍跳回本演示页，
+   * 因此上一页（通知列表/工作台）的状态会被小程序原生保留。
+   */
+  openDetail(event) {
+    const dataset = event.currentTarget.dataset;
+    const detailType = dataset.detail || dataset.detailType;
+    const detailId = dataset.id || dataset.detailId;
+    if (!detailType || !detailId) {
+      return;
+    }
+    const { role } = this.routeState;
+    const student = this.data.parent ? this.data.parent.studentIndex : this.routeState.studentIndex;
+    const parts = [
+      `role=${encodeURIComponent(role)}`,
+      `detail=${encodeURIComponent(detailType)}`,
+      `id=${encodeURIComponent(detailId)}`
+    ];
+    if (role === 'parent') {
+      parts.push(`student=${student}`);
+    }
+    wx.navigateTo({ url: `/pages/demo/demo?${parts.join('&')}` });
+  },
+
+  /* 从详情返回列表：优先走原生返回以保留上一页状态；直接打开详情时退回工作台 */
+  goBackToList() {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    if (pages && pages.length > 1) {
+      wx.navigateBack({ delta: 1 });
+      return;
+    }
+    this.navigateDemo({ view: 'workbench' });
+  },
+
+  /* 标记已读：只改本地模拟状态，不写入任何业务数据 */
+  simulateMarkRead() {
+    this.setData({ localRead: true });
   },
 
   /* 家长端本地切换学生：只切换本地演示数据，不发起任何请求 */

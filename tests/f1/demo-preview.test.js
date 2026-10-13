@@ -164,16 +164,24 @@ function loadDemoPage(options = {}) {
     envAllowed = true,
     session = developerSession(),
     denyReason = '只有已启用的开发者身份可以进入演示预览。',
-    wxOverrides = {}
+    wxOverrides = {},
+    /* 页面栈深度：>1 表示从列表页进入详情的常规路径 */
+    pageStackDepth = 1
   } = options;
 
   const source = fs.readFileSync(DEMO_PAGE_JS, 'utf8');
   let page = null;
-  const calls = { navigateTo: [], reLaunch: [], removeStorageSync: [] };
+  const calls = {
+    navigateTo: [],
+    reLaunch: [],
+    removeStorageSync: [],
+    navigateBack: []
+  };
 
   const wx = {
     navigateTo: (opts) => calls.navigateTo.push(opts.url),
     reLaunch: (opts) => calls.reLaunch.push(opts.url),
+    navigateBack: (opts) => calls.navigateBack.push(opts || {}),
     removeStorageSync: (key) => calls.removeStorageSync.push(key),
     getStorageSync: () => '',
     setStorageSync: () => {},
@@ -225,7 +233,9 @@ function loadDemoPage(options = {}) {
       Object,
       Promise,
       JSON,
-      encodeURIComponent
+      encodeURIComponent,
+      /* 供“返回列表”分支判断页面栈深度 */
+      getCurrentPages: () => new Array(pageStackDepth).fill({})
     },
     { filename: DEMO_PAGE_JS }
   );
@@ -591,4 +601,140 @@ test('既有运动数据报告 DEMO 不受影响', () => {
   assert.ok(reportJs.includes('isDemoRequest'), '报告 DEMO 参数解析应保留');
   /* 原有 demo 数据模块仍在 */
   assert.ok(fs.existsSync(path.join(PROJECT_ROOT, 'miniprogram/demo/sport-report-demo.js')));
+});
+
+/* ------------------------------------------- BUG-03 通知详情交互 */
+
+test('学生通知：列表与全部功能入口都能定位到通知详情', () => {
+  const workbench = STUDENT_DEMO.buildStudentWorkbench();
+  assert.equal(workbench.notices.length, 2);
+  for (const notice of workbench.notices) {
+    assert.ok(notice.id, '每条通知必须有稳定 id');
+    assert.ok(notice.preview, '列表需要摘要文案');
+    assert.ok(notice.content, '详情需要完整正文');
+    assert.ok(notice.publishedAt, '详情需要发布时间');
+    assert.ok(notice.categoryLabel, '详情需要通知类型');
+  }
+
+  /* 全部功能 → 俱乐部通知：每一行都能定位到详情 */
+  const module = STUDENT_DEMO.buildStudentModule('notices');
+  assert.equal(module.rows.length, workbench.notices.length);
+  for (const row of module.rows) {
+    assert.equal(row.detailType, 'notice');
+    assert.ok(row.detailId, '通知行必须带详情 id');
+    assert.ok(STUDENT_DEMO.getStudentNotice(row.detailId), '行指向的通知必须存在');
+  }
+});
+
+test('学生通知：工作台点击通知打开对应详情页', async () => {
+  const list = loadDemoPage({ pageStackDepth: 2 });
+  await list.instance.onLoad({ role: 'student' });
+  await flush();
+
+  const notices = list.instance.data.student.notices;
+  list.instance.openDetail({ currentTarget: { dataset: { detail: 'notice', id: notices[0].id } } });
+  assert.deepEqual(list.calls.navigateTo, [
+    `/pages/demo/demo?role=student&detail=notice&id=${notices[0].id}`
+  ]);
+
+  const detail = loadDemoPage({ pageStackDepth: 2 });
+  await detail.instance.onLoad({ role: 'student', detail: 'notice', id: notices[0].id });
+  await flush();
+
+  assert.equal(detail.instance.data.view, 'detail');
+  assert.equal(detail.instance.data.detail.title, notices[0].title);
+  assert.equal(detail.instance.data.detail.body, notices[0].content);
+  assert.ok(detail.instance.data.detail.metaLine.includes(notices[0].publishedAt));
+  assert.ok(detail.instance.data.detail.metaLine.includes(notices[0].categoryLabel));
+});
+
+test('学生通知：不同通知打开后内容正确匹配、互不混淆', async () => {
+  const all = STUDENT_DEMO.NOTICES;
+  assert.equal(all.length, 2);
+  assert.notEqual(all[0].content, all[1].content, '两条通知正文应不同');
+
+  for (const notice of all) {
+    const { instance } = loadDemoPage({ pageStackDepth: 2 });
+    await instance.onLoad({ role: 'student', detail: 'notice', id: notice.id });
+    await flush();
+    assert.equal(instance.data.detail.title, notice.title);
+    assert.equal(instance.data.detail.body, notice.content);
+    assert.equal(instance.data.pageTitle, notice.title);
+  }
+});
+
+test('学生通知：重要/未读状态与演示数据一致，标记已读只改本地', async () => {
+  const { instance } = loadDemoPage({ pageStackDepth: 2 });
+  await instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_1' });
+  await flush();
+
+  assert.equal(instance.data.detail.chip, '重要通知');
+  assert.equal(instance.data.localRead, false, '演示数据为未读');
+  instance.simulateMarkRead();
+  assert.equal(instance.data.localRead, true, '标记已读只改本地状态');
+
+  const source = read('miniprogram/pages/demo/demo.js');
+  assert.ok(!/markNoticeRead/.test(source), '演示页不得调用正式已读接口');
+});
+
+test('学生通知：不存在的通知 id 不返回任何详情数据', async () => {
+  const { instance } = loadDemoPage({ pageStackDepth: 2 });
+  await instance.onLoad({ role: 'student', detail: 'notice', id: 'not_exist_notice' });
+  await flush();
+
+  assert.equal(instance.data.ready, false);
+  assert.equal(instance.data.detail, null);
+  assert.ok(instance.data.error);
+});
+
+test('学生通知：从列表返回走原生返回，直接打开时退回演示工作台', async () => {
+  const fromList = loadDemoPage({ pageStackDepth: 2 });
+  await fromList.instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_2' });
+  await flush();
+  fromList.instance.goBackToList();
+  /* 注意：跨 VM 边界传回的对象原型不同，故逐字段断言 */
+  assert.equal(fromList.calls.navigateBack.length, 1, '有上一页时应原生返回以保留列表状态');
+  assert.equal(fromList.calls.navigateBack[0].delta, 1);
+  assert.deepEqual(fromList.calls.navigateTo, []);
+
+  const direct = loadDemoPage({ pageStackDepth: 1 });
+  await direct.instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_2' });
+  await flush();
+  direct.instance.goBackToList();
+  assert.deepEqual(direct.calls.navigateBack, []);
+  assert.deepEqual(direct.calls.navigateTo, ['/pages/demo/demo?role=student']);
+});
+
+test('家长端演示：赛事与通知同样可打开详情（最小修复）', async () => {
+  const workbench = PARENT_DEMO.buildParentWorkbench(0);
+  for (const notice of workbench.noticeRows) {
+    assert.ok(notice.id && notice.detailText, '家长通知需要 id 与正文');
+  }
+  for (const item of workbench.competitionRows) {
+    assert.ok(item.id && item.detailText, '赛事意向需要 id 与说明');
+  }
+
+  const module = PARENT_DEMO.buildParentModule('events', 0);
+  assert.ok(module.rows.length >= 3);
+  for (const row of module.rows) {
+    assert.ok(['notice', 'competition'].indexOf(row.detailType) !== -1, '赛事/通知行必须带详情类型');
+    assert.ok(row.detailId);
+  }
+
+  const notice = loadDemoPage({ pageStackDepth: 2 });
+  await notice.instance.onLoad({ role: 'parent', detail: 'notice', id: workbench.noticeRows[0].id });
+  await flush();
+  assert.equal(notice.instance.data.detail.isNotice, true);
+  assert.equal(notice.instance.data.detail.title, workbench.noticeRows[0].title);
+  assert.equal(notice.instance.data.detail.body, workbench.noticeRows[0].detailText);
+
+  const competition = loadDemoPage({ pageStackDepth: 2 });
+  await competition.instance.onLoad({
+    role: 'parent',
+    detail: 'competition',
+    id: workbench.competitionRows[0].id
+  });
+  await flush();
+  assert.equal(competition.instance.data.detail.isNotice, false);
+  assert.equal(competition.instance.data.detail.title, workbench.competitionRows[0].title);
 });

@@ -22,6 +22,15 @@
   margin-top: 6rpx;
 }
 
+/* 演示详情正文：保持与正式列表相同的可读行高 */
+.demo-detail-body {
+  margin-top: 8rpx;
+  font-size: 27rpx;
+  line-height: 1.7;
+  color: #0E1A28;
+  word-break: break-word;
+}
+
 /* 拒绝进入时的操作区：保证触控目标高度 */
 .demo-state-actions {
   display: flex;

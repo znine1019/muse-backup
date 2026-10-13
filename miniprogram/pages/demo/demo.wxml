@@ -24,8 +24,37 @@
   <view wx:if="{{loading && !error}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <block wx:if="{{ready && !error}}">
+    <!-- ========== 0. 演示详情（通知正文 / 赛事意向） ========== -->
+    <block wx:if="{{view === 'detail'}}">
+      <view class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">{{detail.title}}</text>
+          <text wx:if="{{detail.chip}}" class="jg-chip {{detail.tone ? 'jg-chip-' + detail.tone : ''}}">{{detail.chip}}</text>
+        </view>
+        <view class="jg-sub">{{detail.metaLine}}</view>
+        <view class="jg-sect-h jg-mt-12">
+          <text class="jg-sect-t">通知正文</text>
+          <text class="jg-sect-c">{{detail.typeLabel}}</text>
+        </view>
+        <view class="demo-detail-body">{{detail.body}}</view>
+      </view>
+
+      <view wx:if="{{detail.isNotice}}" class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">阅读状态（演示）</text>
+          <text class="jg-chip {{localRead ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{localRead ? '已读（模拟）' : '未读（模拟）'}}</text>
+        </view>
+        <view class="jg-sub">状态变化只发生在本地模拟层，不会写入正式通知数据。</view>
+        <button wx:if="{{!localRead}}" class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="simulateMarkRead">模拟标记为已读（仅本地）</button>
+      </view>
+
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-ghost" bindtap="goBackToList">返回列表</button>
+      </view>
+    </block>
+
     <!-- ========== 1. 模块详情 ========== -->
-    <block wx:if="{{view === 'module'}}">
+    <block wx:elif="{{view === 'module'}}">
       <!-- 受保护模块在关联未生效时只展示拒绝说明，不展示任何业务数据 -->
       <view wx:if="{{module.restricted}}" class="jg-state-err">
         <view class="jg-state-err-t">该学生尚未授权</view>
@@ -55,7 +84,16 @@
       </view>
 
       <view wx:if="{{module.rows.length}}" class="jg-list">
-        <view wx:for="{{module.rows}}" wx:key="t" class="jg-row">
+        <!-- 带 detailType 的行可点击进入详情（通知正文等）；其余行点击无效 -->
+        <view
+          wx:for="{{module.rows}}"
+          wx:key="t"
+          class="jg-row"
+          hover-class="jg-row-hover"
+          data-detail="{{item.detailType}}"
+          data-id="{{item.detailId}}"
+          bindtap="openDetail"
+        >
           <view class="jg-row-main">
             <view class="jg-row-t">{{item.t}}</view>
             <view class="jg-row-m">{{item.m}}</view>
@@ -63,6 +101,7 @@
           <view class="jg-row-e">
             <text wx:if="{{item.v}}" class="jg-row-v">{{item.v}}</text>
             <text wx:if="{{item.chip}}" class="jg-chip {{item.tone ? 'jg-chip-' + item.tone : ''}}">{{item.chip}}</text>
+            <text wx:if="{{item.detailType}}" class="jg-chev">›</text>
           </view>
         </view>
       </view>
@@ -183,14 +222,22 @@
           <text class="jg-sect-c">演示数据</text>
         </view>
         <view class="jg-list">
-          <view wx:for="{{student.notices}}" wx:key="title" class="jg-row">
+          <view
+            wx:for="{{student.notices}}"
+            wx:key="id"
+            class="jg-row"
+            hover-class="jg-row-hover"
+            data-detail="notice"
+            data-id="{{item.id}}"
+            bindtap="openDetail"
+          >
             <view class="jg-row-main">
               <view class="jg-row-t">
                 <text>{{item.title}}</text>
                 <text wx:if="{{item.isImportant}}" class="jg-chip jg-chip-danger">重要</text>
                 <text wx:if="{{!item.isRead}}" class="jg-chip jg-chip-brand">未读</text>
               </view>
-              <view class="jg-row-m">{{item.content}}</view>
+              <view class="jg-row-m">{{item.preview}}</view>
             </view>
             <view class="jg-row-e"><text class="jg-chev">›</text></view>
           </view>
@@ -351,19 +398,41 @@
           <text class="jg-sect-c">{{parent.competitionRows.length}} / {{parent.noticeRows.length}}</text>
         </view>
         <view class="jg-list">
-          <view wx:for="{{parent.competitionRows}}" wx:key="title" class="jg-row">
+          <view
+            wx:for="{{parent.competitionRows}}"
+            wx:key="id"
+            class="jg-row"
+            hover-class="jg-row-hover"
+            data-detail="competition"
+            data-id="{{item.id}}"
+            bindtap="openDetail"
+          >
             <view class="jg-row-main">
               <view class="jg-row-t">{{item.title}}</view>
               <view class="jg-row-m">{{item.metaText}}</view>
             </view>
-            <view class="jg-row-e"><text class="jg-chip">{{item.chip}}</text></view>
+            <view class="jg-row-e">
+              <text class="jg-chip">{{item.chip}}</text>
+              <text class="jg-chev">›</text>
+            </view>
           </view>
-          <view wx:for="{{parent.noticeRows}}" wx:key="title" class="jg-row">
+          <view
+            wx:for="{{parent.noticeRows}}"
+            wx:key="id"
+            class="jg-row"
+            hover-class="jg-row-hover"
+            data-detail="notice"
+            data-id="{{item.id}}"
+            bindtap="openDetail"
+          >
             <view class="jg-row-main">
               <view class="jg-row-t">{{item.title}}</view>
-              <view class="jg-row-m">俱乐部通知</view>
+              <view class="jg-row-m">{{item.categoryLabel}} · {{item.publishedAt}}</view>
             </view>
-            <view class="jg-row-e"><text class="jg-chip">{{item.chip}}</text></view>
+            <view class="jg-row-e">
+              <text class="jg-chip">{{item.chip}}</text>
+              <text class="jg-chev">›</text>
+            </view>
           </view>
         </view>
         <view class="jg-note"><view><view class="jg-note-m">报名意向不等于官方报名成功。</view></view></view>

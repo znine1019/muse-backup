@@ -70,20 +70,45 @@ const PROGRESS = Object.freeze([
   { eventName: '800米', metaText: '2分35秒 → 2分28秒 · 05-20', changeText: '-7 秒', improved: true }
 ]);
 
+/* 通知演示数据：preview 用于列表，content 为完整正文（供通知详情展示） */
 const NOTICES = Object.freeze([
   {
+    id: 'demo_notice_1',
     title: '本周训练调整',
-    content: '周三改至室内力量房，注意带好训练鞋。',
+    categoryLabel: '训练安排',
+    publishedAt: '2026-06-15 09:20',
+    publisherText: '短跑组教练（虚构）',
+    preview: '周三改至室内力量房，注意带好训练鞋。',
+    content:
+      '因田径场维护，本周三（06-17）原定在田径场进行的速度课调整至室内力量房。' +
+      '集合时间不变（16:00），请提前 10 分钟到场完成热身。' +
+      '请穿训练鞋并自带饮用水；如因伤病无法参加，请提前提交请假申请。',
     isImportant: true,
     isRead: false
   },
   {
+    id: 'demo_notice_2',
     title: '队内测试通知',
-    content: '月底将进行 100 米与跳远队内测试。',
+    categoryLabel: '测试安排',
+    publishedAt: '2026-06-12 18:05',
+    publisherText: '俱乐部（虚构）',
+    preview: '月底将进行 100 米与跳远队内测试。',
+    content:
+      '月底将进行 100 米与跳远队内测试，测试成绩经教练审核后计入正式成绩。' +
+      '测试当天请按训练组集合时间到场，服从现场安排；测试前请保持正常作息与饮食。',
     isImportant: false,
     isRead: true
   }
 ]);
+
+/** 取一条演示通知（详情页使用；不存在则报错，不返回空壳数据） */
+function getStudentNotice(noticeId) {
+  const notice = NOTICES.find((item) => item.id === noticeId);
+  if (!notice) {
+    throw new DemoModuleError(`演示通知不存在：${noticeId}`);
+  }
+  return { ...notice };
+}
 
 /*
  * 训练计划演示数据：刻意保留一份“教练草稿”。
@@ -132,7 +157,10 @@ function row(t, m, options = {}) {
     m,
     v: options.v || '',
     chip: options.chip || '',
-    tone: options.tone || ''
+    tone: options.tone || '',
+    /* 可选：点击该行打开演示详情（如通知正文） */
+    detailType: options.detail ? options.detail.type : '',
+    detailId: options.detail ? options.detail.id : ''
   };
 }
 
@@ -311,12 +339,15 @@ const MODULE_BUILDERS = {
   },
   notices() {
     return {
-      subtitle: '俱乐部通知（虚构）',
-      rows: [
-        row('本周训练调整', '周三改至室内力量房，注意带好训练鞋。', { chip: '重要 · 未读', tone: 'danger' }),
-        row('队内测试通知', '月底将进行 100 米与跳远队内测试。', { chip: '已读', tone: '' })
-      ],
-      note: '重要通知置顶展示。'
+      subtitle: '俱乐部通知（演示周期）',
+      rows: NOTICES.map((item) =>
+        row(item.title, `${item.categoryLabel} · ${item.publishedAt}`, {
+          chip: item.isImportant ? '重要 · 未读' : item.isRead ? '已读' : '未读',
+          tone: item.isImportant ? 'danger' : item.isRead ? '' : 'brand',
+          detail: { type: 'notice', id: item.id }
+        })
+      ),
+      note: '点击任意通知可查看完整正文（演示数据，不影响正式通知）。'
     };
   },
   profile() {
@@ -347,11 +378,13 @@ const MODULE_BUILDERS = {
 
 module.exports = {
   ALL_PLANS,
+  NOTICES,
   PLAN_STATUS,
   STUDENT,
   buildStudentModule,
   buildStudentWorkbench,
   catalog: CATALOG,
+  getStudentNotice,
   visibleStudentPlans,
   DemoModuleError
 };
