@@ -322,6 +322,27 @@ test('attendance rows expose sample size and minimum sample marker', async () =>
   assert.equal(row.rank, null);
 });
 
+test('attendance ranking is withheld when membership history is ambiguous', async () => {
+  const harness = createHarness();
+  const today = clubDateOnly();
+  harness.state.sessions.push(
+    session('limited_1', GROUP_A, addDays(today, -2)),
+    session('limited_2', GROUP_A, addDays(today, -1))
+  );
+  harness.state.records.push(
+    record('limited_1', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN),
+    record('limited_2', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN)
+  );
+  harness.state.memberships[0].assignedAt = new Date(`${addDays(today, -2)}T00:00:00.000Z`);
+  const actions = createStatisticsActions({ repository: harness.repository });
+  const result = await actions['leaderboard.attendance']({
+    identity: IDENTITIES.coachA,
+    payload: currentPayload({ trainingGroupId: GROUP_A })
+  });
+  assert.equal(result.dataQuality.formalAttendanceRankingAllowed, false);
+  assert.equal(result.rows.find((row) => row.studentUserId === STUDENT_A._id).rank, null);
+});
+
 test('personal statistics include PB, attendance and RPE summary', async () => {
   const harness = createHarness();
   const today = clubDateOnly();
@@ -372,7 +393,7 @@ test('personal statistics separate period results from historical personal best'
   assert.equal(result.performance.latestPerformances[0].value, 11.8);
 });
 
-test('management overview summarizes groups and flags membership limitation', async () => {
+test('management overview summarizes groups and marks stable membership scope', async () => {
   const harness = createHarness();
   const today = clubDateOnly();
   harness.state.sessions.push(session('manage_session', GROUP_A, addDays(today, -1)));
@@ -390,7 +411,7 @@ test('management overview summarizes groups and flags membership limitation', as
   assert.equal(result.scope.studentCount, 2);
   assert.equal(result.performance.approvedCount, 1);
   assert.equal(result.groupComparison[0].attendanceRate, 0.5);
-  assert.equal(result.dataQuality.membershipHistoryReliable, false);
+  assert.equal(result.dataQuality.membershipHistoryReliable, true);
 });
 
 test('performance export only emits approved rows and enforces an explicit cap', async () => {
@@ -418,6 +439,34 @@ test('performance export only emits approved rows and enforces an explicit cap',
   assert.equal(error.code, 'INVALID_FIELD');
 });
 
+test('performance export checks the exact row cap and detects one extra record', async () => {
+  const harness = createHarness();
+  const today = clubDateOnly();
+  for (let index = 0; index < 2000; index += 1) {
+    harness.state.performances.push(
+      performance(`cap_${index}`, STUDENT_A._id, '100m', 11 + index / 1000, today)
+    );
+  }
+  const actions = createStatisticsActions({ repository: harness.repository });
+  const exact = await actions['export.performance_rows']({
+    identity: IDENTITIES.coachA,
+    payload: currentPayload({ trainingGroupId: GROUP_A, maxRows: 2000 })
+  });
+  assert.equal(exact.total, 2000);
+  assert.equal(exact.rows.length, 2000);
+  assert.equal(exact.truncated, false);
+
+  harness.state.performances.push(
+    performance('cap_extra', STUDENT_A._id, '100m', 12.5, today)
+  );
+  const tooLarge = await captureError(
+    actions['export.performance_rows']({
+      identity: IDENTITIES.coachA,
+      payload: currentPayload({ trainingGroupId: GROUP_A, maxRows: 2000 })
+    })
+  );
+  assert.equal(tooLarge.code, 'EXPORT_RANGE_TOO_LARGE');
+});
 test('attendance export omits leave reason and GPS coordinates', async () => {
   const harness = createHarness();
   const today = clubDateOnly();

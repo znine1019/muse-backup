@@ -120,7 +120,11 @@ Page({
         ...row,
         attendanceRateText: percentText(row.attendanceRate),
         lateRateText: percentText(row.lateRate),
-        rankText: row.rank === null ? '样本不足' : `第${row.rank}名`
+        rankText: !row.formalRankingAllowed
+          ? '数据受限'
+          : row.rank === null
+            ? '样本不足'
+            : `第${row.rank}名`
       })),
       dataQuality: result.dataQuality
     });

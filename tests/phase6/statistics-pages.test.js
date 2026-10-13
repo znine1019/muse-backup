@@ -149,7 +149,8 @@ const ATTENDANCE = {
       attendanceRate: 0.6667,
       lateRate: 0.5,
       sampleSessions: 3,
-      sampleSufficient: true
+      sampleSufficient: true,
+      formalRankingAllowed: true
     }
   ],
   dataQuality: {

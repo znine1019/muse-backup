@@ -300,6 +300,7 @@ function aggregateAttendance(input) {
 }
 
 function buildStudentAttendanceRows(aggregate, profilesMap = new Map(), groupsMap = new Map()) {
+  const options = arguments[3] || {};
   const rows = Array.from(aggregate.byStudent.entries()).map(
     ([studentUserId, totals]) => {
       const actualExpected = Math.max(
@@ -360,12 +361,20 @@ function buildStudentAttendanceRows(aggregate, profilesMap = new Map(), groupsMa
       row.rank = null;
       return;
     }
+    if (!options.formalRankingAllowed) {
+      row.rank = null;
+      row.rankingStatus = 'limited_membership_history';
+      return;
+    }
     if (lastRate === null || row.attendanceRate !== lastRate) {
       lastRank = index + 1;
       lastRate = row.attendanceRate;
     }
     row.rank = lastRank;
   });
+  for (const row of rows) {
+    row.formalRankingAllowed = options.formalRankingAllowed === true;
+  }
   return rows;
 }
 
@@ -421,22 +430,72 @@ function buildAttendanceDetailRows(input) {
   });
 }
 
+function assessMembershipHistory(sessions, memberships) {
+  const dates = (sessions || [])
+    .filter((session) => session.status !== ATTENDANCE_SESSION_STATUS.CANCELLED)
+    .map((session) => session.attendanceDate)
+    .filter(Boolean)
+    .sort();
+  if (!dates.length || !(memberships || []).length) {
+    return {
+      reliable: false,
+      reason: dates.length ? 'membership_missing' : 'no_sessions'
+    };
+  }
+  const firstDate = dates[0];
+  const lastDate = dates[dates.length - 1];
+  let relevantMembershipCount = 0;
+  for (const membership of memberships) {
+    const assignedDate = dateOnlyFromValue(membership.assignedAt);
+    const removedDate = dateOnlyFromValue(membership.removedAt);
+    const startsBeforeEnd = !assignedDate || assignedDate <= lastDate;
+    const endsAfterStart = !removedDate || removedDate >= firstDate;
+    if (!startsBeforeEnd || !endsAfterStart) continue;
+    relevantMembershipCount += 1;
+    if (!assignedDate) {
+      return { reliable: false, reason: 'membership_start_missing' };
+    }
+    if (membership.status !== MEMBERSHIP_STATUS.ACTIVE && !removedDate) {
+      return { reliable: false, reason: 'membership_end_missing' };
+    }
+    if (assignedDate >= firstDate && assignedDate <= lastDate) {
+      return { reliable: false, reason: 'membership_changed_in_period' };
+    }
+    if (removedDate && removedDate >= firstDate && removedDate <= lastDate) {
+      return { reliable: false, reason: 'membership_changed_in_period' };
+    }
+  }
+  return {
+    reliable: relevantMembershipCount > 0,
+    reason: relevantMembershipCount ? 'stable_existing_membership' : 'membership_missing'
+  };
+}
+
 function buildAttendanceStatistics(input) {
   const aggregate = aggregateAttendance(input);
+  const membershipAssessment = assessMembershipHistory(
+    input.sessions,
+    input.memberships
+  );
   const rows = buildStudentAttendanceRows(
     aggregate,
     input.profilesMap,
-    input.groupsMap
+    input.groupsMap,
+    { formalRankingAllowed: membershipAssessment.reliable }
   );
   return {
     summary: aggregate.summary,
     sessionCounts: aggregate.sessionCounts,
     students: rows,
     dataQuality: {
-      membershipHistoryReliable: false,
-      membershipHistoryEstimated: true,
+      membershipHistoryReliable: membershipAssessment.reliable,
+      membershipHistoryEstimated: !membershipAssessment.reliable,
+      membershipAssessmentReason: membershipAssessment.reason,
+      formalAttendanceRankingAllowed: membershipAssessment.reliable,
       membershipHistoryNote:
-        '现有成员关系没有逐场名单快照，历史场次名单按成员加入和退出时间推算，可能无法还原所有历史变更。',
+        membershipAssessment.reliable
+          ? '统计周期内成员关系时间范围可确定，考勤率可用于当前榜单。'
+          : '现有成员关系没有逐场名单快照，历史场次名单按成员加入和退出时间推算，可能无法还原所有历史变更，估算出勤率不用于正式排名。',
       rateBasis: 'closed_sessions_only',
       minSampleSessions: MIN_ATTENDANCE_SAMPLE_SESSIONS,
       hasOpenSessions: aggregate.sessionCounts.open > 0
@@ -445,6 +504,7 @@ function buildAttendanceStatistics(input) {
 }
 
 module.exports = {
+  assessMembershipHistory,
   buildAttendanceDetailRows,
   MIN_ATTENDANCE_SAMPLE_SESSIONS,
   aggregateAttendance,
