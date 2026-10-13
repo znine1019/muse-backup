@@ -1,0 +1,60 @@
+<view class="container">
+  <view class="brand">STUDENT / FEEDBACK</view>
+  <view class="title">训练反馈</view>
+  <view class="sub">仅对已签到或迟到的训练场次提交完成情况和主观用力程度；反馈不会改变考勤事实。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取训练反馈...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="section-title">可反馈训练</view>
+      <view wx:if="{{!eligibleSessions.length}}" class="empty">近期没有已签到或迟到的训练场次。</view>
+      <block wx:for="{{eligibleSessions}}" wx:key="sessionId" wx:for-item="sessionItem">
+        <view class="list-item">
+          <view class="list-title">{{sessionItem.session.title || sessionItem.session.locationName}}</view>
+          <view class="list-meta">日期：{{sessionItem.session.attendanceDate}} · 考勤：{{sessionItem.attendanceLabel}}</view>
+          <view class="list-meta">训练组：{{sessionItem.session.trainingGroupName || '未标注'}}</view>
+          <view wx:if="{{sessionItem.feedback}}" class="tag">已反馈：{{sessionItem.feedback.completionLabel}} · {{sessionItem.feedback.rpeText}}</view>
+          <view wx:if="{{sessionItem.feedback && sessionItem.feedback.coachComment}}" class="notice">教练评价：{{sessionItem.feedback.coachComment}}</view>
+          <view class="button-row">
+            <button wx:if="{{!sessionItem.feedback}}" class="button-primary" data-session-id="{{sessionItem.session.sessionId}}" bindtap="startFeedback">填写反馈</button>
+            <button wx:if="{{sessionItem.feedback}}" class="button-secondary" data-feedback-id="{{sessionItem.feedback.feedbackId}}" bindtap="editFeedback">修改反馈</button>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{selectedSessionId}}" class="card">
+      <view class="section-title">{{editingFeedbackId ? '修改训练反馈' : '提交训练反馈'}}</view>
+      <picker range="{{completionOptions}}" range-key="label" value="{{completionIndex}}" bindchange="onCompletionChange">
+        <view class="picker-field">完成情况：{{completionOptions[completionIndex].label}}</view>
+      </picker>
+      <view class="field">
+        <text class="field-label">主观用力程度 RPE：{{rpe}}/10</text>
+        <slider min="1" max="10" step="1" value="{{rpe}}" show-value bindchange="onRpeChange" />
+      </view>
+      <textarea class="textarea" value="{{comment}}" bindinput="onCommentInput" maxlength="500" placeholder="训练感受、困难或其他说明，可选" />
+      <view class="button-row">
+        <button class="button-primary" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
+        <button class="button-secondary" bindtap="cancelEdit">取消</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">我的反馈记录</view>
+      <view wx:if="{{!history.length}}" class="muted">暂无训练反馈。</view>
+      <view wx:for="{{history}}" wx:key="feedbackId" class="list-item">
+        <view class="list-title">{{item.sessionTitle}} · {{item.attendanceDate}}</view>
+        <view class="list-meta">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
+        <view class="list-meta" wx:if="{{item.comment}}">我的说明：{{item.comment}}</view>
+        <view class="notice" wx:if="{{item.coachComment}}">教练评价：{{item.coachComment}}</view>
+      </view>
+    </view>
+
+    <view class="notice">未签到、请假或没有训练安排的记录不会生成默认训练反馈；数据范围由服务端按本人身份校验。</view>
+  </block>
+</view>

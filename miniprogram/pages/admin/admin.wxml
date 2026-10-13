@@ -9,6 +9,9 @@
     <button class="button-primary" bindtap="goPerformanceReview">进入成绩审核</button>
     <button class="button-secondary" bindtap="goPlans">进入训练计划</button>
     <button class="button-secondary" bindtap="goAttendanceManage">进入考勤管理</button>
+    <button class="button-secondary" bindtap="goCompetitionManage">进入赛事管理</button>
+    <button class="button-secondary" bindtap="goNoticeManage">进入通知管理</button>
+    <button class="button-secondary" bindtap="goFeedbackManage">进入训练反馈管理</button>
     <button wx:if="{{demoAvailable}}" class="button-secondary" bindtap="goDemoReport">预览运动数据报告（DEMO）</button>
   </view>
 

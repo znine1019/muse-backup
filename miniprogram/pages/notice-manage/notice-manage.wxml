@@ -1,0 +1,57 @@
+<view class="container">
+  <view class="brand">COACH / NOTICES</view>
+  <view class="title">通知管理</view>
+  <view class="sub">向本人负责训练组发布训练安排、赛事通知和俱乐部公告；已发布内容可撤回或归档，学生只看到已发布通知。</view>
+
+  <view class="button-row">
+    <button class="button-primary" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建通知'}}</button>
+  </view>
+
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在读取通知数据...</view>
+
+  <view wx:if="{{showCreateForm}}" class="card">
+    <view class="section-title">创建通知</view>
+    <input class="input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="通知标题" />
+    <picker range="{{categoryOptions}}" range-key="label" value="{{form.categoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker-field">分类：{{categoryOptions[form.categoryIndex].label}}</view>
+    </picker>
+    <picker range="{{priorityOptions}}" range-key="label" value="{{form.priorityIndex}}" bindchange="onPriorityChange">
+      <view class="picker-field">重要程度：{{priorityOptions[form.priorityIndex].label}}</view>
+    </picker>
+    <textarea class="textarea" value="{{form.content}}" data-field="content" bindinput="onFormInput" maxlength="3000" placeholder="通知正文" />
+    <view class="field">
+      <text class="field-label">可见训练组</text>
+      <checkbox-group bindchange="onGroupSelect">
+        <label wx:for="{{groups}}" wx:key="id" class="list-meta">
+          <checkbox value="{{item.id}}" /> {{item.name}}
+        </label>
+      </checkbox-group>
+      <view wx:if="{{isDeveloper}}" class="muted">developer 可不选训练组，创建全体可见通知。</view>
+      <view wx:else class="muted">教练必须选择本人负责训练组。</view>
+    </view>
+    <button class="button-primary" loading="{{creating}}" bindtap="createNotice">保存通知草稿</button>
+  </view>
+
+  <view wx:if="{{!loading}}" class="card">
+    <view class="section-title">通知列表</view>
+    <view wx:if="{{!notices.length}}" class="empty">暂无通知。</view>
+    <view wx:for="{{notices}}" wx:key="noticeId" class="list-item">
+      <view class="list-title">{{item.title}}</view>
+      <view class="list-meta">{{item.categoryLabel}} · {{item.priorityLabel}} · {{item.statusLabel}}</view>
+      <view class="list-meta">可见范围：{{item.groupText}}</view>
+      <view class="list-meta">更新时间：{{item.timeText}}</view>
+      <view class="list-meta">{{item.content}}</view>
+      <view class="button-row">
+        <button wx:if="{{item.status === 'draft'}}" class="button-primary" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition" loading="{{busyId === item.noticeId}}">发布</button>
+        <button wx:if="{{item.status === 'published'}}" class="button-secondary" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="withdraw" bindtap="transition" loading="{{busyId === item.noticeId}}">撤回</button>
+        <button wx:if="{{item.status !== 'archived'}}" class="button-danger" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition" loading="{{busyId === item.noticeId}}">归档</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">通知发布和范围由服务端按当前账号角色与训练组权限重新校验；归档只保留历史，不删除记录。</view>
+</view>

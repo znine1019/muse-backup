@@ -5,8 +5,11 @@ const assert = require('node:assert/strict');
 
 const createAuthActions = require('../../cloudfunctions/api/actions/auth');
 const createAttendanceActions = require('../../cloudfunctions/api/actions/attendance');
+const createCompetitionActions = require('../../cloudfunctions/api/actions/competitions');
 const createDirectoryActions = require('../../cloudfunctions/api/actions/directory');
+const createFeedbackActions = require('../../cloudfunctions/api/actions/feedback');
 const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups');
+const createNoticeActions = require('../../cloudfunctions/api/actions/notices');
 const createProfileActions = require('../../cloudfunctions/api/actions/profile');
 const createPerformanceActions = require('../../cloudfunctions/api/actions/performance');
 const createPlanActions = require('../../cloudfunctions/api/actions/plans');
@@ -19,7 +22,10 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
   const routes = {
     ...createAuthActions({ repository }),
     ...createAttendanceActions({ repository }),
+    ...createCompetitionActions({ repository }),
     ...createDirectoryActions({ repository }),
+    ...createFeedbackActions({ repository }),
+    ...createNoticeActions({ repository }),
     ...createProfileActions({ repository }),
     ...createPerformanceActions({ repository }),
     ...createPlanActions({ repository }),
@@ -80,7 +86,41 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'leave.list_mine',
     'leave.list_pending',
     'leave.list_reviewed',
-    'leave.review'
+    'leave.review',
+    'competition.list_meta',
+    'competition.list_manage',
+    'competition.get_manage_detail',
+    'competition.create',
+    'competition.update',
+    'competition.publish',
+    'competition.close',
+    'competition.archive',
+    'competition.list_student',
+    'competition.get_student_detail',
+    'competition.submit_intent',
+    'competition.cancel_intent',
+    'competition.list_my_intents',
+    'competition.list_registrations',
+    'competition.get_registration_detail',
+    'competition.update_registration_status',
+    'competition.export_rows',
+    'notice.list_manage',
+    'notice.get_manage_detail',
+    'notice.create',
+    'notice.update',
+    'notice.publish',
+    'notice.withdraw',
+    'notice.archive',
+    'notice.list_student',
+    'notice.get_student_detail',
+    'notice.mark_read',
+    'notice.unread_count',
+    'feedback.list_eligible_sessions',
+    'feedback.list_mine',
+    'feedback.submit',
+    'feedback.update',
+    'feedback.list_manage',
+    'feedback.review'
   ]) {
     assert.equal(typeof routes[action], 'function', `${action} should be registered`);
   }

@@ -3,11 +3,17 @@
 const {
   ATTENDANCE_RECORD_STATUS,
   ATTENDANCE_SESSION_STATUS,
+  COMPETITION_REGISTRATION_STATUS,
+  COMPETITION_STATUS,
+  FEEDBACK_COMPLETION,
   LEAVE_STATUS,
   LIMITS,
+  NOTICE_CATEGORIES,
+  NOTICE_PRIORITIES,
+  NOTICE_STATUS,
   ROLE_VALUES
 } = require('./constants');
-const { isDateOnly } = require('./dates');
+const { isDateOnly, isDateTimeString } = require('./dates');
 const { getPerformanceEvent } = require('./performance-events');
 const { fail } = require('./errors');
 
@@ -28,6 +34,16 @@ const PLAN_CATEGORIES = Object.freeze([
 const PLAN_STATUSES = Object.freeze(['draft', 'published', 'archived']);
 const PLAN_SCOPES = Object.freeze(['today', 'week', 'history']);
 const MAX_PLAN_ITEMS = 20;
+const COMPETITION_STATUSES = Object.freeze(Object.values(COMPETITION_STATUS));
+const REGISTRATION_STATUSES = Object.freeze(
+  Object.values(COMPETITION_REGISTRATION_STATUS)
+);
+const NOTICE_STATUS_VALUES = Object.freeze(Object.values(NOTICE_STATUS));
+const NOTICE_CATEGORY_VALUES = NOTICE_CATEGORIES;
+const NOTICE_PRIORITY_VALUES = NOTICE_PRIORITIES;
+const FEEDBACK_COMPLETION_VALUES = Object.freeze(
+  Object.values(FEEDBACK_COMPLETION)
+);
 
 function asObject(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -686,6 +702,416 @@ function validateLeaveReviewPayload(payload) {
   return { leaveId: safeId(input.leaveId, '请假申请'), decision, comment };
 }
 
+function optionalIdArray(value, fieldLabel, maxItems = 100) {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    fail('INVALID_FIELD', `${fieldLabel}格式不正确。`);
+  }
+  if (value.length > maxItems) {
+    fail('INVALID_FIELD', `${fieldLabel}不能超过${maxItems}项。`);
+  }
+  return Array.from(new Set(value.map((item) => safeId(item, fieldLabel))));
+}
+
+function requiredDateTime(value, fieldLabel) {
+  const normalized = requiredString(value, fieldLabel, 16);
+  if (!isDateTimeString(normalized)) {
+    fail('INVALID_FIELD', `${fieldLabel}格式不正确，应为YYYY-MM-DD HH:mm。`);
+  }
+  return normalized;
+}
+
+function optionalDateTime(value, fieldLabel) {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+  return requiredDateTime(value, fieldLabel);
+}
+
+function normalizeCompetitionEvents(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    fail('INVALID_FIELD', '至少需要一个参赛项目。');
+  }
+  if (value.length > LIMITS.maxCompetitionEvents) {
+    fail('INVALID_FIELD', `参赛项目不能超过${LIMITS.maxCompetitionEvents}项。`);
+  }
+  const codes = new Set();
+  return value.map((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      fail('INVALID_FIELD', `第${index + 1}个参赛项目格式不正确。`);
+    }
+    const event = normalizePerformanceEventCode(
+      item.eventCode,
+      `第${index + 1}个参赛项目`
+    );
+    if (codes.has(event.code)) {
+      fail('INVALID_FIELD', '参赛项目不能重复。');
+    }
+    codes.add(event.code);
+    const categories = Array.isArray(item.categories) ? item.categories : [];
+    if (!categories.length) {
+      fail('INVALID_FIELD', `第${index + 1}个参赛项目至少需要一个组别。`);
+    }
+    if (categories.length > LIMITS.maxEventCategories) {
+      fail('INVALID_FIELD', `第${index + 1}个参赛项目组别不能超过${LIMITS.maxEventCategories}项。`);
+    }
+    return {
+      eventCode: event.code,
+      eventName: event.name,
+      unit: event.unit,
+      comparison: event.comparison,
+      categories: Array.from(
+        new Set(categories.map((category) => requiredString(category, '参赛组别', 30)))
+      )
+    };
+  });
+}
+
+function normalizeCapacity(input) {
+  const capacityEnabled = input.capacityEnabled === true;
+  if (!capacityEnabled) {
+    return { capacityEnabled: false, capacity: null };
+  }
+  const capacity = optionalIntegerInRange(input.capacity, '意向人数上限', 1, 100);
+  if (capacity === null) {
+    fail('INVALID_FIELD', '启用人数上限时必须填写1至100之间的上限。');
+  }
+  return { capacityEnabled: true, capacity };
+}
+
+function normalizeCompetitionPayload(input, isUpdate) {
+  const registrationStartAt = requiredDateTime(
+    input.registrationStartAt,
+    '报名开始时间'
+  );
+  const registrationEndAt = requiredDateTime(
+    input.registrationEndAt,
+    '报名截止时间'
+  );
+  if (registrationEndAt <= registrationStartAt) {
+    fail('INVALID_FIELD', '报名截止时间必须晚于开始时间。');
+  }
+  const payload = {
+    title: requiredString(input.title, '赛事名称', LIMITS.competitionTitleMaxLength),
+    description: optionalString(
+      input.description,
+      '赛事介绍',
+      LIMITS.competitionDescriptionMaxLength
+    ),
+    location: requiredString(input.location, '举办地点', 100),
+    eventDate: requiredDateOnly(input.eventDate, '举办日期'),
+    registrationStartAt,
+    registrationEndAt,
+    requirements: optionalString(
+      input.requirements,
+      '报名要求',
+      LIMITS.competitionRequirementsMaxLength
+    ),
+    events: normalizeCompetitionEvents(input.events),
+    trainingGroupIds: optionalIdArray(input.trainingGroupIds, '参赛训练组'),
+    notes: optionalString(input.notes, '赛事备注', 500),
+    ...normalizeCapacity(input)
+  };
+  if (isUpdate) {
+    const expectedVersion = optionalIntegerInRange(
+      input.expectedVersion,
+      '赛事版本',
+      1,
+      100000
+    );
+    if (expectedVersion === null) {
+      fail('INVALID_FIELD', '缺少赛事版本，无法安全更新。');
+    }
+    return { competitionId: safeId(input.competitionId, '赛事'), expectedVersion, ...payload };
+  }
+  return { clientRequestId: safeId(input.clientRequestId, '请求标识'), ...payload };
+}
+
+function validateCompetitionCreatePayload(payload) {
+  return normalizeCompetitionPayload(asObject(payload), false);
+}
+
+function validateCompetitionUpdatePayload(payload) {
+  return normalizeCompetitionPayload(asObject(payload), true);
+}
+
+function validateCompetitionActionPayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '赛事版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少赛事版本，无法安全操作。');
+  }
+  return {
+    competitionId: safeId(input.competitionId, '赛事'),
+    expectedVersion
+  };
+}
+
+function validateCompetitionQueryPayload(payload) {
+  const input = asObject(payload);
+  const status = optionalString(input.status, '赛事状态', 20);
+  if (status && !COMPETITION_STATUSES.includes(status)) {
+    fail('INVALID_FIELD', '赛事状态不正确。');
+  }
+  return { status };
+}
+
+function normalizeIntentItems(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    fail('INVALID_FIELD', '至少选择一个参赛项目和组别。');
+  }
+  if (value.length > LIMITS.maxCompetitionEvents * LIMITS.maxEventCategories) {
+    fail('INVALID_FIELD', '参赛项目选择过多。');
+  }
+  const keys = new Set();
+  return value.map((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      fail('INVALID_FIELD', `第${index + 1}条参赛选择格式不正确。`);
+    }
+    const event = normalizePerformanceEventCode(
+      item.eventCode,
+      `第${index + 1}条参赛项目`
+    );
+    const category = requiredString(item.category, '参赛组别', 30);
+    const key = `${event.code}|${category}`;
+    if (keys.has(key)) {
+      fail('INVALID_FIELD', '同一项目和组别不能重复登记。');
+    }
+    keys.add(key);
+    return {
+      eventCode: event.code,
+      eventName: event.name,
+      unit: event.unit,
+      category
+    };
+  });
+}
+
+function validateIntentSubmitPayload(payload) {
+  const input = asObject(payload);
+  return {
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    competitionId: safeId(input.competitionId, '赛事'),
+    items: normalizeIntentItems(input.items),
+    contactNote: optionalString(input.contactNote, '报名补充说明', 500)
+  };
+}
+
+function validateIntentCancelPayload(payload) {
+  const input = asObject(payload);
+  const eventCodes = input.eventCodes === undefined ? [] : input.eventCodes;
+  if (!Array.isArray(eventCodes)) {
+    fail('INVALID_FIELD', '取消项目格式不正确。');
+  }
+  return {
+    registrationId: safeId(input.registrationId, '报名记录'),
+    eventCodes: eventCodes.map((code) =>
+      normalizePerformanceEventCode(code, '取消项目').code
+    )
+  };
+}
+
+function validateRegistrationQueryPayload(payload) {
+  const input = asObject(payload);
+  const status = optionalString(input.status, '办理状态', 20);
+  if (status && !REGISTRATION_STATUSES.includes(status)) {
+    fail('INVALID_FIELD', '报名办理状态不正确。');
+  }
+  return {
+    competitionId: input.competitionId
+      ? safeId(input.competitionId, '赛事')
+      : '',
+    eventCode: optionalString(input.eventCode, '参赛项目', 40),
+    category: optionalString(input.category, '参赛组别', 30),
+    trainingGroupId: input.trainingGroupId
+      ? safeId(input.trainingGroupId, '训练组')
+      : '',
+    status
+  };
+}
+
+function validateRegistrationStatusPayload(payload) {
+  const input = asObject(payload);
+  const status = requiredString(input.status, '办理状态', 20);
+  if (!REGISTRATION_STATUSES.includes(status)) {
+    fail('INVALID_FIELD', '报名办理状态不正确。');
+  }
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '报名版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少报名版本，无法安全更新。');
+  }
+  return {
+    registrationId: safeId(input.registrationId, '报名记录'),
+    status,
+    comment: optionalString(input.comment, '处理说明', LIMITS.commentMaxLength),
+    expectedVersion
+  };
+}
+
+function validateNoticePayload(payload, isUpdate) {
+  const input = asObject(payload);
+  const category = requiredString(input.category, '通知类别', 30);
+  if (!NOTICE_CATEGORY_VALUES.includes(category)) {
+    fail('INVALID_FIELD', '通知类别不正确。');
+  }
+  const priority = optionalString(input.priority, '重要程度', 20) || 'normal';
+  if (!NOTICE_PRIORITY_VALUES.includes(priority)) {
+    fail('INVALID_FIELD', '重要程度不正确。');
+  }
+  const base = {
+    title: requiredString(input.title, '通知标题', LIMITS.noticeTitleMaxLength),
+    content: requiredString(input.content, '通知正文', LIMITS.noticeContentMaxLength),
+    category,
+    priority,
+    trainingGroupIds: optionalIdArray(input.trainingGroupIds, '可见训练组')
+  };
+  if (isUpdate) {
+    const expectedVersion = optionalIntegerInRange(
+      input.expectedVersion,
+      '通知版本',
+      1,
+      100000
+    );
+    if (expectedVersion === null) {
+      fail('INVALID_FIELD', '缺少通知版本，无法安全更新。');
+    }
+    return { noticeId: safeId(input.noticeId, '通知'), expectedVersion, ...base };
+  }
+  return { clientRequestId: safeId(input.clientRequestId, '请求标识'), ...base };
+}
+
+function validateNoticeCreatePayload(payload) {
+  return validateNoticePayload(payload, false);
+}
+
+function validateNoticeUpdatePayload(payload) {
+  return validateNoticePayload(payload, true);
+}
+
+function validateNoticeActionPayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '通知版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少通知版本，无法安全操作。');
+  }
+  return { noticeId: safeId(input.noticeId, '通知'), expectedVersion };
+}
+
+function validateNoticeQueryPayload(payload) {
+  const input = asObject(payload);
+  const status = optionalString(input.status, '通知状态', 20);
+  if (status && !NOTICE_STATUS_VALUES.includes(status)) {
+    fail('INVALID_FIELD', '通知状态不正确。');
+  }
+  const category = optionalString(input.category, '通知类别', 30);
+  if (category && !NOTICE_CATEGORY_VALUES.includes(category)) {
+    fail('INVALID_FIELD', '通知类别不正确。');
+  }
+  return { status, category, unreadOnly: input.unreadOnly === true };
+}
+
+function validateNoticeReadPayload(payload) {
+  return { noticeId: safeId(asObject(payload).noticeId, '通知') };
+}
+
+function validateFeedbackSubmitPayload(payload) {
+  const input = asObject(payload);
+  const completionStatus = requiredString(input.completionStatus, '完成情况', 30);
+  if (!FEEDBACK_COMPLETION_VALUES.includes(completionStatus)) {
+    fail('INVALID_FIELD', '完成情况不正确。');
+  }
+  const rpe = numberInRange(input.rpe, '主观用力程度RPE', 1, 10);
+  if (!Number.isInteger(rpe)) {
+    fail('INVALID_FIELD', 'RPE必须是1至10的整数。');
+  }
+  return {
+    clientRequestId: safeId(input.clientRequestId, '请求标识'),
+    sessionId: safeId(input.sessionId, '训练场次'),
+    completionStatus,
+    rpe,
+    comment: optionalString(input.comment, '训练反馈', LIMITS.feedbackCommentMaxLength)
+  };
+}
+
+function validateFeedbackUpdatePayload(payload) {
+  const input = asObject(payload);
+  const expectedVersion = optionalIntegerInRange(
+    input.expectedVersion,
+    '反馈版本',
+    1,
+    100000
+  );
+  if (expectedVersion === null) {
+    fail('INVALID_FIELD', '缺少反馈版本，无法安全更新。');
+  }
+  const completionStatus = requiredString(input.completionStatus, '完成情况', 30);
+  if (!FEEDBACK_COMPLETION_VALUES.includes(completionStatus)) {
+    fail('INVALID_FIELD', '完成情况不正确。');
+  }
+  const rpe = numberInRange(input.rpe, '主观用力程度RPE', 1, 10);
+  if (!Number.isInteger(rpe)) {
+    fail('INVALID_FIELD', 'RPE必须是1至10的整数。');
+  }
+  return {
+    feedbackId: safeId(input.feedbackId, '训练反馈'),
+    expectedVersion,
+    completionStatus,
+    rpe,
+    comment: optionalString(input.comment, '训练反馈', LIMITS.feedbackCommentMaxLength)
+  };
+}
+
+function validateFeedbackReviewPayload(payload) {
+  const input = asObject(payload);
+  const expectedCoachCommentVersion = optionalIntegerInRange(
+    input.expectedCoachCommentVersion,
+    '评价版本',
+    0,
+    100000
+  );
+  if (expectedCoachCommentVersion === null) {
+    fail('INVALID_FIELD', '缺少评价版本，无法安全更新。');
+  }
+  return {
+    feedbackId: safeId(input.feedbackId, '训练反馈'),
+    expectedCoachCommentVersion,
+    comment: requiredString(input.comment, '教练评价', LIMITS.coachCommentMaxLength)
+  };
+}
+
+function validateFeedbackQueryPayload(payload) {
+  const input = asObject(payload);
+  return {
+    trainingGroupId: input.trainingGroupId
+      ? safeId(input.trainingGroupId, '训练组')
+      : '',
+    studentUserId: input.studentUserId
+      ? safeId(input.studentUserId, '学生账号')
+      : '',
+    planId: input.planId ? safeId(input.planId, '训练计划') : '',
+    fromDate: optionalDateOnly(input.fromDate, '开始日期'),
+    toDate: optionalDateOnly(input.toDate, '结束日期'),
+    needsAttention: input.needsAttention === true
+  };
+}
+
 function validateGroupName(value) {
   return requiredString(value, '训练组名称', LIMITS.nameMaxLength);
 }
@@ -715,6 +1141,23 @@ function validateGroupCoachPayload(payload) {
 }
 
 module.exports = {
+  validateCompetitionActionPayload,
+  validateCompetitionCreatePayload,
+  validateCompetitionQueryPayload,
+  validateCompetitionUpdatePayload,
+  validateFeedbackQueryPayload,
+  validateFeedbackReviewPayload,
+  validateFeedbackSubmitPayload,
+  validateFeedbackUpdatePayload,
+  validateIntentCancelPayload,
+  validateIntentSubmitPayload,
+  validateNoticeActionPayload,
+  validateNoticeCreatePayload,
+  validateNoticeQueryPayload,
+  validateNoticeReadPayload,
+  validateNoticeUpdatePayload,
+  validateRegistrationQueryPayload,
+  validateRegistrationStatusPayload,
   ATTENDANCE_RECORD_STATUS,
   ATTENDANCE_SESSION_STATUS,
   LEAVE_STATUS,

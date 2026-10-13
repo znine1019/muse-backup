@@ -80,6 +80,18 @@ Page({
     wx.navigateTo({ url: '/pages/attendance-manage/attendance-manage' });
   },
 
+  goCompetitionManage() {
+    wx.navigateTo({ url: '/pages/competition-manage/competition-manage' });
+  },
+
+  goNoticeManage() {
+    wx.navigateTo({ url: '/pages/notice-manage/notice-manage' });
+  },
+
+  goFeedbackManage() {
+    wx.navigateTo({ url: '/pages/feedback-manage/feedback-manage' });
+  },
+
   goPlans() {
     wx.navigateTo({ url: '/pages/coach-plan-list/coach-plan-list' });
   },

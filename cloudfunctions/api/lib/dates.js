@@ -27,6 +27,25 @@ function clubTimeParts(now = new Date()) {
   };
 }
 
+function clubDateTimeString(now = new Date()) {
+  const shifted = new Date(
+    now.getTime() + CLUB_UTC_OFFSET_MINUTES * 60 * 1000
+  );
+  return `${shifted.toISOString().slice(0, 10)} ${shifted
+    .toISOString()
+    .slice(11, 16)}`;
+}
+
+function isDateTimeString(value) {
+  if (
+    typeof value !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2} ([01]\d|2[0-3]):[0-5]\d$/.test(value)
+  ) {
+    return false;
+  }
+  return isDateOnly(value.slice(0, 10));
+}
+
 function timeToMinutes(value) {
   if (typeof value !== 'string' || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(value)) {
     return null;
@@ -66,11 +85,13 @@ function isDateOnly(value) {
 }
 
 module.exports = {
+  clubDateTimeString,
   clubTimeParts,
   addDays,
   clubDateOnly,
   endOfWeek,
   isDateOnly,
+  isDateTimeString,
   minutesToTime,
   timeToMinutes,
   startOfWeek,

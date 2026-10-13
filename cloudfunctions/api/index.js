@@ -8,8 +8,11 @@ const { createRepository } = require('./lib/repository');
 const { fail, toPublicError } = require('./lib/errors');
 const createAuthActions = require('./actions/auth');
 const createAttendanceActions = require('./actions/attendance');
+const createCompetitionActions = require('./actions/competitions');
 const createDirectoryActions = require('./actions/directory');
+const createFeedbackActions = require('./actions/feedback');
 const createGroupAdminActions = require('./actions/groups');
+const createNoticeActions = require('./actions/notices');
 const createProfileActions = require('./actions/profile');
 const createPerformanceActions = require('./actions/performance');
 const createPlanActions = require('./actions/plans');
@@ -21,8 +24,11 @@ const repository = createRepository(db);
 const actions = Object.freeze({
   ...createAuthActions({ repository }),
   ...createAttendanceActions({ repository }),
+  ...createCompetitionActions({ repository }),
   ...createDirectoryActions({ repository }),
+  ...createFeedbackActions({ repository }),
   ...createProfileActions({ repository }),
+  ...createNoticeActions({ repository }),
   ...createPerformanceActions({ repository }),
   ...createPlanActions({ repository }),
   ...createRegistrationActions({ repository }),

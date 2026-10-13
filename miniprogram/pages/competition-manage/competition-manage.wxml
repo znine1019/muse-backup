@@ -1,0 +1,96 @@
+<view class="container">
+  <view class="brand">COACH / COMPETITIONS</view>
+  <view class="title">赛事管理</view>
+  <view class="sub">小程序用于收集参赛意向、核对资料和记录教练办理进度；官方报名由教练在外部赛事平台完成。</view>
+
+  <view class="button-row">
+    <button class="button-primary" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建赛事'}}</button>
+  </view>
+
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在读取赛事数据...</view>
+
+  <view wx:if="{{showCreateForm}}" class="card">
+    <view class="section-title">创建赛事</view>
+    <input class="input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="赛事名称" />
+    <input class="input" value="{{form.location}}" data-field="location" bindinput="onFormInput" maxlength="100" placeholder="举办地点" />
+    <picker mode="date" value="{{form.eventDate}}" data-field="eventDate" bindchange="onFormInput">
+      <view class="picker-field">比赛日期：{{form.eventDate}}</view>
+    </picker>
+    <picker mode="date" value="{{form.registrationStartDate}}" data-field="registrationStartDate" bindchange="onFormInput">
+      <view class="picker-field">报名开始日期：{{form.registrationStartDate}}</view>
+    </picker>
+    <input class="input" value="{{form.registrationStartTime}}" data-field="registrationStartTime" bindinput="onFormInput" maxlength="5" placeholder="报名开始时间 HH:mm" />
+    <picker mode="date" value="{{form.registrationEndDate}}" data-field="registrationEndDate" bindchange="onFormInput">
+      <view class="picker-field">报名截止日期：{{form.registrationEndDate}}</view>
+    </picker>
+    <input class="input" value="{{form.registrationEndTime}}" data-field="registrationEndTime" bindinput="onFormInput" maxlength="5" placeholder="报名截止时间 HH:mm" />
+    <view class="field">
+      <text class="field-label">参赛项目</text>
+      <checkbox-group bindchange="onEventSelect">
+        <label wx:for="{{events}}" wx:key="code" class="list-meta">
+          <checkbox value="{{item.code}}" /> {{item.name}}
+        </label>
+      </checkbox-group>
+    </view>
+    <input class="input" value="{{form.categoriesText}}" data-field="categoriesText" bindinput="onFormInput" placeholder="参赛组别，用逗号分隔，例如 甲组,乙组" />
+    <view class="field">
+      <text class="field-label">允许参与的训练组</text>
+      <checkbox-group bindchange="onGroupSelect">
+        <label wx:for="{{groups}}" wx:key="id" class="list-meta">
+          <checkbox value="{{item.id}}" /> {{item.name}}
+        </label>
+      </checkbox-group>
+    </view>
+    <view class="field">
+      <text class="field-label">意向人数上限</text>
+      <switch checked="{{form.capacityEnabled}}" bindchange="onCapacityToggle" />
+      <text class="list-meta">{{form.capacityEnabled ? '启用上限（1-100人）' : '默认不限人数'}}</text>
+    </view>
+    <input wx:if="{{form.capacityEnabled}}" class="input" type="number" value="{{form.capacity}}" data-field="capacity" bindinput="onFormInput" placeholder="意向人数上限（1-100）" />
+    <textarea class="textarea" value="{{form.requirements}}" data-field="requirements" bindinput="onFormInput" maxlength="1000" placeholder="报名要求" />
+    <textarea class="textarea" value="{{form.description}}" data-field="description" bindinput="onFormInput" maxlength="2000" placeholder="赛事介绍" />
+    <button class="button-primary" loading="{{busyId === 'create'}}" bindtap="createCompetition">保存赛事草稿</button>
+  </view>
+
+  <view wx:if="{{!loading}}" class="card">
+    <view class="section-title">赛事列表</view>
+    <view wx:if="{{!competitions.length}}" class="empty">暂无赛事。</view>
+    <view wx:for="{{competitions}}" wx:key="competitionId" class="list-item">
+      <view class="list-title">{{item.title}}</view>
+      <view class="list-meta">地点：{{item.location}} · 比赛日期：{{item.eventDate}}</view>
+      <view class="list-meta">报名：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
+      <view class="list-meta">状态：{{item.phaseLabel}} · {{item.capacityText}}</view>
+      <view class="list-meta">项目：{{item.eventNames}}</view>
+      <view class="button-row">
+        <button wx:if="{{item.status === 'draft'}}" class="button-primary" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition">发布</button>
+        <button wx:if="{{item.status === 'published'}}" class="button-secondary" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="close" bindtap="transition">关闭意向</button>
+        <button wx:if="{{item.status !== 'archived'}}" class="button-danger" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition">归档</button>
+        <button class="button-secondary" data-competition-id="{{item.competitionId}}" bindtap="loadRegistrations">查看报名意向</button>
+        <button class="button-secondary" data-competition-id="{{item.competitionId}}" bindtap="exportRegistrations" loading="{{exporting}}">导出XLSX</button>
+      </view>
+
+      <view wx:if="{{selectedCompetitionId === item.competitionId}}" class="plan-detail">
+        <view class="list-meta">共 {{registrations.length}} 条学生意向记录</view>
+        <view wx:if="{{!registrations.length}}" class="muted">暂无学生报名意向。</view>
+        <view wx:for="{{registrations}}" wx:for-item="registration" wx:key="registrationId" class="list-item">
+          <view class="list-title">{{registration.studentName}} · {{registration.statusLabel}}</view>
+          <view class="list-meta">训练组：{{registration.groupText || '未标注'}}</view>
+          <view class="list-meta">项目：{{registration.itemsText}}</view>
+          <view class="list-meta" wx:if="{{registration.contactNote}}">补充说明：{{registration.contactNote}}</view>
+          <view class="list-meta" wx:if="{{registration.reviewNote}}">处理说明：{{registration.reviewNote}}</view>
+          <view class="button-row">
+            <button class="button-secondary" data-registration-id="{{registration.registrationId}}" data-status="processing" data-version="{{registration.version}}" bindtap="updateStatus">处理中</button>
+            <button class="button-primary" data-registration-id="{{registration.registrationId}}" data-status="registered" data-version="{{registration.version}}" bindtap="updateStatus">官方已提交</button>
+            <button class="button-danger" data-registration-id="{{registration.registrationId}}" data-status="failed" data-version="{{registration.version}}" bindtap="updateStatus">未完成</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">“官方已提交”只表示教练已在外部平台完成报名操作，不代表主办方审核通过或学生已取得参赛资格。</view>
+</view>

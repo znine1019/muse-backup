@@ -117,6 +117,53 @@ module.exports = {
   listPendingLeaves: () => callApi('leave.list_pending'),
   listReviewedLeaves: () => callApi('leave.list_reviewed'),
   reviewLeave: (payload) => callApi('leave.review', payload),
+  listCompetitionMeta: () => callApi('competition.list_meta'),
+  listManageCompetitions: (payload = {}) =>
+    callApi('competition.list_manage', payload),
+  getManageCompetition: (competitionId) =>
+    callApi('competition.get_manage_detail', { competitionId }),
+  createCompetition: (payload) => callApi('competition.create', payload),
+  updateCompetition: (payload) => callApi('competition.update', payload),
+  publishCompetition: (payload) => callApi('competition.publish', payload),
+  closeCompetition: (payload) => callApi('competition.close', payload),
+  archiveCompetition: (payload) => callApi('competition.archive', payload),
+  listStudentCompetitions: () => callApi('competition.list_student'),
+  getStudentCompetition: (competitionId) =>
+    callApi('competition.get_student_detail', { competitionId }),
+  submitCompetitionIntent: (payload) =>
+    callApi('competition.submit_intent', payload),
+  cancelCompetitionIntent: (payload) =>
+    callApi('competition.cancel_intent', payload),
+  listMyCompetitionIntents: () => callApi('competition.list_my_intents'),
+  listManagedRegistrations: (payload = {}) =>
+    callApi('competition.list_registrations', payload),
+  getManagedRegistration: (registrationId) =>
+    callApi('competition.get_registration_detail', { registrationId }),
+  updateRegistrationStatus: (payload) =>
+    callApi('competition.update_registration_status', payload),
+  exportRegistrationRows: (payload = {}) =>
+    callApi('competition.export_rows', payload),
+  listManageNotices: (payload = {}) => callApi('notice.list_manage', payload),
+  getManageNotice: (noticeId) =>
+    callApi('notice.get_manage_detail', { noticeId }),
+  createNotice: (payload) => callApi('notice.create', payload),
+  updateNotice: (payload) => callApi('notice.update', payload),
+  publishNotice: (payload) => callApi('notice.publish', payload),
+  withdrawNotice: (payload) => callApi('notice.withdraw', payload),
+  archiveNotice: (payload) => callApi('notice.archive', payload),
+  listStudentNotices: (payload = {}) => callApi('notice.list_student', payload),
+  getStudentNotice: (noticeId) =>
+    callApi('notice.get_student_detail', { noticeId }),
+  markNoticeRead: (noticeId) => callApi('notice.mark_read', { noticeId }),
+  getUnreadNoticeCount: () => callApi('notice.unread_count'),
+  listEligibleFeedbackSessions: () =>
+    callApi('feedback.list_eligible_sessions'),
+  listMyFeedback: () => callApi('feedback.list_mine'),
+  submitFeedback: (payload) => callApi('feedback.submit', payload),
+  updateFeedback: (payload) => callApi('feedback.update', payload),
+  listManagedFeedback: (payload = {}) =>
+    callApi('feedback.list_manage', payload),
+  reviewFeedback: (payload) => callApi('feedback.review', payload),
   listPendingRegistrations: () => callApi('admin.list_pending_registrations'),
   reviewRegistration: (payload) => callApi('admin.review_registration', payload),
   listUsers: () => callApi('admin.list_users'),

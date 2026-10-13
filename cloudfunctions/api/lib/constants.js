@@ -13,6 +13,11 @@ const COLLECTIONS = Object.freeze({
   ATTENDANCE_SESSIONS: 'attendance_sessions',
   ATTENDANCE_RECORDS: 'attendance_records',
   LEAVE_REQUESTS: 'leave_requests',
+  COMPETITIONS: 'competitions',
+  COMPETITION_REGISTRATIONS: 'competition_registrations',
+  CLUB_NOTICES: 'club_notices',
+  NOTICE_READS: 'notice_reads',
+  TRAINING_FEEDBACK: 'training_feedback',
   AUDIT_LOGS: 'audit_logs',
   SYSTEM_CONFIG: 'system_config'
 });
@@ -71,6 +76,43 @@ const LEAVE_STATUS = Object.freeze({
   CANCELLED: 'cancelled'
 });
 
+const COMPETITION_STATUS = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  CLOSED: 'closed',
+  ARCHIVED: 'archived'
+});
+
+const COMPETITION_REGISTRATION_STATUS = Object.freeze({
+  SUBMITTED: 'submitted',
+  PROCESSING: 'processing',
+  REGISTERED: 'registered',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled'
+});
+
+const NOTICE_STATUS = Object.freeze({
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  WITHDRAWN: 'withdrawn',
+  ARCHIVED: 'archived'
+});
+
+const NOTICE_CATEGORIES = Object.freeze([
+  'training',
+  'competition',
+  'announcement',
+  'other'
+]);
+
+const NOTICE_PRIORITIES = Object.freeze(['normal', 'important']);
+
+const FEEDBACK_COMPLETION = Object.freeze({
+  COMPLETED: 'completed',
+  PARTIAL: 'partial',
+  NOT_COMPLETED: 'not_completed'
+});
+
 const AUDIT_ACTIONS = Object.freeze({
   LOGIN_CREATED: 'auth.login.created',
   DEVELOPER_BOOTSTRAPPED: 'auth.bootstrap.developer_created',
@@ -100,6 +142,22 @@ const AUDIT_ACTIONS = Object.freeze({
   LEAVE_APPROVED: 'coach.leave.approved',
   LEAVE_REJECTED: 'coach.leave.rejected',
   LEAVE_CANCELLED: 'student.leave.cancelled',
+  COMPETITION_CREATED: 'coach.competition.created',
+  COMPETITION_UPDATED: 'coach.competition.updated',
+  COMPETITION_PUBLISHED: 'coach.competition.published',
+  COMPETITION_CLOSED: 'coach.competition.closed',
+  COMPETITION_ARCHIVED: 'coach.competition.archived',
+  REGISTRATION_SUBMITTED: 'student.competition.intent_submitted',
+  REGISTRATION_STATUS_CHANGED: 'coach.competition.registration_status_changed',
+  REGISTRATION_CANCELLED: 'student.competition.intent_cancelled',
+  NOTICE_CREATED: 'coach.notice.created',
+  NOTICE_UPDATED: 'coach.notice.updated',
+  NOTICE_PUBLISHED: 'coach.notice.published',
+  NOTICE_WITHDRAWN: 'coach.notice.withdrawn',
+  NOTICE_ARCHIVED: 'coach.notice.archived',
+  FEEDBACK_SUBMITTED: 'student.training_feedback.submitted',
+  FEEDBACK_UPDATED: 'student.training_feedback.updated',
+  FEEDBACK_REVIEWED: 'coach.training_feedback.reviewed',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'
@@ -115,6 +173,15 @@ const LIMITS = Object.freeze({
   sessionTitleMaxLength: 60,
   locationNameMaxLength: 80,
   leaveReasonMaxLength: 300,
+  competitionTitleMaxLength: 80,
+  competitionDescriptionMaxLength: 2000,
+  competitionRequirementsMaxLength: 1000,
+  noticeTitleMaxLength: 80,
+  noticeContentMaxLength: 3000,
+  feedbackCommentMaxLength: 500,
+  coachCommentMaxLength: 500,
+  maxCompetitionEvents: 20,
+  maxEventCategories: 10,
   pageSize: 50,
   heightCmMin: 50,
   heightCmMax: 250,
@@ -123,6 +190,12 @@ const LIMITS = Object.freeze({
 });
 
 module.exports = {
+  COMPETITION_REGISTRATION_STATUS,
+  COMPETITION_STATUS,
+  FEEDBACK_COMPLETION,
+  NOTICE_CATEGORIES,
+  NOTICE_PRIORITIES,
+  NOTICE_STATUS,
   ATTENDANCE_RECORD_STATUS,
   ATTENDANCE_SESSION_STATUS,
   AUDIT_ACTIONS,

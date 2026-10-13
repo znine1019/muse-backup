@@ -1,0 +1,53 @@
+<view class="container">
+  <view class="brand">STUDENT / COMPETITIONS</view>
+  <view class="title">赛事报名意向</view>
+  <view class="sub">小程序仅收集参赛意向和教练办理进度；官方报名由教练在赛事官方平台完成，登记意向不等于官方报名成功。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取赛事...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="section-title">可参与赛事</view>
+      <view wx:if="{{!competitions.length}}" class="empty">当前没有可参与的赛事。</view>
+      <view wx:for="{{competitions}}" wx:key="competitionId" class="list-item">
+        <view class="list-title">{{item.title}}</view>
+        <view class="list-meta">地点：{{item.location}}</view>
+        <view class="list-meta">比赛日期：{{item.eventDate}}</view>
+        <view class="list-meta">报名时间：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
+        <view class="list-meta">状态：{{item.phaseLabel}} · {{item.capacityText}}</view>
+        <view class="list-meta" wx:if="{{item.requirements}}">报名要求：{{item.requirements}}</view>
+        <view class="list-meta" wx:if="{{item.description}}">说明：{{item.description}}</view>
+        <view class="tag" wx:if="{{item.registration}}">我的状态：{{item.registrationStatusLabel}}</view>
+
+        <block wx:if="{{selectedCompetitionId === item.competitionId}}">
+          <checkbox-group bindchange="onItemChange">
+            <label wx:for="{{item.itemOptions}}" wx:for-item="option" wx:key="key" class="list-meta">
+              <checkbox value="{{option.key}}" /> {{option.label}}
+            </label>
+          </checkbox-group>
+          <textarea class="textarea" value="{{contactNote}}" bindinput="onContactNoteInput" maxlength="500" placeholder="报名补充说明，可选" />
+          <button class="button-primary" loading="{{submitting}}" bindtap="submitIntent">提交参赛意向</button>
+        </block>
+        <button wx:elif="{{item.canSubmit}}" class="button-secondary" data-competition-id="{{item.competitionId}}" bindtap="toggleIntentForm">登记参赛意向</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">我的赛事意向</view>
+      <view wx:if="{{!intents.length}}" class="muted">暂无赛事意向。</view>
+      <view wx:for="{{intents}}" wx:key="registrationId" class="list-item">
+        <view class="list-title">{{item.competitionTitle}}</view>
+        <view class="list-meta">办理状态：{{item.statusLabel}}</view>
+        <view class="list-meta" wx:for="{{item.items}}" wx:for-item="intentItem" wx:key="itemId">项目：{{intentItem.eventName}} · {{intentItem.category}}</view>
+        <view class="list-meta" wx:if="{{item.reviewNote}}">处理说明：{{item.reviewNote}}</view>
+        <button wx:if="{{item.canCancel}}" class="button-danger" data-registration-id="{{item.registrationId}}" bindtap="cancelIntent">取消意向</button>
+      </view>
+    </view>
+
+    <view class="notice">“教练已确认官方报名提交”仅表示教练已在外部平台完成报名操作，不代表主办方审核通过或已取得参赛资格。</view>
+  </block>
+</view>

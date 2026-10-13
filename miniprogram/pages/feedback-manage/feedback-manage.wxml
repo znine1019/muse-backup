@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="brand">COACH / FEEDBACK</view>
+  <view class="title">训练反馈管理</view>
+  <view class="sub">查看本人负责训练组学生的训练反馈，对需要关注的记录补充教练评价。</view>
+
+  <view wx:if="{{loading}}" class="empty">正在读取训练反馈...</view>
+  <view wx:if="{{error}}" class="error">
+    <view>{{error}}</view>
+    <button class="button-secondary" bindtap="retry">重新加载</button>
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="card">
+      <view class="section-title">反馈概览</view>
+      <view class="list-meta">需要关注：{{attentionCount}} 条</view>
+      <view class="field">
+        <text class="field-label">只看需要关注</text>
+        <switch checked="{{attentionOnly}}" bindchange="onAttentionToggle" />
+      </view>
+      <view class="notice">需要关注包含未完成、RPE较高或反馈中出现困难、不适等提示内容。</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">反馈列表</view>
+      <view wx:if="{{!feedback.length}}" class="empty">当前没有符合条件的训练反馈。</view>
+      <view wx:for="{{feedback}}" wx:key="feedbackId" class="list-item">
+        <view class="list-title">{{item.studentName || '学生'}} · {{item.attendanceDate}}</view>
+        <view class="list-meta">训练组：{{item.trainingGroupId}}</view>
+        <view class="list-meta">完成情况：{{item.completionLabel}} · {{item.rpeText}} · {{item.commentTimeText}}</view>
+        <view class="tag" wx:if="{{item.needsAttention}}">需要关注</view>
+        <view class="list-meta" wx:if="{{item.comment}}">学生说明：{{item.comment}}</view>
+        <view class="notice" wx:if="{{item.coachComment}}">教练评价：{{item.coachComment}}</view>
+        <view class="button-row">
+          <button class="button-primary" data-feedback-id="{{item.feedbackId}}" data-version="{{item.coachCommentVersion}}" bindtap="review" loading="{{reviewingId === item.feedbackId}}">{{item.coachComment ? '更新评价' : '添加评价'}}</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="notice">教练只能查看和评价本人负责训练组学生的反馈；评价版本由服务端校验，避免并发覆盖。</view>
+  </block>
+</view>

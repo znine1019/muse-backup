@@ -50,6 +50,13 @@ function createRepository(db) {
   const attendanceSessionCollection = db.collection(COLLECTIONS.ATTENDANCE_SESSIONS);
   const attendanceRecordCollection = db.collection(COLLECTIONS.ATTENDANCE_RECORDS);
   const leaveRequestCollection = db.collection(COLLECTIONS.LEAVE_REQUESTS);
+  const competitionCollection = db.collection(COLLECTIONS.COMPETITIONS);
+  const competitionRegistrationCollection = db.collection(
+    COLLECTIONS.COMPETITION_REGISTRATIONS
+  );
+  const clubNoticeCollection = db.collection(COLLECTIONS.CLUB_NOTICES);
+  const noticeReadCollection = db.collection(COLLECTIONS.NOTICE_READS);
+  const trainingFeedbackCollection = db.collection(COLLECTIONS.TRAINING_FEEDBACK);
   const auditCollection = db.collection(COLLECTIONS.AUDIT_LOGS);
   const systemCollection = db.collection(COLLECTIONS.SYSTEM_CONFIG);
 
@@ -129,6 +136,26 @@ function createRepository(db) {
 
   function leaveRequestId(studentUserId, sessionId, clientRequestId) {
     return deterministicId('leave', studentUserId, sessionId, clientRequestId);
+  }
+
+  function competitionIdForRequest(actorUserId, clientRequestId) {
+    return deterministicId('compete', actorUserId, clientRequestId);
+  }
+
+  function registrationIdForStudentCompetition(studentUserId, competitionId) {
+    return deterministicId('compreg', studentUserId, competitionId);
+  }
+
+  function noticeIdForRequest(actorUserId, clientRequestId) {
+    return deterministicId('notice', actorUserId, clientRequestId);
+  }
+
+  function noticeReadId(noticeId, studentUserId) {
+    return deterministicId('noticeread', noticeId, studentUserId);
+  }
+
+  function feedbackIdForStudentSession(studentUserId, sessionId) {
+    return deterministicId('feedback', studentUserId, sessionId);
   }
 
   async function getUserById(userId) {
@@ -490,6 +517,171 @@ function createRepository(db) {
     return total;
   }
 
+  async function getCompetition(competitionId) {
+    return getDoc(competitionCollection, competitionId);
+  }
+
+  async function listCompetitions(options = {}) {
+    const where = {};
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    if (options.fromDate) {
+      where.eventDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.eventDate = db.command.lte(options.toDate);
+    }
+    return fetchAllOrdered(
+      competitionCollection,
+      where,
+      [
+        { field: 'eventDate', direction: 'asc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getRegistration(registrationId) {
+    return getDoc(competitionRegistrationCollection, registrationId);
+  }
+
+  async function listRegistrations(options = {}) {
+    if (
+      Array.isArray(options.competitionIds) &&
+      options.competitionIds.length === 0
+    ) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length === 0
+    ) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const where = {};
+    if (options.competitionId) {
+      where.competitionId = options.competitionId;
+    }
+    if (Array.isArray(options.competitionIds) && options.competitionIds.length) {
+      where.competitionId = db.command.in(options.competitionIds);
+    }
+    if (options.studentUserId) {
+      where.studentUserId = options.studentUserId;
+    }
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length
+    ) {
+      where.studentUserId = db.command.in(options.studentUserIds);
+    }
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    return fetchAllOrdered(
+      competitionRegistrationCollection,
+      where,
+      [
+        { field: 'createdAt', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function countRegistrations(competitionId, statuses) {
+    const where = { competitionId };
+    if (Array.isArray(statuses) && statuses.length) {
+      where.status = db.command.in(statuses);
+    }
+    return countWhere(competitionRegistrationCollection, where);
+  }
+
+  async function getClubNotice(noticeId) {
+    return getDoc(clubNoticeCollection, noticeId);
+  }
+
+  async function listClubNotices(options = {}) {
+    const where = {};
+    if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    return fetchAllOrdered(
+      clubNoticeCollection,
+      where,
+      [
+        { field: 'publishedAt', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getNoticeRead(noticeId, studentUserId) {
+    return getDoc(noticeReadCollection, noticeReadId(noticeId, studentUserId));
+  }
+
+  async function listNoticeReads(studentUserId, options = {}) {
+    const where = { studentUserId };
+    if (Array.isArray(options.noticeIds) && options.noticeIds.length) {
+      where.noticeId = db.command.in(options.noticeIds);
+    }
+    return fetchAllOrdered(
+      noticeReadCollection,
+      where,
+      [
+        { field: 'readAt', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function getTrainingFeedback(feedbackId) {
+    return getDoc(trainingFeedbackCollection, feedbackId);
+  }
+
+  async function listTrainingFeedback(options = {}) {
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length === 0
+    ) {
+      return { records: [], total: 0, incomplete: false };
+    }
+    const where = {};
+    if (options.studentUserId) {
+      where.studentUserId = options.studentUserId;
+    }
+    if (
+      Array.isArray(options.studentUserIds) &&
+      options.studentUserIds.length
+    ) {
+      where.studentUserId = db.command.in(options.studentUserIds);
+    }
+    if (options.trainingGroupId) {
+      where.trainingGroupId = options.trainingGroupId;
+    }
+    if (options.planId) {
+      where.planId = options.planId;
+    }
+    if (options.fromDate) {
+      where.attendanceDate = db.command.gte(options.fromDate);
+    }
+    if (options.toDate) {
+      where.attendanceDate = db.command.lte(options.toDate);
+    }
+    return fetchAllOrdered(
+      trainingFeedbackCollection,
+      where,
+      [
+        { field: 'attendanceDate', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
   async function listMeasurementsForReport(userId, options = {}) {
     return fetchAllOrdered(
       measurementCollection,
@@ -734,16 +926,37 @@ function createRepository(db) {
     attendanceRecordId,
     attendanceSessionCollection,
     attendanceSessionIdForRequest,
+    competitionIdForRequest,
+    feedbackIdForStudentSession,
+    noticeIdForRequest,
+    noticeReadId,
+    registrationIdForStudentCompetition,
     auditCollection,
+    clubNoticeCollection,
+    competitionCollection,
+    competitionRegistrationCollection,
+    noticeReadCollection,
+    trainingFeedbackCollection,
     bodyMeasurementCollection: measurementCollection,
     db,
     ensureUser,
     getMeasurement,
     getPerformanceRecord,
     getCoachGroupIds,
+    countRegistrations,
+    getClubNotice,
+    getCompetition,
+    getNoticeRead,
+    getRegistration,
+    getTrainingFeedback,
     getAttendanceRecord,
     getAttendanceSession,
     getStudentUserIdsForGroups,
+    listClubNotices,
+    listCompetitions,
+    listNoticeReads,
+    listRegistrations,
+    listTrainingFeedback,
     getGroupsMap,
     getLatestReview,
     getProfile,

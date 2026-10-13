@@ -88,6 +88,19 @@ Page({
   goPlans() {
     wx.navigateTo({ url: '/pages/student-plans/student-plans' });
   },
+
+  goCompetitions() {
+    wx.navigateTo({ url: '/pages/student-competitions/student-competitions' });
+  },
+
+  goNotices() {
+    wx.navigateTo({ url: '/pages/student-notices/student-notices' });
+  },
+
+  goFeedback() {
+    wx.navigateTo({ url: '/pages/student-feedback/student-feedback' });
+  },
+
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
