@@ -14,6 +14,8 @@
 
 const { isDemoAllowed } = require('../utils/demo-mode');
 const { sessionHasRole } = require('../utils/session');
+const { IS_DEMO_BUILD } = require('../config/build-mode');
+const { isDemoSession } = require('./showcase');
 
 /* 与运动数据报告 DEMO 保持一致的标识文案 */
 const DEMO_MARKER = 'DEMO｜虚构演示数据';
@@ -40,6 +42,28 @@ function roleLabel(role) {
  * 任何演示页面（含直接以路径打开）都必须先通过此校验。
  */
 function checkDemoAccess(session) {
+  /*
+   * DEMO 展示构建（demo/showcase-v1）：
+   *  - 仍限定 develop/trial 环境；
+   *  - 但只要求本机构造的**模拟会话**，访客不需要真实业务角色。
+   * 该许可仅能打开本地演示页（全部为虚构数据），不构成任何正式权限：
+   * DEMO 构建既不初始化云开发，也在业务接口层（api.js）拒绝所有正式调用。
+   * 正式 main 分支不包含 build-mode.js，因此下面的分支不会生效，
+   * 正式构建仍严格要求真实 developer 身份。
+   */
+  if (IS_DEMO_BUILD) {
+    if (!isDemoAllowed()) {
+      return {
+        ok: false,
+        reason: '当前环境不允许进入 DEMO（仅开发版与体验版可用）。'
+      };
+    }
+    if (!isDemoSession(session)) {
+      return { ok: false, reason: '请先在 DEMO 入口选择体验身份。' };
+    }
+    return { ok: true, reason: '' };
+  }
+
   if (!isDemoAllowed()) {
     return {
       ok: false,

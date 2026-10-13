@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "乔格训迹 V1.6 DEMO",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-empty": "/components/jg-empty/jg-empty"
+  }
+}

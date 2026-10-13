@@ -1,0 +1,58 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="乔格训迹 V1.6 DEMO"
+    meta="四角色功能展示（模拟身份 · 全部为虚构演示数据）"
+  />
+
+  <!-- 安全边界说明：任何演示视图都常驻可见 -->
+  <view class="demo-banner">
+    <view class="demo-banner-t">{{demoMarker}}</view>
+    <view class="demo-banner-m">{{demoNotice}}</view>
+  </view>
+
+  <view class="jg-note jg-mb-12">
+    <view>
+      <view class="jg-note-t">演示环境说明</view>
+      <view class="jg-note-m">
+        DEMO 构建不连接正式云端：不初始化云开发、不调用任何正式业务接口，
+        也不会读取或写入真实学生、家长、教练数据。以下身份均为模拟角色，
+        访客不需要拥有任何真实业务角色。
+      </view>
+    </view>
+  </view>
+
+  <view class="jg-sect-h">
+    <text class="jg-sect-t">选择体验身份</text>
+    <text class="jg-sect-c">{{readyCount}}/{{roles.length}} 可体验</text>
+  </view>
+
+  <view
+    wx:for="{{roles}}"
+    wx:key="role"
+    class="jg-card {{item.ready ? '' : 'role-planned'}}"
+    hover-class="jg-row-hover"
+    data-role="{{item.role}}"
+    bindtap="onRoleTap"
+  >
+    <view class="jg-card-h">
+      <text class="jg-card-t">{{item.icon}} · {{item.label}}</text>
+      <text class="jg-chip {{item.ready ? 'jg-chip-ok' : 'jg-chip-warn'}}">{{item.statusLabel}}</text>
+    </view>
+    <view class="jg-sub">{{item.desc}}</view>
+    <view class="jg-sub jg-mt-8">{{item.note}}</view>
+  </view>
+
+  <view class="jg-btn-row">
+    <button class="jg-btn jg-btn-ghost" bindtap="resetDemo">清除本地演示身份</button>
+  </view>
+
+  <view class="jg-note">
+    <view>
+      <view class="jg-note-t">关于开发者与教练员端</view>
+      <view class="jg-note-m">
+        教练员端与开发者端的完整模拟业务交互计划在 D1-B 提供。
+        本阶段仅提供统一入口与独立模拟运行框架，四角色入口均不要求真实角色授权。
+      </view>
+    </view>
+  </view>
+</view>

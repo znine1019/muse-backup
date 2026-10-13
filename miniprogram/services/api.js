@@ -4,6 +4,24 @@ const {
   API_FUNCTION_NAME,
   HEALTH_FUNCTION_NAME
 } = require('../config/env');
+const { IS_DEMO_BUILD } = require('../config/build-mode');
+
+/**
+ * DEMO 构建隔离门（仅 demo/showcase-v1 分支生效）：
+ * 任何正式业务接口调用都会被直接拒绝，**绝不触及 wx.cloud**。
+ * 演示页面全部使用本地虚构数据，不依赖本文件的任何方法。
+ */
+function assertNotDemoBuild(action) {
+  if (!IS_DEMO_BUILD) {
+    return;
+  }
+  const error = createClientError(
+    'DEMO_BUILD_BLOCKED',
+    `DEMO 构建已禁用正式业务接口（${action || 'unknown'}）。`
+  );
+  error.demoBlocked = true;
+  throw error;
+}
 
 function createClientError(code, message) {
   const error = new Error(message);
@@ -12,6 +30,9 @@ function createClientError(code, message) {
 }
 
 async function callApi(action, payload = {}) {
+  /* DEMO 构建：在触碰 wx.cloud 之前就拒绝 */
+  assertNotDemoBuild(action);
+
   try {
     const response = await wx.cloud.callFunction({
       name: API_FUNCTION_NAME,
@@ -41,6 +62,9 @@ async function callApi(action, payload = {}) {
 }
 
 async function healthCheck() {
+  /* DEMO 构建：健康检查同样不访问正式云函数 */
+  assertNotDemoBuild('health_check');
+
   try {
     const response = await wx.cloud.callFunction({ name: HEALTH_FUNCTION_NAME });
     const result = response && response.result;

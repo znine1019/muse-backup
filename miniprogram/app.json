@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/showcase/showcase",
     "pages/index/index",
     "pages/register/register",
     "pages/pending/pending",

@@ -1,4 +1,10 @@
 const { CLOUD_ENV_ID } = require('./config/env');
+const { IS_DEMO_BUILD } = require('./config/build-mode');
+const {
+  buildDemoSession,
+  clearActiveDemoRole,
+  readActiveDemoRole
+} = require('./demo/showcase');
 const api = require('./services/api');
 
 const SESSION_CACHE_KEY = 'joger_session_v1';
@@ -9,10 +15,23 @@ App({
     cloudError: '',
     session: null,
     sessionTask: null,
-    requireManualLogin: false
+    requireManualLogin: false,
+    /* DEMO 构建：不初始化云开发，仅使用本地模拟会话 */
+    demoBuild: IS_DEMO_BUILD
   },
 
   onLaunch() {
+    /*
+     * DEMO 构建：**故意不初始化云开发**。
+     * 这是隔离方案的第一道防线：没有 wx.cloud.init，就不存在到正式环境的通道；
+     * 第二道防线在 services/api.js（DEMO 构建下直接拒绝任何云函数调用）。
+     */
+    if (IS_DEMO_BUILD) {
+      this.globalData.cloudReady = false;
+      this.globalData.cloudError = 'DEMO 构建未连接云开发（预期行为）。';
+      return;
+    }
+
     try {
       if (!wx.cloud) {
         throw new Error('当前基础库不支持微信云开发。');
@@ -29,6 +48,21 @@ App({
   },
 
   ensureSession({ force = false } = {}) {
+    /*
+     * DEMO 构建：直接返回本地模拟会话。
+     * 不调用 api.login()、不要求真实微信角色、不写正式会话缓存。
+     */
+    if (IS_DEMO_BUILD) {
+      const demoSession = buildDemoSession(readActiveDemoRole());
+      if (!demoSession) {
+        const error = new Error('请先在 DEMO 入口选择体验身份。');
+        error.code = 'DEMO_ROLE_REQUIRED';
+        return Promise.reject(error);
+      }
+      this.globalData.session = demoSession;
+      return Promise.resolve(demoSession);
+    }
+
     if (this.globalData.requireManualLogin && !force) {
       const error = new Error('请点击微信一键登录继续。');
       error.code = 'MANUAL_LOGIN_REQUIRED';
@@ -67,6 +101,14 @@ App({
   },
 
   clearSession() {
+    if (IS_DEMO_BUILD) {
+      /* 只清理本地演示身份，不触碰任何正式会话 */
+      this.globalData.session = null;
+      this.globalData.sessionTask = null;
+      clearActiveDemoRole();
+      return;
+    }
+
     this.globalData.requireManualLogin = true;
     this.globalData.session = null;
     this.globalData.sessionTask = null;

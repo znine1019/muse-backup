@@ -30,6 +30,7 @@ const DEMO_PAGE_JS = path.join(PROJECT_ROOT, 'miniprogram/pages/demo/demo.js');
 const DEMO_GUARD = require(path.join(PROJECT_ROOT, 'miniprogram/demo/demo-guard.js'));
 const STUDENT_DEMO = require(path.join(PROJECT_ROOT, 'miniprogram/demo/student-demo.js'));
 const PARENT_DEMO = require(path.join(PROJECT_ROOT, 'miniprogram/demo/parent-demo.js'));
+const SHOWCASE = require(path.join(PROJECT_ROOT, 'miniprogram/demo/showcase.js'));
 
 function withWx(stub, fn) {
   const had = Object.prototype.hasOwnProperty.call(global, 'wx');
@@ -60,12 +61,20 @@ function developerSession() {
 
 /* ------------------------------------------------------------- 演示守卫 */
 
-test('演示守卫：develop/trial 环境 + 真实 developer 才允许进入', () => {
+/*
+ * 注意：以下两条守卫规则已按 DEMO 展示构建（demo/showcase-v1）的安全模型调整。
+ * DEMO 分支的访客没有真实业务角色，因此改为“本机 DEMO 模拟会话 + develop/trial 环境”；
+ * 这不构成任何正式权限 —— 该构建既不初始化云开发，业务接口层也直接拒绝所有正式调用。
+ * 正式 main 分支仍严格要求真实 developer 身份（main 的测试与实现均未改动）。
+ */
+test('演示守卫：develop/trial 环境下允许本机 DEMO 模拟会话进入', () => {
   for (const envVersion of ['develop', 'trial']) {
-    const result = withWx(wxWithEnv(envVersion), () =>
-      DEMO_GUARD.checkDemoAccess(developerSession())
-    );
-    assert.equal(result.ok, true, `${envVersion} 环境应允许 developer 进入`);
+    for (const role of ['student', 'parent']) {
+      const result = withWx(wxWithEnv(envVersion), () =>
+        DEMO_GUARD.checkDemoAccess(SHOWCASE.buildDemoSession(role))
+      );
+      assert.equal(result.ok, true, `${envVersion} / ${role} 应允许DEMO模拟会话进入`);
+    }
   }
 });
 
@@ -77,13 +86,22 @@ test('演示守卫：release 环境一律拒绝', () => {
   assert.match(result.reason, /环境/);
 });
 
-test('演示守卫：非 developer 身份一律拒绝（含 student / coach / parent）', () => {
+test('演示守卫：非 DEMO 模拟会话一律拒绝（含真实身份会话）', () => {
+  /* 真实角色会话在 DEMO 构建中不应被接受：访客身份必须来自本机 DEMO 入口 */
   for (const role of ['student', 'coach', 'parent']) {
     const session = { user: { id: 'usr_x', status: 'active', roles: [role] } };
     const result = withWx(wxWithEnv('develop'), () => DEMO_GUARD.checkDemoAccess(session));
-    assert.equal(result.ok, false, `${role} 不得进入演示`);
-    assert.match(result.reason, /开发者/);
+    assert.equal(result.ok, false, `真实 ${role} 会话不得进入 DEMO`);
   }
+  /* 即使是真实 developer 会话，也必须先在本机 DEMO 入口选择体验身份 */
+  const developerResult = withWx(wxWithEnv('develop'), () =>
+    DEMO_GUARD.checkDemoAccess(developerSession())
+  );
+  assert.equal(developerResult.ok, false, 'DEMO 构建不依赖真实 developer 身份');
+  /* 无会话时给出明确提示 */
+  const emptyResult = withWx(wxWithEnv('develop'), () => DEMO_GUARD.checkDemoAccess(null));
+  assert.equal(emptyResult.ok, false);
+  assert.match(emptyResult.reason, /DEMO 入口/);
 });
 
 test('演示守卫：停用账号即使有 developer 角色也被拒绝', () => {
