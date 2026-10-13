@@ -367,11 +367,58 @@ Page({
     this.setData({ parent, simulatedSubmit: '' });
   },
 
+  /* 家长端快捷定位：切换选中态，并真实滚动到对应分区 */
   goSection(event) {
     const section = event.currentTarget.dataset.section;
-    if (section) {
-      this.setData({ activeSection: section });
+    if (!section) {
+      return;
     }
+    /* 关联未生效时快捷入口不会渲染；此处再兜一层，避免被直接调用触发定位 */
+    if (this.data.parent && this.data.parent.linkActive === false) {
+      return;
+    }
+    this.setData({ activeSection: section });
+    this.scrollToSection(section);
+  },
+
+  /*
+   * 页面级定位：优先用 wx.pageScrollTo 的 selector（基础库 2.7.3+）；
+   * 该能力不可用时退回“测量元素偏移 + scrollTop”的兼容路径。
+   * 每次点击都重新执行，因此连续点同一分区或快速切换分区均能生效。
+   */
+  scrollToSection(section) {
+    if (typeof wx === 'undefined' || typeof wx.pageScrollTo !== 'function') {
+      return;
+    }
+    const selector = `#sec-${section}`;
+    wx.pageScrollTo({
+      selector,
+      duration: 300,
+      fail: () => this.scrollToSectionByOffset(selector)
+    });
+  },
+
+  /* 兼容路径：旧基础库不支持 selector 时，按元素相对偏移计算目标 scrollTop */
+  scrollToSectionByOffset(selector) {
+    if (typeof wx.createSelectorQuery !== 'function') {
+      return;
+    }
+    wx.createSelectorQuery()
+      .select(selector)
+      .boundingClientRect((rect) => {
+        if (!rect) {
+          return;
+        }
+        wx.createSelectorQuery()
+          .selectViewport()
+          .scrollOffset((viewport) => {
+            const current = viewport && viewport.scrollTop ? Number(viewport.scrollTop) : 0;
+            const target = current + Number(rect.top || 0) - 12;
+            wx.pageScrollTo({ scrollTop: target > 0 ? target : 0, duration: 300 });
+          })
+          .exec();
+      })
+      .exec();
   },
 
   /* 演示中的"模拟提交"：只改变本地状态，绝不调用业务接口 */

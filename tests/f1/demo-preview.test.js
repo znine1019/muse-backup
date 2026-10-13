@@ -166,7 +166,12 @@ function loadDemoPage(options = {}) {
     denyReason = '只有已启用的开发者身份可以进入演示预览。',
     wxOverrides = {},
     /* 页面栈深度：>1 表示从列表页进入详情的常规路径 */
-    pageStackDepth = 1
+    pageStackDepth = 1,
+    /* 模拟 selector 版 pageScrollTo 不被支持（用于验证兼容路径） */
+    scrollSelectorFails = false,
+    /* 兼容路径下的元素位置与当前页面滚动位置 */
+    rectTop = 640,
+    viewportScrollTop = 100
   } = options;
 
   const source = fs.readFileSync(DEMO_PAGE_JS, 'utf8');
@@ -175,7 +180,8 @@ function loadDemoPage(options = {}) {
     navigateTo: [],
     reLaunch: [],
     removeStorageSync: [],
-    navigateBack: []
+    navigateBack: [],
+    pageScrollTo: []
   };
 
   const wx = {
@@ -183,6 +189,21 @@ function loadDemoPage(options = {}) {
     reLaunch: (opts) => calls.reLaunch.push(opts.url),
     navigateBack: (opts) => calls.navigateBack.push(opts || {}),
     removeStorageSync: (key) => calls.removeStorageSync.push(key),
+    pageScrollTo: (opts) => {
+      calls.pageScrollTo.push(opts || {});
+      if (scrollSelectorFails && opts && typeof opts.fail === 'function') {
+        opts.fail({ errMsg: 'pageScrollTo:fail' });
+      }
+    },
+    /* 仅用于验证“selector 不可用”时的兼容路径 */
+    createSelectorQuery: () => ({
+      select: () => ({
+        boundingClientRect: (callback) => ({ exec: () => callback({ top: rectTop, height: 200 }) })
+      }),
+      selectViewport: () => ({
+        scrollOffset: (callback) => ({ exec: () => callback({ scrollTop: viewportScrollTop }) })
+      })
+    }),
     getStorageSync: () => '',
     setStorageSync: () => {},
     ...wxOverrides
@@ -737,4 +758,132 @@ test('家长端演示：赛事与通知同样可打开详情（最小修复）',
   await flush();
   assert.equal(competition.instance.data.detail.isNotice, false);
   assert.equal(competition.instance.data.detail.title, workbench.competitionRows[0].title);
+});
+
+/* ------------------------------------------- BUG-04 家长端快捷定位 */
+
+test('家长端快捷定位：三个按钮都产生真实页面滚动，而不仅仅是切换颜色', async () => {
+  const { instance, calls } = loadDemoPage();
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  const cases = [
+    ['performance', '#sec-performance'],
+    ['attendance', '#sec-attendance'],
+    ['events', '#sec-events']
+  ];
+  for (const [section, selector] of cases) {
+    calls.pageScrollTo.length = 0;
+    instance.goSection({ currentTarget: { dataset: { section } } });
+
+    assert.equal(instance.data.activeSection, section, `选中态应切到 ${section}`);
+    assert.equal(calls.pageScrollTo.length, 1, `${section} 必须触发一次真实滚动`);
+    assert.equal(calls.pageScrollTo[0].selector, selector);
+    assert.ok(calls.pageScrollTo[0].duration >= 0, '应给出滚动动画时长');
+  }
+});
+
+test('家长端快捷定位：滚动选择器与模板锚点一一对应', () => {
+  const wxml = read('miniprogram/pages/demo/demo.wxml');
+  const sectionAttrs = wxml.match(/data-section="[a-z]+"/g) || [];
+  assert.equal(sectionAttrs.length, 3, '应只有三个快捷分区按钮');
+
+  for (const section of ['performance', 'attendance', 'events']) {
+    assert.ok(wxml.includes(`data-section="${section}"`), `缺少按钮 data-section=${section}`);
+    assert.ok(wxml.includes(`id="sec-${section}"`), `模板缺少对应锚点 sec-${section}`);
+  }
+});
+
+test('家长端快捷定位：连续点击同一分区仍重复滚动', async () => {
+  const { instance, calls } = loadDemoPage();
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  instance.goSection({ currentTarget: { dataset: { section: 'attendance' } } });
+  instance.goSection({ currentTarget: { dataset: { section: 'attendance' } } });
+
+  assert.equal(calls.pageScrollTo.length, 2, '同一分区连续点击应重复触发滚动');
+  assert.deepEqual(
+    calls.pageScrollTo.map((item) => item.selector),
+    ['#sec-attendance', '#sec-attendance']
+  );
+});
+
+test('家长端快捷定位：快速切换不同分区按点击顺序生效', async () => {
+  const { instance, calls } = loadDemoPage();
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  for (const section of ['performance', 'events', 'attendance']) {
+    instance.goSection({ currentTarget: { dataset: { section } } });
+  }
+
+  assert.deepEqual(calls.pageScrollTo.map((item) => item.selector), [
+    '#sec-performance',
+    '#sec-events',
+    '#sec-attendance'
+  ]);
+  assert.equal(instance.data.activeSection, 'attendance', '选中态应为最后一次点击');
+});
+
+test('家长端快捷定位：学生切换后定位能力仍然有效', async () => {
+  const { instance, calls } = loadDemoPage();
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  instance.goSection({ currentTarget: { dataset: { section: 'performance' } } });
+  assert.equal(calls.pageScrollTo.length, 1);
+
+  /* 切到待审核学生，再切回已生效学生 */
+  instance.onStudentChange({ detail: { value: '1' } });
+  assert.equal(instance.data.parent.linkActive, false);
+  instance.onStudentChange({ detail: { value: '0' } });
+  assert.equal(instance.data.parent.linkActive, true);
+
+  instance.goSection({ currentTarget: { dataset: { section: 'events' } } });
+  assert.equal(calls.pageScrollTo.length, 2, '切换学生后仍应能定位');
+  assert.equal(calls.pageScrollTo[1].selector, '#sec-events');
+});
+
+test('家长端快捷定位：待审核学生不渲染快捷入口，也不泄露受保护数据', async () => {
+  const { instance, calls } = loadDemoPage();
+  await instance.onLoad({ role: 'parent', student: '1' });
+  await flush();
+
+  assert.equal(instance.data.parent.linkActive, false);
+  assert.equal(instance.data.parent.overview, null);
+  assert.deepEqual(instance.data.parent.performanceRows, []);
+  assert.deepEqual(instance.data.parent.attendanceRows, []);
+
+  /* 即使手动触发定位，也不会滚动到受保护分区，更不会产生数据 */
+  instance.goSection({ currentTarget: { dataset: { section: 'performance' } } });
+  assert.equal(calls.pageScrollTo.length, 0, '未授权时不应发起定位');
+
+  /* 快捷入口与受保护分区都必须位于 linkActive 分支内 */
+  const wxml = read('miniprogram/pages/demo/demo.wxml');
+  const guardIndex = wxml.indexOf('wx:if="{{parent.linkActive}}"');
+  const jumpIndex = wxml.indexOf('class="jg-jump"');
+  const eventsIndex = wxml.indexOf('id="sec-events"');
+  /* 用完整注释定位家长分支，避免匹配到其他位置的“关联未生效”字样 */
+  const inactiveIndex = wxml.indexOf('<!-- 关联未生效：只展示学生标识');
+  assert.ok(inactiveIndex > 0, '应存在关联未生效分支');
+  assert.ok(guardIndex > 0, '应存在 linkActive 分支');
+  assert.ok(jumpIndex > guardIndex, '快捷入口必须在 linkActive 分支内');
+  assert.ok(eventsIndex > guardIndex && eventsIndex < inactiveIndex, '受保护分区必须在 linkActive 分支内');
+});
+
+test('家长端快捷定位：selector 不被支持时退回偏移计算路径', async () => {
+  const { instance, calls } = loadDemoPage({
+    scrollSelectorFails: true,
+    rectTop: 640,
+    viewportScrollTop: 100
+  });
+  await instance.onLoad({ role: 'parent' });
+  await flush();
+
+  instance.goSection({ currentTarget: { dataset: { section: 'events' } } });
+  assert.equal(calls.pageScrollTo.length, 2, '应有一次 selector 调用与一次兼容路径调用');
+  assert.equal(calls.pageScrollTo[0].selector, '#sec-events');
+  /* 100 + 640 - 12 = 728 */
+  assert.equal(calls.pageScrollTo[1].scrollTop, 728, '兼容路径应按元素偏移计算 scrollTop');
 });
