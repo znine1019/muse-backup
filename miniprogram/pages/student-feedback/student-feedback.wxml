@@ -1,60 +1,134 @@
-<view class="container">
-  <view class="brand">STUDENT / FEEDBACK</view>
-  <view class="title">训练反馈</view>
-  <view class="sub">仅对已签到或迟到的训练场次提交完成情况和主观用力程度；反馈不会改变考勤事实。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="训练反馈"
+    meta="仅对已签到或迟到的训练场次提交完成情况和主观用力程度；反馈不会改变考勤事实。"
+    role-label="学生"
+    role-tone="brand"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在读取训练反馈...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">训练反馈加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
   <block wx:if="{{!loading}}">
-    <view class="card">
-      <view class="section-title">可反馈训练</view>
-      <view wx:if="{{!eligibleSessions.length}}" class="empty">近期没有已签到或迟到的训练场次。</view>
-      <block wx:for="{{eligibleSessions}}" wx:key="sessionId" wx:for-item="sessionItem">
-        <view class="list-item">
-          <view class="list-title">{{sessionItem.session.title || sessionItem.session.locationName}}</view>
-          <view class="list-meta">日期：{{sessionItem.session.attendanceDate}} · 考勤：{{sessionItem.attendanceLabel}}</view>
-          <view class="list-meta">训练组：{{sessionItem.session.trainingGroupName || '未标注'}}</view>
-          <view wx:if="{{sessionItem.feedback}}" class="tag">已反馈：{{sessionItem.feedback.completionLabel}} · {{sessionItem.feedback.rpeText}}</view>
-          <view wx:if="{{sessionItem.feedback && sessionItem.feedback.coachComment}}" class="notice">教练评价：{{sessionItem.feedback.coachComment}}</view>
-          <view class="button-row">
-            <button wx:if="{{!sessionItem.feedback}}" class="button-primary" data-session-id="{{sessionItem.session.sessionId}}" bindtap="startFeedback">填写反馈</button>
-            <button wx:if="{{sessionItem.feedback}}" class="button-secondary" data-feedback-id="{{sessionItem.feedback.feedbackId}}" bindtap="editFeedback">修改反馈</button>
+    <!-- 可反馈训练 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">可反馈训练</text>
+        <text class="jg-sect-c">{{eligibleSessions.length}} 场</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!eligibleSessions.length}}"
+        title="近期没有可反馈的场次"
+        message="仅已签到或迟到的训练场次可以提交训练反馈。"
+      />
+
+      <block wx:else>
+        <view wx:for="{{eligibleSessions}}" wx:key="sessionId" wx:for-item="sessionItem" class="jg-card">
+          <view class="jg-card-h">
+            <text class="jg-card-t">{{sessionItem.session.title || sessionItem.session.locationName}}</text>
+            <text class="jg-chip {{sessionItem.feedback ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{sessionItem.feedback ? '已反馈' : '待反馈'}}</text>
           </view>
+
+          <view class="jg-body-s">日期：{{sessionItem.session.attendanceDate}} · 考勤：{{sessionItem.attendanceLabel}}</view>
+          <view class="jg-body-s jg-mt-8">训练组：{{sessionItem.session.trainingGroupName || '未标注'}}</view>
+          <view wx:if="{{sessionItem.feedback}}" class="jg-body-s jg-mt-8">完成情况：{{sessionItem.feedback.completionLabel}} · {{sessionItem.feedback.rpeText}}</view>
+
+          <view wx:if="{{sessionItem.feedback && sessionItem.feedback.coachComment}}" class="jg-note">
+            <view>
+              <view class="jg-note-t">教练评价</view>
+              <view class="jg-note-m">{{sessionItem.feedback.coachComment}}</view>
+            </view>
+          </view>
+
+          <button
+            wx:if="{{!sessionItem.feedback}}"
+            class="jg-btn jg-btn-block jg-mt-12"
+            data-session-id="{{sessionItem.session.sessionId}}"
+            bindtap="startFeedback"
+          >填写反馈</button>
+          <button
+            wx:if="{{sessionItem.feedback}}"
+            class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+            data-feedback-id="{{sessionItem.feedback.feedbackId}}"
+            bindtap="editFeedback"
+          >修改反馈</button>
         </view>
       </block>
     </view>
 
-    <view wx:if="{{selectedSessionId}}" class="card">
-      <view class="section-title">{{editingFeedbackId ? '修改训练反馈' : '提交训练反馈'}}</view>
-      <picker range="{{completionOptions}}" range-key="label" value="{{completionIndex}}" bindchange="onCompletionChange">
-        <view class="picker-field">完成情况：{{completionOptions[completionIndex].label}}</view>
-      </picker>
-      <view class="field">
-        <text class="field-label">主观用力程度 RPE：{{rpe}}/10</text>
-        <slider min="1" max="10" step="1" value="{{rpe}}" show-value bindchange="onRpeChange" />
+    <!-- 反馈表单 -->
+    <view wx:if="{{selectedSessionId}}" class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">{{editingFeedbackId ? '修改训练反馈' : '提交训练反馈'}}</text>
+        <text class="jg-sect-c">RPE {{rpe}}/10</text>
       </view>
-      <textarea class="textarea" value="{{comment}}" bindinput="onCommentInput" maxlength="500" placeholder="训练感受、困难或其他说明，可选" />
-      <view class="button-row">
-        <button class="button-primary" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
-        <button class="button-secondary" bindtap="cancelEdit">取消</button>
+
+      <view class="jg-card">
+        <view class="jg-field-row">
+          <text class="jg-field-label">完成情况</text>
+          <view class="jg-field-body">
+            <picker range="{{completionOptions}}" range-key="label" value="{{completionIndex}}" bindchange="onCompletionChange">
+              <view class="jg-input jg-picker">{{completionOptions[completionIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view class="jg-field-row">
+          <text class="jg-field-label">主观用力程度</text>
+          <view class="jg-field-body">
+            <slider min="1" max="10" step="1" value="{{rpe}}" show-value bindchange="onRpeChange" />
+          </view>
+        </view>
+
+        <view class="jg-field-row">
+          <text class="jg-field-label">补充说明</text>
+          <view class="jg-field-body">
+            <textarea class="jg-textarea" value="{{comment}}" bindinput="onCommentInput" maxlength="500" placeholder="训练感受、困难或其他说明，可选" />
+          </view>
+        </view>
+
+        <view class="jg-btn-row">
+          <button class="jg-btn" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
+          <button class="jg-btn jg-btn-ghost" bindtap="cancelEdit">取消</button>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">我的反馈记录</view>
-      <view wx:if="{{!history.length}}" class="muted">暂无训练反馈。</view>
-      <view wx:for="{{history}}" wx:key="feedbackId" class="list-item">
-        <view class="list-title">{{item.sessionTitle}} · {{item.attendanceDate}}</view>
-        <view class="list-meta">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
-        <view class="list-meta" wx:if="{{item.comment}}">我的说明：{{item.comment}}</view>
-        <view class="notice" wx:if="{{item.coachComment}}">教练评价：{{item.coachComment}}</view>
+    <!-- 我的反馈记录 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">我的反馈记录</text>
+        <text class="jg-sect-c">{{history.length}} 条</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!history.length}}"
+        title="暂无训练反馈"
+        message="提交反馈后会显示在这里，教练评价也会一并展示。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{history}}" wx:key="feedbackId" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.sessionTitle}} · {{item.attendanceDate}}</view>
+            <view class="jg-row-m">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
+            <view wx:if="{{item.comment}}" class="jg-row-m">我的说明：{{item.comment}}</view>
+            <view wx:if="{{item.coachComment}}" class="jg-row-m">教练评价：{{item.coachComment}}</view>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="notice">未签到、请假或没有训练安排的记录不会生成默认训练反馈；数据范围由服务端按本人身份校验。</view>
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-m">未签到、请假或没有训练安排的记录不会生成默认训练反馈；数据范围由服务端按本人身份校验。</view>
+      </view>
+    </view>
   </block>
 </view>

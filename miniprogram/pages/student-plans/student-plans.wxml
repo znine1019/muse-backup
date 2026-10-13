@@ -1,45 +1,94 @@
-<view class="container">
-  <view class="brand">STUDENT / TRAINING PLANS</view>
-  <view class="title">训练计划</view>
-  <view class="sub">按今日、本周和历史查看教练已发布的训练安排；草稿不会显示。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="训练计划"
+    meta="按今日、本周和历史查看教练已发布的训练安排；草稿不会显示。"
+    role-label="学生"
+    role-tone="brand"
+  />
 
-  <view class="button-row">
-    <button wx:for="{{scopes}}" wx:key="code" class="{{scopeIndex === index ? 'button-primary' : 'button-secondary'}}" data-index="{{index}}" bindtap="onScopeTap">{{item.label}}</button>
+  <!-- 范围切换：保留原有三段式按钮与 onScopeTap 行为 -->
+  <view class="jg-btn-row jg-mb-12">
+    <block wx:for="{{scopes}}" wx:key="code">
+      <button
+        class="jg-btn {{scopeIndex === index ? '' : 'jg-btn-ghost'}}"
+        data-index="{{index}}"
+        bindtap="onScopeTap"
+      >{{item.label}}</button>
+    </block>
   </view>
 
-  <view wx:if="{{loading}}" class="empty">正在读取训练计划...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">训练计划加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
   <block wx:if="{{!loading && !error}}">
-    <view class="card">
-      <view class="list-meta">{{scopeLabel}}共 {{total}} 条计划</view>
-      <view wx:if="{{truncated}}" class="muted">当前仅显示前 {{plans.length}} 条计划。</view>
-      <view wx:if="{{!plans.length}}" class="empty">当前没有训练计划。</view>
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">{{scopeLabel}}训练计划</text>
+      <text class="jg-sect-c">共 {{total}} 条</text>
+    </view>
 
-      <view wx:for="{{plans}}" wx:key="planId" class="list-item">
-        <view class="list-title">{{item.title}}</view>
-        <view class="list-meta">训练组：{{item.trainingGroupName || '未标注'}}</view>
-        <view class="list-meta">训练日期：{{item.dateText}}</view>
-        <view class="list-meta">状态：{{item.statusLabel}} · {{item.itemCount}} 项内容</view>
-
-        <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
-          <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="list-item">
-            <view class="list-title">{{planItem.order}}. {{planItem.name}}（{{planItem.categoryLabel}}）</view>
-            <view class="list-meta" wx:if="{{planItem.eventName}}">关联项目：{{planItem.eventName}}</view>
-            <view class="list-meta" wx:if="{{planItem.target}}">训练目标：{{planItem.target}}</view>
-            <view class="list-meta" wx:if="{{planItem.requirementText}}">训练要求：{{planItem.requirementText}}</view>
-            <view class="list-meta" wx:if="{{planItem.notes}}">注意：{{planItem.notes}}</view>
-          </view>
-          <view class="notice" wx:if="{{item.notes}}">教练注意事项：{{item.notes}}</view>
-        </view>
-
-        <button class="button-secondary" data-plan-id="{{item.planId}}" bindtap="toggleDetail">{{expandedPlanId === item.planId ? '收起详情' : '查看详情'}}</button>
+    <view wx:if="{{truncated}}" class="jg-note jg-note-warn jg-mb-12">
+      <view>
+        <view class="jg-note-t">结果已截断</view>
+        <view class="jg-note-m">当前仅显示前 {{plans.length}} 条计划，请切换更小的范围查看。</view>
       </view>
     </view>
 
-    <view class="notice">训练计划不等同于考勤记录，完成情况将在后续考勤模块中单独记录。</view>
+    <jg-empty
+      wx:if="{{!plans.length}}"
+      title="当前没有训练计划"
+      message="教练发布训练计划后会显示在这里；草稿不会出现在学生端。"
+    />
+
+    <block wx:else>
+      <view wx:for="{{plans}}" wx:key="planId" class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">{{item.title}}</text>
+          <text class="jg-chip jg-chip-ok">{{item.statusLabel}}</text>
+        </view>
+
+        <view class="jg-body-s">训练组：{{item.trainingGroupName || '未标注'}}</view>
+        <view class="jg-body-s jg-mt-8">训练日期：{{item.dateText}}</view>
+        <view class="jg-body-s jg-mt-8">共 {{item.itemCount}} 项训练内容</view>
+
+        <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
+          <view class="jg-list">
+            <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="jg-row">
+              <view class="jg-row-ic jg-row-ic-brand">{{planItem.order}}</view>
+              <view class="jg-row-main">
+                <view class="jg-row-t">{{planItem.name}}（{{planItem.categoryLabel}}）</view>
+                <view wx:if="{{planItem.eventName}}" class="jg-row-m">关联项目：{{planItem.eventName}}</view>
+                <view wx:if="{{planItem.target}}" class="jg-row-m">训练目标：{{planItem.target}}</view>
+                <view wx:if="{{planItem.requirementText}}" class="jg-row-m">训练要求：{{planItem.requirementText}}</view>
+                <view wx:if="{{planItem.notes}}" class="jg-row-m">注意：{{planItem.notes}}</view>
+              </view>
+            </view>
+          </view>
+
+          <view wx:if="{{item.notes}}" class="jg-note">
+            <view>
+              <view class="jg-note-t">教练注意事项</view>
+              <view class="jg-note-m">{{item.notes}}</view>
+            </view>
+          </view>
+        </view>
+
+        <button
+          class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+          data-plan-id="{{item.planId}}"
+          bindtap="toggleDetail"
+        >{{expandedPlanId === item.planId ? '收起详情' : '查看详情'}}</button>
+      </view>
+
+      <view class="jg-note">
+        <view>
+          <view class="jg-note-m">训练计划不等同于考勤记录，完成情况会在考勤模块中单独记录。</view>
+        </view>
+      </view>
+    </block>
   </block>
 </view>

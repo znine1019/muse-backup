@@ -1,25 +1,2 @@
-/* 应用全局公共样式 */
-
-.overview-grid {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 12rpx;
-}
-
-.overview-item {
-  width: 50%;
-  box-sizing: border-box;
-  padding: 12rpx 12rpx 0 0;
-}
-
-.overview-label {
-  color: #718493;
-  font-size: 22rpx;
-}
-
-.overview-value {
-  margin-top: 6rpx;
-  color: #123C4D;
-  font-size: 34rpx;
-  font-weight: 700;
-}
+/* 学生签到与请假（F1-B1）：全部复用 app.wxss 的 jg- 公共样式。
+   出勤统计已改用 .jg-dstrip 四列数据条，原 .overview-* 自定义样式不再需要。 */
