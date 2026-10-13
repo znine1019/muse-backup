@@ -48,10 +48,13 @@ test('profile edit keeps matching wx:if and wx:else branches', () => {
   const source = readText(
     path.join(MINIPROGRAM_ROOT, 'pages/profile-edit/profile-edit.wxml')
   );
-  assert.match(source, /<block wx:if="\{\{measurements\.length\}\}">/);
-  assert.match(source, /<view wx:else class="muted">暂无身体指标历史。<\/view>/);
-  assert.match(source, /wx:for="\{\{measurements\}\}" wx:key="id"/);
-  assert.doesNotMatch(source, /wx:if="\{\{measurements\.length\}\}"[^>]*wx:for/);
+  /* F1-B2 已将该页迁移到 jg- 设计系统（空状态改用 jg-empty、列表改用 jg-list），
+     因此这里断言“分支仍然成对 + 绑定未丢失 + 不得同标签 wx:if/wx:for”，
+     不再绑定具体样式类名。 */
+  assert.match(source, /wx:if="\{\{!measurements\.length\}\}"/, '应保留身体指标空状态分支');
+  assert.match(source, /wx:else/, '空状态必须有配对的 wx:else 列表分支');
+  assert.match(source, /wx:for="\{\{measurements\}\}" wx:key="id"/, '身体指标列表绑定不得丢失');
+  assert.doesNotMatch(source, /wx:if="[^"]*"[^>]*wx:for/, 'wx:if 与 wx:for 不得写在同一标签上');
 });
 
 test('every registered page has four files and valid JSON', () => {

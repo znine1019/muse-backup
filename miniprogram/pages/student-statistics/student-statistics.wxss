@@ -1,5 +1,2 @@
-/* 应用全局公共样式 */
-.overview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18rpx; margin-top: 20rpx; }
-.overview-item { background: #F5F8FA; border-radius: 12rpx; padding: 20rpx; }
-.overview-label { color: #718493; font-size: 22rpx; }
-.overview-value { color: #14293D; font-size: 30rpx; font-weight: 650; margin-top: 8rpx; }
+/* 个人训练统计（F1-B2）：全部复用 app.wxss 的 jg- 公共样式。
+   原自定义 .overview-* 统计卡片已由公共 .jg-dstrip 四列数据条替代，因此不再需要页面级样式。 */

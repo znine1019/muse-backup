@@ -1,2 +1,25 @@
-/* 应用全局公共样式 */
-.notice-content { margin-top: 18rpx; color: #405769; font-size: 26rpx; line-height: 1.8; white-space: pre-wrap; }
+/* 学生俱乐部通知（F1-B2）：复用 jg- 设计系统 */
+.unread-row {
+  display: flex;
+  align-items: center;
+}
+
+.unread-row text {
+  margin-left: 16rpx;
+}
+
+/* 展开后的通知详情：用分隔线区分正文区域 */
+.notice-detail {
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid #EDF1F6;
+}
+
+.notice-content {
+  margin-top: 16rpx;
+  color: #0E1A28;
+  font-size: 27rpx;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

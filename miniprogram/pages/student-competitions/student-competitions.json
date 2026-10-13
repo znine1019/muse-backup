@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "赛事报名意向"
+  "navigationBarTitleText": "赛事报名意向",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-empty": "/components/jg-empty/jg-empty"
+  }
 }

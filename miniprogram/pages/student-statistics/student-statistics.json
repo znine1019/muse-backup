@@ -1,3 +1,8 @@
 {
-  "navigationBarTitleText": "个人训练统计"
+  "navigationBarTitleText": "个人训练统计",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-empty": "/components/jg-empty/jg-empty",
+    "trend-chart": "/components/trend-chart/trend-chart"
+  }
 }

@@ -1,53 +1,119 @@
-<view class="container">
-  <view class="brand">STUDENT / COMPETITIONS</view>
-  <view class="title">赛事报名意向</view>
-  <view class="sub">小程序仅收集参赛意向和教练办理进度；官方报名由教练在赛事官方平台完成，登记意向不等于官方报名成功。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="赛事报名意向"
+    meta="小程序仅收集参赛意向和教练办理进度；官方报名由教练在赛事官方平台完成，登记意向不等于官方报名成功。"
+    role-label="学生"
+    role-tone="brand"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在读取赛事...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">赛事信息加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
   <block wx:if="{{!loading}}">
-    <view class="card">
-      <view class="section-title">可参与赛事</view>
-      <view wx:if="{{!competitions.length}}" class="empty">当前没有可参与的赛事。</view>
-      <view wx:for="{{competitions}}" wx:key="competitionId" class="list-item">
-        <view class="list-title">{{item.title}}</view>
-        <view class="list-meta">地点：{{item.location}}</view>
-        <view class="list-meta">比赛日期：{{item.eventDate}}</view>
-        <view class="list-meta">报名时间：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
-        <view class="list-meta">状态：{{item.phaseLabel}} · {{item.capacityText}}</view>
-        <view class="list-meta" wx:if="{{item.requirements}}">报名要求：{{item.requirements}}</view>
-        <view class="list-meta" wx:if="{{item.description}}">说明：{{item.description}}</view>
-        <view class="tag" wx:if="{{item.registration}}">我的状态：{{item.registrationStatusLabel}}</view>
+    <!-- 可参与赛事 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">可参与赛事</text>
+        <text class="jg-sect-c">{{competitions.length}} 项</text>
+      </view>
 
-        <block wx:if="{{selectedCompetitionId === item.competitionId}}">
-          <checkbox-group bindchange="onItemChange">
-            <label wx:for="{{item.itemOptions}}" wx:for-item="option" wx:key="key" class="list-meta">
-              <checkbox value="{{option.key}}" /> {{option.label}}
-            </label>
-          </checkbox-group>
-          <textarea class="textarea" value="{{contactNote}}" bindinput="onContactNoteInput" maxlength="500" placeholder="报名补充说明，可选" />
-          <button class="button-primary" loading="{{submitting}}" bindtap="submitIntent">提交参赛意向</button>
-        </block>
-        <button wx:elif="{{item.canSubmit}}" class="button-secondary" data-competition-id="{{item.competitionId}}" bindtap="toggleIntentForm">登记参赛意向</button>
+      <jg-empty
+        wx:if="{{!competitions.length}}"
+        title="当前没有可参与的赛事"
+        message="教练发布赛事后会显示在这里。"
+      />
+
+      <block wx:else>
+        <view wx:for="{{competitions}}" wx:key="competitionId" class="jg-card">
+          <view class="jg-card-h">
+            <text class="jg-card-t">{{item.title}}</text>
+            <text wx:if="{{item.registration}}" class="jg-chip jg-chip-brand">{{item.registrationStatusLabel}}</text>
+          </view>
+
+          <view class="jg-body-s">地点：{{item.location}}</view>
+          <view class="jg-body-s jg-mt-8">比赛日期：{{item.eventDate}}</view>
+          <view class="jg-body-s jg-mt-8">报名时间：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
+          <view class="jg-body-s jg-mt-8">状态：{{item.phaseLabel}} · {{item.capacityText}}</view>
+          <view wx:if="{{item.requirements}}" class="jg-body-s jg-mt-8">报名要求：{{item.requirements}}</view>
+          <view wx:if="{{item.description}}" class="jg-body-s jg-mt-8">说明：{{item.description}}</view>
+
+          <block wx:if="{{selectedCompetitionId === item.competitionId}}">
+            <view class="jg-sect-h jg-mt-16">
+              <text class="jg-sect-t">参赛项目</text>
+              <text class="jg-sect-c">可多选</text>
+            </view>
+            <checkbox-group bindchange="onItemChange">
+              <label wx:for="{{item.itemOptions}}" wx:for-item="option" wx:key="key" class="event-choice">
+                <checkbox value="{{option.key}}" />
+                <text class="jg-body-s">{{option.label}}</text>
+              </label>
+            </checkbox-group>
+
+            <textarea
+              class="jg-textarea jg-mt-12"
+              value="{{contactNote}}"
+              bindinput="onContactNoteInput"
+              maxlength="500"
+              placeholder="报名补充说明，可选"
+            />
+
+            <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="submitIntent">提交参赛意向</button>
+          </block>
+
+          <button
+            wx:elif="{{item.canSubmit}}"
+            class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+            data-competition-id="{{item.competitionId}}"
+            bindtap="toggleIntentForm"
+          >登记参赛意向</button>
+        </view>
+      </block>
+    </view>
+
+    <!-- 我的赛事意向 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">我的赛事意向</text>
+        <text class="jg-sect-c">{{intents.length}} 条</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!intents.length}}"
+        title="暂无赛事意向"
+        message="提交参赛意向后会显示在这里，并标注教练办理进度。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{intents}}" wx:key="registrationId" class="jg-todo">
+          <view class="jg-todo-bar"></view>
+          <view class="jg-todo-main">
+            <view class="jg-todo-t">
+              <text>{{item.competitionTitle}}</text>
+              <text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text>
+            </view>
+            <view wx:for="{{item.items}}" wx:for-item="intentItem" wx:key="itemId" class="jg-todo-m">项目：{{intentItem.eventName}} · {{intentItem.category}}</view>
+            <view wx:if="{{item.reviewNote}}" class="jg-todo-m">处理说明：{{item.reviewNote}}</view>
+          </view>
+          <view wx:if="{{item.canCancel}}" class="jg-todo-a">
+            <button
+              class="jg-btn jg-btn-sm jg-btn-danger"
+              data-registration-id="{{item.registrationId}}"
+              bindtap="cancelIntent"
+            >取消意向</button>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">我的赛事意向</view>
-      <view wx:if="{{!intents.length}}" class="muted">暂无赛事意向。</view>
-      <view wx:for="{{intents}}" wx:key="registrationId" class="list-item">
-        <view class="list-title">{{item.competitionTitle}}</view>
-        <view class="list-meta">办理状态：{{item.statusLabel}}</view>
-        <view class="list-meta" wx:for="{{item.items}}" wx:for-item="intentItem" wx:key="itemId">项目：{{intentItem.eventName}} · {{intentItem.category}}</view>
-        <view class="list-meta" wx:if="{{item.reviewNote}}">处理说明：{{item.reviewNote}}</view>
-        <button wx:if="{{item.canCancel}}" class="button-danger" data-registration-id="{{item.registrationId}}" bindtap="cancelIntent">取消意向</button>
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-m">“教练已确认官方报名提交”仅表示教练已在外部平台完成报名操作，不代表主办方审核通过或已取得参赛资格。</view>
       </view>
     </view>
-
-    <view class="notice">“教练已确认官方报名提交”仅表示教练已在外部平台完成报名操作，不代表主办方审核通过或已取得参赛资格。</view>
   </block>
 </view>

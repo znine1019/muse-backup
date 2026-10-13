@@ -199,6 +199,9 @@ button::after { border: none; }
 }
 .jg-data-col-v-warn { color: #FFC46B; }
 
+/* 数据卡内以文字为主的列值（专项、目标、变化区间等），用较小字号避免溢出 */
+.jg-data-col-v-sm { font-size: 30rpx; line-height: 1.3; }
+
 /* ---------- 指标卡 ---------- */
 .jg-kpi-row { display: flex; flex-wrap: wrap; margin-bottom: 24rpx; }
 .jg-kpi {

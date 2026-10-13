@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "正式成绩排行榜"
+  "navigationBarTitleText": "正式成绩排行榜",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-empty": "/components/jg-empty/jg-empty"
+  }
 }

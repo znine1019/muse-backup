@@ -1,114 +1,198 @@
-<view class="container">
-  <view class="brand">STUDENT / DATA REPORT</view>
-  <view class="title">运动数据报告</view>
-  <view class="sub">报告只使用系统实际保存的身体记录和已审核成绩；待审、拒绝和未录入数据不会进入正式趋势。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="运动数据报告"
+    meta="报告只使用系统实际保存的身体记录和已审核成绩；待审、拒绝和未录入数据不会进入正式趋势。"
+  />
 
-  <view wx:if="{{isDemoMode}}" class="demo-banner">
-    <view class="demo-title">{{demoMarker}}</view>
-    <view class="demo-sub">{{demoNotice}}</view>
+  <!-- 演示模式横幅（复用统一提示样式） -->
+  <view wx:if="{{isDemoMode}}" class="jg-note jg-note-warn">
+    <view>
+      <view class="jg-note-t">{{demoMarker}}</view>
+      <view class="jg-note-m">{{demoNotice}}</view>
+    </view>
   </view>
 
-  <view wx:if="{{loading}}" class="empty">正在生成报告...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="reload">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">报告生成失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="reload">重新加载</view>
   </view>
 
   <block wx:if="{{!loading && report}}">
-    <view class="card overview-card">
-      <view class="card-title">个人运动数据概览</view>
-      <view class="overview-grid">
-        <view class="overview-item">
-          <view class="overview-label">专项</view>
-          <view class="overview-value">{{overview.primaryEventName}}</view>
+    <!-- 概览：深蓝竞技数据卡 -->
+    <view class="jg-data-card">
+      <view class="jg-data-k">个人运动数据概览</view>
+      <view class="jg-data-cols">
+        <view class="jg-data-col">
+          <view class="jg-data-col-l">专项</view>
+          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.primaryEventName}}</view>
         </view>
-        <view class="overview-item">
-          <view class="overview-label">当前PB</view>
-          <view class="overview-value">{{overview.pbText}}</view>
+        <view class="jg-data-col">
+          <view class="jg-data-col-l">当前 PB</view>
+          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.pbText}}</view>
         </view>
-        <view class="overview-item">
-          <view class="overview-label">近期变化</view>
-          <view class="overview-value">{{overview.changeText}}</view>
+      </view>
+      <view class="jg-data-cols">
+        <view class="jg-data-col">
+          <view class="jg-data-col-l">近期变化</view>
+          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.changeText}}</view>
         </view>
-        <view class="overview-item">
-          <view class="overview-label">体考目标</view>
-          <view class="overview-value">{{overview.targetText}}</view>
+        <view class="jg-data-col">
+          <view class="jg-data-col-l">体考目标</view>
+          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.targetText}}</view>
+        </view>
+      </view>
+      <view class="jg-data-meta">{{isDemoMode ? '虚构演示数据，仅供界面预览' : '仅使用实际保存的数据'}}</view>
+    </view>
+
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">{{report.profile.name}}</text>
+        <text class="jg-chip jg-chip-brand">正式数据</text>
+      </view>
+      <view class="jg-body-s">身体指标记录：{{report.dataQuality.measurementCount}} 条</view>
+      <view class="jg-body-s jg-mt-8">正式审核成绩：{{report.dataQuality.approvedPerformanceCount}} 条</view>
+    </view>
+
+    <!-- 身体指标趋势 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">身体指标趋势</text>
+        <text class="jg-sect-c">身高 · 体重</text>
+      </view>
+      <view class="jg-card">
+        <trend-chart
+          title="身高变化"
+          unit="cm"
+          comparison="neutral"
+          series="{{heightSeries}}"
+          emptyText="至少需要两次身高记录才能生成趋势。"
+        />
+      </view>
+      <view class="jg-card">
+        <trend-chart
+          title="体重变化"
+          unit="kg"
+          comparison="neutral"
+          series="{{weightSeries}}"
+          emptyText="至少需要两次体重记录才能生成趋势。"
+        />
+      </view>
+      <view wx:if="{{report.measurementMeta.truncated}}" class="jg-note">
+        <view>
+          <view class="jg-note-m">图表展示最近 {{report.measurementMeta.displayed}} 条，共 {{report.measurementMeta.total}} 条身体记录。</view>
         </view>
       </view>
     </view>
-    <view class="card">
-      <view class="card-title">{{report.profile.name}}</view>
-      <view class="list-meta">身体指标记录：{{report.dataQuality.measurementCount}} 条</view>
-      <view class="list-meta">正式审核成绩：{{report.dataQuality.approvedPerformanceCount}} 条</view>
-      <view class="tag">{{isDemoMode ? '虚构演示数据，仅供界面预览' : '仅使用实际保存的数据'}}</view>
-    </view>
 
-    <view class="card">
-      <trend-chart
-        title="身高变化"
-        unit="cm"
-        comparison="neutral"
-        series="{{heightSeries}}"
-        emptyText="至少需要两次身高记录才能生成趋势。"
-      />
-    </view>
-    <view class="card">
-      <trend-chart
-        title="体重变化"
-        unit="kg"
-        comparison="neutral"
-        series="{{weightSeries}}"
-        emptyText="至少需要两次体重记录才能生成趋势。"
-      />
-    </view>
+    <!-- 正式成绩趋势 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">正式成绩趋势</text>
+        <text class="jg-sect-c">仅已审核成绩</text>
+      </view>
 
-    <view wx:if="{{report.measurementMeta.truncated}}" class="muted">图表展示最近 {{report.measurementMeta.displayed}} 条，共 {{report.measurementMeta.total}} 条身体记录。</view>
+      <view class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <text class="jg-field-label">运动项目</text>
+          <view class="jg-field-body">
+            <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
+              <view class="jg-input jg-picker">{{selectedEvent.name || '请选择项目'}}</view>
+            </picker>
+          </view>
+        </view>
+        <view wx:if="{{selectedEvent}}" class="jg-sub jg-mt-8">
+          单位：{{selectedEvent.unit}}，{{selectedEvent.comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}
+        </view>
+        <trend-chart
+          title="成绩变化"
+          unit="{{selectedEvent.unit}}"
+          comparison="{{selectedEvent.comparison}}"
+          series="{{selectedSeries}}"
+          emptyText="该项目至少需要两条已审核成绩才能生成趋势。"
+        />
+      </view>
 
-    <view class="card">
-      <view class="section-title">正式成绩趋势</view>
-      <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
-        <view class="picker-field">{{selectedEvent.name || '请选择项目'}}</view>
-      </picker>
-      <view class="list-meta" wx:if="{{selectedEvent}}">单位：{{selectedEvent.unit}}，{{selectedEvent.comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
-      <trend-chart
-        title="成绩变化"
-        unit="{{selectedEvent.unit}}"
-        comparison="{{selectedEvent.comparison}}"
-        series="{{selectedSeries}}"
-        emptyText="该项目至少需要两条已审核成绩才能生成趋势。"
-      />
-      <view wx:if="{{report.performanceMeta.truncatedEvents.length}}" class="muted">部分项目图表展示最近 {{report.performanceMeta.chartPointLimit}} 条已审核成绩，正式PB按全部已审核成绩计算。</view>
-    </view>
-
-    <view class="card">
-      <view class="section-title">正式个人最好成绩</view>
-      <view wx:if="{{!report.personalBests.length}}" class="muted">暂无已审核的正式PB。</view>
-      <view wx:for="{{report.personalBests}}" wx:key="eventCode" class="list-item">
-        <view class="list-title">{{item.eventName}}：{{item.displayText || item.displayValue || item.value}} {{item.displayText || item.displayValue ? '' : item.unit}}</view>
-        <view class="list-meta">取得日期：{{item.date}}</view>
+      <view wx:if="{{report.performanceMeta.truncatedEvents.length}}" class="jg-note">
+        <view>
+          <view class="jg-note-m">部分项目图表展示最近 {{report.performanceMeta.chartPointLimit}} 条已审核成绩，正式PB按全部已审核成绩计算。</view>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">体考目标对比</view>
-      <view wx:if="{{!report.targetComparison}}" class="muted">尚未设置数值化体考目标。</view>
-      <view wx:else class="list-item">
-        <view class="list-title">{{report.targetComparison.eventName}}</view>
-        <view class="list-meta">目标：{{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue || report.targetComparison.targetValue}} {{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue ? '' : report.targetComparison.unit}}</view>
-        <view class="list-meta" wx:if="{{report.targetComparison.hasCurrentResult}}">当前正式成绩：{{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue || report.targetComparison.currentValue}} {{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue ? '' : report.targetComparison.unit}}</view>
-        <view class="list-meta" wx:else>暂无对应项目的正式成绩。</view>
-        <view class="tag" wx:if="{{report.targetComparison.achieved}}">当前成绩已达到目标</view>
+    <!-- 正式个人最好成绩 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">正式个人最好成绩</text>
+        <text class="jg-sect-c">{{report.personalBests.length}} 项</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!report.personalBests.length}}"
+        title="暂无已审核的正式 PB"
+        message="教练审核通过后，正式最好成绩会显示在这里。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{report.personalBests}}" wx:key="eventCode" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">取得日期：{{item.date}}</view>
+          </view>
+          <view class="jg-row-e">
+            <text class="jg-row-v">{{item.displayText || item.displayValue || item.value}} {{item.displayText || item.displayValue ? '' : item.unit}}</text>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">阶段变化</view>
-      <view wx:if="{{!report.stageChanges.length}}" class="muted">暂无可比较的正式成绩。</view>
-      <view wx:for="{{report.stageChanges}}" wx:key="eventCode" class="list-item">
-        <view class="list-title">{{item.eventName}}</view>
-        <view class="list-meta">首次：{{item.firstDisplayText || item.firstDisplayValue || item.firstValue}} {{item.firstDisplayText || item.firstDisplayValue ? '' : item.unit}}（{{item.firstDate}}）</view>
-        <view class="list-meta">最新：{{item.latestDisplayText || item.latestDisplayValue || item.latestValue}} {{item.latestDisplayText || item.latestDisplayValue ? '' : item.unit}}（{{item.latestDate}}）</view>
-        <view class="list-meta">变化：{{item.changeDisplayText || item.changeDisplayValue || item.change}} {{item.changeDisplayText || item.changeDisplayValue ? '' : item.unit}}（{{item.changePercent}}%）</view>
+    <!-- 体考目标对比 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">体考目标对比</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!report.targetComparison}}"
+        title="尚未设置数值化体考目标"
+        message="在「完善档案」中填写目标后可在此对比。"
+      />
+
+      <view wx:else class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">{{report.targetComparison.eventName}}</text>
+          <text wx:if="{{report.targetComparison.achieved}}" class="jg-chip jg-chip-ok">已达到目标</text>
+        </view>
+        <view class="jg-body-s">目标：{{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue || report.targetComparison.targetValue}} {{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue ? '' : report.targetComparison.unit}}</view>
+        <view wx:if="{{report.targetComparison.hasCurrentResult}}" class="jg-body-s jg-mt-8">当前正式成绩：{{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue || report.targetComparison.currentValue}} {{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue ? '' : report.targetComparison.unit}}</view>
+        <view wx:else class="jg-body-s jg-mt-8">暂无对应项目的正式成绩。</view>
+      </view>
+    </view>
+
+    <!-- 阶段变化 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">阶段变化</text>
+        <text class="jg-sect-c">{{report.stageChanges.length}} 项</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!report.stageChanges.length}}"
+        title="暂无可比较的正式成绩"
+        message="同一项目至少有两条已审核成绩后才能计算阶段变化。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{report.stageChanges}}" wx:key="eventCode" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">首次：{{item.firstDisplayText || item.firstDisplayValue || item.firstValue}} {{item.firstDisplayText || item.firstDisplayValue ? '' : item.unit}}（{{item.firstDate}}）</view>
+            <view class="jg-row-m">最新：{{item.latestDisplayText || item.latestDisplayValue || item.latestValue}} {{item.latestDisplayText || item.latestDisplayValue ? '' : item.unit}}（{{item.latestDate}}）</view>
+            <view class="jg-row-m">变化：{{item.changeDisplayText || item.changeDisplayValue || item.change}} {{item.changeDisplayText || item.changeDisplayValue ? '' : item.unit}}（{{item.changePercent}}%）</view>
+          </view>
+        </view>
       </view>
     </view>
   </block>

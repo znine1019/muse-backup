@@ -1,108 +1,261 @@
-<view class="container">
-  <view class="brand">STUDENT / STATISTICS</view>
-  <view class="title">个人训练统计</view>
-  <view class="sub">统计只使用正式审核成绩、实际考勤记录和本人训练反馈。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="个人训练统计"
+    meta="统计只使用正式审核成绩、实际考勤记录和本人训练反馈。"
+    role-label="学生"
+    role-tone="brand"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在计算个人统计...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">个人统计加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
   <block wx:if="{{!loading && data}}">
-    <view class="card">
-      <view class="section-title">统计周期</view>
-      <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-        <view class="picker-field">{{periodTypeOptions[periodTypeIndex].label}}</view>
-      </picker>
-      <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-        <view class="picker-field">{{yearOptions[yearIndex].label}}</view>
-      </picker>
-      <picker wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-        <view class="picker-field">{{monthOptions[monthIndex].label}}</view>
-      </picker>
-      <picker wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-        <view class="picker-field">{{quarterOptions[quarterIndex].label}}</view>
-      </picker>
-      <view class="tag">{{data.period.label}}</view>
-    </view>
-
-    <view class="card">
-      <view class="card-title">{{data.profile.name}}</view>
-      <view class="list-meta">当前训练组：{{data.groups.length ? data.groups[0].name : '未绑定'}}</view>
-      <view class="list-meta">专项：{{data.profile.primaryEventName || '未设置'}}</view>
-      <view class="button-row">
-        <button class="button-secondary" bindtap="goReport">查看运动报告</button>
-        <button class="button-secondary" bindtap="goPerformanceLeaderboard">成绩排行榜</button>
+    <!-- 统计周期 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">统计周期</text>
+        <text class="jg-sect-c">{{data.period.label}}</text>
       </view>
-    </view>
 
-    <view class="card">
-      <view class="section-title">考勤概览</view>
-      <view class="overview-grid">
-        <view class="overview-item"><view class="overview-label">计划应到</view><view class="overview-value">{{data.attendance.plannedExpected}}</view></view>
-        <view class="overview-item"><view class="overview-label">已批准请假</view><view class="overview-value">{{data.attendance.approvedLeave}}</view></view>
-        <view class="overview-item"><view class="overview-label">实际应签到</view><view class="overview-value">{{data.attendance.actualExpected}}</view></view>
-        <view class="overview-item"><view class="overview-label">有效出勤</view><view class="overview-value">{{data.attendance.validAttendance}}</view></view>
-        <view class="overview-item"><view class="overview-label">出勤率</view><view class="overview-value">{{data.attendanceRateText}}</view></view>
-        <view class="overview-item"><view class="overview-label">迟到</view><view class="overview-value">{{data.attendance.late}}</view></view>
-        <view class="overview-item"><view class="overview-label">待核实</view><view class="overview-value">{{data.attendance.pendingVerification}}</view></view>
-        <view class="overview-item"><view class="overview-label">未签到</view><view class="overview-value">{{data.attendance.absent}}</view></view>
-      </view>
-      <view class="muted">出勤率只以已结束场次计算；未签到不等同于已核实无故缺勤。</view>
-      <button class="button-secondary" bindtap="goAttendanceStatistics">查看考勤统计与排行</button>
-    </view>
+      <view class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <text class="jg-field-label">周期类型</text>
+          <view class="jg-field-body">
+            <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+              <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
 
-    <view class="card">
-      <view class="section-title">正式成绩</view>
-      <view class="list-meta">已审核成绩：{{data.performance.approvedCount}} 条</view>
-      <view wx:if="{{!data.personalBests.length}}" class="muted">暂无正式PB，待教练审核通过后显示。</view>
-      <view wx:for="{{data.personalBests}}" wx:key="eventCode" class="list-item">
-        <view class="list-title">{{item.eventName}}：{{item.displayText}}</view>
-        <view class="list-meta">取得日期：{{item.date}}</view>
-      </view>
-      <view wx:if="{{data.latestPerformances.length}}" class="section-sub">最近正式成绩</view>
-      <view wx:for="{{data.latestPerformances}}" wx:key="eventCode" class="list-meta">
-        {{item.eventName}}：{{item.displayText}}（{{item.achievedAt}}）
+        <view class="jg-field-row">
+          <text class="jg-field-label">年份</text>
+          <view class="jg-field-body">
+            <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+              <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-field-row">
+          <text class="jg-field-label">月份</text>
+          <view class="jg-field-body">
+            <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+              <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-field-row">
+          <text class="jg-field-label">季度</text>
+          <view class="jg-field-body">
+            <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+              <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">阶段变化与目标</view>
-      <view wx:if="{{!data.stageChanges.length}}" class="muted">暂无可比较的正式成绩。</view>
-      <view wx:for="{{data.stageChanges}}" wx:key="eventCode" class="list-item">
-        <view class="list-title">{{item.eventName}}</view>
-        <view class="list-meta">{{item.firstDisplayText}} → {{item.latestDisplayText}}</view>
-        <view class="list-meta">变化：{{item.changeDisplayText}}（{{item.improved ? '提升' : '需关注'}}）</view>
+    <!-- 基本信息与快捷入口 -->
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">{{data.profile.name}}</text>
+        <text class="jg-chip jg-chip-brand">{{data.period.label}}</text>
       </view>
-      <view wx:if="{{data.targetComparison}}" class="list-item">
-        <view class="list-title">体考目标：{{data.targetComparison.eventName}}</view>
-        <view class="list-meta">目标：{{data.targetComparison.targetDisplayText}}</view>
-        <view class="list-meta" wx:if="{{data.targetComparison.hasCurrentResult}}">当前：{{data.targetComparison.currentDisplayText}}</view>
-        <view class="tag" wx:if="{{data.targetComparison.achieved}}">已达到目标</view>
+      <view class="jg-body-s">当前训练组：{{data.groups.length ? data.groups[0].name : '未绑定'}}</view>
+      <view class="jg-body-s jg-mt-8">专项：{{data.profile.primaryEventName || '未设置'}}</view>
+
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-ghost" bindtap="goReport">运动报告</button>
+        <button class="jg-btn jg-btn-ghost" bindtap="goPerformanceLeaderboard">成绩排行</button>
+        <button class="jg-btn jg-btn-ghost" bindtap="goAttendanceStatistics">考勤排行</button>
       </view>
-      <view wx:else class="muted">尚未设置数值化体考目标。</view>
     </view>
 
-    <view class="card">
-      <view class="section-title">训练反馈</view>
-      <view class="overview-grid">
-        <view class="overview-item"><view class="overview-label">反馈次数</view><view class="overview-value">{{data.feedback.total}}</view></view>
-        <view class="overview-item"><view class="overview-label">已完成</view><view class="overview-value">{{data.feedback.completed}}</view></view>
-        <view class="overview-item"><view class="overview-label">部分完成</view><view class="overview-value">{{data.feedback.partial}}</view></view>
-        <view class="overview-item"><view class="overview-label">未完成</view><view class="overview-value">{{data.feedback.notCompleted}}</view></view>
-        <view class="overview-item"><view class="overview-label">平均RPE</view><view class="overview-value">{{data.feedback.averageRpe === null ? '暂无' : data.feedback.averageRpe}}</view></view>
-        <view class="overview-item"><view class="overview-label">教练已评价</view><view class="overview-value">{{data.feedback.coachReviewed}}</view></view>
+    <!-- 考勤概览 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">考勤概览</text>
+        <text class="jg-sect-c">出勤率 {{data.attendanceRateText}}</text>
       </view>
-      <trend-chart
-        title="近期RPE变化"
-        unit="RPE"
-        comparison="neutral"
-        series="{{rpeSeries}}"
-        emptyText="至少需要两次训练反馈才能生成变化趋势。"
+
+      <view class="jg-dstrip">
+        <view class="jg-ds">
+          <view class="jg-ds-l">计划应到</view>
+          <view class="jg-ds-v jg-ds-v-ink">{{data.attendance.plannedExpected}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">已批准请假</view>
+          <view class="jg-ds-v">{{data.attendance.approvedLeave}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">实际应签到</view>
+          <view class="jg-ds-v jg-ds-v-ink">{{data.attendance.actualExpected}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">有效出勤</view>
+          <view class="jg-ds-v jg-ds-v-ok">{{data.attendance.validAttendance}}</view>
+        </view>
+      </view>
+
+      <view class="jg-dstrip jg-mt-8">
+        <view class="jg-ds">
+          <view class="jg-ds-l">迟到</view>
+          <view class="jg-ds-v jg-ds-v-warn">{{data.attendance.late}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">待核实</view>
+          <view class="jg-ds-v jg-ds-v-warn">{{data.attendance.pendingVerification}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">未签到</view>
+          <view class="jg-ds-v jg-ds-v-ink">{{data.attendance.absent}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">出勤率</view>
+          <view class="jg-ds-v jg-ds-v-ok">{{data.attendanceRateText}}</view>
+        </view>
+      </view>
+
+      <view class="jg-note">
+        <view>
+          <view class="jg-note-m">出勤率只以已结束场次计算；未签到不等同于已核实无故缺勤。</view>
+        </view>
+      </view>
+
+      <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goAttendanceStatistics">查看考勤统计与排行</button>
+    </view>
+
+    <!-- 正式成绩 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">正式成绩</text>
+        <text class="jg-sect-c">已审核 {{data.performance.approvedCount}} 条</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!data.personalBests.length}}"
+        title="暂无正式 PB"
+        message="教练审核通过后，正式最好成绩会显示在这里。"
       />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{data.personalBests}}" wx:key="eventCode" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">取得日期：{{item.date}}</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-row-v">{{item.displayText}}</text></view>
+        </view>
+      </view>
+
+      <block wx:if="{{data.latestPerformances.length}}">
+        <view class="jg-sect-h jg-mt-16">
+          <text class="jg-sect-t">最近正式成绩</text>
+          <text class="jg-sect-c">{{data.latestPerformances.length}} 项</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{data.latestPerformances}}" wx:key="eventCode" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.eventName}}</view>
+              <view class="jg-row-m">{{item.achievedAt}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-row-v">{{item.displayText}}</text></view>
+          </view>
+        </view>
+      </block>
     </view>
 
-    <view class="notice">历史训练组名单没有逐场快照，历史出勤结果会按成员关系时间范围估算，并在页面口径中明确提示。</view>
+    <!-- 阶段变化与目标 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">阶段变化与目标</text>
+        <text class="jg-sect-c">{{data.stageChanges.length}} 项</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!data.stageChanges.length && !data.targetComparison}}"
+        title="暂无可比较的正式成绩"
+        message="同一项目至少有两条已审核成绩后才能计算阶段变化。"
+      />
+
+      <view wx:if="{{data.stageChanges.length}}" class="jg-list">
+        <view wx:for="{{data.stageChanges}}" wx:key="eventCode" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">{{item.firstDisplayText}} → {{item.latestDisplayText}}</view>
+            <view class="jg-row-m">变化：{{item.changeDisplayText}}（{{item.improved ? '提升' : '需关注'}}）</view>
+          </view>
+          <view class="jg-row-e">
+            <text class="jg-chip {{item.improved ? 'jg-chip-ok' : 'jg-chip-warn'}}">{{item.improved ? '提升' : '需关注'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{data.targetComparison}}" class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">体考目标：{{data.targetComparison.eventName}}</text>
+          <text wx:if="{{data.targetComparison.achieved}}" class="jg-chip jg-chip-ok">已达到目标</text>
+        </view>
+        <view class="jg-body-s">目标：{{data.targetComparison.targetDisplayText}}</view>
+        <view wx:if="{{data.targetComparison.hasCurrentResult}}" class="jg-body-s jg-mt-8">当前：{{data.targetComparison.currentDisplayText}}</view>
+      </view>
+
+      <view wx:elif="{{!data.stageChanges.length}}" class="jg-note">
+        <view>
+          <view class="jg-note-m">尚未设置数值化体考目标。</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 训练反馈 -->
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">训练反馈</text>
+        <text class="jg-sect-c">共 {{data.feedback.total}} 条</text>
+      </view>
+
+      <view class="jg-dstrip">
+        <view class="jg-ds">
+          <view class="jg-ds-l">已完成</view>
+          <view class="jg-ds-v jg-ds-v-ok">{{data.feedback.completed}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">部分完成</view>
+          <view class="jg-ds-v jg-ds-v-warn">{{data.feedback.partial}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">未完成</view>
+          <view class="jg-ds-v jg-ds-v-ink">{{data.feedback.notCompleted}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">教练已评价</view>
+          <view class="jg-ds-v">{{data.feedback.coachReviewed}}</view>
+        </view>
+      </view>
+
+      <view class="jg-card">
+        <trend-chart
+          title="近期RPE变化"
+          unit="RPE"
+          comparison="neutral"
+          series="{{rpeSeries}}"
+          emptyText="至少需要两次训练反馈才能生成变化趋势。"
+        />
+        <view class="jg-sub jg-mt-8">平均RPE：{{data.feedback.averageRpe === null ? '暂无' : data.feedback.averageRpe}}</view>
+      </view>
+    </view>
+
+    <view class="jg-note jg-note-warn">
+      <view>
+        <view class="jg-note-t">统计口径说明</view>
+        <view class="jg-note-m">历史训练组名单没有逐场快照，历史出勤结果会按成员关系时间范围估算，并在页面口径中明确提示。</view>
+      </view>
+    </view>
   </block>
 </view>

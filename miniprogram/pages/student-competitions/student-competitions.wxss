@@ -1,1 +1,11 @@
-/* 应用全局公共样式 */
+/* 学生赛事意向（F1-B2）：复用 jg- 设计系统，本文件只保留多选项的触控布局 */
+.event-choice {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  margin-top: 8rpx;
+}
+
+.event-choice text {
+  margin-left: 12rpx;
+}
