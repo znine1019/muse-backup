@@ -272,6 +272,14 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goLinkManage">
+        <view class="jg-row-ic jg-row-ic-ok">亲</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">亲子关联</view>
+          <view class="jg-row-m">生成家长关联凭证、确认或解除关联</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">

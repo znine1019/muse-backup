@@ -49,6 +49,11 @@ Page({
     wx.navigateTo({ url: '/pages/register/register' });
   },
 
+  /* V1.6：首次进入可选择“学生注册”或“家长注册” */
+  goParentRegister() {
+    wx.navigateTo({ url: '/pages/parent-register/parent-register' });
+  },
+
   goHome() {
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });

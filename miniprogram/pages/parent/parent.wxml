@@ -1,0 +1,156 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="家长工作台"
+    meta="仅可查看已授权关联学生的训练情况（只读）"
+    role-label="家长"
+    role-tone="accent"
+  />
+
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">加载未完成</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <block wx:if="{{!loading && !students.length && !error}}">
+    <jg-empty
+      title="尚未关联学生"
+      message="请让学生在小程序内生成一次性关联凭证，再使用凭证申请关联；关联需学生确认与俱乐部核验后生效。"
+      action-text="去绑定学生"
+      bind:action="goBind"
+    />
+  </block>
+
+  <block wx:if="{{!loading && students.length}}">
+    <view class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">关联学生</text><text class="jg-card-c">共 {{students.length}} 人</text></view>
+      <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
+        <view class="input jg-picker">{{students[studentIndex].name}}</view>
+      </picker>
+      <view class="jg-sub jg-mt-8">{{students[studentIndex].primaryEventName || '未填写主项'}} · 训练组：{{students[studentIndex].trainingGroupNames.length ? students[studentIndex].trainingGroupNames[0] : '未标注'}}</view>
+    </view>
+
+    <view wx:if="{{overview}}" class="jg-data-card">
+      <view class="jg-data-k">个人最好成绩 PB</view>
+      <block wx:if="{{overview.performance.personalBests.length}}">
+        <view class="jg-data-v">
+          <text class="jg-data-num">{{overview.performance.personalBests[0].value}}</text>
+          <text class="jg-data-unit">{{overview.performance.personalBests[0].unit}}</text>
+        </view>
+        <view class="jg-data-meta">{{overview.performance.personalBests[0].eventName}} · 教练已审核的正式成绩</view>
+      </block>
+      <view wx:else class="jg-data-meta">暂无已审核的正式成绩</view>
+      <view class="jg-data-foot">
+        <text class="jg-data-chip">已审核成绩 {{overview.performance.approvedCount}} 条</text>
+      </view>
+    </view>
+
+    <view wx:if="{{overview}}" class="jg-kpi-row">
+      <view class="jg-kpi">
+        <view class="jg-kpi-l">本月有效出勤</view>
+        <view class="jg-kpi-v">{{overview.attendance.validAttendance}}</view>
+        <view class="jg-kpi-s">应签到 {{overview.attendance.actualExpected}} · 迟到 {{overview.attendance.late}} · 未签到 {{overview.attendance.absent}}</view>
+      </view>
+      <view class="jg-kpi">
+        <view class="jg-kpi-l">已批准请假</view>
+        <view class="jg-kpi-v">{{overview.attendance.approvedLeave}}</view>
+        <view class="jg-kpi-s">待核实 {{overview.attendance.pendingVerification}}</view>
+      </view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">训练计划（本月）</text><text class="jg-sect-c">{{planItems.length}} 份</text></view>
+      <jg-empty wx:if="{{!planItems.length}}" title="暂无训练安排" message="教练发布训练计划后会显示在这里。" />
+      <view wx:else class="jg-list">
+        <view wx:for="{{planItems}}" wx:key="planId" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.title}}</view>
+            <view class="jg-row-m">{{item.startDate}} 至 {{item.endDate}} · {{item.itemCount}} 项内容</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">运动成绩（已审核）</text><text class="jg-sect-c">{{performanceRows.length}} 项</text></view>
+      <jg-empty wx:if="{{!performanceRows.length}}" title="暂无正式成绩" message="只有教练审核通过的成绩会展示给家长。" />
+      <view wx:else class="jg-list">
+        <view wx:for="{{performanceRows}}" wx:key="eventCode" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">取得日期：{{item.date}}</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-row-v">{{item.value}} {{item.unit}}</text></view>
+        </view>
+      </view>
+      <view class="jg-note"><view><view class="jg-note-m">未审核、已驳回的成绩不会展示给家长。</view></view></view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">本月考勤记录</text><text class="jg-sect-c">{{attendanceRows.length}} 条</text></view>
+      <jg-empty wx:if="{{!attendanceRows.length}}" title="本月暂无考勤记录" message="教练创建考勤场次后会显示在这里。" />
+      <view wx:else class="jg-list">
+        <view wx:for="{{attendanceRows}}" wx:key="attendanceDate" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.attendanceDate}}</view>
+            <view class="jg-row-m">不展示精确位置，仅显示签到状态</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-chip">{{item.status}}</text></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">训练反馈</text><text class="jg-sect-c">{{feedbackRows.length}} 条</text></view>
+      <jg-empty wx:if="{{!feedbackRows.length}}" title="暂无训练反馈" message="学生提交反馈后会显示在这里。" />
+      <view wx:else class="jg-list">
+        <view wx:for="{{feedbackRows}}" wx:key="attendanceDate" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.attendanceDate}}</view>
+            <view class="jg-row-m">{{item.completionLabel}} · RPE {{item.rpe || '-'}}/10</view>
+          </view>
+        </view>
+      </view>
+      <view class="jg-note"><view><view class="jg-note-m">仅共享完成情况与学生自评强度，教练内部评价默认不向家长展示。</view></view></view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">赛事与通知</text><text class="jg-sect-c">{{competitionRows.length}} / {{noticeRows.length}}</text></view>
+      <view class="jg-list">
+        <view wx:for="{{competitionRows}}" wx:key="competitionId" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">赛事意向</view>
+            <view class="jg-row-m">{{item.itemsText || '未选择项目'}}</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-chip">{{item.statusLabel}}</text></view>
+        </view>
+        <view wx:for="{{noticeRows}}" wx:key="noticeId" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.title}}</view>
+            <view class="jg-row-m">俱乐部通知</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-chip">{{item.priority === 'important' ? '重要' : '普通'}}</text></view>
+        </view>
+      </view>
+      <view class="jg-note"><view><view class="jg-note-m"><text class="jg-strong">报名意向不等于官方报名成功</text>，正式报名由教练在赛事官方渠道完成并回填进度。</view></view></view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">个人中心</text></view>
+      <view class="jg-list">
+        <view class="jg-row" hover-class="jg-row-hover" bindtap="goBind">
+          <view class="jg-row-ic jg-row-ic-brand">联</view>
+          <view class="jg-row-main"><view class="jg-row-t">关联学生管理</view><view class="jg-row-m">查看关联状态、申请与解除</view></view>
+          <view class="jg-row-e"><text class="jg-chev">›</text></view>
+        </view>
+        <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
+          <view class="jg-row-ic jg-row-ic-plain">退</view>
+          <view class="jg-row-main"><view class="jg-row-t">退出当前会话</view><view class="jg-row-m">退出后需重新微信登录</view></view>
+          <view class="jg-row-e"><text class="jg-chev">›</text></view>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

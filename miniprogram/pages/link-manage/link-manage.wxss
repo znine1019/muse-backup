@@ -1,0 +1,4 @@
+/* 学生端亲子关联（V1.6 功能补全）：复用阶段7-1 jg- 设计系统 */
+.jg-page .jg-todo-a,
+.jg-page .jg-row-e { flex-direction: column; align-items: stretch; }
+.jg-page .jg-row-e .jg-btn + .jg-btn { margin-top: 12rpx; }

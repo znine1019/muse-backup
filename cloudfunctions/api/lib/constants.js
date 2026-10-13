@@ -18,6 +18,8 @@ const COLLECTIONS = Object.freeze({
   CLUB_NOTICES: 'club_notices',
   NOTICE_READS: 'notice_reads',
   TRAINING_FEEDBACK: 'training_feedback',
+  PARENT_PROFILES: 'parent_profiles',
+  PARENT_LINKS: 'parent_links',
   AUDIT_LOGS: 'audit_logs',
   SYSTEM_CONFIG: 'system_config'
 });
@@ -25,8 +27,36 @@ const COLLECTIONS = Object.freeze({
 const ROLES = Object.freeze({
   DEVELOPER: 'developer',
   COACH: 'coach',
-  STUDENT: 'student'
+  STUDENT: 'student',
+  PARENT: 'parent'
 });
+
+/* 家长—学生关联：同一集合用 kind 区分一次性凭证与关联关系 */
+const PARENT_LINK_KIND = Object.freeze({
+  INVITE: 'invite',
+  RELATION: 'relation'
+});
+
+const PARENT_LINK_STATUS = Object.freeze({
+  /* 凭证状态 */
+  OPEN: 'open',
+  USED: 'used',
+  EXPIRED: 'expired',
+  LOCKED: 'locked',
+  /* 关联关系状态机 */
+  PENDING_STUDENT: 'pending_student',
+  PENDING_REVIEW: 'pending_review',
+  ACTIVE: 'active',
+  REJECTED: 'rejected',
+  REVOKED: 'revoked'
+});
+
+const PARENT_RELATION_LABELS = Object.freeze([
+  'father',
+  'mother',
+  'guardian',
+  'other'
+]);
 
 const ROLE_VALUES = Object.freeze(Object.values(ROLES));
 
@@ -160,6 +190,14 @@ const AUDIT_ACTIONS = Object.freeze({
   FEEDBACK_REVIEWED: 'coach.training_feedback.reviewed',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
+  PARENT_PROFILE_SUBMITTED: 'parent.profile.submitted',
+  PARENT_INVITE_CREATED: 'parent.link.invite_created',
+  PARENT_LINK_REQUESTED: 'parent.link.requested',
+  PARENT_LINK_CONFIRMED: 'parent.link.student_confirmed',
+  PARENT_LINK_STUDENT_REJECTED: 'parent.link.student_rejected',
+  PARENT_LINK_APPROVED: 'parent.link.approved',
+  PARENT_LINK_REJECTED: 'parent.link.rejected',
+  PARENT_LINK_REVOKED: 'parent.link.revoked',
   GROUP_COACH_ASSIGNED: 'admin.training_group.coach_assigned'
 });
 
@@ -182,6 +220,12 @@ const LIMITS = Object.freeze({
   coachCommentMaxLength: 500,
   maxCompetitionEvents: 20,
   maxEventCategories: 10,
+  parentNameMaxLength: 40,
+  parentNoteMaxLength: 200,
+  parentInviteCodeLength: 10,
+  parentInviteTtlMinutes: 30,
+  parentInviteMaxAttempts: 5,
+  parentMaxLinkedStudents: 10,
   pageSize: 50,
   heightCmMin: 50,
   heightCmMax: 250,
@@ -196,6 +240,9 @@ module.exports = {
   NOTICE_CATEGORIES,
   NOTICE_PRIORITIES,
   NOTICE_STATUS,
+  PARENT_LINK_KIND,
+  PARENT_LINK_STATUS,
+  PARENT_RELATION_LABELS,
   ATTENDANCE_RECORD_STATUS,
   ATTENDANCE_SESSION_STATUS,
   AUDIT_ACTIONS,

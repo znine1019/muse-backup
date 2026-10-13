@@ -1,0 +1,59 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="家长注册"
+    meta="只需姓名与监护人关系；学生专属资料不需要填写"
+    role-label="家长"
+    role-tone="accent"
+  />
+
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:elif="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">操作未完成</view>
+    <view class="jg-state-err-m">{{error}}</view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{statusLabel}}" class="jg-note jg-note-warn">
+      <view>
+        <view class="jg-note-t">当前状态</view>
+        <view class="jg-note-m">{{statusLabel}}</view>
+      </view>
+    </view>
+
+    <view class="fset">
+      <view class="fs-h"><text class="t">家长资料</text><text class="s">必填 2 项</text></view>
+      <view class="fs-b">
+        <view class="field">
+          <view class="lb"><text>家长姓名 <text class="req">*</text></text></view>
+          <view class="input">
+            <input value="{{name}}" maxlength="40" bindinput="onNameInput" placeholder="请输入真实姓名" />
+          </view>
+        </view>
+        <view class="field">
+          <view class="lb"><text>监护人关系 <text class="req">*</text></text></view>
+          <picker range="{{relationOptions}}" range-key="label" value="{{relationIndex}}" bindchange="onRelationChange">
+            <view class="input jg-picker">{{relationOptions[relationIndex].label}}</view>
+          </picker>
+        </view>
+        <view class="field" style="margin-bottom:0">
+          <view class="lb"><text>备注</text><text class="opt">选填</text></view>
+          <view class="input">
+            <input value="{{note}}" maxlength="200" bindinput="onNoteInput" placeholder="例如需要核验的说明" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <button class="jg-btn jg-btn-block" loading="{{submitting}}" bindtap="submit">提交家长注册资料</button>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-t">审核与权限说明</view>
+        <view class="jg-note-m">提交后需由开发者审核；审核通过只获得家长角色，<text class="jg-strong">不会自动获得任何学生的数据查看权限</text>，需要随后与学生完成关联并经核验。</view>
+      </view>
+    </view>
+
+    <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goHome">退出当前会话</button>
+  </block>
+</view>

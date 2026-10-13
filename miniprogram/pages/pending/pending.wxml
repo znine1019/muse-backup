@@ -28,6 +28,14 @@
       <button wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="button-primary" bindtap="goRegister">填写或修改资料</button>
       <button class="button-secondary" bindtap="refresh">刷新状态</button>
     </view>
+    <view wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="card">
+      <view class="card-title">首次注册身份</view>
+      <view class="card-sub">学生填写完整训练档案；家长只需姓名与监护人关系，不需要填写运动专项、成绩或体测数据。</view>
+      <view class="button-row">
+        <button class="button-primary" bindtap="goRegister">学生注册</button>
+        <button class="button-secondary" bindtap="goParentRegister">家长注册</button>
+      </view>
+    </view>
     <button class="button-secondary" bindtap="goHome">退出当前会话</button>
   </block>
 </view>

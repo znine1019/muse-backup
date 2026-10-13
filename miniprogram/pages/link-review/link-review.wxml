@@ -1,0 +1,44 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="家长关联核验"
+    meta="学生已确认的家长关联申请；核验监护关系后才会开放只读数据"
+    role-label="开发者"
+    role-tone="accent"
+  />
+
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">操作未完成</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
+  </view>
+
+  <view class="jg-note">
+    <view>
+      <view class="jg-note-t">核验提示</view>
+      <view class="jg-note-m">未成年学生需确认监护关系；成年学生需取得本人明确授权（学生已在第一步确认）。建议先在线下完成关系核验，再在系统内通过。</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <jg-empty
+    wx:elif="{{!links.length}}"
+    title="没有待核验的家长关联"
+    message="学生在小程序内确认家长关联申请后，会显示在这里等待核验。"
+  />
+
+  <view wx:else class="jg-list">
+    <view wx:for="{{links}}" wx:key="linkId" class="jg-todo jg-todo-p2">
+      <view class="jg-todo-bar"></view>
+      <view class="jg-todo-main">
+        <view class="jg-todo-t">{{item.parentName || '家长'}} → {{item.studentName || '学生'}}</view>
+        <view class="jg-todo-m">学生已确认，等待俱乐部核验</view>
+        <view class="jg-todo-m">关联编号：{{item.linkId}}</view>
+      </view>
+      <view class="jg-todo-a">
+        <button class="jg-btn jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="approve" loading="{{busyId === item.linkId}}" bindtap="review">通过</button>
+        <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" data-decision="reject" loading="{{busyId === item.linkId}}" bindtap="review">驳回</button>
+      </view>
+    </view>
+  </view>
+</view>

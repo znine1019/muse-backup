@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "家长注册",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
+  }
+}

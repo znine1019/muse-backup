@@ -1,0 +1,40 @@
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="关联学生"
+    meta="使用学生生成的一次性凭证申请关联；需学生确认与俱乐部核验"
+    role-label="家长"
+    role-tone="accent"
+  />
+
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">操作未完成</view>
+    <view class="jg-state-err-m">{{error}}</view>
+  </view>
+
+  <view class="jg-card">
+    <view class="jg-card-h"><text class="jg-card-t">输入关联凭证</text><text class="jg-card-c">10 位字符</text></view>
+    <view class="input">
+      <input value="{{code}}" maxlength="14" bindinput="onCodeInput" placeholder="例如 K7MPQ2XR9T" />
+    </view>
+    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="redeem">提交关联申请</button>
+    <view class="jg-note"><view><view class="jg-note-m">凭证由学生本人生成，30 分钟内有效且只能使用一次；俱乐部不会要求您提供学生姓名或学号。</view></view></view>
+  </view>
+
+  <view class="jg-sect">
+    <view class="jg-sect-h"><text class="jg-sect-t">我的关联申请</text><text class="jg-sect-c">{{links.length}} 条</text></view>
+    <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+    <jg-empty wx:elif="{{!links.length}}" title="暂无关联记录" message="在上方输入学生提供的关联凭证后开始申请。" />
+    <view wx:else class="jg-list">
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-row">
+        <view class="jg-row-main">
+          <view class="jg-row-t">{{item.studentName || '学生'}}<text class="jg-chip">{{item.statusLabel}}</text></view>
+          <view class="jg-row-m">已生效的关联可直接在学生列表中查看</view>
+        </view>
+        <view wx:if="{{item.status === 'active' || item.status === 'pending_student' || item.status === 'pending_review'}}" class="jg-row-e">
+          <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" bindtap="revoke">解除</button>
+        </view>
+      </view>
+    </view>
+    <view class="jg-note"><view><view class="jg-note-m">解除关联后，家长端会立即失去该学生的读取权限。</view></view></view>
+  </view>
+</view>

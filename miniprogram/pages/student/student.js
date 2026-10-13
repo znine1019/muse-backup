@@ -587,6 +587,12 @@ Page({
     wx.navigateTo({ url: '/pages/profile-edit/profile-edit' });
   },
 
+  /* V1.6 家长关联：生成一次性凭证并确认家长关联申请 */
+  goLinkManage() {
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/link-manage/link-manage' });
+  },
+
   async goHome() {
     const modal = await new Promise((resolve) => {
       wx.showModal({

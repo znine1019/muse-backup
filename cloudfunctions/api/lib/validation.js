@@ -11,6 +11,7 @@ const {
   NOTICE_CATEGORIES,
   NOTICE_PRIORITIES,
   NOTICE_STATUS,
+  PARENT_RELATION_LABELS,
   ROLE_VALUES
 } = require('./constants');
 const { isDateOnly, isDateTimeString } = require('./dates');
@@ -147,9 +148,16 @@ function validateReviewPayload(payload) {
     fail('INVALID_FIELD', '审核结果不正确。');
   }
 
+  /* 注册资料类型：学生（默认，保持既有兼容）或家长 */
+  const profileType = optionalString(input.profileType, '资料类型', 20) || 'student';
+  if (!['student', 'parent'].includes(profileType)) {
+    fail('INVALID_FIELD', '资料类型不正确。');
+  }
+
   return {
-    targetUserId: safeId(input.targetUserId, '学生账号'),
+    targetUserId: safeId(input.targetUserId, '待审核账号'),
     decision,
+    profileType,
     comment: optionalString(input.comment, '审核意见', LIMITS.commentMaxLength)
   };
 }
@@ -1183,8 +1191,95 @@ function validateGroupCoachPayload(payload) {
   };
 }
 
+/* ---------- 家长端（V1.6 功能补全第一批） ---------- */
+
+/** 关联凭证归一化：统一转大写并去除空格与连字符，避免输入格式差异导致误判 */
+function normalizeInviteCode(value) {
+  return String(value === undefined || value === null ? '' : value)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '');
+}
+
+function validateParentProfilePayload(payload) {
+  const input = asObject(payload);
+  const relation = optionalString(input.relation, '监护人关系', 20) || 'guardian';
+  if (!PARENT_RELATION_LABELS.includes(relation)) {
+    fail('INVALID_FIELD', '监护人关系选项不正确。');
+  }
+  return {
+    name: requiredString(input.name, '家长姓名', LIMITS.parentNameMaxLength),
+    relation,
+    note: optionalString(input.note, '备注', LIMITS.parentNoteMaxLength)
+  };
+}
+
+function validateParentInviteCreatePayload(payload) {
+  const input = asObject(payload);
+  return {
+    clientRequestId: optionalString(input.clientRequestId, '请求标识', 80)
+  };
+}
+
+function validateParentInviteRedeemPayload(payload) {
+  const input = asObject(payload);
+  const code = normalizeInviteCode(input.code);
+  if (code.length !== LIMITS.parentInviteCodeLength) {
+    fail('INVALID_INVITE_CODE', '关联凭证格式不正确，请核对后重新输入。');
+  }
+  return { code };
+}
+
+function validateParentLinkDecisionPayload(payload) {
+  const input = asObject(payload);
+  const decision = requiredString(input.decision, '处理动作', 20);
+  if (!['confirm', 'reject'].includes(decision)) {
+    fail('INVALID_FIELD', '处理动作不正确。');
+  }
+  return {
+    linkId: safeId(input.linkId, '关联关系'),
+    decision,
+    comment: optionalString(input.comment, '说明', LIMITS.commentMaxLength)
+  };
+}
+
+function validateParentLinkReviewPayload(payload) {
+  const input = asObject(payload);
+  const decision = requiredString(input.decision, '审核动作', 20);
+  if (!['approve', 'reject'].includes(decision)) {
+    fail('INVALID_FIELD', '审核动作不正确。');
+  }
+  return {
+    linkId: safeId(input.linkId, '关联关系'),
+    decision,
+    comment: optionalString(input.comment, '审核意见', LIMITS.commentMaxLength)
+  };
+}
+
+function validateParentLinkRevokePayload(payload) {
+  const input = asObject(payload);
+  return {
+    linkId: safeId(input.linkId, '关联关系'),
+    comment: optionalString(input.comment, '说明', LIMITS.commentMaxLength)
+  };
+}
+
+function validateParentStudentQueryPayload(payload) {
+  const input = asObject(payload);
+  return {
+    studentUserId: safeId(input.studentUserId, '学生账号')
+  };
+}
+
 module.exports = {
   validateStatisticsPeriodPayload,
+  normalizeInviteCode,
+  validateParentProfilePayload,
+  validateParentInviteCreatePayload,
+  validateParentInviteRedeemPayload,
+  validateParentLinkDecisionPayload,
+  validateParentLinkReviewPayload,
+  validateParentLinkRevokePayload,
+  validateParentStudentQueryPayload,
   validatePerformanceLeaderboardPayload,
   validateAttendanceLeaderboardPayload,
   validateExportPayload,

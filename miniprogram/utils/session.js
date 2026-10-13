@@ -2,6 +2,7 @@
 
 const ROLE_ROUTES = Object.freeze({
   student: '/pages/student/student',
+  parent: '/pages/parent/parent',
   coach: '/pages/coach/coach',
   developer: '/pages/admin/admin'
 });
@@ -22,7 +23,8 @@ function getRoleLabel(role) {
   return {
     developer: '开发者',
     coach: '教练员',
-    student: '学生'
+    student: '学生',
+    parent: '家长'
   }[role] || role;
 }
 

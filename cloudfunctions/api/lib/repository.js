@@ -40,6 +40,8 @@ function compareTrainingGroups(left, right) {
 function createRepository(db) {
   const userCollection = db.collection(COLLECTIONS.USERS);
   const profileCollection = db.collection(COLLECTIONS.STUDENT_PROFILES);
+  const parentProfileCollection = db.collection(COLLECTIONS.PARENT_PROFILES);
+  const parentLinkCollection = db.collection(COLLECTIONS.PARENT_LINKS);
   const reviewCollection = db.collection(COLLECTIONS.REGISTRATION_REVIEWS);
   const roleCollection = db.collection(COLLECTIONS.ROLE_BINDINGS);
   const groupCollection = db.collection(COLLECTIONS.TRAINING_GROUPS);
@@ -78,6 +80,20 @@ function createRepository(db) {
 
   function profileIdForUser(userId) {
     return deterministicId('profile', userId);
+  }
+
+  function parentProfileIdForUser(userId) {
+    return deterministicId('parent_profile', userId);
+  }
+
+  /* 一次性关联凭证：同一学生同一请求标识只会生成一张凭证（幂等） */
+  function parentInviteIdForRequest(studentUserId, clientRequestId) {
+    return deterministicId('parent_invite', studentUserId, clientRequestId);
+  }
+
+  /* 家长—学生关联关系：一对（家长, 学生）只有一条关系记录 */
+  function parentLinkIdForPair(parentUserId, studentUserId) {
+    return deterministicId('parent_link', parentUserId, studentUserId);
   }
 
   function roleBindingId(userId, role) {
@@ -223,6 +239,59 @@ function createRepository(db) {
 
   async function getProfile(userId) {
     return getDoc(profileCollection, profileIdForUser(userId));
+  }
+
+  async function getParentProfile(userId) {
+    return getDoc(parentProfileCollection, parentProfileIdForUser(userId));
+  }
+
+  async function getParentLink(linkId) {
+    return getDoc(parentLinkCollection, linkId);
+  }
+
+  async function listParentLinks(where, maxRecords = 100) {
+    return queryAll(parentLinkCollection, where, maxRecords);
+  }
+
+  async function countParentLinksByStatus(where) {
+    const result = await parentLinkCollection.where(where).count();
+    return Number(result.total) || 0;
+  }
+
+  async function expireParentInvite(inviteId) {
+    try {
+      await parentLinkCollection.doc(inviteId).update({
+        data: {
+          status: 'expired',
+          updatedAt: db.serverDate()
+        }
+      });
+    } catch (error) {
+      /* 凭证可能已被并发处理，忽略失效更新失败 */
+    }
+  }
+
+  /* 凭证失败计数（防枚举）：窗口期外自动重置 */
+  async function recordParentInviteFailure(userId) {
+    const profile = await getParentProfile(userId);
+    if (!profile) {
+      return 0;
+    }
+    const windowAt = profile.inviteFailWindowAt
+      ? new Date(profile.inviteFailWindowAt).getTime()
+      : 0;
+    const inWindow = windowAt && Date.now() - windowAt < 15 * 60 * 1000;
+    const nextCount = inWindow ? Number(profile.inviteFailCount || 0) + 1 : 1;
+    await parentProfileCollection.doc(profile._id).update({
+      data: {
+        inviteFailCount: nextCount,
+        inviteFailWindowAt: inWindow
+          ? profile.inviteFailWindowAt
+          : db.serverDate(),
+        updatedAt: db.serverDate()
+      }
+    });
+    return nextCount;
   }
 
   async function getLatestReview(userId) {
@@ -1056,6 +1125,17 @@ function createRepository(db) {
 
   return {
     attendanceRecordCollection,
+    parentProfileCollection,
+    parentLinkCollection,
+    parentProfileIdForUser,
+    parentInviteIdForRequest,
+    parentLinkIdForPair,
+    getParentProfile,
+    getParentLink,
+    listParentLinks,
+    countParentLinksByStatus,
+    expireParentInvite,
+    recordParentInviteFailure,
     attendanceRecordId,
     attendanceSessionCollection,
     attendanceSessionIdForRequest,
