@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方案A3 · 极简专业数据风｜乔格训迹 V1.6 阶段7预览</title>
+<style>
+:root{
+  --paper:#FBFCFD; --surface:#FFFFFF; --surface2:#F6F8FA;
+  --ink:#0B1116; --ink2:#39424C; --muted:#69737E; --dim:#98A0AA;
+  --line:#E5E9EF; --line2:#EDF0F4;
+  --brand:#17509E; --brand-soft:#EEF4FD;
+  --pos:#15803D; --neg:#B42318; --warn:#B45309; --teal:#0E7490;
+  --numfont:"DIN Alternate","Bahnschrift","SF Mono",Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#F7F9FB;color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",-apple-system,sans-serif;font-size:13px;
+  -webkit-font-smoothing:antialiased}
+.ic{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.num{font-family:var(--numfont);font-variant-numeric:tabular-nums}
+
+/* board chrome */
+.topbar{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);
+  padding:16px 22px 14px}
+.brandrow{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brandrow h1{font-size:19px;font-weight:800}
+.brandrow .tagline{font-size:12px;color:var(--muted)}
+.sq{width:20px;height:20px;border:2px solid var(--brand);border-radius:3px;display:inline-block;position:relative}
+.sq::after{content:"";position:absolute;left:4px;top:4px;width:8px;height:8px;background:var(--brand);border-radius:1px}
+.tabs{display:flex;gap:0;flex-wrap:wrap;margin-top:14px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);
+  font:600 12px/1 inherit;padding:9px 13px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.palette{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:11px;color:var(--dim);flex-wrap:wrap}
+.sw{width:15px;height:15px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+.stage{display:flex;gap:26px;padding:26px 22px 60px;overflow-x:auto;align-items:flex-start}
+.device-wrap{flex:0 0 auto;display:flex;flex-direction:column;gap:10px}
+.devlabel{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.devlabel b{color:var(--ink);font-size:12.5px}
+.devlabel .idx{font-family:var(--numfont);color:var(--brand);font-weight:800}
+.device{width:390px;height:844px;background:#0B1116;border-radius:30px;padding:8px;box-shadow:0 20px 46px rgba(11,17,22,.24)}
+.screen{width:100%;height:100%;border-radius:24px;overflow:hidden;background:var(--paper);
+  display:flex;flex-direction:column;position:relative}
+.sbar{height:40px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  font-size:11.5px;font-weight:700;font-family:var(--numfont);color:var(--ink)}
+.sb-right{display:flex;gap:5px;align-items:center}
+.sb-right i{display:block;background:var(--ink);opacity:.75}
+.sig{width:15px;height:9px;border-radius:2px;clip-path:polygon(0 100%,18% 100%,18% 60%,0 60%,0 100%,28% 100%,28% 40%,46% 40%,46% 100%,56% 100%,56% 20%,74% 20%,74% 100%,84% 100%,84% 0,100% 0,100% 100%,0 100%)}
+.wifi{width:13px;height:9px;border-radius:2px;clip-path:polygon(0 100%,50% 0,100% 100%,78% 100%,50% 42%,22% 100%)}
+.batt{width:20px;height:10px;border-radius:3px;opacity:.5}
+.screen-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.screen-body::-webkit-scrollbar{display:none}
+
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:8px;height:48px;
+  padding:0 14px;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto}
+.appbar .ab-l{display:flex;align-items:center;gap:8px;min-width:0}
+.appbar .ab-t{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar .ab-s{font-size:10.5px;color:var(--dim);margin-top:1px}
+.appbar .ic{color:var(--ink2)}
+.abadge{font-size:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--line);
+  border-radius:3px;padding:3px 7px;font-weight:700}
+
+.tabstrip{display:flex;background:#fff;border-bottom:1px solid var(--line);flex:0 0 auto}
+.tabstrip .ts{flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent}
+.tabstrip .ts.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:800}
+.tabstrip .ts .tb{display:inline-block;min-width:15px;height:15px;border-radius:8px;background:var(--neg);color:#fff;
+  font:800 9.5px/15px var(--numfont);padding:0 4px;margin-left:4px;vertical-align:1px}
+
+.simnote{display:flex;align-items:center;gap:5px;padding:6px 14px;background:#FFF8ED;border-bottom:1px solid #F3E3C7;
+  color:#8A5A12;font-size:10px}
+.simnote .ic{width:11px;height:11px;stroke:var(--warn)}
+
+.pad{padding:12px 14px 22px}
+.sect{margin-bottom:14px}
+.sect-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.sect-h .st{font-size:12px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:6px}
+.sect-h .st::before{content:"";width:3px;height:12px;border-radius:2px;background:var(--brand)}
+.sect-h .sa{font-size:10.5px;color:var(--brand);font-weight:700}
+.sect-h .sc{font-size:10.5px;color:var(--dim)}
+
+.box{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.box.p0{padding:0}
+.pad12{padding:11px 12px}
+
+.frow{display:grid;grid-template-columns:88px 1fr;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line2)}
+.frow:last-child{border-bottom:none}
+.frow .fl{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.frow .fl .req{color:var(--neg)}
+.frow .fv{font-size:12.5px;font-weight:650;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.frow .fv .u{font-size:10.5px;color:var(--dim);font-family:var(--numfont);font-weight:600}
+.fin{height:32px;border:1px solid var(--line);border-radius:4px;background:#fff;display:flex;align-items:center;
+  padding:0 10px;font-size:12.5px;font-weight:650;justify-content:space-between;gap:8px}
+.fin.sm{width:104px;flex:0 0 auto}
+.hint{font-size:9.5px;color:var(--dim);line-height:1.55;padding:6px 12px 0}
+
+.task{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line2)}
+.task:last-child{border-bottom:none}
+.chk{width:17px;height:17px;border:1.5px solid #C9D2DB;border-radius:4px;flex:0 0 auto}
+.chk.on{border-color:var(--brand);background:var(--brand)}
+.chk.on::after{content:"";display:block;width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;
+  transform:rotate(-45deg);margin:3px 0 0 3px}
+.task .tm{flex:1 1 auto;min-width:0}
+.task .tt{font-size:12.5px;font-weight:700}
+.task .td{font-size:10.5px;color:var(--muted);margin-top:2px}
+.task .tmeta{font-size:10px;color:var(--dim);font-family:var(--numfont);text-align:right;white-space:nowrap}
+
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;color:var(--dim);font-weight:700;text-align:left;padding:7px 12px;
+  background:var(--surface2);border-bottom:1px solid var(--line)}
+.tbl td{font-size:11.5px;padding:8px 12px;border-bottom:1px solid var(--line2);color:var(--ink2)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.n,.tbl th.n{text-align:right;font-family:var(--numfont);font-variant-numeric:tabular-nums}
+.tbl td.k{font-weight:750;color:var(--ink)}
+.tbl td .sub{display:block;font-size:9.5px;color:var(--dim);margin-top:2px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:6px;
+  overflow:hidden;background:var(--surface)}
+.kpis .ki{padding:10px 11px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.kpis .ki:nth-child(3n){border-right:none}
+.kpis .ki:nth-child(4),.kpis .ki:nth-child(5),.kpis .ki:nth-child(6){border-bottom:none}
+.kpis .kl{font-size:10px;color:var(--muted)}
+.kpis .kv{font-size:18px;font-weight:800;margin-top:5px;font-family:var(--numfont);line-height:1}
+.kpis .kv em{font-style:normal;font-size:10px;color:var(--dim);margin-left:2px;font-family:inherit}
+.kpis .kd{font-size:9.5px;margin-top:4px}
+.up{color:var(--pos)}.down{color:var(--neg)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:10.5px;font-weight:700;padding:5px 9px;border-radius:4px;background:#fff;border:1px solid var(--line);
+  color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.p{border-color:#C7DDF7;background:var(--brand-soft);color:var(--brand)}
+.chip.w{border-color:#F2DDBB;background:#FFF8ED;color:var(--warn)}
+.chip.g{border-color:#C9E9D4;background:#F1FAF4;color:var(--pos)}
+.chip.r{border-color:#F3CFCB;background:#FEF5F4;color:var(--neg)}
+
+.txtbtn{font-size:11px;font-weight:750;color:var(--brand);white-space:nowrap}
+.txtbtn.w{color:var(--warn)}
+.txtbtn.r{color:var(--neg)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;
+  font:750 12.5px/1 inherit;padding:11px 14px;border-radius:5px;background:var(--brand);color:#fff}
+.btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink2)}
+.btn.dan{background:#fff;border:1px solid #F3CFCB;color:var(--neg)}
+.btn-block{width:100%}
+.btn-sm{padding:7px 10px;font-size:11px;border-radius:4px}
+.btn .ic{width:14px;height:14px}
+.btnrow{display:flex;gap:8px}
+.btnrow .btn{flex:1}
+
+.minibars{display:flex;align-items:flex-end;gap:5px;height:74px;padding:0 12px 0;border-bottom:1px solid var(--line2)}
+.minibars .b{flex:1;background:#C7DBF5;border-radius:2px 2px 0 0;min-height:5px}
+.minibars .b.hi{background:var(--brand)}
+.minibars .b.o{background:#E7C08A}
+.minibars .b.dim{background:#DFE5EC}
+.mbarx{display:flex;gap:5px;padding:5px 12px 9px}
+.mbarx span{flex:1;text-align:center;font-size:8.5px;color:var(--dim);font-family:var(--numfont)}
+
+.inbar{height:5px;border-radius:3px;background:#EEF1F5;overflow:hidden;margin-top:5px}
+.inbar>i{display:block;height:100%;background:var(--brand)}
+.inbar>i.g{background:var(--pos)}.inbar>i.o{background:var(--warn)}
+
+.mapwrap{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#EFF3F7;height:126px;position:relative}
+.mapwrap .grid{position:absolute;inset:0;background-image:linear-gradient(#E3E9F0 1px,transparent 1px),linear-gradient(90deg,#E3E9F0 1px,transparent 1px);
+  background-size:22px 22px}
+.mapwrap .rd{position:absolute;background:#F8FAFC}
+.mapwrap .r1{left:-10%;right:-10%;top:52px;height:14px}
+.mapwrap .r2{top:-10%;bottom:-10%;left:126px;width:12px}
+.mapwrap .rg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;
+  background:rgba(23,80,158,.12);border:1.5px solid rgba(23,80,158,.5)}
+.mapwrap .rg.a{width:96px;height:96px}.mapwrap .rg.b{width:56px;height:56px;background:rgba(23,80,158,.2)}
+.mapwrap .pn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;
+  background:var(--brand);box-shadow:0 0 0 3px rgba(255,255,255,.9)}
+.mapwrap .tl{position:absolute;left:8px;top:8px;background:rgba(255,255,255,.93);border:1px solid var(--line);
+  border-radius:3px;font-size:9.5px;color:var(--muted);padding:4px 7px}
+.mapwrap .lk{position:absolute;right:8px;bottom:8px;background:var(--brand);color:#fff;border:none;border-radius:3px;
+  font:700 10px/1 inherit;padding:6px 9px;display:flex;align-items:center;gap:5px}
+.mapwrap .lk .ic{width:12px;height:12px}
+
+.collapse{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;font-size:12px;
+  font-weight:700;color:var(--ink2);border-top:1px solid var(--line2)}
+.collapse .ic{color:var(--muted);transform:rotate(90deg)}
+
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.grid4 .g4{padding:9px 8px;border-right:1px solid var(--line2);text-align:center;background:#fff}
+.grid4 .g4:last-child{border-right:none}
+.grid4 .g4 .gl{font-size:9.5px;color:var(--muted)}
+.grid4 .g4 .gv{font-size:16px;font-weight:800;margin-top:5px;font-family:var(--numfont)}
+.grid4 .g4 .gv em{font-style:normal;font-size:9px;color:var(--dim);margin-left:2px;font-family:inherit}
+.grid4 .g4 .gs{font-size:9px;color:var(--dim);margin-top:3px}
+
+.footbar{flex:0 0 auto;display:flex;gap:8px;padding:10px 14px 16px;background:#fff;border-top:1px solid var(--line)}
+.footbar .btn{flex:1}
+.notefoot{padding:8px 14px 12px;font-size:9.5px;color:var(--dim);line-height:1.6;background:#fff;border-top:1px solid var(--line2)}
+.muted{font-size:10px;color:var(--muted);line-height:1.6}
+.mt6{margin-top:6px}.mt8{margin-top:8px}
+body.shot .topbar{display:none}
+body.shot .stage{padding:0}
+body.shot .devlabel{display:none}
+body.shot .device{box-shadow:none}
+body.shot.single .device{width:390px;height:844px;padding:0;border-radius:0;background:transparent}
+body.shot.single .screen{border-radius:0}
+body.shot.gallery .stage{gap:26px;padding:24px}
+body.shot.full .device{width:390px;height:auto;padding:0;border-radius:0;background:transparent}
+body.shot.full .screen{height:auto;border-radius:0}
+body.shot.full .screen-body{overflow:visible}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5M12 17.4h.01"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M9 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 12a3.5 3.5 0 1 0-1-6.9M22 21a6 6 0 0 0-5-5.9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></symbol>
+</svg>
+
+<header class="topbar">
+  <div class="brandrow">
+    <span class="sq"></span>
+    <h1>方案 A3 · 极简专业数据风</h1>
+    <span class="tagline">乔格训迹 V1.6 阶段7 · 全站UI/UX重设计预览 · 全部为模拟数据</span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button data-go="all" aria-selected="true">全部 6 屏</button>
+    <button data-go="student">学生首页</button>
+    <button data-go="coach">教练工作台</button>
+    <button data-go="developer">开发者工作台</button>
+    <button data-go="stats">数据统计</button>
+    <button data-go="gps">GPS考勤表单</button>
+    <button data-go="plan">训练计划表单</button>
+  </nav>
+  <div class="palette">
+    <span>主色</span><i class="sw" style="background:#17509E"></i>
+    <span>正向</span><i class="sw" style="background:#15803D"></i>
+    <span>预警</span><i class="sw" style="background:#B45309"></i>
+    <span>危险</span><i class="sw" style="background:#B42318"></i>
+    <span>说明</span><i class="sw" style="background:#0E7490"></i>
+    <span>纸面</span><i class="sw" style="background:#FBFCFD"></i>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+
+<!-- 1 学生首页 -->
+<section class="device-wrap" data-screen="student">
+  <div class="devlabel"><span class="idx">01</span><b>学生首页</b><span>信息密度优先 + 待办驱动</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-user"/></svg>
+        <div><div class="ab-t">陈雨桐</div><div class="ab-s">短跑一组 · 教练 李明 · 已加入 428 天</div></div>
+      </div>
+      <span class="abadge">学生</span>
+    </div>
+    <div class="tabstrip">
+      <span class="ts on">概览</span><span class="ts">训练</span><span class="ts">成绩</span><span class="ts">我的<span class="tb">1</span></span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+      <div class="pad">
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">今日待办</span><span class="sc">10月14日 周三</span></div>
+          <div class="box">
+            <div class="task">
+              <span class="chk"></span>
+              <span class="tm"><span class="tt">到场签到</span><span class="td">乔格田径场 A 区 · 半径 150 米</span></span>
+              <span class="tmeta">16:00 开放</span>
+            </div>
+            <div class="task">
+              <span class="chk"></span>
+              <span class="tm"><span class="tt">短跑专项 · 速度耐力</span><span class="td">60米 × 6 组 · 休息 180 秒</span></span>
+              <span class="tmeta">16:30</span>
+            </div>
+            <div class="task">
+              <span class="chk on"></span>
+              <span class="tm"><span class="tt">查看本周训练计划</span><span class="td">第6周 · 4 次训练</span></span>
+              <span class="tmeta">已完成</span>
+            </div>
+          </div>
+          <button class="btn btn-block" style="margin-top:8px"><svg class="ic"><use href="#i-pin"/></svg>立即签到</button>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">数据速览</span><a class="sa">完整报告 ›</a></div>
+          <div class="kpis">
+            <div class="ki"><div class="kl">100米 PB</div><div class="kv">11.82<em>秒</em></div><div class="kd up">↓ 0.14 秒</div></div>
+            <div class="ki"><div class="kl">本月出勤率</div><div class="kv">94.2<em>%</em></div><div class="kd up">环比 +2.1pp</div></div>
+            <div class="ki"><div class="kl">组内排名</div><div class="kv">1<em>/18</em></div><div class="kd">已审核成绩</div></div>
+            <div class="ki"><div class="kl">本月出勤</div><div class="kv">16<em>/17</em></div><div class="kd">迟到 1 次</div></div>
+            <div class="ki"><div class="kl">平均 RPE</div><div class="kv">7.2</div><div class="kd">近 8 次反馈</div></div>
+            <div class="ki"><div class="kl">体考目标</div><div class="kv">11.60<em>秒</em></div><div class="kd down">还差 0.22 秒</div></div>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">最近成绩</span><a class="sa">全部成绩 ›</a></div>
+          <div class="box box-p0" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th>项目</th><th class="n">成绩</th><th class="n">日期</th><th>状态</th></tr>
+              <tr><td class="k">100米</td><td class="n">11.82</td><td class="n">08-21</td><td><span class="chip g">已审核</span></td></tr>
+              <tr><td class="k">200米</td><td class="n">24.31</td><td class="n">08-14</td><td><span class="chip g">已审核</span></td></tr>
+              <tr><td class="k">100米</td><td class="n">11.96</td><td class="n">07-30</td><td><span class="chip w">待审核</span></td></tr>
+              <tr><td class="k">跳远</td><td class="n">5.42</td><td class="n">07-18</td><td><span class="chip g">已审核</span></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sect" style="margin-bottom:0">
+          <div class="sect-h"><span class="st">通知与反馈</span><span class="sc">2 条未读</span></div>
+          <div class="box">
+            <div class="task">
+              <span class="tm"><span class="tt">队内测试安排调整 <span class="chip r">重要</span></span><span class="td">10月15日测试调整至 15:30 · 昨天</span></span>
+              <svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg>
+            </div>
+            <div class="task">
+              <span class="tm"><span class="tt">教练发布新训练计划</span><span class="td">第6周速度耐力 · 2 小时前</span></span>
+              <svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 2 教练工作台 -->
+<section class="device-wrap" data-screen="coach">
+  <div class="devlabel"><span class="idx">02</span><b>教练工作台</b><span>收件箱式待办 + 行内操作</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-list"/></svg>
+        <div><div class="ab-t">教练工作台</div><div class="ab-s">李明 · 短跑一组 / 短跑二组 · 33 名学生</div></div>
+      </div>
+      <span class="abadge">教练员</span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="pad">
+        <div class="sect">
+          <div class="sect-h"><span class="st">今日考勤 · 短跑一组</span><a class="sa">查看名单 ›</a></div>
+          <div class="grid4">
+            <div class="g4"><div class="gl">应到</div><div class="gv">18</div><div class="gs">8 人已签</div></div>
+            <div class="g4"><div class="gl">已签到</div><div class="gv" style="color:var(--pos)">14</div><div class="gs">77.8%</div></div>
+            <div class="g4"><div class="gl">迟到</div><div class="gv" style="color:var(--warn)">2</div><div class="gs">16:30 后</div></div>
+            <div class="g4"><div class="gl">待签到</div><div class="gv">2</div><div class="gs">窗口至 17:00</div></div>
+          </div>
+          <div class="hint" style="padding-left:0">考勤状态由服务端按 UTC+8 时间与距离计算；待核实记录需人工确认。</div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">待办</span><span class="sc">共 14 项</span></div>
+          <div class="chips" style="margin-bottom:8px">
+            <span class="chip on">全部 14</span><span class="chip">成绩审核 7</span><span class="chip">请假审批 3</span>
+            <span class="chip">注册审核 2</span><span class="chip">考勤异常 2</span>
+          </div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th>类型</th><th>对象</th><th class="n">时间</th><th class="n">操作</th></tr>
+              <tr>
+                <td><span class="chip w">成绩审核</span></td>
+                <td class="k">赵子墨<span class="sub">100米 11.94 秒 · 短跑一组</span></td>
+                <td class="n">10-12</td>
+                <td class="n"><span class="txtbtn">审核</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip r">请假审批</span></td>
+                <td class="k">周可欣<span class="sub">10-14 病假 · 短跑一组</span></td>
+                <td class="n">10-12</td>
+                <td class="n"><span class="txtbtn w">审批</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip p">注册审核</span></td>
+                <td class="k">孙立<span class="sub">申请加入 短跑二组</span></td>
+                <td class="n">10-12</td>
+                <td class="n"><span class="txtbtn">通过</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip">考勤异常</span></td>
+                <td class="k">王梓晨<span class="sub">定位精度 82 米 · 待核实</span></td>
+                <td class="n">10-11</td>
+                <td class="n"><span class="txtbtn w">核实</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip">反馈评价</span></td>
+                <td class="k">刘思远<span class="sub">未完成 · RPE 9 · 需关注</span></td>
+                <td class="n">10-11</td>
+                <td class="n"><span class="txtbtn">评价</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sect" style="margin-bottom:0">
+          <div class="sect-h"><span class="st">功能入口</span><span class="sc">按使用频率</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr>
+                <td class="k" style="width:38%">训练计划</td>
+                <td>草稿 2 · 已发布 5</td>
+                <td class="n"><svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg></td>
+              </tr>
+              <tr>
+                <td class="k">赛事管理</td>
+                <td>报名中 1 · 待办理 3</td>
+                <td class="n"><svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg></td>
+              </tr>
+              <tr>
+                <td class="k">通知管理</td>
+                <td>草稿 1 · 已发布 6</td>
+                <td class="n"><svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg></td>
+              </tr>
+              <tr>
+                <td class="k">统计报表</td>
+                <td>10月 · 出勤率 94.2%</td>
+                <td class="n"><svg class="ic" style="color:#C9D2DB"><use href="#i-chev"/></svg></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 3 开发者工作台 -->
+<section class="device-wrap" data-screen="developer">
+  <div class="devlabel"><span class="idx">03</span><b>开发者工作台</b><span>表格化待处理 + 系统状态定义表</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-shield"/></svg>
+        <div><div class="ab-t">开发者工作台</div><div class="ab-s">王管理 · 最高管理权限 · 全部操作留痕</div></div>
+      </div>
+      <span class="abadge">开发者</span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="pad">
+        <div class="sect">
+          <div class="sect-h"><span class="st">系统状态</span><span class="sc"><span class="chip g">运行正常</span></span></div>
+          <div class="kpis" style="grid-template-columns:repeat(2,1fr)">
+            <div class="ki" style="border-right:1px solid var(--line2)"><div class="kl">云环境</div><div class="kv" style="font-size:13px">cloud1-…959a</div></div>
+            <div class="ki" style="border-right:none"><div class="kl">云函数 api</div><div class="kv" style="font-size:13px">Active · 3s</div></div>
+            <div class="ki" style="border-right:1px solid var(--line2);border-bottom:none"><div class="kl">数据库集合</div><div class="kv">19</div></div>
+            <div class="ki" style="border-right:none;border-bottom:none"><div class="kl">账号总数</div><div class="kv">27<em>人</em></div></div>
+          </div>
+          <div class="hint" style="padding-left:0">Version V1.6 · 阶段7 · bootstrap 状态 completed · 正式成绩口径 approved only。</div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">待处理</span><span class="sc">4 项</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th>类型</th><th>对象</th><th class="n">时间</th><th class="n">操作</th></tr>
+              <tr>
+                <td><span class="chip p">学生注册</span></td>
+                <td class="k">孙立<span class="sub">申请 短跑二组 · 资料完整</span></td>
+                <td class="n">10-12</td>
+                <td class="n"><span class="txtbtn">通过</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip w">角色授权</span></td>
+                <td class="k">郑一鸣<span class="sub">申请教练员角色</span></td>
+                <td class="n">10-12</td>
+                <td class="n"><span class="txtbtn">查看</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip r">账号停用</span></td>
+                <td class="k">吴桐<span class="sub">2026-10-09 停用 · 可恢复</span></td>
+                <td class="n">10-09</td>
+                <td class="n"><span class="txtbtn">恢复</span></td>
+              </tr>
+              <tr>
+                <td><span class="chip">考勤异常</span></td>
+                <td class="k">短跑一组<span class="sub">1 条待核实记录</span></td>
+                <td class="n">10-11</td>
+                <td class="n"><span class="txtbtn w">核实</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">管理模块</span><span class="sc">按职责分组</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><td class="k" style="width:44%">用户与角色</td><td>学生 24 · 教练 2 · 开发者 1</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+              <tr><td class="k">训练组与教练范围</td><td>4 个训练组 · 3 条负责关系</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+              <tr><td class="k">成绩审核（全局）</td><td>待审 7 条</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+              <tr><td class="k">统计工作台</td><td>全局统计与 XLSX 导出</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+              <tr><td class="k">赛事与通知</td><td>赛事 3 · 通知 7</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+              <tr><td class="k">审计日志</td><td>今日 42 条 · 保留历史</td><td class="n"><span class="txtbtn">进入</span></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="box pad12" style="background:#F6F8FA;border-color:var(--line)">
+          <div style="font-size:11.5px;font-weight:800;color:var(--ink2)">安全边界保持不变</div>
+          <div class="muted" style="margin-top:4px">删除集合、批量改数据、修改开发者权限、重置 bootstrap、发布正式版本均需人工确认；小程序端不提供绕过入口。</div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 4 数据统计 -->
+<section class="device-wrap" data-screen="stats">
+  <div class="devlabel"><span class="idx">04</span><b>数据统计页面</b><span>表格优先 + 指标网格 + 趋势</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-chart"/></svg>
+        <div><div class="ab-t">统计工作台</div><div class="ab-s">短跑一组 · 2026年10月 · 18 名学生</div></div>
+      </div>
+      <span class="abadge">教练员</span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="pad">
+        <div class="sect">
+          <div class="chips" style="margin-bottom:9px">
+            <span class="chip on">月度</span><span class="chip">季度</span><span class="chip">年度</span>
+            <span class="chip"><svg class="ic" style="width:11px;height:11px;display:inline;vertical-align:-2px"><use href="#i-filter"/></svg> 短跑一组</span>
+          </div>
+          <div class="kpis">
+            <div class="ki"><div class="kl">出勤率</div><div class="kv">94.2<em>%</em></div><div class="kd up">环比 +2.1pp</div></div>
+            <div class="ki"><div class="kl">有效出勤</div><div class="kv">268</div><div class="kd">含迟到 11 次</div></div>
+            <div class="ki"><div class="kl">实际应签到</div><div class="kv">284</div><div class="kd">已结束场次</div></div>
+            <div class="ki"><div class="kl">已审核成绩</div><div class="kv">126</div><div class="kd">正式成绩</div></div>
+            <div class="ki"><div class="kl">训练反馈</div><div class="kv">89</div><div class="kd">平均 RPE 7.1</div></div>
+            <div class="ki"><div class="kl">需要关注</div><div class="kv" style="color:var(--warn)">6</div><div class="kd">未完成 / 高 RPE</div></div>
+          </div>
+          <div class="hint" style="padding-left:0">出勤率只以已结束场次计算；未签到不等同于已核实无故缺勤。</div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">月度出勤趋势</span><span class="sc">2026年 · %</span></div>
+          <div class="box" style="padding-top:10px">
+            <div class="minibars">
+              <div class="b" style="height:64%"></div><div class="b" style="height:72%"></div><div class="b dim" style="height:58%"></div>
+              <div class="b" style="height:79%"></div><div class="b" style="height:85%"></div><div class="b" style="height:74%"></div>
+              <div class="b" style="height:88%"></div><div class="b" style="height:82%"></div><div class="b" style="height:91%"></div>
+              <div class="b hi" style="height:94%"></div>
+            </div>
+            <div class="mbarx"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+            <div class="hint">3 月为寒假训练期，出勤率明显低于其他月份；10 月为当前月，数据仍会随场次结束更新。</div>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">训练组比较</span><span class="sc">出勤率</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th>训练组</th><th class="n">有效出勤</th><th class="n">应签到</th><th style="width:78px">出勤率</th></tr>
+              <tr>
+                <td class="k">短跑一组</td><td class="n">268</td><td class="n">284</td>
+                <td><div class="num" style="font-weight:800">94.2%</div><div class="inbar"><i style="width:94.2%"></i></div></td>
+              </tr>
+              <tr>
+                <td class="k">短跑二组</td><td class="n">243</td><td class="n">266</td>
+                <td><div class="num" style="font-weight:800">91.5%</div><div class="inbar"><i class="o" style="width:91.5%"></i></div></td>
+              </tr>
+              <tr>
+                <td class="k">中长跑组</td><td class="n">301</td><td class="n">313</td>
+                <td><div class="num" style="font-weight:800">96.1%</div><div class="inbar"><i class="g" style="width:96.1%"></i></div></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">100米 正式成绩榜</span><span class="sc">已审核 · 10月</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th style="width:34px" class="n">名次</th><th>学生</th><th>训练组</th><th class="n">成绩</th></tr>
+              <tr><td class="n k">1</td><td class="k">陈雨桐</td><td>短跑一组</td><td class="n">11.82</td></tr>
+              <tr><td class="n k">2</td><td class="k">张一诺</td><td>短跑二组</td><td class="n">11.90</td></tr>
+              <tr><td class="n k">3</td><td class="k">刘思远</td><td>短跑一组</td><td class="n">11.98</td></tr>
+              <tr><td class="n k">4</td><td class="k">王梓晨</td><td>短跑二组</td><td class="n">12.04</td></tr>
+            </table>
+          </div>
+          <div class="hint" style="padding-left:0">并列成绩使用相同名次，后续名次跳号；历史 PB 不参与周期排名。</div>
+        </div>
+
+        <div class="sect" style="margin-bottom:0">
+          <div class="sect-h"><span class="st">报表导出</span><span class="sc">当前授权范围</span></div>
+          <div class="btnrow">
+            <button class="btn sec"><svg class="ic"><use href="#i-download"/></svg>导出成绩 XLSX</button>
+            <button class="btn sec"><svg class="ic"><use href="#i-download"/></svg>导出考勤 XLSX</button>
+          </div>
+          <div class="hint" style="padding-left:0">默认上限 2000 行；超出会提示缩小周期或训练组，不静默截断。</div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+</section>
+
+<!-- 5 GPS考勤表单 -->
+<section class="device-wrap" data-screen="gps">
+  <div class="devlabel"><span class="idx">05</span><b>GPS考勤表单</b><span>横向字段组 + 地图选点 + 参数说明</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-back"/></svg>
+        <div><div class="ab-t">新建考勤场次</div><div class="ab-s">短跑一组 · 未保存</div></div>
+      </div>
+      <span class="abadge">第 2 / 3 步</span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+      <div class="pad">
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">场次信息</span><span class="sc">必填 3 项</span></div>
+          <div class="box" style="overflow:hidden">
+            <div class="frow"><span class="fl">训练组<span class="req">*</span></span><span class="fv"><span>短跑一组</span><span class="u">切换</span></span></div>
+            <div class="frow"><span class="fl">考勤日期<span class="req">*</span></span><span class="fv"><span>2026-10-14 周三</span><span class="u">选择</span></span></div>
+            <div class="frow"><span class="fl">地点名称<span class="req">*</span></span><span class="fv"><span>乔格田径场 A 区</span><span class="u">编辑</span></span></div>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">签到中心点</span><span class="sc">地图选点</span></div>
+          <div class="box" style="padding:0;overflow:hidden">
+            <div class="mapwrap">
+              <span class="grid"></span><span class="rd r1"></span><span class="rd r2"></span>
+              <span class="rg a"></span><span class="rg b"></span><span class="pn"></span>
+              <span class="tl">地图选点示意 · 微信官方地图组件</span>
+              <button class="lk" type="button"><svg class="ic"><use href="#i-pin"/></svg>使用我的当前位置</button>
+            </div>
+            <div class="frow"><span class="fl">中心坐标</span><span class="fv"><span class="num" style="font-size:11.5px">30.65820, 104.06530</span><span class="u">自动</span></span></div>
+            <div class="frow"><span class="fl">定位精度</span><span class="fv"><span>±18 米</span><span class="u">当前设备</span></span></div>
+          </div>
+          <div class="hint" style="padding-left:0">点选地图或在当前位置选点后自动写入经纬度，教练不再手动输入坐标；坐标降精度保存。</div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">签到规则</span><span class="sc">服务端判定</span></div>
+          <div class="box" style="overflow:hidden">
+            <div class="frow">
+              <span class="fl">签到半径</span>
+              <span class="fv" style="justify-content:flex-end"><span class="fin sm"><span class="num">150</span><span class="u">米</span></span></span>
+            </div>
+            <div class="hint">学生与中心点直线距离在此范围内才判定签到成功，建议 100–300 米。</div>
+            <div class="frow">
+              <span class="fl">精度阈值</span>
+              <span class="fv" style="justify-content:flex-end"><span class="fin sm"><span class="num">50</span><span class="u">米</span></span></span>
+            </div>
+            <div class="hint">精度差于该值时转为“待核实”，由教练人工确认，不直接判失败。</div>
+            <div class="frow">
+              <span class="fl">签到窗口</span>
+              <span class="fv" style="justify-content:flex-end;gap:6px">
+                <span class="fin sm"><span class="num">16:00</span></span>
+                <span class="u">至</span>
+                <span class="fin sm"><span class="num">17:00</span></span>
+              </span>
+            </div>
+            <div class="frow">
+              <span class="fl">迟到判定</span>
+              <span class="fv" style="justify-content:flex-end"><span class="fin sm"><span class="num">16:30</span><span class="u">后</span></span></span>
+            </div>
+          </div>
+          <div class="hint" style="padding-left:0">时间统一按 UTC+8 判定；学生手机本地时间不影响签到结果。</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="footbar">
+      <button class="btn sec">保存草稿</button>
+      <button class="btn"><svg class="ic"><use href="#i-check"/></svg>发布场次</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- 6 训练计划表单 -->
+<section class="device-wrap" data-screen="plan">
+  <div class="devlabel"><span class="idx">06</span><b>训练计划表单</b><span>紧凑字段组 + 核心参数前置</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-right"><i class="sig"></i><i class="wifi"></i><i class="batt"></i></span></div>
+    <div class="appbar">
+      <div class="ab-l">
+        <svg class="ic"><use href="#i-back"/></svg>
+        <div><div class="ab-t">新建训练计划</div><div class="ab-s">短跑一组 · 草稿</div></div>
+      </div>
+      <span class="abadge">草稿</span>
+    </div>
+    <div class="screen-body">
+      <div class="simnote"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+      <div class="pad">
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">基本信息</span><span class="sc">必填 3 项</span></div>
+          <div class="box" style="overflow:hidden">
+            <div class="frow"><span class="fl">计划名称<span class="req">*</span></span><span class="fv"><span>第6周速度耐力</span></span></div>
+            <div class="frow"><span class="fl">训练组<span class="req">*</span></span><span class="fv"><span>短跑一组</span><span class="u">切换</span></span></div>
+            <div class="frow"><span class="fl">训练日期<span class="req">*</span></span><span class="fv" style="justify-content:flex-end;gap:6px">
+              <span class="fin sm"><span class="num">10-14</span></span><span class="u">至</span><span class="fin sm"><span class="num">10-19</span></span>
+            </span></div>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">训练类型</span><span class="sc">决定核心参数</span></div>
+          <div class="chips">
+            <span class="chip on">短跑专项</span><span class="chip">力量训练</span><span class="chip">速度耐力</span>
+            <span class="chip">恢复训练</span><span class="chip">技术训练</span>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">核心参数 · 短跑专项</span><span class="sc">4 项</span></div>
+          <div class="grid4">
+            <div class="g4"><div class="gl">距离</div><div class="gv">60<em>米</em></div><div class="gs">核心</div></div>
+            <div class="g4"><div class="gl">组数</div><div class="gv">6<em>组</em></div><div class="gs">核心</div></div>
+            <div class="g4"><div class="gl">每组次数</div><div class="gv">1<em>次</em></div><div class="gs">核心</div></div>
+            <div class="g4"><div class="gl">组间休息</div><div class="gv">180<em>秒</em></div><div class="gs">核心</div></div>
+          </div>
+          <div class="hint" style="padding-left:0">选择“力量训练”时，此处自动切换为 动作 / 组数 / 次数 / 负荷。</div>
+          <div class="box" style="margin-top:8px">
+            <div class="collapse"><span>其他参数：训练目标 · 持续时间 · 负荷 · 注意事项</span><svg class="ic"><use href="#i-chev"/></svg></div>
+          </div>
+        </div>
+
+        <div class="sect">
+          <div class="sect-h"><span class="st">训练内容</span><span class="sc">2 项</span></div>
+          <div class="box" style="overflow:hidden">
+            <table class="tbl">
+              <tr><th>训练项</th><th class="n">组数</th><th class="n">次数</th><th class="n">休息</th></tr>
+              <tr><td class="k">30米加速跑<span class="sub">距离 30 米</span></td><td class="n">6</td><td class="n">1</td><td class="n">90s</td></tr>
+              <tr><td class="k">60米速度耐力<span class="sub">距离 60 米</span></td><td class="n">6</td><td class="n">1</td><td class="n">180s</td></tr>
+            </table>
+            <div class="collapse" style="border-top:1px solid var(--line2)">
+              <span style="display:flex;align-items:center;gap:6px;color:var(--brand)"><svg class="ic" style="transform:none;color:var(--brand)"><use href="#i-plus"/></svg>添加训练内容</span>
+              <span class="sc" style="font-size:10px;color:var(--dim)">最多 20 项</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="box pad12" style="background:#F6F8FA">
+          <div class="muted">草稿仅自己可见；发布后所属训练组学生可在“训练计划”查看，并可对已签到场次提交反馈。</div>
+        </div>
+      </div>
+    </div>
+    <div class="footbar">
+      <button class="btn sec">保存草稿</button>
+      <button class="btn"><svg class="ic"><use href="#i-zap"/></svg>发布计划</button>
+    </div>
+  </div></div>
+</section>
+
+</main>
+
+<script>
+(function () {
+  var wraps = Array.prototype.slice.call(document.querySelectorAll('.device-wrap'));
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('#tabs button'));
+  var params = new URLSearchParams(window.location.search);
+  var shot = params.get('shot');
+  var full = params.get('full');
+  function apply(target) {
+    wraps.forEach(function (w) {
+      w.style.display = (target === 'all' || w.dataset.screen === target) ? '' : 'none';
+    });
+    buttons.forEach(function (b) { b.setAttribute('aria-selected', String(b.dataset.go === target)); });
+  }
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.go); window.scrollTo({ left: 0, top: 0 }); });
+  });
+  if (shot) {
+    document.body.classList.add('shot');
+    document.body.classList.add(shot === 'all' ? 'gallery' : 'single');
+    if (full) { document.body.classList.add('full'); }
+    apply(shot === 'all' ? 'all' : shot);
+  } else {
+    apply('all');
+  }
+})();
+</script>
+</body>
+</html>
