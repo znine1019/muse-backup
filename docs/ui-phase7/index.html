@@ -49,6 +49,34 @@ td code{font-size:12px}
   <p class="lead">本页是阶段7设计研究阶段的统一入口。三套方案均为独立、可运行的本地 HTML/CSS 预览原型，全部使用虚构模拟数据，未连接云数据库、未修改任何正式业务页面。点击每套方案下方的按钮即可打开完整交互原型（可在原型内切换 6 个页面）。</p>
   <div class="warn">模拟数据声明：以下所有姓名、成绩、考勤、赛事与反馈数据均为界面预览用虚构数据，不代表任何真实学生信息，也不会写入云数据库。阶段7尚未开始全站代码改造，最终视觉方案需由项目所有者选择后实施。</div>
 
+  <h3 style="margin-top:4px">最终融合方案（本轮新增）</h3>
+  <section class="scheme" style="margin-bottom:30px;border-color:#103A6B;box-shadow:0 10px 30px rgba(16,58,107,.12)">
+    <div class="hd">
+      <h2>方案 F1 · 融合终版　<span style="font-size:13px;font-weight:600;color:#5B6774">A3 信息架构 + A1 竞技数据视觉 + A2 学生端体验</span></h2>
+      <div class="sub">全站统一设计令牌；浅色页面底 + 深蓝品牌主色；深蓝只用于关键运动数据卡；正文 14px、触控目标 ≥44px（修复 A1/A3 字号偏小与按钮过紧问题）。6 个页面均具备真实交互，浏览器验证无 JS 报错、无横向滚动、无文字重叠。</div>
+      <span class="tag t-a3">A3 信息架构</span><span class="tag t-a1">A1 竞技数据</span><span class="tag t-a2">A2 学生体验</span>
+      <div class="swatch"><i class="sw" style="background:#103A6B"></i><i class="sw" style="background:#00A7C4"></i><i class="sw" style="background:#F2711C"></i><i class="sw" style="background:#0F7B5A"></i><i class="sw" style="background:#F2F5F9"></i><i class="sw" style="background:#0F3563"></i></div>
+    </div>
+    <img src="screenshots/F1-00-gallery.png" alt="F1 融合终版六屏总览" />
+    <div class="links">
+      <a class="btn" href="F1-融合终版/index.html">打开 F1 交互原型</a>
+      <a class="btn gh" href="screenshots/F1-00-gallery.png">总览截图</a>
+      <a class="btn gh" href="screenshots/F1-375-gallery.png">375×812 总览</a>
+      <a class="btn gh" href="F1_融合设计系统与交互规范.md">融合设计规范</a>
+    </div>
+  </section>
+
+  <h3>F1 六个核心页面（整页长图）</h3>
+  <div class="shots">
+    <figure><img src="screenshots/F1-full-01-student.png" alt="F1学生首页" /><figcaption>F1 学生首页</figcaption></figure>
+    <figure><img src="screenshots/F1-full-02-coach.png" alt="F1教练工作台" /><figcaption>F1 教练工作台</figcaption></figure>
+    <figure><img src="screenshots/F1-full-03-developer.png" alt="F1开发者工作台" /><figcaption>F1 开发者工作台</figcaption></figure>
+    <figure><img src="screenshots/F1-full-04-stats.png" alt="F1统计工作台" /><figcaption>F1 统计工作台</figcaption></figure>
+    <figure><img src="screenshots/F1-full-05-gps.png" alt="F1GPS考勤" /><figcaption>F1 GPS考勤场次</figcaption></figure>
+    <figure><img src="screenshots/F1-full-06-plan.png" alt="F1训练计划" /><figcaption>F1 训练计划编辑</figcaption></figure>
+  </div>
+
+  <h3 style="margin-top:26px">以下为第一轮三套候选方案（保留对比）</h3>
   <div class="cards">
     <section class="scheme">
       <div class="hd">
@@ -124,6 +152,18 @@ td code{font-size:12px}
   </div>
 
   <h3>文件与命名说明</h3>
+  <table style="margin-bottom:22px">
+    <tr><th>F1 文件</th><th>内容</th></tr>
+    <tr><td><code>docs/ui-phase7/F1-融合终版/index.html</code></td><td>F1 融合终版交互原型（6 页面切换 + 视口 390/375 切换）</td></tr>
+    <tr><td><code>docs/ui-phase7/F1-融合终版/f1.css</code></td><td>F1 设计系统样式（设计令牌 + 组件）</td></tr>
+    <tr><td><code>docs/ui-phase7/F1-融合终版/f1.js</code></td><td>F1 交互层（页面/标签/筛选/步进/地图/表单动态）</td></tr>
+    <tr><td><code>docs/ui-phase7/F1_融合设计系统与交互规范.md</code></td><td>正式融合设计规范（18 节，含真机验收标准）</td></tr>
+    <tr><td><code>docs/ui-phase7/screenshots/F1-00-gallery.png</code></td><td>F1 六屏总览（390×844，2740×1010）</td></tr>
+    <tr><td><code>docs/ui-phase7/screenshots/F1-0N-*.png</code></td><td>F1 单屏首屏截图（390×844，2 倍图）</td></tr>
+    <tr><td><code>docs/ui-phase7/screenshots/F1-375-0N-*.png</code></td><td>F1 单屏首屏截图（375×812，2 倍图）</td></tr>
+    <tr><td><code>docs/ui-phase7/screenshots/F1-full-0N-*.png</code></td><td>F1 单屏整页长图（完整内容）</td></tr>
+  </table>
+
   <table>
     <tr><th>路径</th><th>内容</th></tr>
     <tr><td><code>docs/ui-phase7/index.html</code></td><td>本入口页，含三套方案总览与逐屏截图</td></tr>

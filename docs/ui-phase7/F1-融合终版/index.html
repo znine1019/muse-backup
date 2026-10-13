@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>方案F1 · 融合终版｜乔格训迹 V1.6 阶段7 原型</title>
+<link rel="stylesheet" href="f1.css" />
+</head>
+<body data-vw="390">
+
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H5V10.5"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M9 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 12a3.5 3.5 0 1 0-1-6.9M22 21a6 6 0 0 0-5-5.9"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10.5 20a1.5 1.5 0 0 0 3 0"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M4 6h16v15H4zM4 10h16M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></symbol>
+  <symbol id="i-locate" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-chevdown" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v5M12 17.4h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 3 3 5.5v16L9 19l6 2.5 6-2.5v-16L15 5.5 9 3Z"/><path d="M9 3v16M15 5.5v16"/></symbol>
+  <symbol id="i-empty" viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 11h16M9 3h6v4H9z"/></symbol>
+</svg>
+
+<header class="board">
+  <div class="board-head">
+    <h1>方案 F1 · 融合终版</h1>
+    <span class="sub"><b>A3 信息架构</b> + <b>A1 竞技数据视觉</b> + <b>A2 学生端体验</b> · 乔格训迹 V1.6 阶段7 · 全部为模拟数据</span>
+  </div>
+
+  <div class="board-row">
+    <span class="lb">页面</span>
+    <div class="btns" id="boardTabs" data-group="screen">
+      <button data-act="screen" data-go="all" aria-selected="true">全部 6 屏</button>
+      <button data-act="screen" data-go="student">1 学生首页</button>
+      <button data-act="screen" data-go="coach">2 教练工作台</button>
+      <button data-act="screen" data-go="developer">3 开发者工作台</button>
+      <button data-act="screen" data-go="stats">4 统计工作台</button>
+      <button data-act="screen" data-go="gps">5 GPS考勤场次</button>
+      <button data-act="screen" data-go="plan">6 训练计划编辑</button>
+    </div>
+  </div>
+
+  <div class="board-row">
+    <span class="lb">视口（真实设备尺寸验证）</span>
+    <div class="btns" data-group="vw">
+      <button data-act="vw" data-vw="390" aria-selected="true">390×844（iPhone 15）</button>
+      <button data-act="vw" data-vw="375">375×812（小屏）</button>
+    </div>
+  </div>
+
+  <div class="token-strip">
+    <span>品牌深蓝 #103A6B</span><i class="sw" style="background:#103A6B"></i>
+    <span>竞技青 #00A7C4</span><i class="sw" style="background:#00A7C4"></i>
+    <span>能量橙 #F2711C</span><i class="sw" style="background:#F2711C"></i>
+    <span>成功 #0F7B5A</span><i class="sw" style="background:#0F7B5A"></i>
+    <span>警告 #B45309</span><i class="sw" style="background:#B45309"></i>
+    <span>错误 #C0392B</span><i class="sw" style="background:#C0392B"></i>
+    <span>页面底 #F2F5F9</span><i class="sw" style="background:#F2F5F9"></i>
+    <span>数据卡 #0F3563</span><i class="sw" style="background:#0F3563"></i>
+  </div>
+
+  <div class="sim-boundary">
+    <b>模拟边界：</b>顶部标题栏与底部 TabBar 为微信小程序<b>原生导航的示意</b>，不是浏览器导航实现；地图与定位为模拟交互，<b>不调用</b> <code>wx.getLocation</code> / <code>wx.chooseLocation</code>，<b>不连接</b> CloudBase，<b>不写入</b>任何真实业务数据。
+  </div>
+  <div class="sim-boundary" style="border-left-color:var(--brand-600);background:var(--brand-050);color:#2B4A73">
+    <b>可交互：</b>页面切换 · 标签页切换 · 筛选切换 · 分组折叠 · 训练类型切换 · 核心参数步进 · 添加/删除训练内容 · 地图点选与「使用当前位置」 · 数值步进器 · 待办处理 · 学生签到 · 空状态。
+    <b>纯展示：</b>趋势图数值与「常用入口」跳转为模拟；未实现真实云调用、真实定位与真实消息推送。
+  </div>
+</header>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<main class="stage">
+
+<!-- ==================== 1 学生首页 ==================== -->
+<section class="device-wrap" data-screen="student">
+  <div class="devlabel"><span class="idx">01</span><b>学生首页</b><span>今日任务优先 · A1 PB 数据卡 · A2 目标进度</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <div class="nb-main"><div class="nb-t">乔格训迹</div><div class="nb-s">学生端 · 短跑一组 · 教练 李明</div></div>
+      <div class="nb-right"><span class="chip brand">学生</span><span class="avatar a" style="width:30px;height:30px;border-radius:9px">陈</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="card">
+        <div class="card-h"><span class="t">今日训练</span><span class="chip brand" id="todayState">16:00 开放签到</span></div>
+        <div style="font-size:var(--fs-body);font-weight:700">短跑专项 · 速度耐力</div>
+        <div style="font-size:var(--fs-sub);color:var(--ink-3);margin-top:5px;line-height:1.6">
+          周三 10-14 16:30 · 乔格田径场 A 区<br>60米 × 6 组 · 组间休息 180 秒
+        </div>
+        <div class="btn-row">
+          <button class="btn accent" id="checkinBtn" data-act="checkin"><svg class="ic"><use href="#i-pin"/></svg>立即签到</button>
+          <button class="btn ghost" data-act="toast" data-msg="训练计划详情页在全站实施轮实现">查看计划</button>
+        </div>
+      </div>
+
+      <div class="dcard">
+        <div class="d-k">100米 · 个人最好成绩 PB</div>
+        <div class="d-v"><span class="d-num">11.82</span><span class="d-unit">秒</span></div>
+        <div class="d-meta">2026-08-21 · 教练已审核 · 正式成绩</div>
+        <span class="d-delta"><svg class="ic" style="width:13px;height:13px"><use href="#i-up"/></svg>较上次提升 0.14 秒</span>
+        <div class="d-foot">
+          <span class="d-chip goal">距体考目标 11.60 还差 0.22 秒</span>
+          <span class="d-chip up">近 6 次稳定提升</span>
+        </div>
+        <svg class="spark" viewBox="0 0 104 52" aria-hidden="true">
+          <polygon class="ar" points="6,46 6,40 23,35 40,30 57,21 74,16 96,8 96,46"/>
+          <polyline class="ln" points="6,40 23,35 40,30 57,21 74,16 96,8"/>
+          <circle class="dot" cx="96" cy="8" r="3.2"/>
+        </svg>
+      </div>
+
+      <div class="grid2">
+        <div class="kpi">
+          <div class="k-l">体考目标达成</div>
+          <div class="k-v">92<em>%</em></div>
+          <div class="prog acc"><i style="width:92%"></i></div>
+          <div class="k-s">目标 11.60 秒</div>
+        </div>
+        <div class="kpi">
+          <div class="k-l">本月出勤率</div>
+          <div class="k-v">94.2<em>%</em></div>
+          <div class="prog ok"><i style="width:94%"></i></div>
+          <div class="k-s">16 / 17 场次</div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">近期进步</span><span class="sc">近 30 天</span></div>
+        <div class="list">
+          <div class="row">
+            <span class="avatar b"><svg class="ic" style="width:17px;height:17px"><use href="#i-up"/></svg></span>
+            <span class="r-main"><span class="r-t">100米 12.05 → 11.82</span><span class="r-m">提升 0.23 秒 · 08-21 教练已审核</span></span>
+            <span class="r-v" style="color:var(--success)">+0.23</span>
+          </div>
+          <div class="row">
+            <span class="avatar b"><svg class="ic" style="width:17px;height:17px"><use href="#i-up"/></svg></span>
+            <span class="r-main"><span class="r-t">立定跳远 2.61 → 2.68</span><span class="r-m">提升 0.07 米 · 08-14 教练已审核</span></span>
+            <span class="r-v" style="color:var(--success)">+0.07</span>
+          </div>
+          <div class="row">
+            <span class="avatar e"><svg class="ic" style="width:17px;height:17px"><use href="#i-activity"/></svg></span>
+            <span class="r-main"><span class="r-t">训练反馈平均 RPE 7.2</span><span class="r-m">近 8 次训练 · 负荷稳定</span></span>
+            <span class="r-v" style="color:var(--ink-3)">7.2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="t">需要注意</span><span class="c">2 条未读</span></div>
+        <div class="row" style="padding:0;border:none;min-height:0;gap:10px">
+          <span class="chip danger" style="flex:0 0 auto">重要</span>
+          <span class="r-main"><span class="r-t">队内测试安排调整</span><span class="r-m">10月15日测试调整至 15:30 · 请提前 20 分钟到场</span></span>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">常用入口</span><span class="sc">按使用频率排序</span></div>
+        <div class="list">
+          <button class="row tap" data-act="toast" data-msg="训练计划：全站实施轮实现">
+            <span class="avatar a"><svg class="ic"><use href="#i-list"/></svg></span>
+            <span class="r-main"><span class="r-t">训练计划</span><span class="r-m">本周 4 次训练</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="成绩与排行：全站实施轮实现">
+            <span class="avatar c"><svg class="ic"><use href="#i-trophy"/></svg></span>
+            <span class="r-main"><span class="r-t">成绩与排行榜</span><span class="r-m">组内排名第 1 · 2 条待审核</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="训练统计：全站实施轮实现">
+            <span class="avatar b"><svg class="ic"><use href="#i-chart"/></svg></span>
+            <span class="r-main"><span class="r-t">训练统计</span><span class="r-m">10月出勤率 94.2%</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="我的档案：全站实施轮实现">
+            <span class="avatar e"><svg class="ic"><use href="#i-user"/></svg></span>
+            <span class="r-main"><span class="r-t">我的档案</span><span class="r-m">身高体重 · 主项 · 体考目标</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：顶部标题栏与底部 TabBar 为微信小程序原生导航的示意；PB 与趋势为模拟数据；未连接云数据库、未调用定位接口。</div>
+    </div>
+    <div class="tabbar">
+      <button class="tb on"><svg class="ic"><use href="#i-home"/></svg>首页</button>
+      <button class="tb" data-act="toast" data-msg="训练页：全站实施轮实现"><svg class="ic"><use href="#i-activity"/></svg>训练</button>
+      <button class="tb" data-act="toast" data-msg="数据页：全站实施轮实现"><svg class="ic"><use href="#i-chart"/></svg>数据</button>
+      <button class="tb" data-act="toast" data-msg="我的页：全站实施轮实现"><svg class="ic"><use href="#i-user"/></svg>我的</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ==================== 2 教练工作台 ==================== -->
+<section class="device-wrap" data-screen="coach">
+  <div class="devlabel"><span class="idx">02</span><b>教练工作台</b><span>今日考勤 + 待办队列 + 分组入口</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <div class="nb-main"><div class="nb-t">教练工作台</div><div class="nb-s">李明 · 短跑一组 / 短跑二组 · 33 名学生</div></div>
+      <div class="nb-right"><span class="chip brand">教练员</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="card">
+        <div class="card-h"><span class="t">今日训练</span><span class="chip ok dot">签到中</span></div>
+        <div style="font-size:var(--fs-body);font-weight:700">短跑一组 · 16:30 乔格田径场 A 区</div>
+        <div style="font-size:var(--fs-sub);color:var(--ink-3);margin-top:4px">签到窗口 16:00–17:00 · 迟到线 16:30</div>
+        <div class="dstrip" style="margin-top:11px">
+          <div class="ds"><div class="ds-l">应到</div><div class="ds-v acc">18</div><div class="ds-s">7 人已签</div></div>
+          <div class="ds"><div class="ds-l">已签到</div><div class="ds-v ok">14</div><div class="ds-s">77.8%</div></div>
+          <div class="ds"><div class="ds-l">迟到</div><div class="ds-v warn">2</div><div class="ds-s">16:30 后</div></div>
+          <div class="ds"><div class="ds-l">待签到</div><div class="ds-v">2</div><div class="ds-s">17:00 截止</div></div>
+        </div>
+        <button class="btn ghost block" style="margin-top:11px" data-act="toast" data-msg="考勤名单：全站实施轮实现">
+          <svg class="ic"><use href="#i-users"/></svg>查看考勤名单与待核实记录
+        </button>
+      </div>
+
+      <div class="card pad0">
+        <div class="card-h" style="padding:14px 14px 8px;margin-bottom:0">
+          <span class="t">待办</span><span class="c" id="coachPendingTotal">共 8 项</span>
+        </div>
+        <div style="padding:0 14px">
+          <div class="tabs" id="coachTabs" data-tabgroup="coach">
+            <button class="tab" data-act="tab" data-group="coach" data-val="all" aria-selected="true">全部 <span class="n">8</span></button>
+            <button class="tab" data-act="tab" data-group="coach" data-val="leave">待批请假 <span class="n">3</span></button>
+            <button class="tab" data-act="tab" data-group="coach" data-val="score">待审成绩 <span class="n">3</span></button>
+            <button class="tab" data-act="tab" data-group="coach" data-val="event">赛事意向 <span class="n">0</span></button>
+            <button class="tab" data-act="tab" data-group="coach" data-val="feedback">需关注反馈 <span class="n">2</span></button>
+          </div>
+        </div>
+        <div id="coachTodos">
+          <div class="todo p1" data-cat="leave">
+            <span class="bar"></span>
+            <span class="avatar c">周</span>
+            <span class="t-main"><span class="t-t">周可欣 <span class="chip danger">待批请假</span></span><span class="t-m">10-14 病假 · 需影响当日考勤口径</span></span>
+            <span class="t-a">
+              <button class="btn sm" data-act="todo-done" data-label="已通过请假">通过</button>
+              <button class="btn sm danger" data-act="todo-done" data-label="已驳回请假">驳回</button>
+            </span>
+          </div>
+          <div class="todo p2" data-cat="score">
+            <span class="bar"></span>
+            <span class="avatar e">赵</span>
+            <span class="t-main"><span class="t-t">赵子墨 <span class="chip warn">成绩待审</span></span><span class="t-m">100米 11.94 秒 · 短跑一组 · 申报 10-12</span></span>
+            <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已审核通过成绩">审核</button></span>
+          </div>
+          <div class="todo p2" data-cat="score">
+            <span class="bar"></span>
+            <span class="avatar e">刘</span>
+            <span class="t-main"><span class="t-t">刘思远 <span class="chip warn">成绩待审</span></span><span class="t-m">200米 24.55 秒 · 短跑一组 · 申报 10-11</span></span>
+            <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已审核通过成绩">审核</button></span>
+          </div>
+          <div class="todo p3" data-cat="leave">
+            <span class="bar"></span>
+            <span class="avatar a">孙</span>
+            <span class="t-main"><span class="t-t">孙立 <span class="chip danger">待批请假</span></span><span class="t-m">10-15 事假 · 短跑二组</span></span>
+            <span class="t-a">
+              <button class="btn sm" data-act="todo-done" data-label="已通过请假">通过</button>
+              <button class="btn sm danger" data-act="todo-done" data-label="已驳回请假">驳回</button>
+            </span>
+          </div>
+          <div class="todo p1" data-cat="feedback">
+            <span class="bar"></span>
+            <span class="avatar c">王</span>
+            <span class="t-main"><span class="t-t">王梓晨 <span class="chip danger">需关注</span></span><span class="t-m">未完成训练 · RPE 9 · 反馈提到膝盖不适</span></span>
+            <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已添加教练评价">评价</button></span>
+          </div>
+          <div class="todo p3" data-cat="score">
+            <span class="bar"></span>
+            <span class="avatar e">张</span>
+            <span class="t-main"><span class="t-t">张一诺 <span class="chip warn">成绩待审</span></span><span class="t-m">100米 11.90 秒 · 短跑二组 · 申报 10-10</span></span>
+            <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已审核通过成绩">审核</button></span>
+          </div>
+          <div class="todo p3" data-cat="leave">
+            <span class="bar"></span>
+            <span class="avatar a">陈</span>
+            <span class="t-main"><span class="t-t">陈雨桐 <span class="chip danger">待批请假</span></span><span class="t-m">10-18 事假 · 短跑一组</span></span>
+            <span class="t-a">
+              <button class="btn sm" data-act="todo-done" data-label="已通过请假">通过</button>
+              <button class="btn sm danger" data-act="todo-done" data-label="已驳回请假">驳回</button>
+            </span>
+          </div>
+          <div class="todo p3" data-cat="feedback">
+            <span class="bar"></span>
+            <span class="avatar c">李</span>
+            <span class="t-main"><span class="t-t">李佳航 <span class="chip warn">需关注</span></span><span class="t-m">部分完成 · RPE 8 · 连续两次负荷偏高</span></span>
+            <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已添加教练评价">评价</button></span>
+          </div>
+        </div>
+        <div class="empty" id="coachEmpty" style="display:none">
+          <span class="e-ic"><svg class="ic"><use href="#i-empty"/></svg></span>
+          <span class="e-t">当前没有赛事意向待处理</span>
+          <span class="e-m">赛事发布后，学生提交的意向会出现在这里。</span>
+          <button class="btn ghost sm" data-act="toast" data-msg="赛事管理：全站实施轮实现">查看已结束的赛事意向</button>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">常用管理功能</span><span class="sc">按使用频率排序</span></div>
+        <div class="list">
+          <button class="row tap" data-act="toast" data-msg="考勤管理：含地图选点建场次，全站实施轮实现">
+            <span class="avatar a"><svg class="ic"><use href="#i-pin"/></svg></span>
+            <span class="r-main"><span class="r-t">考勤管理</span><span class="r-m">建场次 · 名单 · 人工核实</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="训练计划：全站实施轮实现">
+            <span class="avatar e"><svg class="ic"><use href="#i-list"/></svg></span>
+            <span class="r-main"><span class="r-t">训练计划</span><span class="r-m">草稿 2 · 已发布 5</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="统计报表：全站实施轮实现">
+            <span class="avatar b"><svg class="ic"><use href="#i-chart"/></svg></span>
+            <span class="r-main"><span class="r-t">统计报表</span><span class="r-m">10月 · 出勤率 94.2% · XLSX 导出</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="赛事管理：全站实施轮实现">
+            <span class="avatar c"><svg class="ic"><use href="#i-trophy"/></svg></span>
+            <span class="r-main"><span class="r-t">赛事管理</span><span class="r-m">报名中 1 · 待办理 3</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="通知管理：全站实施轮实现">
+            <span class="avatar e"><svg class="ic"><use href="#i-bell"/></svg></span>
+            <span class="r-main"><span class="r-t">通知管理</span><span class="r-m">草稿 1 · 重要通知 1</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：待办操作与考勤名单均为本地模拟，不写入任何真实数据；顶部标题栏与底部 TabBar 为小程序原生导航示意。</div>
+    </div>
+    <div class="tabbar">
+      <button class="tb on"><svg class="ic"><use href="#i-home"/></svg>工作台</button>
+      <button class="tb" data-act="toast" data-msg="学员与训练组：全站实施轮实现"><svg class="ic"><use href="#i-users"/></svg>学员</button>
+      <button class="tb" data-act="toast" data-msg="统计报表：全站实施轮实现"><svg class="ic"><use href="#i-chart"/></svg>统计</button>
+      <button class="tb" data-act="toast" data-msg="我的：全站实施轮实现"><svg class="ic"><use href="#i-user"/></svg>我的</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ==================== 3 开发者工作台 ==================== -->
+<section class="device-wrap" data-screen="developer">
+  <div class="devlabel"><span class="idx">03</span><b>开发者工作台</b><span>系统状态 · 待处理 · 分组管理入口</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <div class="nb-main"><div class="nb-t">开发者工作台</div><div class="nb-s">王管理 · 最高管理权限 · 操作写入审计日志</div></div>
+      <div class="nb-right"><span class="chip brand">开发者</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="dcard">
+        <div class="d-k">系统运行状态</div>
+        <div class="d-v"><span class="d-num" style="font-size:28px">正常</span><span class="d-unit" style="color:#8FE3B8">运行中</span></div>
+        <div class="d-meta">云环境 cloud1-…959a · 云函数 api：Active · 超时 3 秒</div>
+        <div class="d-foot" style="gap:16px;margin-top:14px">
+          <div><div class="d-chip" style="background:transparent;padding:0;color:var(--on-data-dim)">数据库集合</div><div class="num" style="font-size:22px;font-weight:800;margin-top:3px">19</div></div>
+          <div><div class="d-chip" style="background:transparent;padding:0;color:var(--on-data-dim)">账号总数</div><div class="num" style="font-size:22px;font-weight:800;margin-top:3px">27</div></div>
+          <div><div class="d-chip" style="background:transparent;padding:0;color:var(--on-data-dim)">今日审计</div><div class="num" style="font-size:22px;font-weight:800;margin-top:3px">42</div></div>
+          <div><div class="d-chip" style="background:transparent;padding:0;color:var(--on-data-dim)">待处理</div><div class="num" style="font-size:22px;font-weight:800;margin-top:3px;color:var(--data-accent-2)">5</div></div>
+        </div>
+      </div>
+
+      <div class="card pad0">
+        <div class="card-h" style="padding:14px 14px 0;margin-bottom:9px"><span class="t">待处理事项</span><span class="c">5 项</span></div>
+        <div class="todo p1">
+          <span class="bar"></span>
+          <span class="avatar c">孙</span>
+          <span class="t-main"><span class="t-t">孙立 <span class="chip warn">学生注册</span></span><span class="t-m">申请加入 短跑二组 · 资料完整 · 2026-10-12</span></span>
+          <span class="t-a">
+            <button class="btn sm" data-act="todo-done" data-label="已通过注册（模拟）">通过</button>
+            <button class="btn sm danger" data-act="todo-done" data-label="已驳回注册（模拟）">驳回</button>
+          </span>
+        </div>
+        <div class="todo p2">
+          <span class="bar"></span>
+          <span class="avatar d">郑</span>
+          <span class="t-main"><span class="t-t">郑一鸣 <span class="chip brand">角色申请</span></span><span class="t-m">申请教练员角色 · 将获得负责训练组的数据范围</span></span>
+          <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已处理角色申请（模拟）">处理</button></span>
+        </div>
+        <div class="todo p2">
+          <span class="bar"></span>
+          <span class="avatar e">吴</span>
+          <span class="t-main"><span class="t-t">吴桐 <span class="chip danger">账号已停用</span></span><span class="t-m">2026-10-09 停用 · 保留历史数据</span></span>
+          <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已恢复账号（模拟）">恢复</button></span>
+        </div>
+        <div class="todo p2">
+          <span class="bar"></span>
+          <span class="avatar e">组</span>
+          <span class="t-main"><span class="t-t">短跑一组 <span class="chip warn">考勤异常</span></span><span class="t-m">1 条定位待核实记录 · 10-11</span></span>
+          <span class="t-a"><button class="btn sm" data-act="todo-done" data-label="已核实考勤记录（模拟）">核实</button></span>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">账号与权限</span><span class="sc">影响数据范围</span></div>
+        <div class="list">
+          <button class="row tap" data-act="toast" data-msg="用户与角色：全站实施轮实现">
+            <span class="avatar a"><svg class="ic"><use href="#i-users"/></svg></span>
+            <span class="r-main"><span class="r-t">用户与角色</span><span class="r-m">学生 24 · 教练 2 · 开发者 1</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="训练组与教练范围：全站实施轮实现">
+            <span class="avatar b"><svg class="ic"><use href="#i-shield"/></svg></span>
+            <span class="r-main"><span class="r-t">训练组与教练范围</span><span class="r-m">4 个训练组 · 3 条负责关系</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="审计日志：全站实施轮实现">
+            <span class="avatar e"><svg class="ic"><use href="#i-list"/></svg></span>
+            <span class="r-main"><span class="r-t">审计日志</span><span class="r-m">今日 42 条 · 保留历史记录</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">全局业务管理</span><span class="sc">开发者视角</span></div>
+        <div class="list">
+          <button class="row tap" data-act="toast" data-msg="全局成绩审核：全站实施轮实现">
+            <span class="avatar c"><svg class="ic"><use href="#i-check"/></svg></span>
+            <span class="r-main"><span class="r-t">成绩审核（全局）</span><span class="r-m">待审 7 条 · 仅审核通过计入正式成绩</span></span>
+            <span class="badge">7</span>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="考勤管理：全站实施轮实现">
+            <span class="avatar a"><svg class="ic"><use href="#i-pin"/></svg></span>
+            <span class="r-main"><span class="r-t">考勤管理</span><span class="r-m">场次 · 名单 · 人工核实</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="统计工作台：全站实施轮实现">
+            <span class="avatar b"><svg class="ic"><use href="#i-chart"/></svg></span>
+            <span class="r-main"><span class="r-t">统计工作台</span><span class="r-m">全局统计 · 排行榜 · XLSX 导出</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+          <button class="row tap" data-act="toast" data-msg="赛事与通知管理：全站实施轮实现">
+            <span class="avatar e"><svg class="ic"><use href="#i-bell"/></svg></span>
+            <span class="r-main"><span class="r-t">赛事与通知管理</span><span class="r-m">赛事 3 · 通知 7</span></span>
+            <svg class="ic chev"><use href="#i-chev"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--brand-050);border-color:#D5E3F6;box-shadow:none">
+        <div style="display:flex;gap:9px;align-items:flex-start">
+          <svg class="ic" style="color:var(--brand-600);margin-top:2px"><use href="#i-shield"/></svg>
+          <div style="font-size:var(--fs-sub);color:#2B4A73;line-height:1.6">
+            删除集合、批量改数据、修改开发者权限、重置 bootstrap、发布正式版本均需人工确认；本页面不提供绕过入口，也不展示不必要的敏感身份信息。
+          </div>
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：系统指标为模拟数据；开发者页面统一使用「开发者」标识，不出现教练端文案。</div>
+    </div>
+    <div class="tabbar">
+      <button class="tb on"><svg class="ic"><use href="#i-home"/></svg>工作台</button>
+      <button class="tb" data-act="toast" data-msg="账号与角色：全站实施轮实现"><svg class="ic"><use href="#i-users"/></svg>账号</button>
+      <button class="tb" data-act="toast" data-msg="全局统计：全站实施轮实现"><svg class="ic"><use href="#i-chart"/></svg>全局</button>
+      <button class="tb" data-act="toast" data-msg="系统维护：全站实施轮实现"><svg class="ic"><use href="#i-settings"/></svg>维护</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ==================== 4 统计工作台 ==================== -->
+<section class="device-wrap" data-screen="stats">
+  <div class="devlabel"><span class="idx">04</span><b>统计工作台</b><span>A1 数据可视化 + A3 信息架构</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <div class="nb-main"><div class="nb-t">统计工作台</div><div class="nb-s"><span id="statGroupLabel">短跑一组</span> · <span id="statPeriodLabel">2026年10月</span> · <span id="statStudents">18 名学生</span></div></div>
+      <div class="nb-right"><span class="chip brand">教练员</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="filterbar">
+        <div class="seg grow" data-tabgroup="statPeriod" style="flex:1 1 auto">
+          <button data-act="tab" data-group="statPeriod" data-val="month" aria-selected="true">月</button>
+          <button data-act="tab" data-group="statPeriod" data-val="quarter">季度</button>
+          <button data-act="tab" data-group="statPeriod" data-val="year">年度</button>
+        </div>
+        <button class="selectrow" style="flex:0 0 auto" data-act="cycle-group">
+          <span class="v"><svg class="ic" style="width:15px;height:15px;color:var(--brand-600)"><use href="#i-filter"/></svg><span id="statGroupShort">短跑一组</span></span>
+          <svg class="ic"><use href="#i-chevdown"/></svg>
+        </button>
+      </div>
+
+      <div class="dcard" style="margin-bottom:12px">
+        <div class="d-k">有效出勤率</div>
+        <div class="d-v"><span class="d-num" id="statRate">94.2</span><span class="d-unit">%</span></div>
+        <div class="d-meta"><span id="statAttendance">148</span> 有效出勤 / <span id="statExpected">157</span> 实际应签到</div>
+        <span class="d-delta" id="statRateChip">环比 +2.1 个百分点</span>
+      </div>
+
+      <div class="kpigs" style="margin-bottom:12px">
+        <div class="kpi">
+          <div class="k-l"><span class="k-d ok"><svg class="ic"><use href="#i-check"/></svg></span>已审核成绩</div>
+          <div class="k-v"><span id="statApproved">71</span><em>条</em></div>
+          <div class="k-s">仅正式成绩参与排行</div>
+        </div>
+        <div class="kpi">
+          <div class="k-l"><span class="k-d"><svg class="ic"><use href="#i-activity"/></svg></span>训练反馈</div>
+          <div class="k-v"><span id="statFeedback">48</span><em>条</em></div>
+          <div class="k-s">平均 RPE <span id="statRpe">7.2</span></div>
+        </div>
+        <div class="kpi">
+          <div class="k-l"><span class="k-d warn"><svg class="ic"><use href="#i-alert"/></svg></span>需要关注</div>
+          <div class="k-v" style="color:var(--warning)"><span id="statAttention">4</span><em>人</em></div>
+          <div class="k-s">未完成或高 RPE</div>
+        </div>
+        <div class="kpi">
+          <div class="k-l"><span class="k-d"><svg class="ic"><use href="#i-users"/></svg></span>统计人数</div>
+          <div class="k-v"><span id="statStudents2">18</span><em>人</em></div>
+          <div class="k-s">当前筛选范围</div>
+        </div>
+      </div>
+
+      <div class="datacaveat hide" id="statCaveat">
+        <svg class="ic"><use href="#i-alert"/></svg>
+        <div>
+          <div class="dc-t">历史成员关系无法逐场还原（估算口径）</div>
+          <div class="dc-m">训练组名单没有逐场快照，历史出勤率按成员关系时间范围估算，因此<b>不参与正式考勤排名</b>；正式成绩榜不受影响。</div>
+        </div>
+      </div>
+
+      <div class="chart">
+        <div class="card-h" style="margin-bottom:9px">
+          <span class="t">趋势</span><span class="c" id="statChartUnit">% · 出勤率</span>
+        </div>
+        <div class="tabs" data-tabgroup="statMetric" style="padding-bottom:8px">
+          <button class="tab" data-act="tab" data-group="statMetric" data-val="rate" aria-selected="true">出勤率</button>
+          <button class="tab" data-act="tab" data-group="statMetric" data-val="approved">成绩数量</button>
+          <button class="tab" data-act="tab" data-group="statMetric" data-val="feedback">反馈数量</button>
+        </div>
+        <div class="bars" id="statBars"></div>
+        <div class="barx" id="statBarX"></div>
+        <div class="sourcenote" style="display:flex;justify-content:space-between;gap:10px">
+          <span>统计口径：已结束场次计入出勤率；已批准请假从分母排除；未签到不等同无故缺勤。</span>
+          <span class="num" id="statChartTotal" style="color:var(--ink-2);font-weight:700;white-space:nowrap"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="t">训练组对比</span><span class="c">出勤率</span></div>
+        <div class="cmp" id="statCmp"></div>
+      </div>
+
+      <div class="card pad0">
+        <div class="card-h" style="padding:14px 14px 0;margin-bottom:4px"><span class="t">100米 正式成绩榜</span><span class="a">完整榜单 ›</span></div>
+        <div class="rank r1"><span class="rk">1</span><span class="avatar b">陈</span><span class="r-main"><span class="r-t">陈雨桐</span><span class="r-m">短跑一组</span></span><span class="rv">11.82</span></div>
+        <div class="rank r2"><span class="rk">2</span><span class="avatar e">张</span><span class="r-main"><span class="r-t">张一诺</span><span class="r-m">短跑二组</span></span><span class="rv">11.90</span></div>
+        <div class="rank r3"><span class="rk">3</span><span class="avatar e">刘</span><span class="r-main"><span class="r-t">刘思远</span><span class="r-m">短跑一组</span></span><span class="rv">11.98</span></div>
+        <div class="sourcenote" style="margin:0;padding:11px 14px;border-top:1px solid var(--line-2)">
+          并列成绩使用相同名次，后续名次跳号；历史 PB 不参与周期排名。
+        </div>
+      </div>
+
+      <div class="sect" style="margin-top:14px">
+        <div class="sect-h"><span class="st">报表导出</span><span class="sc">仅当前授权范围</span></div>
+        <div class="btn-row" style="margin-top:0">
+          <button class="btn ghost" data-act="toast" data-msg="导出成绩 XLSX（模拟，不生成真实文件）"><svg class="ic"><use href="#i-download"/></svg>导出成绩</button>
+          <button class="btn ghost" data-act="toast" data-msg="导出考勤 XLSX（模拟，不生成真实文件）"><svg class="ic"><use href="#i-download"/></svg>导出考勤</button>
+        </div>
+        <div class="sourcenote">
+          数据来源：仅使用已审核（approved）正式成绩、已结束考勤场次与已批准请假；DEMO 与待审数据不进入统计。默认导出上限 2000 行，超出会提示缩小范围。
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：切换周期 / 训练组 / 指标会改变本地模拟数值，用于验证交互与可读性，不代表真实统计结果。</div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ==================== 5 GPS 考勤场次创建 ==================== -->
+<section class="device-wrap" data-screen="gps">
+  <div class="devlabel"><span class="idx">05</span><b>GPS考勤场次创建</b><span>地图选点 · 自动坐标 · 参数说明</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <span class="nb-back" data-act="toast" data-msg="返回上一页（原型示意）">‹</span>
+      <div class="nb-main"><div class="nb-t">新建考勤场次</div><div class="nb-s">短跑一组 · 未保存</div></div>
+      <div class="nb-right"><span class="chip" id="gpsStep2State">未选点</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 地图与定位均为模拟交互</div>
+
+      <div class="acc" data-open="true">
+        <button class="acc-h" data-act="acc">
+          <span class="a-step">1</span>
+          <span class="a-t">训练安排 <span class="chip">3 项</span></span>
+          <svg class="ic a-chev"><use href="#i-chevdown"/></svg>
+        </button>
+        <div class="acc-b">
+          <div class="field">
+            <div class="lb"><span>训练组 <span class="req">*</span></span><span class="opt">决定应到名单</span></div>
+            <button class="input editable" data-act="toast" data-msg="训练组选择器（原型示意）"><span>短跑一组</span><svg class="ic"><use href="#i-chevdown"/></svg></button>
+          </div>
+          <div class="field">
+            <div class="lb"><span>考勤日期 <span class="req">*</span></span></div>
+            <button class="input editable" data-act="toast" data-msg="日期选择器（原型示意）"><span>2026-10-14 周三</span><svg class="ic"><use href="#i-calendar"/></svg></button>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="lb"><span>场次名称</span><span class="opt">选填</span></div>
+            <div class="input"><input value="第6周速度耐力" aria-label="场次名称" /></div>
+            <div class="hint">不填写时默认使用「训练组 + 日期」作为场次名称。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc" data-open="true">
+        <button class="acc-h" data-act="acc">
+          <span class="a-step">2</span>
+          <span class="a-t">签到地点 <span class="chip accent">地图选点</span></span>
+          <svg class="ic a-chev"><use href="#i-chevdown"/></svg>
+        </button>
+        <div class="acc-b">
+          <div class="mapbox">
+            <div class="mapsim" id="gpsMap">
+              <div class="mgrid"></div>
+              <div class="mblk" style="left:12px;top:14px;width:66px;height:40px"></div>
+              <div class="mblk" style="right:16px;top:22px;width:84px;height:48px"></div>
+              <div class="mblk" style="left:26px;bottom:16px;width:92px;height:40px"></div>
+              <div class="mrd h" style="top:72px;transform:rotate(-3deg)"></div>
+              <div class="mrd v" style="left:136px;transform:rotate(1deg)"></div>
+              <div class="ring in"></div>
+              <div class="pin"><svg class="ic"><use href="#i-pin"/></svg></div>
+              <div class="crosshair"></div>
+              <div class="mpill">地图选点示意 · 非真实地图</div>
+              <div class="mhint">在地图上点击选择签到中心点</div>
+            </div>
+            <div class="maptools">
+              <button class="btn ghost sm" style="flex:1 1 46%" data-act="use-location"><svg class="ic"><use href="#i-locate"/></svg>使用当前位置</button>
+              <button class="btn ghost sm" style="flex:1 1 46%" data-act="toast" data-msg="请直接在地图上点击选择中心点">在地图上点选</button>
+            </div>
+            <div class="coords"><span class="cl">签到中心坐标</span><span class="cv" id="gpsCoords">未选择</span></div>
+            <div class="coords"><span class="cl">定位精度</span><span class="cv" id="gpsAccuracy">未获取</span></div>
+          </div>
+          <div class="field" style="margin:12px 0 0">
+            <div class="lb"><span>训练地点名称 <span class="req">*</span></span><span class="opt">学生端可见</span></div>
+            <div class="input"><input value="乔格田径场 A 区" aria-label="训练地点名称" /></div>
+            <div class="hint">选点后<b>自动写入经纬度</b>，教练无需查询或手动输入坐标。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc" data-open="true">
+        <button class="acc-h" data-act="acc">
+          <span class="a-step">3</span>
+          <span class="a-t">签到规则 <span class="chip">服务端判定</span></span>
+          <svg class="ic a-chev"><use href="#i-chevdown"/></svg>
+        </button>
+        <div class="acc-b">
+          <div class="field">
+            <div class="lb"><span>签到半径</span><span class="opt">建议 100–300 米</span></div>
+            <div class="stepper">
+              <button class="sb" data-act="step" data-dir="-1" data-target="#radiusReadout" data-min="20" data-max="500" data-step="10" data-effect="radius" aria-label="签到半径减少">−</button>
+              <span class="sv"><span id="radiusValue">150</span><em>米</em></span>
+              <button class="sb" data-act="step" data-dir="1" data-target="#radiusReadout" data-min="20" data-max="500" data-step="10" data-effect="radius" aria-label="签到半径增加">+</button>
+            </div>
+            <div class="hint">学生与中心点的直线距离在 <b id="radiusReadout">150 米</b> 以内才判定签到成功；地图上的圆圈范围会同步变化。</div>
+          </div>
+          <div class="field">
+            <div class="lb"><span>定位精度阈值</span><span class="opt">高于阈值转人工核实</span></div>
+            <div class="stepper">
+              <button class="sb" data-act="step" data-dir="-1" data-target="#accuracyReadout" data-min="10" data-max="200" data-step="5" data-effect="accuracy" aria-label="定位精度阈值减少">−</button>
+              <span class="sv"><span id="accuracyValue">50</span><em>米</em></span>
+              <button class="sb" data-act="step" data-dir="1" data-target="#accuracyReadout" data-min="10" data-max="200" data-step="5" data-effect="accuracy" aria-label="定位精度阈值增加">+</button>
+            </div>
+            <div class="hint">定位精度差于 <b id="accuracyReadout">±50 米</b> 时不直接判定失败，进入「待核实」由教练确认。</div>
+          </div>
+          <div class="field">
+            <div class="lb"><span>签到开放时间 <span class="req">*</span></span><span class="opt">点击可切换</span></div>
+            <div class="grid2 tight">
+              <button class="input editable" data-act="time" data-val="16:00" data-idx="0"><span>开始 16:00</span><svg class="ic"><use href="#i-clock"/></svg></button>
+              <button class="input editable" data-act="time" data-val="17:00" data-idx="1"><span>结束 17:00</span><svg class="ic"><use href="#i-clock"/></svg></button>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="lb"><span>迟到判定</span><span class="opt">此时间后记为迟到</span></div>
+            <button class="input editable" data-act="time" data-val="16:30" data-idx="2"><span>16:30</span><svg class="ic"><use href="#i-clock"/></svg></button>
+            <div class="hint">时间统一按 <b>UTC+8</b> 判定；学生手机本地时间不影响签到结果。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="acc" data-open="false">
+        <button class="acc-h" data-act="acc">
+          <span class="a-t" style="font-size:var(--fs-body-s);color:var(--ink-3)">正式小程序实现条件与降级方案（纯展示）</span>
+          <svg class="ic a-chev"><use href="#i-chevdown"/></svg>
+        </button>
+        <div class="acc-b">
+          <div class="sourcenote" style="margin:0;border-top:none;padding-top:0">
+            <b>P1 首选：</b><code>wx.chooseLocation</code> 打开微信内置地图选点（可搜索地点、返回名称与经纬度），<b>无付费</b>；但属受限地理位置接口，需在微信公众平台「开发 → 开发管理 → 接口设置」开通，并在 <code>app.json</code> 的 <code>requiredPrivateInfos</code> 中声明 <code>chooseLocation</code>，否则无法使用且审核会被拦截。<br>
+            <b>P2 保底：</b><code>&lt;map&gt;</code> 组件 + 点击取点（本原型演示的形态），该组件本身不需要定位权限，可作为容错与备用输入方式。<br>
+            <b>P3 兜底：</b>手动输入坐标，仅在 P1 / P2 均不可用时保留，默认隐藏。<br>
+            <b>不采用：</b>地图个性化样式（需付费购买）与地图服务 API（POI 搜索/地址解析需腾讯位置服务 key 与配额）。
+          </div>
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：地图为模拟图层，坐标由点击位置线性换算生成，不调用任何真实定位接口，也不连接云数据库。</div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" data-act="toast" data-msg="草稿已保存（模拟，未写入数据库）">保存草稿</button>
+      <button class="btn" id="gpsPublish" data-act="gps-publish" disabled aria-disabled="true"><svg class="ic"><use href="#i-check"/></svg>发布场次</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ==================== 6 训练计划编辑 ==================== -->
+<section class="device-wrap" data-screen="plan">
+  <div class="devlabel"><span class="idx">06</span><b>训练计划编辑</b><span>类型化核心参数 · 渐进展开 · 多训练内容</span><span class="sz">390×844</span></div>
+  <div class="device"><div class="screen">
+    <div class="sbar"><span>9:41</span><span class="sb-r"><i class="sb-sig"></i><i class="sb-wifi"></i><i class="sb-batt"></i></span></div>
+    <div class="navbar">
+      <span class="nb-back" data-act="toast" data-msg="返回上一页（原型示意）">‹</span>
+      <div class="nb-main"><div class="nb-t">新建训练计划</div><div class="nb-s">短跑一组 · 草稿</div></div>
+      <div class="nb-right"><span class="chip">草稿</span></div>
+    </div>
+    <div class="page">
+      <div class="simstrip"><svg class="ic"><use href="#i-alert"/></svg>模拟数据 · 仅用于视觉与交互预览</div>
+
+      <div class="fset">
+        <div class="fs-h"><span class="t">计划信息</span><span class="s">3 项必填</span></div>
+        <div class="fs-b">
+          <div class="field">
+            <div class="lb"><span>计划名称 <span class="req">*</span></span></div>
+            <div class="input"><input value="第6周速度耐力" aria-label="计划名称" /></div>
+          </div>
+          <div class="field">
+            <div class="lb"><span>训练组 <span class="req">*</span></span><span class="opt">发布后组内学生可见</span></div>
+            <button class="input editable" data-act="toast" data-msg="训练组选择器（原型示意）"><span>短跑一组</span><svg class="ic"><use href="#i-chevdown"/></svg></button>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="lb"><span>训练周期 <span class="req">*</span></span></div>
+            <div class="grid2 tight">
+              <button class="input editable" data-act="toast" data-msg="开始日期选择器（原型示意）"><span>10-14</span><svg class="ic"><use href="#i-calendar"/></svg></button>
+              <button class="input editable" data-act="toast" data-msg="结束日期选择器（原型示意）"><span>10-19</span><svg class="ic"><use href="#i-calendar"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="sect-h"><span class="st">训练类型</span><span class="sc">决定核心参数</span></div>
+        <div class="typecards" id="planTypes">
+          <button class="typecard" data-act="plan-type" data-ptype="sprint" aria-selected="true">
+            <span class="tc-t">短跑专项</span><span class="tc-s">距离 · 组数 · 次数 · 休息</span>
+          </button>
+          <button class="typecard" data-act="plan-type" data-ptype="strength" aria-selected="false">
+            <span class="tc-t">力量训练</span><span class="tc-s">动作 · 组数 · 次数 · 负荷</span>
+          </button>
+          <button class="typecard" data-act="plan-type" data-ptype="endurance" aria-selected="false">
+            <span class="tc-t">速度耐力</span><span class="tc-s">距离 · 组数 · 休息 · 强度</span>
+          </button>
+          <button class="typecard" data-act="plan-type" data-ptype="recovery" aria-selected="false">
+            <span class="tc-t">恢复训练</span><span class="tc-s">时长 · 强度 · 方式 · 组数</span>
+          </button>
+        </div>
+        <div class="sourcenote" id="planTypeHint" style="border-top:none;padding-top:9px">短跑按「距离 → 组数 → 次数 → 组间休息」组织，其余参数可渐进展开。</div>
+      </div>
+
+      <div class="fset">
+        <div class="fs-h"><span class="t">核心参数</span><span class="s" id="planCoreNote">已按训练类型展示</span></div>
+        <div class="fs-b">
+          <div class="coregrid" id="planCore"></div>
+        </div>
+      </div>
+
+      <div class="acc" data-open="false">
+        <button class="acc-h" data-act="acc">
+          <span class="a-t" style="font-size:var(--fs-body-s);color:var(--ink-2)">其他参数（训练目标 · 负荷 · 注意事项）</span>
+          <span class="a-state">渐进展开</span>
+          <svg class="ic a-chev"><use href="#i-chevdown"/></svg>
+        </button>
+        <div class="acc-b">
+          <div class="field">
+            <div class="lb"><span>训练目标</span><span class="opt">选填</span></div>
+            <div class="input"><input value="提升后程速度耐力" aria-label="训练目标" /></div>
+          </div>
+          <div class="field">
+            <div class="lb"><span>负荷说明</span><span class="opt">选填</span></div>
+            <div class="input"><input value="90% 强度 · 关注动作质量" aria-label="负荷说明" /></div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="lb"><span>训练注意事项</span><span class="opt">选填</span></div>
+            <div class="input">
+              <input value="训练前充分热身；如不适立即停止并反馈" aria-label="训练注意事项" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fset">
+        <div class="fs-h"><span class="t">训练内容</span><span class="s" id="planItemCount">0 项</span></div>
+        <div class="fs-b">
+          <div class="itemblocks" id="planItems"></div>
+          <div class="empty" id="planItemsEmpty" style="border:1px dashed var(--line);border-radius:var(--r-md);padding:22px 16px">
+            <span class="e-ic"><svg class="ic"><use href="#i-list"/></svg></span>
+            <span class="e-t">还没有训练内容</span>
+            <span class="e-m">先在上方选择训练类型并设置核心参数，再添加到计划。</span>
+          </div>
+          <button class="btn ghost block" style="margin-top:12px" data-act="plan-add-item"><svg class="ic"><use href="#i-plus"/></svg>添加训练内容</button>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--brand-050);border-color:#D5E3F6;box-shadow:none">
+        <div style="display:flex;gap:9px;align-items:flex-start">
+          <svg class="ic" style="color:var(--brand-600);margin-top:2px"><use href="#i-shield"/></svg>
+          <div style="font-size:var(--fs-sub);color:#2B4A73;line-height:1.6">
+            <b>数据结构不变：</b>类型化参数最终仍映射到现有字段（距离 → <code>distanceMeters</code>、组数 → <code>sets</code>、次数 → <code>reps</code>、休息 → <code>restSeconds</code>、负荷 → <code>load</code>、备注 → <code>notes</code>），不新增字段、不改服务端契约。
+          </div>
+        </div>
+      </div>
+
+      <div class="disclaimer">本原型为静态交互演示：切换训练类型会实时改变核心参数与训练内容摘要；保存与发布仅为本地提示，不写入任何真实计划。</div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" data-act="plan-save">保存草稿</button>
+      <button class="btn" data-act="plan-publish"><svg class="ic"><use href="#i-zap"/></svg>发布计划</button>
+    </div>
+  </div></div>
+</section>
+
+</main>
+
+<script src="f1.js"></script>
+</body>
+</html>
