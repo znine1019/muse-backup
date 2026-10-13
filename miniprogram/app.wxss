@@ -462,3 +462,18 @@ button::after { border: none; }
 .jg-tile-plain .jg-tile-ic { background: #F1F4F8; color: #4B5B6C; }
 .jg-tile-t { font-size: 27rpx; font-weight: 700; color: #0E1A28; margin-top: 16rpx; }
 .jg-tile-d { font-size: 22rpx; color: #94A3B8; margin-top: 6rpx; line-height: 1.4; }
+
+/* ---------- 刷新状态条（stale-while-revalidate 提示） ---------- */
+.jg-refbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 12rpx 20rpx;
+  margin-bottom: 20rpx;
+  border-radius: 20rpx;
+  background: var(--jg-card-2, #F7F9FC);
+  border: 2rpx solid var(--jg-line, #E3E9F0);
+}
+.jg-refbar-t { font-size: 22rpx; color: var(--jg-ink-3, #64748B); }
+.jg-refbar-warn { font-size: 22rpx; color: var(--jg-warning, #B45309); text-align: right; }

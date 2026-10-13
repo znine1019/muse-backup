@@ -35,6 +35,9 @@ function loadPage(relativePath, apiStub, roles, wxOverrides = {}, extraModules =
         if (request.includes('utils/demo-mode')) {
           return { isDemoAllowed: () => false };
         }
+        if (request.includes('workbench-controller')) {
+          return require(path.join(PROJECT_ROOT, 'miniprogram/utils/workbench-controller.js'));
+        }
         if (request.includes('config/env')) {
           return { CLOUD_ENV_ID: 'cloud1-test', API_FUNCTION_NAME: 'api', HEALTH_FUNCTION_NAME: 'health_check' };
         }

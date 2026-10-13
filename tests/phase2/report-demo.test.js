@@ -48,6 +48,9 @@ function loadReportPage(apiStub, roles, demoAllowed) {
         if (request.includes('services/api')) {
           return apiStub;
         }
+        if (request.includes('utils/workbench-controller')) {
+          return require(path.join(PROJECT_ROOT, 'miniprogram/utils/workbench-controller.js'));
+        }
         if (request.includes('utils/demo-mode')) {
           return {
             isDemoAllowed: () => demoAllowed,
@@ -270,6 +273,9 @@ function loadAdminPage(apiStub, roles, demoAllowed, wxOverrides = {}) {
       require: (request) => {
         if (request.includes('services/api')) {
           return apiStub;
+        }
+        if (request.includes('utils/workbench-controller')) {
+          return require(path.join(PROJECT_ROOT, 'miniprogram/utils/workbench-controller.js'));
         }
         if (request.includes('utils/demo-mode')) {
           return { isDemoAllowed: () => demoAllowed };

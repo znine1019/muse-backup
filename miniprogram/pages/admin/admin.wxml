@@ -6,15 +6,21 @@
     role-tone="accent"
   />
 
+  <!-- 刷新状态条：返回工作台时保留内容并静默刷新 -->
+  <view wx:if="{{hasData}}" class="jg-refbar">
+    <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
+  </view>
+
   <view wx:if="{{sessionError}}" class="jg-state-err">
     <view class="jg-state-err-t">身份校验未通过</view>
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
   <!-- 1. 系统运行状态（A1 深蓝竞技数据卡，全部为真实接口数据） -->
-  <view wx:if="{{systemState.loading}}" class="jg-skeleton jg-skeleton-card"></view>
+  <view wx:if="{{systemState.loading && !systemState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:elif="{{systemState.error}}" class="jg-state-err">
+  <view wx:elif="{{systemState.error && !systemState.ready}}" class="jg-state-err">
     <view class="jg-state-err-t">系统状态检查失败</view>
     <view class="jg-state-err-m">{{systemState.error}}</view>
     <view class="jg-retry" bindtap="retrySystem">重新检查</view>
@@ -52,11 +58,11 @@
       <text class="jg-sect-c">共 {{pendingTotal}} 项</text>
     </view>
 
-    <view wx:if="{{pendingState.loading}}" class="jg-card">
+    <view wx:if="{{pendingState.loading && !pendingState.ready}}" class="jg-card">
       <view class="jg-skeleton" style="height:96rpx"></view>
     </view>
 
-    <view wx:elif="{{pendingState.error}}" class="jg-state-err">
+    <view wx:elif="{{pendingState.error && !pendingState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">待处理数据加载失败</view>
       <view class="jg-state-err-m">{{pendingState.error}}</view>
       <view class="jg-retry" bindtap="retryPending">重新加载</view>
@@ -71,11 +77,11 @@
       </view>
     </view>
 
-    <view wx:if="{{registrationState.loading}}" class="jg-list jg-mt-12">
+    <view wx:if="{{registrationState.loading && !registrationState.ready}}" class="jg-list jg-mt-12">
       <view class="jg-skeleton jg-skeleton-row"></view>
     </view>
 
-    <view wx:elif="{{registrationState.error}}" class="jg-state-err">
+    <view wx:elif="{{registrationState.error && !registrationState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">待审核注册列表加载失败</view>
       <view class="jg-state-err-m">{{registrationState.error}}</view>
       <view class="jg-retry" bindtap="retryRegistrations">重新加载</view>
@@ -142,8 +148,8 @@
       </view>
 
       <block wx:if="{{showUserPanel}}">
-        <view wx:if="{{accountState.loading}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
-        <view wx:elif="{{accountState.error}}" class="jg-state-err jg-mt-12">
+        <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
+        <view wx:elif="{{accountState.error && !accountState.ready}}" class="jg-state-err jg-mt-12">
           <view class="jg-state-err-t">账号数据加载失败</view>
           <view class="jg-state-err-m">{{accountState.error}}</view>
           <view class="jg-retry" bindtap="retryAccounts">重新加载</view>
@@ -202,8 +208,8 @@
       <view class="jg-body-s">训练组 {{groupSummary.total}} 个 · 已启用 {{groupSummary.enabled}} 个 · 教练账号 {{groupSummary.coaches}} 个</view>
 
       <block wx:if="{{showGroupPanel}}">
-        <view wx:if="{{groupState.loading}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
-        <view wx:elif="{{groupState.error}}" class="jg-state-err jg-mt-12">
+        <view wx:if="{{groupState.loading && !groupState.ready}}" class="jg-skeleton jg-mt-12" style="height:120rpx"></view>
+        <view wx:elif="{{groupState.error && !groupState.ready}}" class="jg-state-err jg-mt-12">
           <view class="jg-state-err-t">训练组数据加载失败</view>
           <view class="jg-state-err-m">{{groupState.error}}</view>
           <view class="jg-retry" bindtap="retryGroups">重新加载</view>
@@ -285,6 +291,15 @@
       <text class="jg-sect-c">按职责排序</text>
     </view>
     <view class="jg-list">
+      <!-- 开发者已有合法访问教练工作台的权限（云函数允许 coach/developer），此处仅做跳转，不授予额外角色 -->
+      <view class="jg-row" hover-class="jg-row-hover" bindtap="goCoachWorkbench">
+        <view class="jg-row-ic jg-row-ic-accent">教</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">查看教练工作台</view>
+          <view class="jg-row-m">按开发者全局范围查看教练工作台界面</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goPerformanceReview">
         <view class="jg-row-ic jg-row-ic-ok">审</view>
         <view class="jg-row-main">

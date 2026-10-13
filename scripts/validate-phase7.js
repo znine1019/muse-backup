@@ -326,6 +326,64 @@ for (const page of ['student', 'coach', 'admin']) {
   }
 }
 
+/* ---------- 10. 阶段7-2 真机反馈修复（返回刷新 + 教练工作台入口） ---------- */
+check(exists('miniprogram/utils/workbench-controller.js'), '工作台刷新控制器已创建');
+check(exists('scripts/check-js-syntax.js'), '全仓库 JS 语法检查脚本已创建');
+
+const controllerSource = readText('miniprogram/utils/workbench-controller.js');
+for (const token of [
+  'MIN_AUTO_REFRESH_MS',
+  'SESSION_REVALIDATE_MS',
+  'PERMISSION_LOST_CODES',
+  'identityOf',
+  'createWorkbenchController',
+  'setIfChanged'
+]) {
+  check(controllerSource.includes(token), `刷新控制器包含：${token}`);
+}
+check(/ACCOUNT_DISABLED/.test(controllerSource), '停用账号会触发缓存失效');
+check(/FORBIDDEN/.test(controllerSource), '角色权限失效会触发缓存失效');
+
+for (const page of ['student', 'coach', 'admin']) {
+  const js = readText(`miniprogram/pages/${page}/${page}.js`);
+  const wxml = readText(`miniprogram/pages/${page}/${page}.wxml`);
+  check(js.includes('workbench-controller'), `${page} 工作台接入刷新控制器`);
+  check(js.includes('enterWorkbench'), `${page} 工作台区分首次进入与返回刷新`);
+  check(js.includes('clearCachedData'), `${page} 工作台支持清理身份缓存`);
+  check(js.includes('markNeedsRefresh'), `${page} 工作台支持业务页返回后强制刷新`);
+  check(/hasData/.test(wxml), `${page} 工作台模板区分首次加载与已有数据`);
+  check(/ready/.test(wxml), `${page} 工作台模板使用区块就绪标记避免清空内容`);
+}
+
+const coachEntryJs = readText('miniprogram/pages/admin/admin.js');
+check(coachEntryJs.includes('goCoachWorkbench'), '开发者工作台提供进入教练工作台的方法');
+const coachEntryBlock = coachEntryJs.slice(
+  coachEntryJs.indexOf('goCoachWorkbench()'),
+  coachEntryJs.indexOf('goPerformanceReview()')
+);
+check(
+  coachEntryBlock.includes("navigateTo({ url: '/pages/coach/coach' })"),
+  '开发者进入教练工作台使用 navigateTo（保证返回回到开发者工作台）'
+);
+check(
+  !/assignRole|setGroupCoach|setUserStatus|reLaunch/.test(coachEntryBlock),
+  '开发者进入教练工作台不授予角色、不改权限、不使用 reLaunch'
+);
+check(
+  readText('miniprogram/pages/admin/admin.wxml').includes('goCoachWorkbench'),
+  '开发者工作台模板提供教练工作台入口'
+);
+
+/* 体验版：DEMO 仅在 develop/trial 且需开发者角色 */
+const demoMode = readText('miniprogram/utils/demo-mode.js');
+check(demoMode.includes("'develop', 'trial'"), '体验版（trial）支持正常登录与演示开关判断');
+check(
+  readText('miniprogram/pages/student-report/student-report.js').includes(
+    "sessionHasRole(session, 'developer')"
+  ),
+  '演示报告仍要求 developer 角色（体验版不绕过权限）'
+);
+
 if (errors.length) {
   console.error('阶段7结构校验未通过：');
   for (const error of errors) {

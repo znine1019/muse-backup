@@ -6,6 +6,12 @@
     role-tone="brand"
   />
 
+  <!-- 刷新状态条：返回工作台时保留内容并静默刷新，仅在已有数据时显示 -->
+  <view wx:if="{{hasData}}" class="jg-refbar">
+    <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
+  </view>
+
   <view wx:if="{{sessionError}}" class="jg-state-err">
     <view class="jg-state-err-t">身份校验未通过</view>
     <view class="jg-state-err-m">{{sessionError}}</view>
@@ -18,11 +24,11 @@
       <text class="jg-sect-c">{{todayDate}}</text>
     </view>
 
-    <view wx:if="{{todayState.loading}}" class="jg-card">
+    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-card">
       <view class="jg-skeleton" style="height:132rpx"></view>
     </view>
 
-    <view wx:elif="{{todayState.error}}" class="jg-state-err">
+    <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">今日训练加载失败</view>
       <view class="jg-state-err-m">{{todayState.error}}</view>
       <view class="jg-retry" bindtap="retryToday">重新加载</view>
@@ -56,9 +62,9 @@
   </view>
 
   <!-- 2. 个人最好成绩（A1 深蓝竞技数据卡） -->
-  <view wx:if="{{statsState.loading}}" class="jg-skeleton jg-skeleton-card"></view>
+  <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:elif="{{statsState.error}}" class="jg-state-err">
+  <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
     <view class="jg-state-err-t">个人数据加载失败</view>
     <view class="jg-state-err-m">{{statsState.error}}</view>
     <view class="jg-retry" bindtap="retryStats">重新加载</view>
@@ -148,12 +154,12 @@
       <text class="jg-sect-a" bindtap="goNotices">{{noticeActionText}}</text>
     </view>
 
-    <view wx:if="{{noticeState.loading}}" class="jg-list">
+    <view wx:if="{{noticeState.loading && !noticeState.ready}}" class="jg-list">
       <view class="jg-skeleton jg-skeleton-row"></view>
       <view class="jg-skeleton jg-skeleton-row"></view>
     </view>
 
-    <view wx:elif="{{noticeState.error}}" class="jg-state-err">
+    <view wx:elif="{{noticeState.error && !noticeState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">通知加载失败</view>
       <view class="jg-state-err-m">{{noticeState.error}}</view>
       <view class="jg-retry" bindtap="retryNotices">重新加载</view>

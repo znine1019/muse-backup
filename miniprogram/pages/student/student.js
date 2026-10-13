@@ -6,6 +6,11 @@ const {
   getStatusLabel,
   sessionHasRole
 } = require('../../utils/session');
+const {
+  createWorkbenchController,
+  formatClock,
+  isPermissionLostError
+} = require('../../utils/workbench-controller');
 
 const GENDER_LABELS = Object.freeze({
   male: '男',
@@ -31,8 +36,13 @@ const ATTENDANCE_PHASE_LABELS = Object.freeze({
   cancelled: '已取消'
 });
 
-/* 常用功能：全部指向现有真实页面，不新增路由 */
-/* 常用功能入口全部指向现有真实页面（阶段1—阶段6 已注册路由），本页不新增任何路由 */
+/* 区块 → 页面状态字段映射（用于统一的加载/错误状态更新） */
+const SECTION_STATE_KEYS = Object.freeze({
+  profile: 'profileState',
+  today: 'todayState',
+  stats: 'statsState',
+  notice: 'noticeState'
+});
 
 function todayIso() {
   const date = new Date();
@@ -73,80 +83,152 @@ function shortDate(value) {
   return match ? `${match[2]}-${match[3]}` : text;
 }
 
-/* 逐区块独立加载：单个接口失败不影响其它区块 */
-function settle(promise) {
-  return promise.then(
-    (data) => ({ ok: true, data }),
-    (error) => ({ ok: false, error })
-  );
-}
-
 Page({
   data: {
-    loading: true,
+    /* 工作台刷新状态（阶段7-2 修复返回闪烁） */
+    hasData: false,
+    refreshing: false,
+    lastUpdatedText: '',
+    staleNotice: '',
+
     sessionError: '',
     headMeta: '',
     headName: '',
     headEvent: '',
     headGroup: '',
     statusLabel: '',
-    profileState: { loading: true, error: '' },
+
+    profileState: { loading: true, error: '', ready: false },
     profile: null,
     genderLabel: '',
-    todayState: { loading: true, error: '' },
+
+    todayState: { loading: true, error: '', ready: false },
     todayDate: '',
     todaySessions: [],
-    statsState: { loading: true, error: '' },
+
+    statsState: { loading: true, error: '', ready: false },
     stats: null,
-    noticeState: { loading: true, error: '' },
+
+    noticeState: { loading: true, error: '', ready: false },
     notices: [],
-    noticeMeta: '',
-    noticeActionText: '查看全部',
     unreadCount: 0,
-    busy: false
+    noticeMeta: '',
+    noticeActionText: '查看全部'
   },
 
   onShow() {
-    this.loadPage();
+    this.enterWorkbench();
   },
 
   onPullDownRefresh() {
-    this.loadPage({ fromPullDown: true });
+    this.pullDownRefresh();
   },
 
-  async loadPage(options = {}) {
-    const fromPullDown = options.fromPullDown === true;
-    this.setData({
-      loading: true,
-      sessionError: '',
-      profileState: { loading: true, error: '' },
-      todayState: { loading: true, error: '' },
-      statsState: { loading: true, error: '' },
-      noticeState: { loading: true, error: '' }
+  /* 首次进入显示骨架屏；已加载过则保留内容并静默刷新 */
+  async enterWorkbench() {
+    const controller = this.getController();
+    const hasData = this.data.hasData === true;
+    const needsRefresh = this.pendingRefresh === true;
+
+    if (hasData && !controller.shouldAutoRefresh({ needsRefresh })) {
+      this.controllerSetIfChanged({ refreshing: false });
+      return;
+    }
+
+    await this.loadAll({ silent: hasData, force: needsRefresh || !hasData });
+    this.pendingRefresh = false;
+  },
+
+  pullDownRefresh() {
+    return this.loadAll({ silent: true, force: true, fromPullDown: true });
+  },
+
+  /* 进入可能改变待办数据的业务页面前调用，返回时强制刷新 */
+  markNeedsRefresh() {
+    this.pendingRefresh = true;
+  },
+
+  getController() {
+    if (!this.controllerInstance) {
+      this.controllerInstance = createWorkbenchController(this);
+    }
+    return this.controllerInstance;
+  },
+
+  controllerSetIfChanged(payload) {
+    return this.getController().setIfChanged(payload);
+  },
+
+  /* 兼容既有单元测试与首次调用：loadPage 等价于一次完整加载 */
+  loadPage(options = {}) {
+    return this.loadAll({
+      silent: options.silent === true,
+      force: true,
+      fromPullDown: options.fromPullDown === true
     });
+  },
+
+  /* 合并并发：同一时刻只允许一次完整加载 */
+  async loadAll(options = {}) {
+    if (this.runningTask) {
+      return this.runningTask;
+    }
+    this.runningTask = this.runLoad(options);
+    try {
+      return await this.runningTask;
+    } finally {
+      this.runningTask = null;
+    }
+  },
+
+  async runLoad({ silent = false, force = false, fromPullDown = false } = {}) {
+    const controller = this.getController();
+    const startedAt = Date.now();
+    this.okSections = [];
+    this.failedSections = [];
+    this.permissionLost = false;
 
     let session = null;
     try {
-      session = await getApp().ensureSession({ force: true });
-    } catch (error) {
-      this.setData({
-        loading: false,
-        sessionError: error.message || '身份校验失败，请重新登录。'
+      session = await getApp().ensureSession({
+        force: !this.data.hasData || controller.sessionStale()
       });
+    } catch (error) {
+      if (isPermissionLostError(error)) {
+        this.handlePermissionLost(error);
+      } else {
+        this.controllerSetIfChanged({
+          sessionError: error.message || '身份校验失败，请重新登录。',
+          refreshing: false
+        });
+      }
+      if (fromPullDown) {
+        wx.stopPullDownRefresh();
+      }
+      return;
+    }
+    controller.markSessionChecked();
+
+    /* 身份（用户 + 角色 + 状态）变化时立即清空旧数据 */
+    if (!controller.syncIdentity(session)) {
+      this.clearCachedData();
+    }
+
+    if (!sessionHasRole(session, 'student')) {
+      this.handlePermissionLost(
+        Object.assign(new Error('当前账号不能访问学生工作台。'), { code: 'FORBIDDEN' })
+      );
       if (fromPullDown) {
         wx.stopPullDownRefresh();
       }
       return;
     }
 
-    if (!sessionHasRole(session, 'student')) {
-      wx.reLaunch({ url: getSessionDestination(session).url });
-      return;
+    if (!silent) {
+      this.setSectionsLoading(true);
     }
+    this.controllerSetIfChanged({ refreshing: true, sessionError: '', staleNotice: '' });
 
-    this.setData({ loading: false });
-
-    /* 4 个现有只读接口并行发起，各区块独立渲染与独立错误重试 */
     await Promise.all([
       this.loadProfile(),
       this.loadTodayAttendance(),
@@ -154,101 +236,209 @@ Page({
       this.loadNotices()
     ]);
 
+    /* 权限失效：本轮不再回写任何数据 */
+    if (this.permissionLost) {
+      if (fromPullDown) {
+        wx.stopPullDownRefresh();
+      }
+      return;
+    }
+
+    const hasData = this.data.hasData === true || this.okSections.length > 0;
+    controller.markLoaded();
+    this.controllerSetIfChanged({
+      hasData,
+      refreshing: false,
+      lastUpdatedText: `数据更新于 ${formatClock(Date.now())}`,
+      staleNotice:
+        hasData && this.failedSections.length
+          ? '部分数据更新失败，当前显示的是上次成功加载的数据'
+          : ''
+    });
+
+    this.lastPerf = {
+      durationMs: Date.now() - startedAt,
+      sections: 4,
+      failed: this.failedSections.slice()
+    };
+
     if (fromPullDown) {
       wx.stopPullDownRefresh();
     }
   },
 
-  async loadProfile() {
-    this.setData({ 'profileState.loading': true, 'profileState.error': '' });
-    const result = await settle(api.getProfile());
+  setSectionsLoading(loading) {
+    for (const key of Object.values(SECTION_STATE_KEYS)) {
+      const current = this.data[key] || {};
+      this.controllerSetIfChanged({
+        [key]: {
+          loading,
+          error: loading ? '' : current.error,
+          ready: current.ready === true
+        }
+      });
+    }
+  },
+
+  setSectionState(key, patch) {
+    const current = this.data[key] || {};
+    this.controllerSetIfChanged({ [key]: Object.assign({}, current, patch) });
+  },
+
+  /* 权限失效：先清空敏感数据，再按会话回到正确入口 */
+  handlePermissionLost(error) {
+    const message = (error && error.message) || '当前账号没有访问权限。';
+    this.permissionLost = true;
+    this.okSections = [];
+    this.failedSections = [];
+    this.clearCachedData();
+    this.getController().reset();
+    this.controllerSetIfChanged({
+      sessionError: message,
+      refreshing: false,
+      lastUpdatedText: '',
+      staleNotice: ''
+    });
+    const app = getApp();
+    let destination = '/pages/index/index';
+    try {
+      const session = app && app.globalData ? app.globalData.session : null;
+      if (session) {
+        destination = getSessionDestination(session).url;
+      }
+    } catch (error) {
+      destination = '/pages/index/index';
+    }
+    wx.reLaunch({ url: destination });
+  },
+
+  /* 清空页面上的敏感数据（保留骨架屏状态，避免展示越权/过期数据） */
+  clearCachedData() {
+    this.controllerSetIfChanged({
+      hasData: false,
+      lastUpdatedText: '',
+      staleNotice: '',
+      profile: null,
+      genderLabel: '',
+      statusLabel: '',
+      headMeta: '',
+      headName: '',
+      headEvent: '',
+      headGroup: '',
+      todaySessions: [],
+      todayDate: '',
+      stats: null,
+      notices: [],
+      unreadCount: 0,
+      noticeMeta: '',
+      noticeActionText: '查看全部',
+      profileState: { loading: true, error: '', ready: false },
+      todayState: { loading: true, error: '', ready: false },
+      statsState: { loading: true, error: '', ready: false },
+      noticeState: { loading: true, error: '', ready: false }
+    });
+  },
+
+  async loadSection(name, factory, apply) {
+    const controller = this.getController();
+    const result = await controller.run(name, factory);
+    if (!result) {
+      return; /* 已被更新的请求取代，丢弃结果 */
+    }
+    if (this.permissionLost) {
+      return;
+    }
     if (!result.ok) {
-      this.setData({
-        'profileState.loading': false,
-        'profileState.error': result.error.message || '个人档案加载失败。'
+      if (isPermissionLostError(result.error)) {
+        this.handlePermissionLost(result.error);
+        return;
+      }
+      this.failedSections.push(name);
+      this.setSectionState(SECTION_STATE_KEYS[name], {
+        loading: false,
+        error: result.error.message || '数据加载失败。'
       });
       return;
     }
-    const profile = result.data.profile || null;
-    const primaryEvent = profile
-      ? profile.primaryEventName || profile.primaryTrainingProject || ''
-      : '';
-    this.setData({
-      'profileState.loading': false,
-      'profileState.error': '',
-      profile,
-      genderLabel: profile ? GENDER_LABELS[profile.gender] || '未说明' : '',
-      statusLabel: getStatusLabel(result.data.userStatus),
-      headName: profile ? profile.name || '' : '',
-      headEvent: primaryEvent
+    this.okSections.push(name);
+    apply(result.value);
+    this.setSectionState(SECTION_STATE_KEYS[name], {
+      loading: false,
+      error: '',
+      ready: true
     });
-    this.refreshHead();
   },
 
-  async loadTodayAttendance() {
-    this.setData({ 'todayState.loading': true, 'todayState.error': '' });
-    const result = await settle(api.getStudentTodayAttendance());
-    if (!result.ok) {
-      this.setData({
-        'todayState.loading': false,
-        'todayState.error': result.error.message || '今日训练加载失败。'
+  loadProfile() {
+    return this.loadSection('profile', () => api.getProfile(), (result) => {
+      const profile = result.profile || null;
+      const primaryEvent = profile
+        ? profile.primaryEventName || profile.primaryTrainingProject || ''
+        : '';
+      this.controllerSetIfChanged({
+        profile,
+        genderLabel: profile ? GENDER_LABELS[profile.gender] || '未说明' : '',
+        statusLabel: getStatusLabel(result.userStatus),
+        headName: profile ? profile.name || '' : '',
+        headEvent: primaryEvent
       });
-      return;
-    }
-    const sessions = (result.data.sessions || []).map((item) => {
-      const session = item.session || {};
-      return {
-        sessionId: session.sessionId,
-        title: session.title || session.locationName || '训练场次',
-        locationName: session.locationName || '',
-        trainingGroupName: session.trainingGroupName || '',
-        checkInOpenTime: session.checkInOpenTime || '',
-        checkInCloseTime: session.checkInCloseTime || '',
-        latitude: session.latitude,
-        radiusMeters: session.radiusMeters,
-        status: item.status,
-        statusLabel: ATTENDANCE_STATUS_LABELS[item.status] || item.status,
-        phaseLabel: ATTENDANCE_PHASE_LABELS[session.phase] || session.phase || '',
-        canCheckIn: item.status === 'pending',
-        isDone: item.status === 'checked_in' || item.status === 'late'
-      };
-    });
-    this.setData({
-      'todayState.loading': false,
-      'todayState.error': '',
-      todayDate: result.data.date || todayIso(),
-      todaySessions: sessions
+      this.refreshHead();
     });
   },
 
-  async loadStatistics() {
-    this.setData({ 'statsState.loading': true, 'statsState.error': '' });
-    const now = new Date();
-    const result = await settle(
-      api.getMyStatistics({
-        periodType: 'month',
-        year: now.getFullYear(),
-        month: now.getMonth() + 1
-      })
+  loadTodayAttendance() {
+    return this.loadSection(
+      'today',
+      () => api.getStudentTodayAttendance(),
+      (result) => {
+        const sessions = (result.sessions || []).map((item) => {
+          const session = item.session || {};
+          return {
+            sessionId: session.sessionId,
+            title: session.title || session.locationName || '训练场次',
+            locationName: session.locationName || '',
+            trainingGroupName: session.trainingGroupName || '',
+            checkInOpenTime: session.checkInOpenTime || '',
+            checkInCloseTime: session.checkInCloseTime || '',
+            status: item.status,
+            statusLabel: ATTENDANCE_STATUS_LABELS[item.status] || item.status,
+            phaseLabel: ATTENDANCE_PHASE_LABELS[session.phase] || session.phase || '',
+            canCheckIn: item.status === 'pending',
+            isDone: item.status === 'checked_in' || item.status === 'late'
+          };
+        });
+        this.controllerSetIfChanged({
+          todayDate: result.date || todayIso(),
+          todaySessions: sessions
+        });
+      }
     );
-    if (!result.ok) {
-      this.setData({
-        'statsState.loading': false,
-        'statsState.error': result.error.message || '个人统计加载失败。'
-      });
-      return;
-    }
-    const payload = result.data || {};
+  },
+
+  loadStatistics() {
+    const now = new Date();
+    return this.loadSection(
+      'stats',
+      () =>
+        api.getMyStatistics({
+          periodType: 'month',
+          year: now.getFullYear(),
+          month: now.getMonth() + 1
+        }),
+      (payload) => this.applyStatistics(payload)
+    );
+  },
+
+  applyStatistics(payload) {
     const attendance = payload.attendance || {};
     const performance = payload.performance || {};
     const personalBests = performance.personalBests || [];
     const best = personalBests[0] || null;
     const target = performance.targetComparison || null;
     const rateText = percentText(attendance.attendanceRate);
+    const isLongTime = Boolean(best && best.unit === '秒' && Number(best.value) >= 60);
 
-    this.setData({
-      'statsState.loading': false,
-      'statsState.error': '',
+    this.controllerSetIfChanged({
       stats: {
         periodLabel: (payload.period || {}).label || '',
         attendanceRateText: rateText,
@@ -264,12 +454,8 @@ Page({
         hasPb: Boolean(best),
         pbEventName: best ? best.eventName : '',
         pbValueText: best ? formatMetric(best.value, best.unit) : '',
-        pbRawValue: best
-          ? best.unit === '秒' && Number(best.value) >= 60
-            ? formatMetric(best.value, best.unit)
-            : best.value
-          : '',
-        pbUnit: best && !(best.unit === '秒' && Number(best.value) >= 60) ? best.unit : '',
+        pbRawValue: best ? (isLongTime ? formatMetric(best.value, best.unit) : best.value) : '',
+        pbUnit: best && !isLongTime ? best.unit : '',
         pbDate: best ? shortDate(best.date || best.achievedAt) : '',
         targetEventName: target ? target.eventName : '',
         targetText:
@@ -285,7 +471,10 @@ Page({
           changeText: `${item.change > 0 ? '+' : ''}${item.change} ${item.unit || ''}`.trim(),
           improved: Number(item.change) > 0,
           date: shortDate(item.latestDate),
-          metaText: `${formatMetric(item.firstValue, item.unit)} → ${formatMetric(item.latestValue, item.unit)}${item.latestDate ? ` · ${shortDate(item.latestDate)}` : ''}`
+          metaText: `${formatMetric(item.firstValue, item.unit)} → ${formatMetric(
+            item.latestValue,
+            item.unit
+          )}${item.latestDate ? ` · ${shortDate(item.latestDate)}` : ''}`
         })),
         changesTotal: (performance.stageChanges || []).length,
         dataQualityNote: (payload.dataQuality || {}).membershipHistoryNote || ''
@@ -296,34 +485,29 @@ Page({
     this.refreshHead();
   },
 
-  async loadNotices() {
-    this.setData({ 'noticeState.loading': true, 'noticeState.error': '' });
-    const result = await settle(api.listStudentNotices({}));
-    if (!result.ok) {
-      this.setData({
-        'noticeState.loading': false,
-        'noticeState.error': result.error.message || '通知加载失败。'
-      });
-      return;
-    }
-    const notices = (result.data.notices || []).slice(0, 3).map((notice) => ({
-      noticeId: notice.noticeId,
-      title: notice.title,
-      content: notice.content,
-      isImportant: notice.priority === 'important',
-      isRead: Boolean(notice.isRead),
-      categoryLabel: notice.categoryLabel || '',
-      timeText: shortDate(notice.publishedAt)
-    }));
-    const unreadCount = Number(result.data.unreadCount) || 0;
-    this.setData({
-      'noticeState.loading': false,
-      'noticeState.error': '',
-      notices,
-      unreadCount,
-      noticeMeta: unreadCount ? `未读 ${unreadCount} 条` : '全部已读',
-      noticeActionText: unreadCount ? `查看全部（${unreadCount}）` : '查看全部'
-    });
+  loadNotices() {
+    return this.loadSection(
+      'notice',
+      () => api.listStudentNotices({}),
+      (result) => {
+        const notices = (result.notices || []).slice(0, 3).map((notice) => ({
+          noticeId: notice.noticeId,
+          title: notice.title,
+          content: notice.content,
+          isImportant: notice.priority === 'important',
+          isRead: Boolean(notice.isRead),
+          categoryLabel: notice.categoryLabel || '',
+          timeText: shortDate(notice.publishedAt)
+        }));
+        const unreadCount = Number(result.unreadCount) || 0;
+        this.controllerSetIfChanged({
+          notices,
+          unreadCount,
+          noticeMeta: unreadCount ? `未读 ${unreadCount} 条` : '全部已读',
+          noticeActionText: unreadCount ? `查看全部（${unreadCount}）` : '查看全部'
+        });
+      }
+    );
   },
 
   refreshHead() {
@@ -331,27 +515,29 @@ Page({
       .filter(Boolean)
       .join(' · ');
     if (meta !== this.data.headMeta) {
-      this.setData({ headMeta: meta });
+      this.controllerSetIfChanged({ headMeta: meta });
     }
   },
 
   retryProfile() {
-    this.loadProfile();
+    return this.loadAll({ silent: true, force: true });
   },
 
   retryToday() {
-    this.loadTodayAttendance();
+    return this.loadAll({ silent: true, force: true });
   },
 
   retryStats() {
-    this.loadStatistics();
+    return this.loadAll({ silent: true, force: true });
   },
 
   retryNotices() {
-    this.loadNotices();
+    return this.loadAll({ silent: true, force: true });
   },
 
+  /* 跳转前标记需要刷新：审批/申报等业务完成后返回工作台会强制静默刷新 */
   goPlans() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/student-plans/student-plans' });
   },
 
@@ -360,6 +546,7 @@ Page({
   },
 
   goPerformance() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/performance/performance' });
   },
 
@@ -376,22 +563,27 @@ Page({
   },
 
   goAttendance() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/student-attendance/student-attendance' });
   },
 
   goCompetitions() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/student-competitions/student-competitions' });
   },
 
   goNotices() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/student-notices/student-notices' });
   },
 
   goFeedback() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/student-feedback/student-feedback' });
   },
 
   goEditProfile() {
+    this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/profile-edit/profile-edit' });
   },
 
@@ -407,6 +599,8 @@ Page({
     if (!modal.confirm) {
       return;
     }
+    this.clearCachedData();
+    this.getController().reset();
     getApp().clearSession();
     wx.reLaunch({ url: '/pages/index/index' });
   }
