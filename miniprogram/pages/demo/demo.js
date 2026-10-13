@@ -25,6 +25,7 @@ const {
   buildStudentWorkbench,
   buildStudentModule,
   getStudentNotice,
+  DEMO_STUDENT_ID,
   catalog: STUDENT_CATALOG
 } = require('../../demo/student-demo');
 const {
@@ -63,10 +64,12 @@ Page({
     roleLabel: '',
     roleTone: 'brand',
     isParent: false,
+    isCoach: false,
     view: 'workbench',
     pageTitle: '演示预览',
     pageMeta: '',
     detail: null,
+    restrictedDetail: null,
     localRead: false,
 
     student: null,
@@ -160,7 +163,31 @@ Page({
 
     /* 演示详情（通知正文 / 赛事意向）：同样复用本演示页 */
     if (detailType) {
-      const detail = this.buildDemoDetail();
+      let detail = null;
+      try {
+        detail = this.buildDemoDetail();
+      } catch (error) {
+        /* 仅当是“授权失败”时展示拒绝说明；数据不存在等其它错误仍走错误态 */
+        if (error.code !== 'DEMO_NOT_AUTHORIZED') {
+          this.setData({ loading: false, ready: false, error: error.message || '演示详情加载失败。', restrictedDetail: null });
+          return;
+        }
+        this.setData({
+          loading: false,
+          ready: true,
+          error: '',
+          denied: false,
+          isParent,
+          isCoach,
+          catalogGroups,
+          module: null,
+          detail: null,
+          restrictedDetail: { message: error.message || '该内容不在当前授权范围内。' },
+          pageTitle: '无权查看该详情',
+          pageMeta: '家长端只能查看已生效关联学生的数据'
+        });
+        return;
+      }
       this.setData({
         loading: false,
         ready: true,
@@ -170,6 +197,7 @@ Page({
         catalogGroups,
         module: null,
         detail,
+        restrictedDetail: null,
         localRead: detail.isRead === true,
         pageTitle: detail.title,
         pageMeta: detail.metaLine
@@ -467,10 +495,15 @@ Page({
     const kind = this.data.module && this.data.module.submitKind;
     if (kind) {
       const result = this.runDemoAction(kind, '');
-      this.setData({ simulatedSubmit: result.ok ? '已在本地模拟数据源中生效（未写入任何正式数据）' : `模拟失败：${result.reason}` });
       if (result.ok) {
+        /* 先重建视图（会重置提示文案），再写入本次结果提示 */
         this.applyDemoData();
       }
+      this.setData({
+        simulatedSubmit: result.ok
+          ? '已在本地模拟数据源中生效（未写入任何正式数据）'
+          : `模拟失败：${result.reason || '未知原因'}`
+      });
       return;
     }
     this.setData({ simulatedSubmit: '本地模拟已完成（未写入任何业务数据）' });
@@ -486,6 +519,13 @@ Page({
       /* 重新构建当前视图，让列表与详情反映最新模拟状态 */
       this.applyDemoData();
     }
+  },
+
+  /* 学生演示代表 stu_lin：取本人训练组内的第一个场次用于模拟签到/反馈 */
+  firstDemoSessionId() {
+    const groupIds = store.groupsOfStudent(DEMO_STUDENT_ID);
+    const session = store.getState().attendanceSessions.find((item) => groupIds.includes(item.trainingGroupId));
+    return session ? session.sessionId : '';
   },
 
   runDemoAction(kind, id) {
@@ -504,6 +544,26 @@ Page({
         return store.reviewFeedback(id);
       case 'register-intent':
         return store.advanceCompetitionIntent(id, store.COMPETITION_STATUS.REGISTERED, '教练已在赛事官方渠道完成报名（虚构）。');
+      /* 学生端模拟写入：全部进入统一数据源，教练端待办会随之变化 */
+      case 'check-in': {
+        const sessionId = this.firstDemoSessionId();
+        return sessionId ? store.checkIn(DEMO_STUDENT_ID, sessionId) : { ok: false, reason: '暂无可用训练场次' };
+      }
+      case 'submit-performance':
+        return store.submitPerformance(DEMO_STUDENT_ID, '100m', 11.62, '2026-06-21', '演示申报');
+      case 'submit-feedback': {
+        const feedbackSessionId = this.firstDemoSessionId();
+        return feedbackSessionId
+          ? store.submitFeedback(DEMO_STUDENT_ID, feedbackSessionId, 'completed', 7, '演示反馈：状态良好，节奏稳定。')
+          : { ok: false, reason: '暂无可用训练场次' };
+      }
+      case 'submit-intent':
+        return store.submitCompetitionIntent(
+          DEMO_STUDENT_ID,
+          'comp_city',
+          [{ eventCode: '100m', eventName: '100米', category: '公开组' }],
+          '演示意向登记'
+        );
       case 'publish-notice':
         return store.publishNotice({
           title: '演示：训练时间调整',

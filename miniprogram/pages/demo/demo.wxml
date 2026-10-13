@@ -26,6 +26,11 @@
   <block wx:if="{{ready && !error}}">
     <!-- ========== 0. 演示详情（通知正文 / 赛事意向） ========== -->
     <block wx:if="{{view === 'detail'}}">
+      <!-- 详情授权校验失败（含直接 URL 使用旧详情 ID）：只展示拒绝说明 -->
+      <view wx:if="{{restrictedDetail}}" class="jg-state-err">
+        <view class="jg-state-err-t">无权查看该详情</view>
+        <view class="jg-state-err-m">{{restrictedDetail.message}}</view>
+      </view>
       <view class="jg-card">
         <view class="jg-card-h">
           <text class="jg-card-t">{{detail.title}}</text>
@@ -126,6 +131,20 @@
             <text wx:if="{{item.v}}" class="jg-row-v">{{item.v}}</text>
             <text wx:if="{{item.chip}}" class="jg-chip {{item.tone ? 'jg-chip-' + item.tone : ''}}">{{item.chip}}</text>
             <text wx:if="{{item.detailType}}" class="jg-chev">›</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 补充行（如待审核成绩、历史考勤）：与学生可见列表分开呈现 -->
+      <view wx:if="{{module.extraRows.length}}" class="jg-list jg-mt-12">
+        <view wx:for="{{module.extraRows}}" wx:key="t" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.t}}</view>
+            <view class="jg-row-m">{{item.m}}</view>
+          </view>
+          <view class="jg-row-e">
+            <text wx:if="{{item.v}}" class="jg-row-v">{{item.v}}</text>
+            <text wx:if="{{item.chip}}" class="jg-chip {{item.tone ? 'jg-chip-' + item.tone : ''}}">{{item.chip}}</text>
           </view>
         </view>
       </view>

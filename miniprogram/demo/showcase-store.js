@@ -167,7 +167,7 @@ function baseState() {
         /* 教练草稿：学生端不得出现 */
         planId: 'plan_draft',
         trainingGroupId: 'group_sprint',
-        title: '第 9 周补强（草稿）',
+        title: '第 9 周补强训练',
         startDate: '2026-06-22',
         endDate: '2026-06-28',
         status: PLAN_STATUS.DRAFT,
@@ -202,6 +202,19 @@ function baseState() {
         trainingGroupId: 'group_sprint',
         title: '速度课 · 60米加速跑',
         attendanceDate: '2026-06-17',
+        locationName: '田径场（虚构）',
+        radiusMeters: 120,
+        checkInOpenTime: '16:00',
+        checkInCloseTime: '18:00',
+        lateAfterTime: '16:15',
+        phase: 'open',
+        status: 'scheduled'
+      },
+      {
+        sessionId: 'att_tech',
+        trainingGroupId: 'group_sprint',
+        title: '技术课 · 起跑与加速',
+        attendanceDate: '2026-06-19',
         locationName: '田径场（虚构）',
         radiusMeters: 120,
         checkInOpenTime: '16:00',
@@ -256,6 +269,15 @@ function baseState() {
         reviewComment: '已核对考试安排（虚构）。'
       },
       {
+        leaveId: 'leave_lin_2',
+        studentId: 'stu_lin',
+        sessionId: 'att_tech',
+        attendanceDate: '2026-06-19',
+        reason: '校内活动冲突（虚构）',
+        status: LEAVE_STATUS.PENDING,
+        reviewComment: ''
+      },
+      {
         leaveId: 'leave_su_1',
         studentId: 'stu_su',
         sessionId: 'att_jump',
@@ -304,6 +326,7 @@ function baseState() {
 
     notices: [
       { noticeId: 'notice_1', title: '本周训练调整', category: 'training', categoryLabel: '训练安排', publishedAt: '2026-06-15 09:20', publisherText: '短跑组教练（虚构）', priority: 'important', content: '因场地维护，本周三速度课调整至室内力量房，集合时间不变。请穿训练鞋并自带饮用水。', groupIds: ['group_sprint', 'group_four', 'group_endurance'], readBy: [] },
+      { noticeId: 'notice_3', title: '跳跃组专项通知', category: 'training', categoryLabel: '训练安排', publishedAt: '2026-06-16 08:10', publisherText: '四项组教练（虚构）', priority: 'normal', content: '本周四项组增加一次助跑技术课，请按时到场。', groupIds: ['group_four'], readBy: [] },
       { noticeId: 'notice_2', title: '队内测试通知', category: 'test', categoryLabel: '测试安排', publishedAt: '2026-06-12 18:05', publisherText: '俱乐部（虚构）', priority: 'normal', content: '月底将进行队内测试，成绩经教练审核后计入正式成绩。', groupIds: ['group_sprint', 'group_four', 'group_endurance'], readBy: ['stu_lin'] }
     ]
   };

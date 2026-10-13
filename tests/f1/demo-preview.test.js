@@ -710,7 +710,7 @@ test('学生通知：不同通知打开后内容正确匹配、互不混淆', as
 
 test('学生通知：重要/未读状态与演示数据一致，标记已读只改本地', async () => {
   const { instance } = loadDemoPage({ pageStackDepth: 2 });
-  await instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_1' });
+  await instance.onLoad({ role: 'student', detail: 'notice', id: 'notice_1' });
   await flush();
 
   assert.equal(instance.data.detail.chip, '重要通知');
@@ -734,7 +734,7 @@ test('学生通知：不存在的通知 id 不返回任何详情数据', async (
 
 test('学生通知：从列表返回走原生返回，直接打开时退回演示工作台', async () => {
   const fromList = loadDemoPage({ pageStackDepth: 2 });
-  await fromList.instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_2' });
+  await fromList.instance.onLoad({ role: 'student', detail: 'notice', id: 'notice_2' });
   await flush();
   fromList.instance.goBackToList();
   /* 注意：跨 VM 边界传回的对象原型不同，故逐字段断言 */
@@ -743,7 +743,7 @@ test('学生通知：从列表返回走原生返回，直接打开时退回演�
   assert.deepEqual(fromList.calls.navigateTo, []);
 
   const direct = loadDemoPage({ pageStackDepth: 1 });
-  await direct.instance.onLoad({ role: 'student', detail: 'notice', id: 'demo_notice_2' });
+  await direct.instance.onLoad({ role: 'student', detail: 'notice', id: 'notice_2' });
   await flush();
   direct.instance.goBackToList();
   assert.deepEqual(direct.calls.navigateBack, []);

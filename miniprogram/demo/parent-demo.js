@@ -1,70 +1,34 @@
 'use strict';
 
 /**
- * 家长端 DEMO 本地虚构数据（不读取 CloudBase，不调用任何业务接口）
+ * D1-B 补充｜家长端演示视图（读取 showcase-store 统一数据源）
  *
- * 严格对齐家长端字段白名单：只展示已审核成绩、考勤状态、完成情况与自评强度；
- * 不出现精确 GPS 坐标、请假原因、健康信息或教练内部评价。
- * 家长端在演示中也保持只读。
+ * 关键变化：
+ *   1. 展示数据来自统一数据源，教练端审核成绩 / 批准请假 / 发布通知后，
+ *      重新进入家长端即可看到变化；
+ *   2. **详情入口带授权校验**：直接以旧详情 ID 打开、或切换到未生效关联的学生后，
+ *      都无法读取未授权学生的数据；
+ *   3. 家长端始终只读，且不展示 GPS 精确位置、请假原因与教练内部评价。
+ *
+ * 本模块不引用任何正式业务接口。
  */
 
-const STUDENTS = Object.freeze([
-  {
-    id: 'demo_child_1',
-    name: '林越',
-    tag: '虚构演示学生',
-    primaryEventName: '100米',
-    trainingGroupName: '短跑组（虚构）',
-    linkState: 'active'
-  },
-  {
-    id: 'demo_child_2',
-    name: '苏晴',
-    tag: '虚构演示学生',
-    primaryEventName: '跳远',
-    trainingGroupName: '跳跃组（虚构）',
-    linkState: 'pending_review'
-  }
-]);
+const store = require('./showcase-store');
 
-/*
- * 与 cloudfunctions/api/lib/constants.js 的 PARENT_LINK_STATUS 完全一致；
- * 测试会交叉校验两边取值相同，避免前端演示自创正式状态名。
- */
-const PARENT_LINK_STATUS = Object.freeze({
-  OPEN: 'open',
-  USED: 'used',
-  EXPIRED: 'expired',
-  LOCKED: 'locked',
-  PENDING_STUDENT: 'pending_student',
-  PENDING_REVIEW: 'pending_review',
-  ACTIVE: 'active',
-  REJECTED: 'rejected',
-  REVOKED: 'revoked'
-});
+const DEMO_PARENT_ID = 'parent_lin';
+
+/* 与 cloudfunctions/api/lib/constants.js 的 PARENT_LINK_STATUS 完全一致（测试会交叉校验） */
+const PARENT_LINK_STATUS = store.LINK_STATUS;
 
 const LINK_STATE_LABELS = Object.freeze({
-  [PARENT_LINK_STATUS.PENDING_STUDENT]: '待学生确认',
-  [PARENT_LINK_STATUS.PENDING_REVIEW]: '待开发者核验',
-  [PARENT_LINK_STATUS.ACTIVE]: '关联已生效',
-  [PARENT_LINK_STATUS.REJECTED]: '关联已驳回',
-  [PARENT_LINK_STATUS.REVOKED]: '关联已解除'
+  active: '关联已生效',
+  pending_review: '待开发者核验',
+  pending_student: '待学生确认',
+  rejected: '关联已驳回',
+  revoked: '关联已解除'
 });
 
-/**
- * 授权判断（与正式系统 assertActiveLink 同一规则）：
- * 仅“正式生效”的关联关系允许读取学生业务数据；
- * 待审核 / 已驳回 / 已解除 / 凭证类状态一律不授予访问。
- */
-function isLinkActive(linkState) {
-  return linkState === PARENT_LINK_STATUS.ACTIVE;
-}
-
-function linkStateLabel(linkState) {
-  return LINK_STATE_LABELS[linkState] || '关联状态未知';
-}
-
-/** 需要“关联生效”才能展示的受保护模块（其余模块仅作授权管理/说明） */
+/** 需要"关联生效"才能展示的受保护模块 */
 const PROTECTED_MODULE_IDS = Object.freeze([
   'overview',
   'plans',
@@ -74,133 +38,95 @@ const PROTECTED_MODULE_IDS = Object.freeze([
   'events'
 ]);
 
-const DATA_BY_STUDENT = Object.freeze({
-  demo_child_1: {
-    overview: {
-      pb: { eventName: '100米', value: '11.70', unit: '秒' },
-      approvedCount: 7,
-      attendance: {
-        validAttendance: 11,
-        actualExpected: 12,
-        late: 1,
-        absent: 0,
-        approvedLeave: 1,
-        pendingVerification: 1
-      }
-    },
-    plans: [
-      { planId: 'p1', title: '第 8 周速度耐力', rangeText: '06-15 至 06-21', itemCountText: '4 项内容' },
-      { planId: 'p2', title: '第 7 周技术课', rangeText: '06-08 至 06-14', itemCountText: '3 项内容' }
-    ],
-    performanceRows: [
-      { eventName: '100米', dateText: '取得日期：2026-06-11', valueText: '11.70 秒' },
-      { eventName: '跳远', dateText: '取得日期：2026-06-05', valueText: '5.35 米' }
-    ],
-    attendanceRows: [
-      { dateText: '06-11 速度课', chip: '已签到' },
-      { dateText: '06-13 力量课', chip: '迟到' },
-      { dateText: '06-16 技术课', chip: '已批准请假' }
-    ],
-    feedbackRows: [
-      { dateText: '06-11 速度课', metaText: '全部完成 · RPE 7/10' },
-      { dateText: '06-13 力量课', metaText: '部分完成 · RPE 8/10' }
-    ],
-    competitionRows: [
-      {
-        id: 'p1_comp_1',
-        title: '春季田径公开赛（虚构）',
-        metaText: '100米 · 教练处理中',
-        chip: '教练处理中',
-        detailText:
-          '已提交参赛意向，教练正在核对报名项目与参赛资格。内部意向不等于官方报名成功，正式报名由教练在赛事官方渠道完成。'
-      },
-      {
-        id: 'p1_comp_2',
-        title: '市青少年锦标赛（虚构）',
-        metaText: '100米 · 已完成内部报名',
-        chip: '教练已代报',
-        detailText: '教练已在赛事官方渠道完成报名并回填办理进度，请赛前关注集合时间与装备要求。'
-      }
-    ],
-    noticeRows: [
-      {
-        id: 'p1_notice_1',
-        title: '本周训练调整',
-        categoryLabel: '训练安排',
-        publishedAt: '2026-06-15 09:20',
-        chip: '重要',
-        detailText: '因田径场维护，本周三训练调整至室内力量房，集合时间不变，请提前到场热身。'
-      },
-      {
-        id: 'p1_notice_2',
-        title: '队内测试通知',
-        categoryLabel: '测试安排',
-        publishedAt: '2026-06-12 18:05',
-        chip: '普通',
-        detailText: '月底将进行 100 米与跳远队内测试，成绩经教练审核后计入正式成绩。'
-      }
-    ]
-  },
-  demo_child_2: {
-    overview: {
-      pb: { eventName: '跳远', value: '5.35', unit: '米' },
-      approvedCount: 4,
-      attendance: {
-        validAttendance: 9,
-        actualExpected: 12,
-        late: 0,
-        absent: 2,
-        approvedLeave: 1,
-        pendingVerification: 0
-      }
-    },
-    plans: [
-      { planId: 'p3', title: '第 8 周跳跃技术', rangeText: '06-15 至 06-21', itemCountText: '5 项内容' }
-    ],
-    performanceRows: [
-      { eventName: '跳远', dateText: '取得日期：2026-06-08', valueText: '5.35 米' }
-    ],
-    attendanceRows: [
-      { dateText: '06-10 跳跃课', chip: '已签到' },
-      { dateText: '06-14 力量课', chip: '未签到' }
-    ],
-    feedbackRows: [
-      { dateText: '06-10 跳跃课', metaText: '全部完成 · RPE 6/10' }
-    ],
-    competitionRows: [
-      {
-        id: 'p2_comp_1',
-        title: '市青少年锦标赛（虚构）',
-        metaText: '跳远 · 待教练办理',
-        chip: '已提交意向',
-        detailText: '已提交跳远项目参赛意向，等待教练办理。内部意向不等于官方报名成功。'
-      }
-    ],
-    noticeRows: [
-      {
-        id: 'p2_notice_1',
-        title: '本周训练调整',
-        categoryLabel: '训练安排',
-        publishedAt: '2026-06-15 09:20',
-        chip: '重要',
-        detailText: '因场地调整，本周跳跃组训练时间顺延半小时，请按教练通知到场地集合。'
-      }
-    ]
-  }
+const COMPLETION_LABELS = Object.freeze({
+  completed: '全部完成',
+  partial: '部分完成',
+  not_completed: '未完成'
 });
 
-const CATALOG = Object.freeze([
-  { id: 'overview', name: '学生概览', group: '学生概览', tone: 'accent', icon: '览', desc: 'PB、出勤与关键指标' },
-  { id: 'plans', name: '训练计划', group: '学生概览', tone: 'brand', icon: '计', desc: '已发布训练安排' },
-  { id: 'performance', name: '运动成绩', group: '学生概览', tone: 'ok', icon: '绩', desc: '仅已审核正式成绩' },
-  { id: 'attendance', name: '考勤记录', group: '学生概览', tone: 'plain', icon: '勤', desc: '签到状态（无位置）' },
-  { id: 'feedback', name: '训练反馈', group: '学生概览', tone: 'brand', icon: '馈', desc: '完成情况与自评强度' },
-  { id: 'events', name: '赛事与通知', group: '学生概览', tone: 'accent', icon: '赛', desc: '赛事进度与通知' },
-  { id: 'link', name: '关联学生管理', group: '关联与账号', tone: 'brand', icon: '联', desc: '关联状态与授权管理' },
-  { id: 'account', name: '个人中心', group: '关联与账号', tone: 'plain', icon: '人', desc: '身份与退出预览' }
-]);
+const COMPETITION_LABELS = Object.freeze({
+  submitted: '已提交意向',
+  processing: '教练处理中',
+  registered: '教练已代报',
+  failed: '未完成',
+  cancelled: '已取消'
+});
 
 class DemoModuleError extends Error {}
+
+/** 授权失败用独立错误码区分，便于页面展示“无权查看”而不是“数据加载失败” */
+function unauthorizedError(message) {
+  const error = new DemoModuleError(message);
+  error.code = 'DEMO_NOT_AUTHORIZED';
+  return error;
+}
+
+function isLinkActive(linkState) {
+  return linkState === PARENT_LINK_STATUS.ACTIVE;
+}
+
+function linkStateLabel(linkState) {
+  return LINK_STATE_LABELS[linkState] || '关联状态未知';
+}
+
+function linkedStudents() {
+  return store.linkedStudentsOfParent(DEMO_PARENT_ID);
+}
+
+/* 兼容既有导出：STUDENTS 为两名虚构学生（含各自关联状态） */
+const STUDENTS = linkedStudents();
+
+function normalizeIndex(index) {
+  const value = Number(index);
+  if (!Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+  return Math.min(Math.floor(value), Math.max(0, STUDENTS.length - 1));
+}
+
+function studentPayloads() {
+  return STUDENTS.map((item) => ({
+    id: item.id,
+    studentUserId: item.id,
+    name: item.name,
+    tag: item.tag,
+    primaryEventName: store.eventByCode(item.primaryEventCode) ? store.eventByCode(item.primaryEventCode).name : '',
+    trainingGroupName: store.groupNames(item.groupIds)[0] || '',
+    linkState: item.linkState,
+    linkStateLabel: linkStateLabel(item.linkState)
+  }));
+}
+
+/** 家长当前有权读取的训练组（仅来自"已生效"关联的学生） */
+function authorizedGroupIds() {
+  const groups = new Set();
+  for (const student of STUDENTS) {
+    if (isLinkActive(student.linkState)) {
+      for (const groupId of student.groupIds) {
+        groups.add(groupId);
+      }
+    }
+  }
+  return groups;
+}
+
+function eventName(code) {
+  const event = store.eventByCode(code);
+  return event ? event.name : code;
+}
+
+function formatMetric(value, unit) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return `${value} ${unit || ''}`.trim();
+  }
+  if (unit === '秒' && number >= 60) {
+    const minutes = Math.floor(number / 60);
+    const seconds = Math.round((number % 60) * 100) / 100;
+    return `${minutes}分${String(seconds).padStart(2, '0')}秒`;
+  }
+  return `${number} ${unit || ''}`.trim();
+}
 
 function row(t, m, options = {}) {
   return {
@@ -209,19 +135,226 @@ function row(t, m, options = {}) {
     v: options.v || '',
     chip: options.chip || '',
     tone: options.tone || '',
-    /* 可选：点击该行打开演示详情（通知正文 / 赛事意向） */
     detailType: options.detail ? options.detail.type : '',
     detailId: options.detail ? options.detail.id : ''
   };
 }
 
-function normalizeIndex(index) {
-  const value = Number(index);
-  if (!Number.isFinite(value) || value < 0) {
-    return 0;
-  }
-  return Math.min(Math.floor(value), STUDENTS.length - 1);
+/* --------------------------------------------------------------- 通知 */
+
+/** 通知是否落在家长"已生效"授权的训练组范围内 */
+function isNoticeAuthorized(notice) {
+  const groups = authorizedGroupIds();
+  return (notice.groupIds || []).some((groupId) => groups.has(groupId));
 }
+
+function authorizedNotices() {
+  return store.getState().notices.filter((notice) => isNoticeAuthorized(notice));
+}
+
+function noticeRows() {
+  return authorizedNotices().map((notice) => ({
+    id: notice.noticeId,
+    title: notice.title,
+    categoryLabel: notice.categoryLabel,
+    publishedAt: notice.publishedAt,
+    chip: notice.priority === 'important' ? '重要' : '普通',
+    detailText: notice.content,
+    studentId: ''
+  }));
+}
+
+/**
+ * 通知详情（带授权校验）：
+ * 即使拿到旧详情 ID，只要该通知不属于家长已生效授权的训练组，就直接拒绝。
+ */
+function getParentNotice(noticeId) {
+  const notice = store.getState().notices.find((item) => item.noticeId === noticeId);
+  if (!notice) {
+    throw new DemoModuleError(`演示通知不存在：${noticeId}`);
+  }
+  if (!isNoticeAuthorized(notice)) {
+    throw unauthorizedError('该通知不在当前已授权的学生范围内。');
+  }
+  return {
+    entry: {
+      id: notice.noticeId,
+      title: notice.title,
+      categoryLabel: notice.categoryLabel,
+      publishedAt: notice.publishedAt,
+      chip: notice.priority === 'important' ? '重要' : '普通',
+      detailText: notice.content
+    },
+    student: { name: '' }
+  };
+}
+
+/* --------------------------------------------------------------- 赛事 */
+
+function authorizedIntents() {
+  const activeIds = STUDENTS.filter((item) => isLinkActive(item.linkState)).map((item) => item.id);
+  return store
+    .getState()
+    .competitionIntents.filter((intent) => activeIds.includes(intent.studentId));
+}
+
+function competitionRows() {
+  return authorizedIntents().map((intent) => {
+    const competition = store.getState().competitions.find((item) => item.competitionId === intent.competitionId) || {};
+    const student = store.studentById(intent.studentId) || {};
+    return {
+      id: intent.registrationId,
+      title: `${competition.title || intent.competitionId}`,
+      metaText: `${(intent.items || []).map((item) => item.eventName).join('、') || '未选择项目'} · ${student.name || ''}`,
+      chip: COMPETITION_LABELS[intent.status] || intent.status,
+      detailText: intent.reviewNote || '教练尚未回填办理说明。',
+      studentId: intent.studentId
+    };
+  });
+}
+
+/** 赛事详情（带授权校验）：未生效关联学生的意向不允许被打开 */
+function getParentCompetition(competitionId) {
+  const intent = store
+    .getState()
+    .competitionIntents.find((item) => item.registrationId === competitionId);
+  if (!intent) {
+    throw new DemoModuleError(`演示赛事意向不存在：${competitionId}`);
+  }
+  const student = STUDENTS.find((item) => item.id === intent.studentId);
+  if (!student || !isLinkActive(student.linkState)) {
+    throw unauthorizedError('该赛事意向不属于当前已授权的学生。');
+  }
+  const competition = store.getState().competitions.find((item) => item.competitionId === intent.competitionId) || {};
+  return {
+    entry: {
+      id: intent.registrationId,
+      title: competition.title || intent.competitionId,
+      metaText: (intent.items || []).map((item) => item.eventName).join('、') || '未选择项目',
+      chip: COMPETITION_LABELS[intent.status] || intent.status,
+      detailText: intent.reviewNote || '教练尚未回填办理说明。'
+    },
+    student: { name: student.name }
+  };
+}
+
+/* ----------------------------------------------------------- 工作台 */
+
+function buildParentWorkbench(index, options = {}) {
+  const safeIndex = normalizeIndex(index);
+  const students = studentPayloads();
+  const student = students[safeIndex];
+  const linkState = options.linkState || student.linkState;
+  const active = isLinkActive(linkState);
+
+  const base = {
+    students,
+    studentIndex: safeIndex,
+    currentStudent: { ...student, linkState, linkStateLabel: linkStateLabel(linkState) },
+    linkState,
+    linkStateLabel: linkStateLabel(linkState),
+    linkActive: active,
+    catalogGroups: groupCatalog(CATALOG)
+  };
+
+  /* 关联未生效：不返回任何受保护业务数据 */
+  if (!active) {
+    return Object.assign(base, {
+      accessNotice: `该学生的关联状态为“${linkStateLabel(linkState)}”，在关联正式生效前不展示成绩、训练计划、考勤、训练反馈与赛事等受保护数据。`,
+      overview: null,
+      plans: [],
+      performanceRows: [],
+      attendanceRows: [],
+      feedbackRows: [],
+      competitionRows: [],
+      noticeRows: []
+    });
+  }
+
+  const studentId = student.id;
+  const bests = store.personalBests(studentId);
+  const approved = store.approvedPerformances(studentId);
+  const attendance = store.attendanceOfStudent(studentId);
+  const leaves = store.leavesOfStudent(studentId);
+  const feedback = store.feedbackOfStudent(studentId);
+  const plans = store.visiblePlansForStudent(studentId);
+
+  const best = bests[0] || null;
+  const checkedIn = attendance.filter((item) => item.status === store.ATTENDANCE_STATUS.CHECKED_IN).length;
+  const late = attendance.filter((item) => item.status === store.ATTENDANCE_STATUS.LATE).length;
+  const absent = attendance.filter((item) => item.status === store.ATTENDANCE_STATUS.ABSENT).length;
+  const leaveApproved = attendance.filter((item) => item.status === store.ATTENDANCE_STATUS.LEAVE_APPROVED).length;
+
+  return Object.assign(base, {
+    accessNotice: '',
+    overview: {
+      pb: best ? { eventName: best.eventName, value: String(best.value), unit: best.unit } : { eventName: '暂无正式成绩', value: '—', unit: '' },
+      approvedCount: approved.length,
+      attendance: {
+        validAttendance: checkedIn + late,
+        actualExpected: Math.max(attendance.length, checkedIn + late + absent + leaveApproved),
+        late,
+        absent,
+        approvedLeave: leaveApproved,
+        pendingVerification: attendance.filter((item) => item.status === store.ATTENDANCE_STATUS.PENDING_VERIFICATION).length
+      }
+    },
+    plans: plans.map((plan) => ({
+      planId: plan.planId,
+      title: plan.title,
+      rangeText: `${plan.startDate} 至 ${plan.endDate}`,
+      itemCountText: `${(plan.items || []).length} 项内容`
+    })),
+    performanceRows: approved.map((record) => {
+      const event = store.eventByCode(record.eventCode);
+      return {
+        eventName: event.name,
+        dateText: `取得日期：${record.achievedAt}`,
+        valueText: formatMetric(record.value, event.unit),
+        value: record.value,
+        unit: event.unit
+      };
+    }),
+    attendanceRows: attendance.map((record) => ({
+      dateText: record.attendanceDate,
+      /* 家长端只看签到状态，不展示精确位置与请假原因 */
+      chip: ATTENDANCE_LABELS[record.status] || record.status
+    })),
+    feedbackRows: feedback.map((entry) => ({
+      dateText: entry.attendanceDate,
+      metaText: `${COMPLETION_LABELS[entry.completionStatus] || entry.completionStatus} · RPE ${entry.rpe}/10`
+      /* 明确不返回 coachComment 与 comment 原文 */
+    })),
+    competitionRows: competitionRows(),
+    noticeRows: noticeRows(),
+    leaveSummary: leaves.length,
+    linkStateLabel: linkStateLabel(linkState)
+  });
+}
+
+const ATTENDANCE_LABELS = Object.freeze({
+  pending: '待签到',
+  checked_in: '已签到',
+  late: '迟到',
+  absent: '未签到',
+  leave_approved: '已批准请假',
+  pending_verification: '待核实',
+  not_started: '未开始',
+  cancelled: '已取消'
+});
+
+/* ------------------------------------------------------------ 目录与模块 */
+
+const CATALOG = Object.freeze([
+  { id: 'overview', name: '学生概览', group: '学生概览', tone: 'accent', icon: '览', desc: 'PB、出勤与关键指标' },
+  { id: 'plans', name: '训练计划', group: '学生概览', tone: 'brand', icon: '计', desc: '已发布训练安排' },
+  { id: 'performance', name: '运动成绩', group: '学生概览', tone: 'ok', icon: '绩', desc: '仅已审核正式成绩' },
+  { id: 'attendance', name: '考勤记录', group: '学生概览', tone: 'plain', icon: '勤', desc: '签到状态（无位置与原因）' },
+  { id: 'feedback', name: '训练反馈', group: '学生概览', tone: 'brand', icon: '馈', desc: '完成情况与自评强度' },
+  { id: 'events', name: '赛事与通知', group: '学生概览', tone: 'accent', icon: '赛', desc: '赛事进度与通知' },
+  { id: 'link', name: '关联学生管理', group: '关联与账号', tone: 'brand', icon: '联', desc: '关联状态与授权管理' },
+  { id: 'account', name: '个人中心', group: '关联与账号', tone: 'plain', icon: '人', desc: '身份与退出演示' }
+]);
 
 function groupCatalog(items) {
   const groups = [];
@@ -236,74 +369,14 @@ function groupCatalog(items) {
   return groups;
 }
 
-function studentsPayload() {
-  return STUDENTS.map((item) => ({ ...item }));
-}
-
-/**
- * 构建家长演示工作台。
- * options.linkState 仅用于验证不同授权状态（含驳回/解除）时的隔离表现。
- */
-function buildParentWorkbench(index, options = {}) {
-  const safeIndex = normalizeIndex(index);
-  const student = STUDENTS[safeIndex];
-  const linkState = options.linkState || student.linkState;
-  const active = isLinkActive(linkState);
-
-  const base = {
-    students: studentsPayload(),
-    studentIndex: safeIndex,
-    currentStudent: { ...student, linkState, linkStateLabel: linkStateLabel(linkState) },
-    linkState,
-    linkStateLabel: linkStateLabel(linkState),
-    linkActive: active,
-    catalogGroups: groupCatalog(CATALOG)
-  };
-
-  /* 关联未生效：不构建任何受保护业务数据（不返回旧数据兜底） */
-  if (!active) {
-    return Object.assign(base, {
-      accessNotice: `该学生的关联状态为“${linkStateLabel(linkState)}”，在关联正式生效前不展示成绩、训练计划、考勤、训练反馈与赛事等受保护数据。`,
-      overview: null,
-      plans: [],
-      performanceRows: [],
-      attendanceRows: [],
-      feedbackRows: [],
-      competitionRows: [],
-      noticeRows: []
-    });
-  }
-
-  const data = DATA_BY_STUDENT[student.id];
-  return Object.assign(base, {
-    accessNotice: '',
-    overview: {
-      pb: { ...data.overview.pb },
-      approvedCount: data.overview.approvedCount,
-      attendance: { ...data.overview.attendance }
-    },
-    plans: data.plans.map((item) => ({ ...item })),
-    performanceRows: data.performanceRows.map((item) => ({ ...item })),
-    attendanceRows: data.attendanceRows.map((item) => ({ ...item })),
-    feedbackRows: data.feedbackRows.map((item) => ({ ...item })),
-    competitionRows: data.competitionRows.map((item) => ({ ...item })),
-    noticeRows: data.noticeRows.map((item) => ({ ...item }))
-  });
-}
-
-/**
- * 构建家长演示子模块。
- * 受保护模块（成绩/计划/考勤/反馈/赛事/概览）在关联未生效时一律返回“未授权”结果，
- * 因此即使直接以参数打开详情页也无法绕过隔离。
- * options.linkState 仅用于验证不同授权状态下的隔离表现。
- */
 function buildParentModule(moduleId, index, options = {}) {
-  const safeIndex = normalizeIndex(index);
   const definition = CATALOG.find((item) => item.id === moduleId);
   if (!definition) {
     throw new DemoModuleError(`演示模块不存在：${moduleId}`);
   }
-  const student = STUDENTS[safeIndex];
+  const safeIndex = normalizeIndex(index);
+  const students = studentPayloads();
+  const student = students[safeIndex];
   const linkState = options.linkState || student.linkState;
   const active = isLinkActive(linkState);
 
@@ -326,73 +399,55 @@ function buildParentModule(moduleId, index, options = {}) {
     });
   }
 
-  const data = DATA_BY_STUDENT[student.id];
+  const workbench = buildParentWorkbench(safeIndex, options);
 
   if (moduleId === 'overview') {
     return Object.assign(header, {
       summary: {
         label: '个人最好成绩 PB',
-        value: data.overview.pb.value,
-        unit: data.overview.pb.unit,
-        meta: `${data.overview.pb.eventName} · 教练已审核的正式成绩`
+        value: workbench.overview.pb.value,
+        unit: workbench.overview.pb.unit,
+        meta: `${workbench.overview.pb.eventName} · 教练已审核的正式成绩`
       },
       rows: [
-        row('演示周期有效出勤', `应签到 ${data.overview.attendance.actualExpected} 次`, {
-          v: `${data.overview.attendance.validAttendance} 次`
-        }),
-        row('已批准请假', '请假原因不向家长展示', { v: `${data.overview.attendance.approvedLeave} 次` }),
-        row('迟到 / 未签到', '数值为虚构演示数据', {
-          v: `${data.overview.attendance.late} / ${data.overview.attendance.absent}`
-        })
+        row('演示周期有效出勤', `应签到 ${workbench.overview.attendance.actualExpected} 次`, { v: `${workbench.overview.attendance.validAttendance} 次` }),
+        row('已批准请假', '请假原因不向家长展示', { v: `${workbench.overview.attendance.approvedLeave} 次` }),
+        row('迟到 / 未签到', '数值为虚构演示数据', { v: `${workbench.overview.attendance.late} / ${workbench.overview.attendance.absent}` })
       ],
       note: '家长端为只读视图。'
     });
   }
   if (moduleId === 'plans') {
     return Object.assign(header, {
-      rows: data.plans.map((item) =>
-        row(item.title, `${item.rangeText} · ${item.itemCountText}`)
-      ),
+      rows: workbench.plans.map((item) => row(item.title, `${item.rangeText} · ${item.itemCountText}`)),
       note: '仅展示教练已发布的训练计划。'
     });
   }
   if (moduleId === 'performance') {
     return Object.assign(header, {
-      rows: data.performanceRows.map((item) =>
-        row(item.eventName, item.dateText, { v: item.valueText })
-      ),
+      rows: workbench.performanceRows.map((item) => row(item.eventName, item.dateText, { v: item.valueText })),
       note: '未审核、已驳回的成绩不会展示给家长。'
     });
   }
   if (moduleId === 'attendance') {
     return Object.assign(header, {
-      rows: data.attendanceRows.map((item) => row(item.dateText, '不展示精确位置，仅显示签到状态', { chip: item.chip, tone: statusTone(item.chip) })),
+      rows: workbench.attendanceRows.map((item) => row(item.dateText, '不展示精确位置，仅显示签到状态', { chip: item.chip, tone: statusTone(item.chip) })),
       note: '不展示精确 GPS 位置与请假原因。'
     });
   }
   if (moduleId === 'feedback') {
     return Object.assign(header, {
-      rows: data.feedbackRows.map((item) => row(item.dateText, item.metaText)),
+      rows: workbench.feedbackRows.map((item) => row(item.dateText, item.metaText)),
       note: '仅共享完成情况与学生自评强度，教练内部评价默认不向家长展示。'
     });
   }
   if (moduleId === 'events') {
     return Object.assign(header, {
-      rows: data.competitionRows
-        .map((item) =>
-          row(item.title, item.metaText, {
-            chip: item.chip,
-            tone: statusTone(item.chip),
-            detail: { type: 'competition', id: item.id }
-          })
-        )
+      rows: workbench.competitionRows
+        .map((item) => row(item.title, item.metaText, { chip: item.chip, tone: statusTone(item.chip), detail: { type: 'competition', id: item.id } }))
         .concat(
-          data.noticeRows.map((item) =>
-            row(item.title, '俱乐部通知', {
-              chip: item.chip,
-              tone: item.chip === '重要' ? 'danger' : '',
-              detail: { type: 'notice', id: item.id }
-            })
+          workbench.noticeRows.map((item) =>
+            row(item.title, `${item.categoryLabel} · ${item.publishedAt}`, { chip: item.chip, tone: item.chip === '重要' ? 'danger' : '', detail: { type: 'notice', id: item.id } })
           )
         ),
       note: '报名意向不等于官方报名成功，正式报名由教练在赛事官方渠道完成。'
@@ -400,9 +455,9 @@ function buildParentModule(moduleId, index, options = {}) {
   }
   if (moduleId === 'link') {
     return Object.assign(header, {
-      rows: STUDENTS.map((item) =>
+      rows: students.map((item) =>
         row(item.name, `${item.tag} · 监护关系（虚构）`, {
-          chip: linkStateLabel(item.linkState),
+          chip: item.linkStateLabel,
           tone: isLinkActive(item.linkState) ? 'ok' : 'warn'
         })
       ),
@@ -413,8 +468,8 @@ function buildParentModule(moduleId, index, options = {}) {
     return Object.assign(header, {
       rows: [
         row('当前身份', '演示预览中的家长视角（非真实角色）', { chip: '只读', tone: 'plain' }),
-        row('关联学生', `共 ${STUDENTS.length} 名虚构学生`, { v: `${STUDENTS.length} 名` }),
-        row('退出演示', '返回开发者工作台，不改变真实账号角色', { chip: '返回', tone: 'brand' })
+        row('关联学生', `共 ${students.length} 名虚构学生`, { v: `${students.length} 名` }),
+        row('退出演示', '返回 DEMO 首页，不改变真实账号角色', { chip: '返回', tone: 'brand' })
       ],
       note: '退出演示后真实账号角色与权限保持不变。'
     });
@@ -426,45 +481,22 @@ function statusTone(label) {
   if (!label) {
     return '';
   }
-  if (label.includes('已签到') || label.includes('已批准') || label.includes('代报')) {
+  if (label.indexOf('已签到') === 0 || label.indexOf('已批准') === 0 || label.indexOf('已代报') >= 0) {
     return 'ok';
   }
-  if (label.includes('迟到') || label.includes('未签到') || label.includes('处理中') || label.includes('待')) {
+  if (label.indexOf('迟到') === 0 || label.indexOf('未签到') === 0 || label.indexOf('处理中') >= 0 || label.indexOf('待') >= 0) {
     return 'warn';
   }
   return '';
 }
 
-/** 在全部（含非生效关联的）演示学生的赛事/通知中查找目标条目 */
-function findParentEntry(collectionKey, entryId) {
-  for (const student of STUDENTS) {
-    const found = (DATA_BY_STUDENT[student.id][collectionKey] || []).find(
-      (item) => item.id === entryId
-    );
-    if (found) {
-      return { entry: { ...found }, student: { ...student } };
-    }
-  }
-  return null;
-}
-
-function getParentNotice(noticeId) {
-  const found = findParentEntry('noticeRows', noticeId);
-  if (!found) {
-    throw new DemoModuleError(`演示通知不存在：${noticeId}`);
-  }
-  return found;
-}
-
-function getParentCompetition(competitionId) {
-  const found = findParentEntry('competitionRows', competitionId);
-  if (!found) {
-    throw new DemoModuleError(`演示赛事不存在：${competitionId}`);
-  }
-  return found;
-}
-
 module.exports = {
+  ATTENDANCE_LABELS,
+  CATALOG,
+  COMPETITION_LABELS,
+  COMPLETION_LABELS,
+  DEMO_PARENT_ID,
+  LINK_STATE_LABELS,
   PARENT_LINK_STATUS,
   PROTECTED_MODULE_IDS,
   STUDENTS,
