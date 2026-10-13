@@ -38,6 +38,7 @@
 - 阶段8（进行中）：新增家长角色（`parent`），家长工作台只读展示已授权关联学生的训练计划、已审核成绩、考勤、反馈、赛事与通知；亲子关联采用一次性凭证 + 学生确认 + 开发者核验三段授权，家长最多关联 10 名学生；新增 `parent_profiles`、`parent_links` 两个 ADMINONLY 集合与 4 个非唯一索引的设计（**尚未创建云端集合，待部署授权**）。凭证失败限流写在 `users` 上并使用原子自增。
 - 阶段8第四轮：新增统一功能目录 `config/feature-catalog.js` 与四角色共用分类页 `pages/all-features/all-features`，student / coach / parent / developer 四个工作台均提供「全部功能」入口，按业务分类进入真实已注册页面；多角色账号按当前激活角色展示（`utils/active-role.js`，与 userId + 角色集合绑定，账号/角色变化与退出登录即失效）；目录只用于导航，不作权限依据，家长端目录不含任何写入入口；未新增或修改后端接口。
 - 阶段8.5（微信运行前检查）：核查 profile-view 路由（已注册，后端 `admin.get_student_profile` 限 coach/developer 与训练组范围）与全仓库 33 个被引用路由，均已在 `app.json` 注册且页面文件齐全；家长端目录改为按只读能力分区定位（`/pages/parent/parent?section=...`），家长工作台新增 `scroll-into-view` 页内跳转与 `sec-*` 锚点，未新增页面或接口；新增限流并发阈值实证测试 `tests/phase8/rate-limit-race.test.js`，确认账号级与凭证级限流为“检查-再自增”的**软限制**（原子自增不丢计数，但阈值前 1 次的并发爆发会整体越阈）；本机微信开发者工具 CLI 因“服务端口”安全设置关闭而无法调用，官方编译 PENDING。未部署云端、未创建集合或索引、未改真实账号角色、未上传体验版。
+- **F1-A（未开始，阻塞于官方编译）**：按要求先核验官方微信编译，仓库内无可信通过记录；实测 `cli.bat` 的 `islogin`/`open --port`/`y` 确认均返回 `IDE service port disabled`，根因是 IDE 安全设置 `enableServicePort=false` 且 IDE 正在运行。需项目所有者先在 IDE「设置 → 安全设置」开启服务端口（或重启 IDE 后由 CLI 拉起），官方编译通过后再执行 F1-A 视觉改造。同轮更正阶段8.5 熵计算：邀请码最终有效熵为 **50 位**（非 80 位）。
 
 ## 明确未实现
 
