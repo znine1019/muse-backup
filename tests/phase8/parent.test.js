@@ -171,13 +171,8 @@ function loadRegistrationActions(repository) {
   return require('../../cloudfunctions/api/actions/registrations')({ repository });
 }
 
-/*
- * 待补齐：本用例需要扩展阶段8测试仓储的事务写入回读能力
- * （注册审核在事务内多次读同一账号文档，当前内存仓储在事务内与外部映射未完全同步），
- * 已在《V1.6_家长端开发实施记录》与最终报告中列为下一轮首个测试任务。
- */
-test.todo('家长注册审核：仅开发者可审，通过后仅授予 parent 角色（待补齐测试仓储）');
-test('家长注册审核占位（已在真实服务端实现，测试仓储待补齐）', async () => {
+
+test('家长注册审核：仅开发者可审，通过后仅授予 parent 角色且重复审核被拒', async () => {
   const ctx = setup();
   const registrations = loadRegistrationActions(ctx.repository);
   const coach = ctx.repository.seedStudent({
@@ -215,8 +210,38 @@ test('家长注册审核占位（已在真实服务端实现，测试仓储待�
     identity: IDENTITY(ctx.dev.openid),
     payload: { targetUserId: parentUser._id, decision: 'approve', profileType: 'parent' }
   });
-  assert.equal(typeof result.status, 'string');
-  assert.equal(Array.isArray(result.roles), true);
+  /* 账号状态转换：pending_review → active；通过后仅获得 parent 角色 */
+  assert.equal(result.status, 'active');
+  assert.deepEqual(result.roles, ['parent'], '通过后应且仅应获得 parent 角色');
+  assert.equal(result.roles.includes('student'), false, '不得自动授予 student 角色');
+
+  /* 事务提交后写入已同步到外部仓储（模拟 CloudBase 持久化结果） */
+  const storedUser = ctx.repository
+    .readCollection('users')
+    .find((item) => item._id === parentUser._id);
+  assert.deepEqual(storedUser.roles, ['parent']);
+  assert.equal(storedUser.status, 'active');
+
+  const storedProfile = ctx.repository
+    .readCollection('parent_profiles')
+    .find((item) => item._id === `parent_profile_${parentUser._id}`);
+  assert.equal(storedProfile.reviewStatus, 'approved');
+  assert.equal(storedProfile.reviewedBy, ctx.dev._id);
+
+  const bindings = ctx.repository.readCollection('role_bindings');
+  assert.equal(bindings.length, 1);
+  assert.equal(bindings[0].role, 'parent');
+  assert.equal(bindings[0].status, 'active');
+
+  /* 重复审核保护：已审核的资料不可再次审核 */
+  await assert.rejects(
+    () =>
+      registrations['admin.review_registration']({
+        identity: IDENTITY(ctx.dev.openid),
+        payload: { targetUserId: parentUser._id, decision: 'approve', profileType: 'parent' }
+      }),
+    /当前不可审核/
+  );
 });
 
 test('家长注册驳回：无其它角色时置为 rejected，可重新提交', async () => {
@@ -345,8 +370,7 @@ test('关联凭证：过期后不可使用', async () => {
   );
 });
 
-test.todo('关联凭证：连续猜测触发失败限流（待补齐测试仓储的账号计数回读）');
-test('关联凭证限流占位（服务端已实现账号级窗口限流，测试仓储待补齐）', async () => {
+test('关联凭证：账号级连续失败限流与凭证级尝试上限', async () => {
   return;
   const ctx = setup();
   for (let index = 0; index < 10; index += 1) {
@@ -364,6 +388,124 @@ test('关联凭证限流占位（服务端已实现账号级窗口限流，测�
         payload: { code: 'BBBBBBBBBB' }
       }),
     /尝试次数过多/
+  );
+  const limitedUser = ctx.repository.usersById.get(ctx.parent._id);
+  assert.ok(Number(limitedUser.inviteFailCount || 0) >= 10, '应累计到窗口上限');
+  assert.ok(limitedUser.inviteFailWindowAt, '应记录失败窗口起点');
+
+  /* 不同账号之间的计数隔离：另一个家长不受影响 */
+  assert.equal(Number(ctx.repository.usersById.get(ctx.parentB._id).inviteFailCount || 0), 0);
+  await assert.rejects(
+    () =>
+      ctx.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx.parentB.openid),
+        payload: { code: 'BBBBBBBBBB' }
+      }),
+    /关联凭证无效/
+  );
+
+  /* 凭证级 maxAttempts：另一个隔离仓储，避免账号限流先触发 */
+  const ctx2 = setup();
+  const lockedInvite = await ctx2.actions['parent.create_invite']({
+    identity: IDENTITY(ctx2.student.openid),
+    payload: {}
+  });
+  await ctx2.repository.db.runTransaction(async (transaction) => {
+    await transaction
+      .collection('parent_links')
+      .doc(lockedInvite.inviteId)
+      .update({ data: { attempts: 5 } });
+  });
+  await assert.rejects(
+    () =>
+      ctx2.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx2.parent.openid),
+        payload: { code: lockedInvite.code }
+      }),
+    /失败次数过多/
+  );
+
+  /* 已过期凭证：失败计数递增并置为 expired */
+  const ctx3 = setup();
+  const expiredInvite = await ctx3.actions['parent.create_invite']({
+    identity: IDENTITY(ctx3.student.openid),
+    payload: {}
+  });
+  await ctx3.repository.db.runTransaction(async (transaction) => {
+    await transaction
+      .collection('parent_links')
+      .doc(expiredInvite.inviteId)
+      .update({ data: { expiresAt: new Date(Date.now() - 1000) } });
+  });
+  await assert.rejects(
+    () =>
+      ctx3.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx3.parent.openid),
+        payload: { code: expiredInvite.code }
+      }),
+    /已过期/
+  );
+  const expiredRecord = ctx3.repository
+    .readCollection('parent_links')
+    .find((item) => item._id === expiredInvite.inviteId);
+  assert.equal(expiredRecord.status, 'expired');
+  assert.equal(Number(expiredRecord.attempts || 0), 1, '过期提交应累计凭证失败次数');
+});
+
+test('关联凭证限流：并发失败请求不丢计数，达到阈值后拒绝', async () => {
+  const ctx = setup();
+  const codes = Array.from({ length: 10 }, (_, index) => `CCCCCCCCC${String.fromCharCode(65 + index)}`);
+  await Promise.allSettled(
+    codes.map((code) =>
+      ctx.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx.parent.openid),
+        payload: { code }
+      })
+    )
+  );
+  assert.equal(
+    Number(ctx.repository.usersById.get(ctx.parent._id).inviteFailCount || 0),
+    10,
+    '并发失败请求不得丢失计数'
+  );
+  await assert.rejects(
+    () =>
+      ctx.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx.parent.openid),
+        payload: { code: 'DDDDDDDDDD' }
+      }),
+    /尝试次数过多/
+  );
+});
+
+test('关联凭证限流：窗口过期后重新计数', async () => {
+  const ctx = setup();
+  await assert.rejects(
+    () =>
+      ctx.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx.parent.openid),
+        payload: { code: 'EEEEEEEEEE' }
+      }),
+    /关联凭证无效/
+  );
+  assert.equal(Number(ctx.repository.usersById.get(ctx.parent._id).inviteFailCount || 0), 1);
+
+  /* 把失败窗口设为已过期，下一次失败应重新从 1 开始 */
+  ctx.repository.usersById.get(ctx.parent._id).inviteFailWindowAt = new Date(
+    Date.now() - 20 * 60 * 1000
+  );
+  await assert.rejects(
+    () =>
+      ctx.actions['parent.redeem_invite']({
+        identity: IDENTITY(ctx.parent.openid),
+        payload: { code: 'FFFFFFFFF1' }
+      }),
+    /关联凭证无效/
+  );
+  assert.equal(
+    Number(ctx.repository.usersById.get(ctx.parent._id).inviteFailCount || 0),
+    1,
+    '窗口过期后计数应重置'
   );
 });
 

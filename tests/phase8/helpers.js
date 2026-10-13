@@ -21,6 +21,18 @@ function clone(value) {
 }
 
 function matches(record, where) {
+function applyData(existing, data) {
+  const next = { ...existing };
+  for (const [field, value] of Object.entries(data || {})) {
+    if (value && typeof value === 'object' && typeof value.__inc === 'number') {
+      next[field] = Number(existing[field] || 0) + value.__inc;
+    } else {
+      next[field] = clone(value);
+    }
+  }
+  return next;
+}
+
   if (!where) {
     return true;
   }
@@ -30,6 +42,19 @@ function matches(record, where) {
     }
     return record[field] === expected;
   });
+}
+
+/* 应用写入数据：支持 CloudBase 原子自增指令 db.command.inc */
+function applyData(existing, data) {
+  const next = { ...existing };
+  for (const [field, value] of Object.entries(data || {})) {
+    if (value && typeof value === 'object' && typeof value.__inc === 'number') {
+      next[field] = Number(existing[field] || 0) + value.__inc;
+    } else {
+      next[field] = clone(value);
+    }
+  }
+  return next;
 }
 
 function createFakeRepository(seed = {}) {
@@ -48,9 +73,24 @@ function createFakeRepository(seed = {}) {
   }
   const counters = { reads: 0, writes: 0, transactions: 0 };
 
+  /* 事务内对 users 集合的写入同步到外部映射，保证事务提交后读取与断言看到同一份数据 */
+  function syncUsers(name, record) {
+    if (name !== 'users' || !record || !record._id) {
+      return;
+    }
+    const merged = { ...(usersById.get(record._id) || {}), ...record };
+    usersById.set(record._id, merged);
+    if (merged.openid) {
+      usersByOpenId.set(merged.openid, merged);
+    }
+  }
+
   const db = {
     serverDate: () => new Date(),
-    command: { in: (values) => ({ __in: values }) },
+    command: {
+      in: (values) => ({ __in: values }),
+      inc: (value) => ({ __inc: value })
+    },
     async runTransaction(handler) {
       counters.transactions += 1;
       const transaction = {
@@ -69,7 +109,9 @@ function createFakeRepository(seed = {}) {
                 },
                 async set({ data }) {
                   counters.writes += 1;
-                  col.set(id, { _id: id, ...clone(data) });
+                  const record = { _id: id, ...clone(data) };
+                  col.set(id, record);
+                  syncUsers(name, record);
                   return { ok: true };
                 },
                 async update({ data }) {
@@ -78,7 +120,9 @@ function createFakeRepository(seed = {}) {
                   if (!existing) {
                     throw new Error('document not found');
                   }
-                  col.set(id, { ...existing, ...clone(data) });
+                  const record = applyData(existing, data);
+                  col.set(id, record);
+                  syncUsers(name, record);
                   return { ok: true };
                 }
               };
