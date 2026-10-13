@@ -202,25 +202,81 @@ const FEATURE_CATALOG = Object.freeze({
   parent: {
     label: '家长',
     tone: 'accent',
-    note: '家长端为只读：学生训练计划、成绩、考勤、反馈、赛事与通知均由「家长工作台」按已授权关联范围展示。',
+    note:
+      '家长端为只读：学生概览、训练计划、成绩、考勤、反馈、赛事与通知都在「家长工作台」内按已授权关联范围展示，目录条目直接定位到对应分区；关联申请与解除属于授权管理，单独进入关联学生管理页。',
     categories: [
       {
         key: 'children',
-        label: '我的学生',
+        label: '学生概览',
         items: [
+          {
+            id: 'parent-overview',
+            name: '学生概览',
+            desc: '关联学生的 PB、出勤与关键指标（只读）',
+            url: '/pages/parent/parent?section=overview',
+            tone: 'accent'
+          },
+          {
+            id: 'parent-plans',
+            name: '训练计划',
+            desc: '本月已发布训练安排（只读）',
+            url: '/pages/parent/parent?section=plans',
+            tone: 'brand'
+          },
+          {
+            id: 'parent-performance',
+            name: '运动成绩',
+            desc: '仅展示教练已审核的正式成绩（只读）',
+            url: '/pages/parent/parent?section=performance',
+            tone: 'ok'
+          },
+          {
+            id: 'parent-attendance',
+            name: '考勤记录',
+            desc: '本月签到状态，不展示精确位置（只读）',
+            url: '/pages/parent/parent?section=attendance',
+            tone: 'plain'
+          },
+          {
+            id: 'parent-feedback',
+            name: '训练反馈',
+            desc: '学生完成情况与自评强度（只读）',
+            url: '/pages/parent/parent?section=feedback',
+            tone: 'brand'
+          },
+          {
+            id: 'parent-events',
+            name: '赛事与通知',
+            desc: '赛事意向进度与俱乐部通知（只读）',
+            url: '/pages/parent/parent?section=events',
+            tone: 'accent'
+          },
           {
             id: 'parent-workbench',
             name: '家长工作台',
-            desc: '查看已授权关联学生的训练情况（只读）',
+            desc: '从页面顶部开始查看全部只读分区',
             url: '/pages/parent/parent',
-            tone: 'accent'
-          },
+            tone: 'brand'
+          }
+        ]
+      },
+      {
+        key: 'account',
+        label: '关联与账号',
+        items: [
           {
             id: 'parent-bind',
             name: '关联学生管理',
             desc: '使用凭证申请关联、查看状态与解除关联',
             url: '/pages/parent-bind/parent-bind',
             tone: 'brand'
+          },
+          {
+            id: 'parent-account',
+            name: '个人中心',
+            desc: '关联状态与退出当前会话',
+            url: '/pages/parent/parent?section=account',
+            tone: 'plain'
           }
         ]
       }

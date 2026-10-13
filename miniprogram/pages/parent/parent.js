@@ -18,6 +18,19 @@ const COMPETITION_LABELS = Object.freeze({
   cancelled: '已取消'
 });
 
+/* 页内跳转锚点：与 parent.wxml 的 id="sec-*" 一一对应 */
+const JUMP_SECTIONS = Object.freeze([
+  { key: 'overview', label: '学生概览' },
+  { key: 'plans', label: '训练计划' },
+  { key: 'performance', label: '成绩' },
+  { key: 'attendance', label: '考勤' },
+  { key: 'feedback', label: '反馈' },
+  { key: 'events', label: '赛事通知' },
+  { key: 'account', label: '个人中心' }
+]);
+
+const JUMP_KEYS = JUMP_SECTIONS.map((item) => item.key);
+
 Page({
   data: {
     loading: true,
@@ -30,7 +43,18 @@ Page({
     attendanceRows: [],
     feedbackRows: [],
     competitionRows: [],
-    noticeRows: []
+    noticeRows: [],
+    jumpItems: [],
+    activeSection: '',
+    scrollIntoView: ''
+  },
+
+  /* 支持从「全部功能」目录以 ?section=plans 直接定位到对应分区 */
+  onLoad(options = {}) {
+    const section = options.section || '';
+    if (JUMP_KEYS.includes(section)) {
+      this.pendingSection = section;
+    }
   },
 
   onShow() {
@@ -51,7 +75,8 @@ Page({
       }
       const result = await api.listParentStudents();
       const students = result.students || [];
-      this.setData({ students });
+      /* 有学生时展示分区跳转；无学生时跳转无目标，故不展示 */
+      this.setData({ students, jumpItems: students.length ? JUMP_SECTIONS : [] });
       if (!students.length) {
         this.setData({ loading: false, overview: null });
         return;
@@ -68,11 +93,9 @@ Page({
     }
   },
 
-  async loadOverview(studentUserId) {
-    this.setData({ loading: true, error: '' });
-    try {
-      const overview = await api.getParentStudentOverview({ studentUserId });
-      this.setData({
+  /* 共享的数据写入逻辑：首次加载与重试都复用，重试不会清空已加载内容 */
+  applyOverview(overview) {
+    this.setData({
         loading: false,
         overview,
         planItems: overview.plans || [],
@@ -87,10 +110,45 @@ Page({
           statusLabel: COMPETITION_LABELS[item.status] || item.status
         })),
         noticeRows: overview.notices || []
-      });
+    });
+  },
+
+  async loadOverview(studentUserId) {
+    this.setData({ loading: true, error: '' });
+    try {
+      const overview = await api.getParentStudentOverview({ studentUserId });
+      this.applyOverview(overview);
     } catch (error) {
       this.setData({ loading: false, error: error.message || '学生数据加载失败。' });
     }
+    this.consumePendingSection();
+  },
+
+  /* 分类页以 ?section=plan 进入时，数据到位后再定位分区 */
+  consumePendingSection() {
+    const section = this.pendingSection;
+    if (!section) {
+      return;
+    }
+    this.pendingSection = '';
+    this.setData({ activeSection: section });
+    this.scrollToSection(section);
+  },
+
+  /* 页内分区跳转：先清空再赋值，保证连续点击同一分区仍会触发滚动 */
+  scrollToSection(section) {
+    this.setData({ scrollIntoView: '' }, () => {
+      this.setData({ scrollIntoView: `sec-${section}` });
+    });
+  },
+
+  onJumpTap(event) {
+    const section = event.currentTarget.dataset.section;
+    if (!JUMP_KEYS.includes(section)) {
+      return;
+    }
+    this.setData({ activeSection: section });
+    this.scrollToSection(section);
   },
 
   onStudentChange(event) {

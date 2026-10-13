@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom" scroll-into-view="{{scrollIntoView}}">
   <jg-page-head
     title="家长工作台"
     meta="仅可查看已授权关联学生的训练情况（只读）"
@@ -10,6 +10,17 @@
     <view class="jg-state-err-t">加载未完成</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>
+  </view>
+
+  <!-- 页内跳转：家长端为单页只读视图，用分区定位避免长页面反复滚动 -->
+  <view wx:if="{{jumpItems.length}}" class="jg-jump">
+    <block wx:for="{{jumpItems}}" wx:key="key">
+      <text
+        class="jg-jump-chip {{item.key === activeSection ? 'jg-jump-chip-active' : ''}}"
+        data-section="{{item.key}}"
+        bindtap="onJumpTap"
+      >{{item.label}}</text>
+    </block>
   </view>
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
@@ -24,7 +35,7 @@
   </block>
 
   <block wx:if="{{!loading && students.length}}">
-    <view class="jg-card">
+    <view class="jg-card" id="sec-overview">
       <view class="jg-card-h"><text class="jg-card-t">关联学生</text><text class="jg-card-c">共 {{students.length}} 人</text></view>
       <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
         <view class="input jg-picker">{{students[studentIndex].name}}</view>
@@ -33,6 +44,7 @@
     </view>
 
     <view wx:if="{{overview}}" class="jg-data-card">
+
       <view class="jg-data-k">个人最好成绩 PB</view>
       <block wx:if="{{overview.performance.personalBests.length}}">
         <view class="jg-data-v">
@@ -60,7 +72,7 @@
       </view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-plans">
       <view class="jg-sect-h"><text class="jg-sect-t">训练计划（本月）</text><text class="jg-sect-c">{{planItems.length}} 份</text></view>
       <jg-empty wx:if="{{!planItems.length}}" title="暂无训练安排" message="教练发布训练计划后会显示在这里。" />
       <view wx:else class="jg-list">
@@ -73,7 +85,7 @@
       </view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-performance">
       <view class="jg-sect-h"><text class="jg-sect-t">运动成绩（已审核）</text><text class="jg-sect-c">{{performanceRows.length}} 项</text></view>
       <jg-empty wx:if="{{!performanceRows.length}}" title="暂无正式成绩" message="只有教练审核通过的成绩会展示给家长。" />
       <view wx:else class="jg-list">
@@ -88,7 +100,7 @@
       <view class="jg-note"><view><view class="jg-note-m">未审核、已驳回的成绩不会展示给家长。</view></view></view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-attendance">
       <view class="jg-sect-h"><text class="jg-sect-t">本月考勤记录</text><text class="jg-sect-c">{{attendanceRows.length}} 条</text></view>
       <jg-empty wx:if="{{!attendanceRows.length}}" title="本月暂无考勤记录" message="教练创建考勤场次后会显示在这里。" />
       <view wx:else class="jg-list">
@@ -102,7 +114,7 @@
       </view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-feedback">
       <view class="jg-sect-h"><text class="jg-sect-t">训练反馈</text><text class="jg-sect-c">{{feedbackRows.length}} 条</text></view>
       <jg-empty wx:if="{{!feedbackRows.length}}" title="暂无训练反馈" message="学生提交反馈后会显示在这里。" />
       <view wx:else class="jg-list">
@@ -116,7 +128,7 @@
       <view class="jg-note"><view><view class="jg-note-m">仅共享完成情况与学生自评强度，教练内部评价默认不向家长展示。</view></view></view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-events">
       <view class="jg-sect-h"><text class="jg-sect-t">赛事与通知</text><text class="jg-sect-c">{{competitionRows.length}} / {{noticeRows.length}}</text></view>
       <view class="jg-list">
         <view wx:for="{{competitionRows}}" wx:key="competitionId" class="jg-row">
@@ -137,7 +149,7 @@
       <view class="jg-note"><view><view class="jg-note-m"><text class="jg-strong">报名意向不等于官方报名成功</text>，正式报名由教练在赛事官方渠道完成并回填进度。</view></view></view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect" id="sec-account">
       <view class="jg-sect-h"><text class="jg-sect-t">个人中心</text></view>
       <view class="jg-list">
         <view class="jg-row" hover-class="jg-row-hover" bindtap="goBind">

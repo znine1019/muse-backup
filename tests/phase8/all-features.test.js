@@ -51,8 +51,9 @@ function appPages() {
   return JSON.parse(read('miniprogram/app.json')).pages;
 }
 
+/* 目录条目允许带查询参数（如家长端 ?section=plans），注册校验只看路径部分 */
 function routeToPage(route) {
-  return route.replace(/^\//, '');
+  return route.split('?')[0].replace(/^\//, '');
 }
 
 /* ---------------------------------------------------------------- 目录配置 */
@@ -132,10 +133,18 @@ test('功能目录：家长端为只读，不出现任何写入入口', () => {
         `家长端不应出现写入入口「${item.name}」（含关键词 ${keyword}）`
       );
     }
+    const pathOnly = item.url.split('?')[0];
     assert.ok(
-      ['/pages/parent/parent', '/pages/parent-bind/parent-bind'].includes(item.url),
-      `家长端入口不得指向写业务页面：${item.url}`
+      ['/pages/parent/parent', '/pages/parent-bind/parent-bind'].includes(pathOnly),
+      `家长端入口只能指向只读页面：${item.url}`
     );
+    /* 父页面内部定位只能用已存在的分区锚点 */
+    if (item.url.includes('?')) {
+      assert.ok(
+        item.url.startsWith('/pages/parent/parent?section='),
+        `家长端参数只允许定位分区：${item.url}`
+      );
+    }
   }
 });
 
@@ -387,15 +396,68 @@ test('全部功能页：多角色账号展示角色切换且切换后目录随�
   assert.equal(instance.data.activeRole, 'developer');
 });
 
-test('全部功能页：家长会话只读目录（无写入入口）', async () => {
+test('全部功能页：家长会话可按分区定位全部只读能力且无写入入口', async () => {
   const { instance } = loadAllFeaturesPage({ session: activeSession(['parent']) });
   await instance.loadCatalog();
 
   assert.equal(instance.data.activeRole, 'parent');
-  const urls = instance.data.categories.flatMap((category) =>
-    category.items.map((item) => item.url)
+  const items = instance.data.categories.flatMap((category) => category.items);
+
+  /* 只指向两个只读页面，不出现任何写入类业务页 */
+  for (const item of items) {
+    const pathOnly = item.url.split('?')[0];
+    assert.ok(
+      ['/pages/parent/parent', '/pages/parent-bind/parent-bind'].includes(pathOnly),
+      `家长端入口只能指向只读页面：${item.url}`
+    );
+  }
+
+  /* 学生概览/计划/成绩/考勤/反馈/赛事通知均可从目录直接定位 */
+  const sections = items
+    .map((item) => (item.url.match(/[?&]section=([a-z]+)/) || [])[1])
+    .filter(Boolean);
+  for (const section of [
+    'overview',
+    'plans',
+    'performance',
+    'attendance',
+    'feedback',
+    'events'
+  ]) {
+    assert.ok(sections.includes(section), `家长目录缺少可定位分区：${section}`);
+  }
+
+  /* 关联管理是授权操作，仍应可达 */
+  assert.ok(
+    items.some((item) => item.url === '/pages/parent-bind/parent-bind'),
+    '家长目录应保留关联学生管理入口'
   );
-  assert.deepEqual(urls.sort(), ['/pages/parent-bind/parent-bind', '/pages/parent/parent'].sort());
+});
+
+test('家长工作台提供页内分区跳转且锚点与目录一致', () => {
+  const wxml = read('miniprogram/pages/parent/parent.wxml');
+  const js = read('miniprogram/pages/parent/parent.js');
+
+  assert.match(wxml, /scroll-into-view="\{\{scrollIntoView\}\}"/, '页面应支持 scroll-into-view');
+
+  const anchors = (wxml.match(/id="sec-([a-z]+)"/g) || []).map((value) =>
+    value.replace(/id="sec-/, '').replace(/"/, '')
+  );
+  assert.ok(anchors.length >= 6, `家长工作台应有足够的分区锚点（实际 ${anchors.length}）`);
+
+  /* 目录里出现的每个 section 参数都必须有对应锚点 */
+  const catalogSections = catalog
+    .featuresForRole('parent')
+    .map((item) => (item.url.match(/[?&]section=([a-z]+)/) || [])[1])
+    .filter(Boolean);
+  for (const section of catalogSections) {
+    assert.ok(anchors.includes(section), `目录分区 ${section} 缺少对应锚点 sec-${section}`);
+  }
+
+  /* onLoad 解析 section，点击分区时滚动定位 */
+  assert.match(js, /onLoad\(options = \{\}\)/, '应实现 onLoad 以解析 section 参数');
+  assert.match(js, /onJumpTap\(/, '应实现页内跳转点击处理');
+  assert.match(js, /scrollIntoView: `sec-\$\{section\}`/, '应按分区设置滚动目标');
 });
 
 test('全部功能页：未启用账号不渲染目录并按会话跳转', async () => {

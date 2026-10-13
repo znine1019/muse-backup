@@ -235,6 +235,27 @@ button::after { border: none; }
 
 /* ---------- 状态标签 ---------- */
 .jg-chips { display: flex; flex-wrap: wrap; }
+
+/* 页内跳转（长页面分区定位）：触控目标≥56rpx，不遮挡内容 */
+.jg-jump { display: flex; flex-wrap: wrap; margin-bottom: 8rpx; }
+.jg-jump-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 56rpx;
+  padding: 0 20rpx;
+  margin: 0 12rpx 12rpx 0;
+  border-radius: 999rpx;
+  background: var(--jg-card-bg, #FFFFFF);
+  border: 2rpx solid var(--jg-line, #E3E9F0);
+  font-size: 24rpx;
+  color: var(--jg-ink-2, #3B4A5A);
+}
+.jg-jump-chip-active {
+  background: var(--jg-brand-100, #E9F1FB);
+  border-color: #CBDCF3;
+  color: var(--jg-brand-700, #103A6B);
+  font-weight: 700;
+}
 .jg-chip {
   display: inline-block;
   font-size: 22rpx;
