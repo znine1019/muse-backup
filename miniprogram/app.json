@@ -33,6 +33,7 @@
     "pages/feedback-manage/feedback-manage",
     "pages/stats-workbench/stats-workbench",
     "pages/admin/admin",
+    "pages/demo/demo",
     "pages/bootstrap/bootstrap"
   ],
   "window": {

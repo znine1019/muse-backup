@@ -1,0 +1,389 @@
+<view class="jg-page jg-safe-bottom">
+  <!-- 演示横幅：任何演示视图都常驻显示 -->
+  <view class="demo-banner">
+    <view class="demo-banner-t">{{demoMarker}}</view>
+    <view class="demo-banner-m">{{demoNotice}}</view>
+  </view>
+
+  <jg-page-head
+    title="{{pageTitle}}"
+    meta="{{pageMeta}}"
+    role-label="{{roleLabel}}"
+    role-tone="{{roleTone}}"
+  />
+
+  <!-- 拒绝进入（环境不允许 / 非 developer）：只说明原因，不渲染任何演示数据 -->
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">无法进入演示预览</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="demo-state-actions">
+      <view class="jg-retry" bindtap="goDeniedDestination">返回我的工作台</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading && !error}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <block wx:if="{{ready && !error}}">
+    <!-- ========== 1. 模块详情 ========== -->
+    <block wx:if="{{view === 'module'}}">
+      <view wx:if="{{module.summary}}" class="jg-data-card">
+        <view class="jg-data-k">{{module.summary.label}}</view>
+        <view class="jg-data-v">
+          <text class="jg-data-num">{{module.summary.value}}</text>
+          <text class="jg-data-unit">{{module.summary.unit}}</text>
+        </view>
+        <view class="jg-data-meta">{{module.summary.meta}}</view>
+      </view>
+
+      <view wx:if="{{module.form}}" class="jg-card">
+        <view class="jg-card-h"><text class="jg-card-t">申报表单（演示）</text></view>
+        <view wx:for="{{module.form}}" wx:key="label" class="jg-field-row">
+          <text class="jg-field-label">{{item.label}}</text>
+          <view class="jg-field-body">
+            <view class="jg-input jg-picker">{{item.value}}</view>
+          </view>
+        </view>
+        <button class="jg-btn jg-btn-block jg-mt-12" bindtap="simulateSubmit">{{module.submitText}}</button>
+        <view wx:if="{{simulatedSubmit}}" class="jg-note jg-note-warn jg-mt-12">
+          <view><view class="jg-note-m">{{simulatedSubmit}}</view></view>
+        </view>
+      </view>
+
+      <view wx:if="{{module.rows.length}}" class="jg-list">
+        <view wx:for="{{module.rows}}" wx:key="t" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.t}}</view>
+            <view class="jg-row-m">{{item.m}}</view>
+          </view>
+          <view class="jg-row-e">
+            <text wx:if="{{item.v}}" class="jg-row-v">{{item.v}}</text>
+            <text wx:if="{{item.chip}}" class="jg-chip {{item.tone ? 'jg-chip-' + item.tone : ''}}">{{item.chip}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{module.note}}" class="jg-note">
+        <view><view class="jg-note-m">{{module.note}}</view></view>
+      </view>
+
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-ghost" bindtap="goWorkbench">返回演示工作台</button>
+      </view>
+    </block>
+
+    <!-- ========== 2. 全部功能目录（演示） ========== -->
+    <block wx:elif="{{view === 'catalog'}}">
+      <view wx:for="{{catalogGroups}}" wx:key="label" class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">{{item.label}}</text>
+          <text class="jg-sect-c">{{item.items.length}} 项</text>
+        </view>
+        <view class="jg-tiles jg-mb-12">
+          <view wx:for="{{item.items}}" wx:for-item="feature" wx:key="id" class="jg-tile jg-tile-{{feature.tone}}">
+            <view class="jg-tile-in" hover-class="jg-row-hover" data-module="{{feature.id}}" bindtap="goModule">
+              <view class="jg-tile-ic">{{feature.icon}}</view>
+              <view class="jg-tile-t">{{feature.name}}</view>
+              <view class="jg-tile-d jg-clamp-2">{{feature.desc}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-ghost" bindtap="goWorkbench">返回演示工作台</button>
+      </view>
+    </block>
+
+    <!-- ========== 3. 学生演示工作台 ========== -->
+    <block wx:elif="{{!isParent}}">
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">今日训练</text>
+          <text class="jg-sect-c">演示数据</text>
+        </view>
+        <view wx:for="{{student.todaySessions}}" wx:key="sessionId" class="jg-card">
+          <view class="jg-card-h">
+            <text class="jg-card-t">{{item.title}}</text>
+            <text class="jg-chip {{item.canCheckIn ? 'jg-chip-brand' : ''}}">{{item.phaseLabel}}</text>
+          </view>
+          <view class="jg-body-s">地点：{{item.locationName}}</view>
+          <view class="jg-body-s jg-mt-8">签到窗口：{{item.windowText}}</view>
+          <button
+            class="jg-btn jg-btn-block jg-mt-12 {{item.canCheckIn ? 'jg-btn-accent' : 'jg-btn-ghost'}}"
+            data-module="attendance"
+            bindtap="goModule"
+          >{{item.statusLabel}}</button>
+        </view>
+      </view>
+
+      <view class="jg-data-card">
+        <view class="jg-data-k">{{student.pb.eventName}} · 个人最好成绩 PB</view>
+        <view class="jg-data-v">
+          <text class="jg-data-num">{{student.pb.value}}</text>
+          <text class="jg-data-unit">{{student.pb.unit}}</text>
+        </view>
+        <view class="jg-data-meta">{{student.pb.achievedAt}} · 教练已审核的正式成绩</view>
+        <view class="jg-data-foot">
+          <text class="jg-data-chip jg-data-chip-goal">{{student.pb.goalText}}</text>
+          <text class="jg-data-chip">已审核成绩 {{student.pb.approvedCount}} 条</text>
+        </view>
+      </view>
+
+      <view class="jg-kpi-row">
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">本月出勤率</view>
+          <view class="jg-kpi-v jg-kpi-v-ok">{{student.monthStats.attendanceRateText}}</view>
+          <view class="jg-prog">
+            <view class="jg-prog-in jg-prog-in-ok" style="width:{{student.monthStats.attendanceRatePercent}}%"></view>
+          </view>
+          <view class="jg-kpi-s">有效出勤 {{student.monthStats.validAttendance}} / 应签到 {{student.monthStats.actualExpected}}</view>
+        </view>
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">本月出勤明细</view>
+          <view class="jg-kpi-v">{{student.monthStats.late}}</view>
+          <view class="jg-kpi-s">迟到 {{student.monthStats.late}} · 未签到 {{student.monthStats.absent}} · 待核实 {{student.monthStats.pendingVerification}}</view>
+        </view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">近期进步</text>
+          <text class="jg-sect-c">演示数据</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{student.progress}}" wx:key="eventName" class="jg-row">
+            <view class="jg-row-ic jg-row-ic-ok">↑</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.eventName}}</view>
+              <view class="jg-row-m">{{item.metaText}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-row-v jg-row-v-ok">{{item.changeText}}</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">俱乐部通知</text>
+          <text class="jg-sect-c">演示数据</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{student.notices}}" wx:key="title" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">
+                <text>{{item.title}}</text>
+                <text wx:if="{{item.isImportant}}" class="jg-chip jg-chip-danger">重要</text>
+                <text wx:if="{{!item.isRead}}" class="jg-chip jg-chip-brand">未读</text>
+              </view>
+              <view class="jg-row-m">{{item.content}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">常用功能</text>
+          <text class="jg-sect-c">点击进入演示子页面</text>
+        </view>
+        <view class="jg-tiles-3">
+          <view wx:for="{{student.catalogGroups[0].items}}" wx:key="id" class="jg-tile jg-tile-{{item.tone}}">
+            <view class="jg-tile-in" hover-class="jg-row-hover" data-module="{{item.id}}" bindtap="goModule">
+              <view class="jg-tile-ic">{{item.icon}}</view>
+              <view class="jg-tile-t">{{item.name}}</view>
+              <view class="jg-tile-d jg-clamp-2">{{item.desc}}</view>
+            </view>
+          </view>
+        </view>
+        <view class="jg-tiles-3">
+          <view wx:for="{{student.catalogGroups[1].items}}" wx:key="id" class="jg-tile jg-tile-{{item.tone}}">
+            <view class="jg-tile-in" hover-class="jg-row-hover" data-module="{{item.id}}" bindtap="goModule">
+              <view class="jg-tile-ic">{{item.icon}}</view>
+              <view class="jg-tile-t">{{item.name}}</view>
+              <view class="jg-tile-d jg-clamp-2">{{item.desc}}</view>
+            </view>
+          </view>
+        </view>
+        <view class="jg-list jg-mt-8">
+          <view class="jg-row" hover-class="jg-row-hover" bindtap="goCatalog">
+            <view class="jg-row-ic jg-row-ic-brand">全</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">全部功能</view>
+              <view class="jg-row-m">按业务分类查看全部学生端演示页面</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- ========== 4. 家长演示工作台 ========== -->
+    <block wx:else>
+      <view class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">关联学生（演示）</text>
+          <text class="jg-card-c">共 {{parent.students.length}} 人</text>
+        </view>
+        <picker range="{{parent.students}}" range-key="name" value="{{parent.studentIndex}}" bindchange="onStudentChange">
+          <view class="jg-input jg-picker">{{parent.currentStudent.name}}</view>
+        </picker>
+        <view class="jg-sub jg-mt-8">
+          {{parent.currentStudent.primaryEventName}} · {{parent.currentStudent.trainingGroupName}} · {{parent.linkStateLabel}}
+        </view>
+      </view>
+
+      <view class="jg-jump">
+        <text class="jg-jump-chip {{activeSection === 'performance' ? 'jg-jump-chip-active' : ''}}" data-section="performance" bindtap="goSection">成绩</text>
+        <text class="jg-jump-chip {{activeSection === 'attendance' ? 'jg-jump-chip-active' : ''}}" data-section="attendance" bindtap="goSection">考勤</text>
+        <text class="jg-jump-chip {{activeSection === 'events' ? 'jg-jump-chip-active' : ''}}" data-section="events" bindtap="goSection">赛事通知</text>
+      </view>
+
+      <view class="jg-data-card">
+        <view class="jg-data-k">个人最好成绩 PB</view>
+        <view class="jg-data-v">
+          <text class="jg-data-num">{{parent.overview.pb.value}}</text>
+          <text class="jg-data-unit">{{parent.overview.pb.unit}}</text>
+        </view>
+        <view class="jg-data-meta">{{parent.overview.pb.eventName}} · 教练已审核的正式成绩</view>
+        <view class="jg-data-foot">
+          <text class="jg-data-chip">已审核成绩 {{parent.overview.approvedCount}} 条</text>
+        </view>
+      </view>
+
+      <view class="jg-kpi-row">
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">本月有效出勤</view>
+          <view class="jg-kpi-v">{{parent.overview.attendance.validAttendance}}</view>
+          <view class="jg-kpi-s">应签到 {{parent.overview.attendance.actualExpected}} · 迟到 {{parent.overview.attendance.late}} · 未签到 {{parent.overview.attendance.absent}}</view>
+        </view>
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">已批准请假</view>
+          <view class="jg-kpi-v">{{parent.overview.attendance.approvedLeave}}</view>
+          <view class="jg-kpi-s">待核实 {{parent.overview.attendance.pendingVerification}}</view>
+        </view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">训练计划（本月）</text>
+          <text class="jg-sect-c">{{parent.plans.length}} 份</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{parent.plans}}" wx:key="planId" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.title}}</view>
+              <view class="jg-row-m">{{item.rangeText}} · {{item.itemCountText}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-sect" id="sec-performance">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">运动成绩（已审核）</text>
+          <text class="jg-sect-c">{{parent.performanceRows.length}} 项</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{parent.performanceRows}}" wx:key="eventName" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.eventName}}</view>
+              <view class="jg-row-m">{{item.dateText}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-row-v">{{item.valueText}}</text></view>
+          </view>
+        </view>
+        <view class="jg-note"><view><view class="jg-note-m">未审核、已驳回的成绩不会展示给家长。</view></view></view>
+      </view>
+
+      <view class="jg-sect" id="sec-attendance">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">本月考勤记录</text>
+          <text class="jg-sect-c">{{parent.attendanceRows.length}} 条</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{parent.attendanceRows}}" wx:key="dateText" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.dateText}}</view>
+              <view class="jg-row-m">不展示精确位置，仅显示签到状态</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chip">{{item.chip}}</text></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">训练反馈</text>
+          <text class="jg-sect-c">{{parent.feedbackRows.length}} 条</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{parent.feedbackRows}}" wx:key="dateText" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.dateText}}</view>
+              <view class="jg-row-m">{{item.metaText}}</view>
+            </view>
+          </view>
+        </view>
+        <view class="jg-note"><view><view class="jg-note-m">教练内部评价默认不向家长展示。</view></view></view>
+      </view>
+
+      <view class="jg-sect" id="sec-events">
+        <view class="jg-sect-h">
+          <text class="jg-sect-t">赛事与通知</text>
+          <text class="jg-sect-c">{{parent.competitionRows.length}} / {{parent.noticeRows.length}}</text>
+        </view>
+        <view class="jg-list">
+          <view wx:for="{{parent.competitionRows}}" wx:key="title" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.title}}</view>
+              <view class="jg-row-m">{{item.metaText}}</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chip">{{item.chip}}</text></view>
+          </view>
+          <view wx:for="{{parent.noticeRows}}" wx:key="title" class="jg-row">
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.title}}</view>
+              <view class="jg-row-m">俱乐部通知</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chip">{{item.chip}}</text></view>
+          </view>
+        </view>
+        <view class="jg-note"><view><view class="jg-note-m">报名意向不等于官方报名成功。</view></view></view>
+      </view>
+
+      <view class="jg-sect">
+        <view class="jg-sect-h"><text class="jg-sect-t">个人中心（演示）</text></view>
+        <view class="jg-list">
+          <view class="jg-row" hover-class="jg-row-hover" data-module="link" bindtap="goModule">
+            <view class="jg-row-ic jg-row-ic-brand">联</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">关联学生管理</view>
+              <view class="jg-row-m">查看关联状态（演示两种授权状态）</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
+          </view>
+          <view class="jg-row" hover-class="jg-row-hover" bindtap="goCatalog">
+            <view class="jg-row-ic jg-row-ic-accent">全</view>
+            <view class="jg-row-main">
+              <view class="jg-row-t">全部功能</view>
+              <view class="jg-row-m">按业务分类查看全部家长端演示页面</view>
+            </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-t">演示预览安全边界</view>
+        <view class="jg-note-m">仅开发版与体验版可用，且只对真实开发者身份开放；全部数据为本地虚构数据，不读取、不写入任何正式业务数据，也不改变真实账号角色。</view>
+      </view>
+    </view>
+
+    <view class="jg-btn-row">
+      <button class="jg-btn jg-btn-ghost" bindtap="goAdmin">退出演示，返回开发者工作台</button>
+    </view>
+  </block>
+</view>

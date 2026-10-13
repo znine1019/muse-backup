@@ -390,6 +390,32 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+      <view
+        wx:if="{{demoAvailable}}"
+        class="jg-row"
+        hover-class="jg-row-hover"
+        bindtap="goDemoStudent"
+      >
+        <view class="jg-row-ic jg-row-ic-brand">学</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">预览学生端（DEMO）</view>
+          <view class="jg-row-m">浏览学生工作台与各演示子页面（本地虚构数据）</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view
+        wx:if="{{demoAvailable}}"
+        class="jg-row"
+        hover-class="jg-row-hover"
+        bindtap="goDemoParent"
+      >
+        <view class="jg-row-ic jg-row-ic-accent">家</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">预览家长端（DEMO）</view>
+          <view class="jg-row-m">浏览家长只读视图与多学生切换（本地虚构数据）</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">

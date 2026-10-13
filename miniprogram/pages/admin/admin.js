@@ -637,6 +637,22 @@ Page({
     wx.navigateTo({ url: '/pages/student-report/student-report?demo=1' });
   },
 
+  /* 学生端 / 家长端 DEMO 预览：同样仅开发/预览环境可用，页面内再做一次环境与身份校验 */
+  goDemoStudent() {
+    this.openDemo('student');
+  },
+
+  goDemoParent() {
+    this.openDemo('parent');
+  },
+
+  openDemo(role) {
+    if (!this.data.demoAvailable) {
+      return;
+    }
+    wx.navigateTo({ url: `/pages/demo/demo?role=${role}` });
+  },
+
   async review(event) {
     const userId = event.currentTarget.dataset.userId;
     const decision = event.currentTarget.dataset.decision;
