@@ -423,6 +423,34 @@ function draftPlans() {
   return state.plans.filter((plan) => plan.status === PLAN_STATUS.DRAFT).map(clone);
 }
 
+function secondsText(seconds) {
+  const value = Number(seconds);
+  if (!Number.isFinite(value) || value <= 0) {
+    return '';
+  }
+  if (value % 60 === 0) {
+    return `${value / 60} 分钟`;
+  }
+  return `${value} 秒`;
+}
+
+/** 三个角色统一使用的计划条目说明，避免各页面展示口径不一致 */
+function planDetailItems(plan) {
+  return (plan.items || []).map((item) => {
+    const parts = [];
+    if (item.categoryLabel) parts.push(item.categoryLabel);
+    if (item.distanceMeters) parts.push(`${item.distanceMeters} 米`);
+    if (item.sets) parts.push(`${item.sets} 组`);
+    if (item.reps) parts.push(`${item.reps} 次`);
+    if (item.load) parts.push(`负荷 ${item.load}`);
+    if (item.intensity) parts.push(`强度 ${item.intensity}`);
+    const recovery = secondsText(item.restSeconds || item.recoverySeconds);
+    if (recovery) parts.push(`恢复 ${recovery}`);
+    if (item.note) parts.push(item.note);
+    return `${item.order || ''}. ${item.name}${parts.length ? `（${parts.join(' · ')}）` : ''}`.trim();
+  });
+}
+
 /** 正式成绩：仅 approved；未审核不得进入 PB 与排行榜 */
 function approvedPerformances(studentId) {
   return state.performances
@@ -872,6 +900,7 @@ module.exports = {
   pendingPerformances,
   performanceLeaderboard,
   personalBests,
+  planDetailItems,
   publishNotice,
   publishPlan,
   resetState,

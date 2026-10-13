@@ -354,7 +354,7 @@ function buildCoachDetail(detailType, detailId, coachId = DEMO_COACH_ID) {
       tone: plan.status === store.PLAN_STATUS.DRAFT ? 'warn' : 'ok',
       metaLine: `${store.groupNames([plan.trainingGroupId])[0] || '未标注'} · ${plan.startDate} 至 ${plan.endDate}`,
       body: plan.notes || '（无教练注意事项）',
-      items: plan.items.map((item) => `${item.order}. ${item.name}（${item.categoryLabel}）`),
+      items: store.planDetailItems(plan),
       actions: plan.status === store.PLAN_STATUS.DRAFT
         ? [{ kind: 'publish-plan', id: plan.planId, label: '模拟发布计划', tone: 'primary' }]
         : [],

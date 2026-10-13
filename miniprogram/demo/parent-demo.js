@@ -189,6 +189,32 @@ function getParentNotice(noticeId) {
   };
 }
 
+/** 家长计划详情：只允许读取当前已生效关联学生的已发布计划 */
+function getParentPlan(planId, index) {
+  const safeIndex = normalizeIndex(index);
+  const student = STUDENTS[safeIndex];
+  if (!student || !isLinkActive(student.linkState)) {
+    throw unauthorizedError('该训练计划不在当前已授权的学生范围内。');
+  }
+  const plan = store.visiblePlansForStudent(student.id).find((item) => item.planId === planId);
+  if (!plan) {
+    throw unauthorizedError('该训练计划不在当前已授权的学生范围内。');
+  }
+  return {
+    isNotice: false,
+    typeLabel: '训练计划',
+    contentLabel: '训练内容',
+    title: plan.title,
+    chip: '已发布',
+    tone: 'ok',
+    metaLine: `${student.name}（虚构） · ${store.groupNames([plan.trainingGroupId])[0] || '未标注'} · ${plan.startDate} 至 ${plan.endDate}`,
+    body: plan.notes || '（无教练注意事项）',
+    items: store.planDetailItems(plan),
+    actions: [],
+    linkageNote: ''
+  };
+}
+
 /* --------------------------------------------------------------- 赛事 */
 
 function authorizedIntents() {
@@ -303,7 +329,9 @@ function buildParentWorkbench(index, options = {}) {
       planId: plan.planId,
       title: plan.title,
       rangeText: `${plan.startDate} 至 ${plan.endDate}`,
-      itemCountText: `${(plan.items || []).length} 项内容`
+      itemCountText: `${(plan.items || []).length} 项内容`,
+      detailType: 'plan',
+      detailId: plan.planId
     })),
     performanceRows: approved.map((record) => {
       const event = store.eventByCode(record.eventCode);
@@ -419,8 +447,12 @@ function buildParentModule(moduleId, index, options = {}) {
   }
   if (moduleId === 'plans') {
     return Object.assign(header, {
-      rows: workbench.plans.map((item) => row(item.title, `${item.rangeText} · ${item.itemCountText}`)),
-      note: '仅展示教练已发布的训练计划。'
+      rows: workbench.plans.map((item) =>
+        row(item.title, `${item.rangeText} · ${item.itemCountText}`, {
+          detail: { type: 'plan', id: item.planId }
+        })
+      ),
+      note: '仅展示教练已发布的训练计划，点击可查看完整训练内容。'
     });
   }
   if (moduleId === 'performance') {
@@ -505,6 +537,7 @@ module.exports = {
   catalog: CATALOG,
   getParentCompetition,
   getParentNotice,
+  getParentPlan,
   isLinkActive,
   linkStateLabel,
   DemoModuleError

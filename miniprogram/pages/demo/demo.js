@@ -25,6 +25,7 @@ const {
   buildStudentWorkbench,
   buildStudentModule,
   getStudentNotice,
+  getStudentPlan,
   DEMO_STUDENT_ID,
   catalog: STUDENT_CATALOG
 } = require('../../demo/student-demo');
@@ -32,6 +33,7 @@ const {
   buildParentWorkbench,
   buildParentModule,
   getParentNotice,
+  getParentPlan,
   getParentCompetition,
   catalog: PARENT_CATALOG
 } = require('../../demo/parent-demo');
@@ -296,14 +298,22 @@ Page({
    * 数据全部来自本地演示层；找不到条目直接报错，不返回空壳内容。
    */
   buildDemoDetail() {
-    const { role, detailType, detailId } = this.routeState;
+    const { role, detailType, detailId, studentIndex } = this.routeState;
 
     /* 教练端：计划 / 请假 / 成绩 / 反馈 / 赛事意向 详情 + 模拟操作按钮 */
     if (role === 'coach') {
       return buildCoachDetail(detailType, detailId);
     }
 
+    /* 学生端训练计划：只允许查看已发布且属于本学生的计划 */
+    if (role === 'student' && detailType === 'plan') {
+      return getStudentPlan(detailId);
+    }
+
     if (role === 'parent') {
+      if (detailType === 'plan') {
+        return getParentPlan(detailId, studentIndex);
+      }
       if (detailType === 'competition') {
         const found = getParentCompetition(detailId);
         return {

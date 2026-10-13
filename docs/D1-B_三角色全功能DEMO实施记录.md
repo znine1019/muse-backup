@@ -165,3 +165,44 @@ DEMO 工作区全量测试：**437 项通过 / 0 失败 / 0 TODO**（D1-B 主体
 DEMO 工作区全量测试：**443 项通过 / 0 失败 / 0 TODO**。JavaScript 全仓库语法检查 153 个文件通过，WXML、JSON、阶段 1-7 结构校验与 `git diff --check` 均通过。
 
 微信开发者工具 CLI 已检测到，但 `wechatide` 服务需要本机扫码授权；本轮未完成官方编译，真机验收前需在开发者工具中手动编译并复测。
+
+---
+
+## 11. BUG-06 / BUG-07：学生与家长训练计划交互修复
+
+### 11.1 共同根因
+
+D1-B 统一数据源改造后，训练计划列表只生成了展示文案，没有充分接入详情入口：
+
+1. 学生端 `buildStudentModule('plans')` 的列表行没有 `detailType/detailId`；
+2. 学生工作台的计划概览只有文本，未绑定 `openDetail`；
+3. 家长端 `buildParentModule('plans')` 同样没有详情映射；
+4. 家长工作台计划卡片未绑定 `openDetail`；
+5. `buildDemoDetail()` 只实现了教练端计划详情，学生端与家长端没有解析计划 ID 的分支。
+
+因此两个 BUG 是同一个底层问题：计划行是可点击的视觉行，但没有完整的详情数据路由。点击后没有可展示内容，也不会改变页面视图。
+
+### 11.2 修复
+
+- `showcase-store.js` 新增统一的 `planDetailItems()`，将计划条目统一格式化为包含项目、距离、组数、次数、负荷、强度和恢复间隔的文本。
+- `student-demo.js` 新增 `getStudentPlan()`，只从 `visiblePlansForStudent()` 解析计划；列表行和首页概览均携带 `plan` 详情 ID。
+- `parent-demo.js` 新增 `getParentPlan()`，先校验当前学生关联为 `active`，再只读取该学生已发布的计划；未生效关联和越权计划 ID 返回 `DEMO_NOT_AUTHORIZED`。
+- `demo.js` 新增学生端与家长端 `detail=plan` 分支，详情内容包含学生、训练组、日期、注意事项和完整训练条目。
+- `demo.wxml` 为学生首页概览与家长首页计划增加真实 `openDetail` 点击入口，并统一详情内容标题。
+- 教练端计划详情也改用同一份条目格式，确保三个角色看到相同训练内容。
+
+### 11.3 交互结果
+
+- 学生点击计划 → 打开计划详情 → 查看训练内容 → 返回计划列表。
+- 家长点击林越的已发布计划 → 打开只读详情 → 查看对应学生、日期和训练内容 → 返回。
+- 教练发布草稿后，学生与家长重新进入计划详情都能看到同一份计划。
+- 学生无法打开草稿；家长无法打开未生效关联学生的计划或越权计划 ID。
+- 计划详情不包含 `actions`，家长端无发布、修改或删除能力。
+
+### 11.4 测试
+
+`tests/demo/page-linkage.test.js` 新增 5 项页面级测试，覆盖学生详情打开/返回、学生草稿防越权、家长详情打开/返回、家长待审核与旧 ID 防越权、教练发布后的三角色计划一致性。
+
+DEMO 工作区全量测试：**448 项通过 / 0 失败 / 0 TODO**。CloudBase 模拟调用仍为 0。
+
+微信开发者工具官方 `simulator_open_page` 已成功编译并打开 `pages/showcase/showcase`，随后打开 `pages/demo/demo?role=student`；模拟器 console 的 `error` 过滤结果为空。

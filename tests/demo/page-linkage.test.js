@@ -361,3 +361,131 @@ test('页面联动｜既有通知详情与家长快捷导航未被破坏', () =>
   /* 通知详情组件/结构仍在父页面渲染 */
   assert.match(demoWxml, /demo-detail-body/, '通知正文容器应保留');
 });
+
+/* ============================================ 8. BUG-06 / BUG-07 计划交互 */
+
+test('BUG-06 学生计划：点击列表行打开完整详情，返回后收起', async () => {
+  STORE.resetState();
+  const navigations = [];
+
+  const list = await render('student', {
+    params: { module: 'plans' },
+    wxOverrides: { navigateTo: (options) => navigations.push(options.url) }
+  });
+  const planRow = list.instance.data.module.rows.find((row) => row.detailType === 'plan');
+  assert.ok(planRow, '学生计划列表行必须带详情入口');
+  list.instance.openDetail({ currentTarget: { dataset: { detail: planRow.detailType, id: planRow.detailId } } });
+  assert.equal(
+    navigations[0],
+    `/pages/demo/demo?role=student&detail=plan&id=${planRow.detailId}`
+  );
+
+  const detail = await render('student', {
+    params: { detail: 'plan', id: planRow.detailId },
+    wxOverrides: { navigateTo: (options) => navigations.push(options.url) }
+  });
+  assert.equal(detail.instance.data.view, 'detail');
+  assert.equal(detail.instance.data.detail.title, planRow.t);
+  assert.match(detail.instance.data.detail.metaLine, /林越（虚构）/);
+  assert.match(detail.instance.data.detail.metaLine, /2026-06-15 至 2026-06-21/);
+  assert.match(detail.instance.data.detail.body, /起跑器调试/);
+  const detailText = detail.instance.data.detail.items.join('\n');
+  assert.match(detailText, /60米加速跑/);
+  assert.match(detailText, /6 组/);
+  assert.match(detailText, /1 次/);
+  assert.match(detailText, /恢复 3 分钟/);
+  assert.deepEqual(detail.instance.data.detail.actions, [], '学生端计划详情不得出现发布或删除操作');
+  detail.instance.goBackToList();
+  assert.equal(navigations[navigations.length - 1], '/pages/demo/demo?role=student');
+  assert.equal(detail.cloudCalls.init, 0);
+  assert.equal(detail.cloudCalls.callFunction.length, 0);
+});
+
+test('BUG-06 学生计划：未发布草稿不能通过列表或详情 ID 查看', async () => {
+  STORE.resetState();
+  const module = STUDENT_DEMO.buildStudentModule('plans');
+  assert.equal(module.rows.some((row) => row.detailId === 'plan_draft'), false);
+  for (const row of module.rows) {
+    assert.equal(row.detailType, 'plan');
+    assert.ok(STUDENT_DEMO.getStudentPlan(row.detailId), '列表中的计划应可打开详情');
+  }
+
+  const direct = await render('student', { params: { detail: 'plan', id: 'plan_draft' } });
+  assert.equal(direct.instance.data.detail, null);
+  assert.match(direct.instance.data.error, /尚未发布/);
+});
+
+test('BUG-07 家长计划：点击已授权学生计划打开完整详情并正常返回', async () => {
+  STORE.resetState();
+  const navigations = [];
+
+  const list = await render('parent', {
+    params: { module: 'plans' },
+    wxOverrides: { navigateTo: (options) => navigations.push(options.url) }
+  });
+  const planRow = list.instance.data.module.rows.find((row) => row.detailType === 'plan');
+  assert.ok(planRow, '家长计划列表行必须带详情入口');
+  list.instance.openDetail({ currentTarget: { dataset: { detail: planRow.detailType, id: planRow.detailId } } });
+  assert.equal(
+    navigations[0],
+    `/pages/demo/demo?role=parent&detail=plan&id=${planRow.detailId}&student=0`
+  );
+
+  const detail = await render('parent', {
+    params: { detail: 'plan', id: planRow.detailId },
+    wxOverrides: { navigateTo: (options) => navigations.push(options.url) }
+  });
+  assert.equal(detail.instance.data.view, 'detail');
+  assert.equal(detail.instance.data.detail.title, planRow.t);
+  assert.match(detail.instance.data.detail.metaLine, /林越（虚构）/);
+  assert.match(detail.instance.data.detail.metaLine, /2026-06-15 至 2026-06-21/);
+  assert.match(detail.instance.data.detail.body, /起跑器调试/);
+  assert.match(detail.instance.data.detail.items.join('\n'), /6 组/);
+  assert.deepEqual(detail.instance.data.detail.actions, [], '家长端计划详情必须保持只读');
+  detail.instance.goBackToList();
+  assert.equal(
+    navigations[navigations.length - 1],
+    '/pages/demo/demo?role=parent&student=0'
+  );
+});
+
+test('BUG-07 家长计划：待核验学生与未授权详情 ID 均不能读取', async () => {
+  STORE.resetState();
+  const pending = await render('parent', { params: { student: '1', module: 'plans' } });
+  assert.equal(pending.instance.data.module.restricted, true);
+  assert.deepEqual(pending.instance.data.module.rows, []);
+
+  const wrongStudent = await render('parent', {
+    params: { student: '0', detail: 'plan', id: 'plan_jump' }
+  });
+  assert.ok(wrongStudent.instance.data.restrictedDetail);
+  assert.equal(wrongStudent.instance.data.detail, null);
+
+  const oldIdAfterSwitch = await render('parent', {
+    params: { student: '1', detail: 'plan', id: 'plan_speed' }
+  });
+  assert.ok(oldIdAfterSwitch.instance.data.restrictedDetail);
+  assert.equal(oldIdAfterSwitch.instance.data.detail, null);
+});
+
+test('BUG-06/07 计划联动：教练发布后学生与家长均可打开同一份计划详情', async () => {
+  STORE.resetState();
+  const draft = STORE.draftPlans().find((plan) => plan.planId === 'plan_draft');
+  assert.ok(draft);
+
+  const coach = await render('coach');
+  assert.equal(coach.instance.runDemoAction('publish-plan', draft.planId).ok, true);
+
+  const student = await render('student', { params: { detail: 'plan', id: draft.planId } });
+  const parent = await render('parent', { params: { detail: 'plan', id: draft.planId } });
+  assert.equal(student.instance.data.detail.title, draft.title);
+  assert.equal(parent.instance.data.detail.title, draft.title);
+  assert.equal(student.instance.data.detail.metaLine, parent.instance.data.detail.metaLine);
+  assert.deepEqual(student.instance.data.detail.items, parent.instance.data.detail.items);
+  assert.match(student.instance.data.detail.metaLine, /2026-06-22 至 2026-06-28/);
+  assert.match(student.instance.data.detail.items.join('\n'), /阶梯跑/);
+  assert.deepEqual(student.instance.data.detail.actions, []);
+  assert.deepEqual(parent.instance.data.detail.actions, []);
+  assert.equal(student.cloudCalls.callFunction.length, 0);
+  assert.equal(parent.cloudCalls.callFunction.length, 0);
+});

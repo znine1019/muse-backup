@@ -24,7 +24,7 @@
   <view wx:if="{{loading && !error}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <block wx:if="{{ready && !error}}">
-    <!-- ========== 0. 演示详情（通知正文 / 赛事意向） ========== -->
+    <!-- ========== 0. 演示详情（训练计划 / 通知正文 / 赛事意向） ========== -->
     <block wx:if="{{view === 'detail'}}">
       <!-- 详情授权校验失败（含直接 URL 使用旧详情 ID）：只展示拒绝说明 -->
       <view wx:if="{{restrictedDetail}}" class="jg-state-err">
@@ -38,7 +38,7 @@
         </view>
         <view class="jg-sub">{{detail.metaLine}}</view>
         <view class="jg-sect-h jg-mt-12">
-          <text class="jg-sect-t">通知正文</text>
+          <text class="jg-sect-t">{{detail.contentLabel || '详情内容'}}</text>
           <text class="jg-sect-c">{{detail.typeLabel}}</text>
         </view>
         <view class="demo-detail-body">{{detail.body}}</view>
@@ -209,7 +209,21 @@
           <text class="jg-card-t">训练计划（演示周期）</text>
           <text class="jg-card-c">已发布 {{student.planOverview.publishedCount}} 份</text>
         </view>
-        <view wx:for="{{student.planOverview.items}}" wx:key="title" class="jg-row-m">{{item.title}} · {{item.meta}}</view>
+        <view
+          wx:for="{{student.planOverview.items}}"
+          wx:key="detailId"
+          class="jg-row"
+          hover-class="jg-row-hover"
+          data-detail="plan"
+          data-id="{{item.detailId}}"
+          bindtap="openDetail"
+        >
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.title}}</view>
+            <view class="jg-row-m">{{item.meta}}</view>
+          </view>
+          <view class="jg-row-e"><text class="jg-chev">›</text></view>
+        </view>
         <view class="jg-sub jg-mt-8">仅展示教练已正式发布的计划；未发布草稿不会出现在学生端。</view>
       </view>
 
@@ -512,11 +526,20 @@
           <text class="jg-sect-c">{{parent.plans.length}} 份</text>
         </view>
         <view class="jg-list">
-          <view wx:for="{{parent.plans}}" wx:key="planId" class="jg-row">
+          <view
+            wx:for="{{parent.plans}}"
+            wx:key="planId"
+            class="jg-row"
+            hover-class="jg-row-hover"
+            data-detail="plan"
+            data-id="{{item.planId}}"
+            bindtap="openDetail"
+          >
             <view class="jg-row-main">
               <view class="jg-row-t">{{item.title}}</view>
               <view class="jg-row-m">{{item.rangeText}} · {{item.itemCountText}}</view>
             </view>
+            <view class="jg-row-e"><text class="jg-chev">›</text></view>
           </view>
         </view>
       </view>

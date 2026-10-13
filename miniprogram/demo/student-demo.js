@@ -104,6 +104,28 @@ function visibleStudentPlans() {
   return store.visiblePlansForStudent(DEMO_STUDENT_ID);
 }
 
+/** 学生计划详情：仅允许打开已发布且属于当前学生的计划 */
+function getStudentPlan(planId) {
+  const plan = visibleStudentPlans().find((item) => item.planId === planId);
+  if (!plan) {
+    throw new DemoModuleError(`演示计划不存在或尚未发布：${planId}`);
+  }
+  const student = demoStudent();
+  return {
+    isNotice: false,
+    typeLabel: '训练计划',
+    contentLabel: '训练内容',
+    title: plan.title,
+    chip: PLAN_STATUS_LABELS[plan.status] || plan.status,
+    tone: 'ok',
+    metaLine: `${student.name}（虚构） · ${store.groupNames([plan.trainingGroupId])[0] || '未标注'} · ${plan.startDate} 至 ${plan.endDate}`,
+    body: plan.notes || '（无教练注意事项）',
+    items: store.planDetailItems(plan),
+    actions: [],
+    linkageNote: ''
+  };
+}
+
 /** 通知（学生可见范围） */
 function noticesForDemoStudent() {
   return store.noticesForStudent(DEMO_STUDENT_ID);
@@ -242,7 +264,9 @@ function buildStudentWorkbench() {
       publishedCount: plans.length,
       items: plans.map((plan) => ({
         title: plan.title,
-        meta: `${plan.startDate} 至 ${plan.endDate}`
+        meta: `${plan.startDate} 至 ${plan.endDate}`,
+        detailType: 'plan',
+        detailId: plan.planId
       }))
     },
     catalogGroups: groupCatalog(CATALOG)
@@ -311,7 +335,8 @@ const MODULE_BUILDERS = {
       rows: plans.map((plan) =>
         row(plan.title, `${plan.startDate} 至 ${plan.endDate} · ${store.groupNames([plan.trainingGroupId])[0] || '未标注'}`, {
           chip: PLAN_STATUS_LABELS[plan.status] || plan.status,
-          tone: 'ok'
+          tone: 'ok',
+          detail: { type: 'plan', id: plan.planId }
         })
       ),
       note: '教练端发布计划后，重新进入本页即可看到该计划。'
@@ -610,5 +635,6 @@ module.exports.buildStudentModule = buildStudentModule;
 module.exports.buildStudentWorkbench = buildStudentWorkbench;
 module.exports.catalog = CATALOG;
 module.exports.getStudentNotice = getStudentNotice;
+module.exports.getStudentPlan = getStudentPlan;
 module.exports.visibleStudentPlans = visibleStudentPlans;
 module.exports.DemoModuleError = DemoModuleError;
