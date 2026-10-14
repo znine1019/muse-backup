@@ -74,6 +74,9 @@ function createRaceRepository({ openId, startCount, concurrency }) {
     async getUsersMap() {
       return new Map();
     },
+    async getParentProfile() {
+      return { userId: stored._id, reviewStatus: 'approved' };
+    },
     async listParentLinks() {
       arrived += 1;
       if (arrived === concurrency) {

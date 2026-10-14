@@ -135,6 +135,7 @@ function createFakeRepository(seed = {}) {
   };
 
   const repository = {
+    parentLinkCollection: { __name: 'parent_links' },
     db,
     counters,
     usersById,
@@ -159,6 +160,52 @@ function createFakeRepository(seed = {}) {
     },
     async getUserById(userId) {
       return usersById.get(userId) || null;
+    },
+    userCollection: {
+      where(where) {
+        return {
+          limit(limit) {
+            return {
+              async get() {
+                const records = Array.from(usersById.values())
+                  .filter((record) => matches(record, where))
+                  .slice(0, limit)
+                  .map(clone);
+                return { data: records };
+              }
+            };
+          }
+        };
+      },
+      doc(id) {
+        return {
+          async get() {
+            const record = collection('users').get(id);
+            if (!record) {
+              throw new Error('document not found');
+            }
+            return { data: clone(record) };
+          },
+          async update({ data }) {
+            const existing = collection('users').get(id);
+            if (!existing) {
+              throw new Error('document not found');
+            }
+            const record = applyData(existing, data);
+            collection('users').set(id, record);
+            syncUsers('users', record);
+            return { ok: true };
+          }
+        };
+      }
+    },
+    async writeAudit(entry) {
+      const id = `audit_${collection('audit_logs').size + 1}`;
+      collection('audit_logs').set(id, {
+        _id: id,
+        ...clone(entry),
+        createdAt: new Date()
+      });
     },
     async getUsersMap(userIds) {
       const map = new Map();
@@ -301,9 +348,15 @@ function createFakeRepository(seed = {}) {
       counters.reads += 1;
       return { records: seed.notices || [] };
     },
-    async queryAll() {
+    async queryAll(collectionRef, where, maxRecords = 100) {
       counters.reads += 1;
-      return [];
+      if (!collectionRef || collectionRef.__name !== 'parent_links') {
+        return [];
+      }
+      return Array.from(collection('parent_links').values())
+        .filter((record) => matches(record, where))
+        .slice(0, maxRecords)
+        .map(clone);
     },
     parentProfileCollection: { __name: 'parent_profiles' },
 
@@ -319,6 +372,12 @@ function createFakeRepository(seed = {}) {
     seedProfile(userId, profile) {
       collection('student_profiles').set(`profile_${userId}`, {
         _id: `profile_${userId}`,
+        ...profile
+      });
+    },
+    seedParentProfile(userId, profile) {
+      collection('parent_profiles').set(`parent_profile_${userId}`, {
+        _id: `parent_profile_${userId}`,
         ...profile
       });
     },

@@ -27,6 +27,17 @@ function requireRole(user, role) {
   return user;
 }
 
+function parentAuthorizationVersion(user) {
+  const version = Number(
+    user && typeof user === 'object' ? user.parentAuthorizationVersion : user
+  );
+  return Number.isSafeInteger(version) && version >= 0 ? version : 0;
+}
+
+function nextParentAuthorizationVersion(user) {
+  return parentAuthorizationVersion(user) + 1;
+}
+
 function canReviewRegistration(user, requestedTrainingGroupId, coachGroupIds) {
   if (hasRole(user, ROLES.DEVELOPER)) {
     return true;
@@ -43,6 +54,8 @@ module.exports = {
   canReviewRegistration,
   hasRole,
   isActiveUser,
+  nextParentAuthorizationVersion,
+  parentAuthorizationVersion,
   requireActiveUser,
   requireRole
 };

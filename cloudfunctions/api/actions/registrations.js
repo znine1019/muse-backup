@@ -9,7 +9,10 @@ const {
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
-const { canReviewRegistration } = require('../lib/policy');
+const {
+  canReviewRegistration,
+  nextParentAuthorizationVersion
+} = require('../lib/policy');
 const { loadActiveActor } = require('../lib/session');
 const { assertRegistrationPending } = require('../lib/state-guards');
 const { getDocumentOrNull } = require('../lib/transaction');
@@ -332,6 +335,9 @@ function createRegistrationActions({ repository }) {
       const nextRoles = approved
         ? Array.from(new Set([...currentRoles, ROLES.PARENT]))
         : currentRoles;
+      const nextParentVersion = approved
+        ? nextParentAuthorizationVersion(currentUser)
+        : undefined;
       let nextStatus = USER_STATUS.ACTIVE;
       if (!approved && !otherRoles.length) {
         nextStatus = USER_STATUS.REJECTED;
@@ -342,6 +348,7 @@ function createRegistrationActions({ repository }) {
           status: nextStatus,
           roles: nextRoles,
           pendingProfileType: approved || otherRoles.length ? '' : ROLES.PARENT,
+          ...(approved ? { parentAuthorizationVersion: nextParentVersion } : {}),
           updatedAt: repository.db.serverDate()
         }
       });

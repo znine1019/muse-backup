@@ -116,6 +116,7 @@ function setup(extra = {}) {
     openid: 'openid_par',
     status: 'active',
     roles: ['parent'],
+    parentAuthorizationVersion: 1,
     displayName: '家长甲'
   });
   const parentB = repository.seedStudent({
@@ -123,9 +124,22 @@ function setup(extra = {}) {
     openid: 'openid_par_b',
     status: 'active',
     roles: ['parent'],
+    parentAuthorizationVersion: 1,
     displayName: '家长乙'
   });
   repository.seedProfile('usr_stu', { name: '学生甲', primaryEventName: '100米' });
+  repository.seedParentProfile('usr_par', {
+    userId: 'usr_par',
+    name: '家长甲',
+    relation: 'guardian',
+    reviewStatus: 'approved'
+  });
+  repository.seedParentProfile('usr_par_b', {
+    userId: 'usr_par_b',
+    name: '家长乙',
+    relation: 'guardian',
+    reviewStatus: 'approved'
+  });
   return { repository, actions, dev, student, studentB, parent, parentB };
 }
 
@@ -160,7 +174,9 @@ test('家长注册：提交资料写入 parent_profiles 且不包含学生专属
   assert.equal(result.profile.name, '家长丙');
   assert.equal(result.profile.reviewStatus, 'pending');
   assert.equal(result.status, 'pending_review');
-  const stored = ctx.repository.readCollection('parent_profiles')[0];
+  const stored = ctx.repository
+    .readCollection('parent_profiles')
+    .find((profile) => profile.userId === 'usr_openid_new_parent');
   assert.equal(stored.reviewStatus, 'pending');
   assert.equal(stored.heightCm, undefined);
   assert.equal(stored.primaryTrainingProject, undefined);

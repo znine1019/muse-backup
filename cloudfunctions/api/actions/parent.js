@@ -31,6 +31,9 @@ const {
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
 const { loadActiveActor, loadUser } = require('../lib/session');
+const {
+  parentAuthorizationVersion
+} = require('../lib/policy');
 const { getDocumentOrNull } = require('../lib/transaction');
 const { clubDateOnly } = require('../lib/dates');
 const { buildAutomaticReport } = require('../lib/report-builder');
@@ -128,8 +131,56 @@ function createParentActions({ repository }) {
   }
 
   /** 家长是否已获得该学生的有效授权（所有家长读取的唯一入口） */
-  async function assertActiveLink(actorUserId, studentUserId) {
-    const linkId = repository.parentLinkIdForPair(actorUserId, studentUserId);
+  async function requireApprovedParentProfile(repository, actor) {
+    const profile = await repository.getParentProfile(actor._id);
+    if (!profile || profile.reviewStatus !== REVIEW_STATUS.APPROVED) {
+      fail(
+        'PARENT_PROFILE_NOT_APPROVED',
+        '家长注册资料尚未通过审核，不能使用亲子关联功能。'
+      );
+    }
+    return profile;
+  }
+
+  async function loadAuthorizedParentInTransaction(
+    repository,
+    transaction,
+    parentUserId
+  ) {
+    const userReference = transaction
+      .collection(COLLECTIONS.USERS)
+      .doc(parentUserId);
+    const user = await getDocumentOrNull(userReference);
+    if (
+      !user ||
+      user.status !== USER_STATUS.ACTIVE ||
+      !(user.roles || []).includes(ROLES.PARENT)
+    ) {
+      fail('PARENT_ROLE_INACTIVE', '家长角色当前不可用，请重新完成家长审核。');
+    }
+
+    const profileReference = transaction
+      .collection(COLLECTIONS.PARENT_PROFILES)
+      .doc(repository.parentProfileIdForUser(parentUserId));
+    const profile = await getDocumentOrNull(profileReference);
+    if (!profile || profile.reviewStatus !== REVIEW_STATUS.APPROVED) {
+      fail(
+        'PARENT_PROFILE_NOT_APPROVED',
+        '家长注册资料尚未通过审核，不能使用亲子关联功能。'
+      );
+    }
+    return { user, version: parentAuthorizationVersion(user) };
+  }
+
+  function assertCurrentAuthorization(link, version) {
+    if (parentAuthorizationVersion(link) !== parentAuthorizationVersion(version)) {
+      fail('PARENT_AUTHORIZATION_STALE', '该亲子关联基于旧授权，请重新发起关联。');
+    }
+  }
+
+  /** 家长是否已获得该学生的有效授权（所有家长读取的唯一入口） */
+  async function assertActiveLink(actor, studentUserId) {
+    const linkId = repository.parentLinkIdForPair(actor._id, studentUserId);
     const link = await repository.getParentLink(linkId);
     if (
       !link ||
@@ -138,6 +189,7 @@ function createParentActions({ repository }) {
     ) {
       fail('LINK_NOT_ACTIVE', '尚未获得该学生的授权，或授权已解除。');
     }
+    assertCurrentAuthorization(link, parentAuthorizationVersion(actor));
     return link;
   }
 
@@ -350,6 +402,8 @@ function createParentActions({ repository }) {
 
   async function redeemInvite({ identity, payload }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.PARENT]);
+    await requireApprovedParentProfile(repository, actor);
+    const actorVersion = parentAuthorizationVersion(actor);
     const input = validateParentInviteRedeemPayload(payload);
 
     /* 防枚举：同一家长在窗口期内失败次数过多时直接拒绝，不再查找凭证 */
@@ -405,11 +459,13 @@ function createParentActions({ repository }) {
 
     const pairId = repository.parentLinkIdForPair(actor._id, invite.studentUserId);
     const existing = await repository.getParentLink(pairId);
-    if (existing && existing.status === PARENT_LINK_STATUS.ACTIVE) {
+    const existingIsCurrent =
+      existing && parentAuthorizationVersion(existing) === actorVersion;
+    if (existingIsCurrent && existing.status === PARENT_LINK_STATUS.ACTIVE) {
       fail('LINK_ALREADY_ACTIVE', '已与该学生建立有效关联，无需重复申请。');
     }
     if (
-      existing &&
+      existingIsCurrent &&
       (existing.status === PARENT_LINK_STATUS.PENDING_STUDENT ||
         existing.status === PARENT_LINK_STATUS.PENDING_REVIEW)
     ) {
@@ -430,6 +486,14 @@ function createParentActions({ repository }) {
     }
 
     return repository.db.runTransaction(async (transaction) => {
+      const authorization = await loadAuthorizedParentInTransaction(
+        repository,
+        transaction,
+        actor._id
+      );
+      if (authorization.version !== actorVersion) {
+        fail('PARENT_AUTHORIZATION_CHANGED', '家长授权状态已变化，请重新发起关联。');
+      }
       const linkReference = transaction
         .collection(COLLECTIONS.PARENT_LINKS)
         .doc(pairId);
@@ -443,6 +507,7 @@ function createParentActions({ repository }) {
           parentUserId: actor._id,
           studentUserId: invite.studentUserId,
           status: PARENT_LINK_STATUS.PENDING_STUDENT,
+          parentAuthorizationVersion: authorization.version,
           createdFrom: invite._id,
           studentConfirmedAt: null,
           reviewedBy: '',
@@ -511,6 +576,15 @@ function createParentActions({ repository }) {
       const current = await getDocumentOrNull(reference);
       if (!current || current.status !== PARENT_LINK_STATUS.PENDING_STUDENT) {
         fail('LINK_NOT_PENDING', '该关联申请已被处理。');
+      }
+
+      if (approved) {
+        const authorization = await loadAuthorizedParentInTransaction(
+          repository,
+          transaction,
+          current.parentUserId
+        );
+        assertCurrentAuthorization(current, authorization.version);
       }
 
       await reference.update({
@@ -596,6 +670,15 @@ function createParentActions({ repository }) {
       const current = await getDocumentOrNull(reference);
       if (!current || current.status !== PARENT_LINK_STATUS.PENDING_REVIEW) {
         fail('LINK_NOT_PENDING', '该关联申请已被处理。');
+      }
+
+      if (approved) {
+        const authorization = await loadAuthorizedParentInTransaction(
+          repository,
+          transaction,
+          current.parentUserId
+        );
+        assertCurrentAuthorization(current, authorization.version);
       }
 
       await reference.update({
@@ -695,7 +778,7 @@ function createParentActions({ repository }) {
     const result = { asParent: [], asStudent: [], parentProfile: null };
 
     if (roles.includes(ROLES.PARENT)) {
-      const profile = await repository.getParentProfile(user._id);
+      const profile = await requireApprovedParentProfile(repository, user);
       result.parentProfile = readableParentProfile(profile);
       const links = await repository.listParentLinks(
         { kind: PARENT_LINK_KIND.RELATION, parentUserId: user._id },
@@ -750,6 +833,7 @@ function createParentActions({ repository }) {
 
   async function listStudents({ identity }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.PARENT]);
+    await requireApprovedParentProfile(repository, actor);
     const links = await repository.listParentLinks(
       {
         kind: PARENT_LINK_KIND.RELATION,
@@ -791,12 +875,13 @@ function createParentActions({ repository }) {
 
   async function getStudentOverview({ identity, payload }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.PARENT]);
+    await requireApprovedParentProfile(repository, actor);
     const input = validateParentStudentQueryPayload(payload);
     const studentUserId = input.studentUserId;
 
     /* 授权校验与学生账号状态校验并行执行（任一失败即拒绝） */
     await Promise.all([
-      assertActiveLink(actor._id, studentUserId),
+      assertActiveLink(actor, studentUserId),
       assertLinkParentActive(repository, { studentUserId })
     ]);
 
