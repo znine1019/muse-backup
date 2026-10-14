@@ -57,8 +57,7 @@ function createHarness() {
           groupId: GROUP_A,
           name: '短跑组',
           seasonLabel: '2026',
-          enabled: true,
-          coachUserIds: [COACH_A._id]
+          enabled: true
         }
       ],
       [
@@ -68,12 +67,27 @@ function createHarness() {
           groupId: GROUP_B,
           name: '跳远组',
           seasonLabel: '2026',
-          enabled: true,
-          coachUserIds: [COACH_B._id]
+          enabled: true
         }
       ]
     ]),
     memberships: [
+      {
+        _id: 'member_coach_a_a',
+        userId: COACH_A._id,
+        groupId: GROUP_A,
+        roleInGroup: 'coach',
+        status: 'active',
+        assignedAt: new Date('2026-01-01T00:00:00.000Z')
+      },
+      {
+        _id: 'member_coach_b_b',
+        userId: COACH_B._id,
+        groupId: GROUP_B,
+        roleInGroup: 'coach',
+        status: 'active',
+        assignedAt: new Date('2026-01-01T00:00:00.000Z')
+      },
       {
         _id: 'member_a_a',
         userId: STUDENT_A._id,
@@ -111,6 +125,11 @@ function createHarness() {
     feedback: []
   };
 
+  const membershipCollection = {};
+  const command = {
+    in: (values) => ({ kind: 'in', values })
+  };
+
   const repository = {
     ensureUser: async (identity) => clone(state.usersByOpenId.get(identity.openid)),
     getProfile: async (userId) =>
@@ -143,9 +162,14 @@ function createHarness() {
     listAllTrainingGroups: async () =>
       Array.from(state.groups.values()).map(clone),
     getCoachGroupIds: async (userId) =>
-      Array.from(state.groups.values())
-        .filter((group) => (group.coachUserIds || []).includes(userId))
-        .map((group) => group._id),
+      state.memberships
+        .filter(
+          (membership) =>
+            membership.userId === userId &&
+            membership.roleInGroup === 'coach' &&
+            membership.status === 'active'
+        )
+        .map((membership) => membership.groupId),
     getStudentGroupIds: async (userId) =>
       state.memberships
         .filter(
@@ -169,8 +193,10 @@ function createHarness() {
         )
       ),
     listMembershipsForGroups: async (groupIds) => {
-      const records = state.memberships.filter((membership) =>
-        groupIds.includes(membership.groupId)
+      const records = state.memberships.filter(
+        (membership) =>
+          groupIds.includes(membership.groupId) &&
+          membership.roleInGroup === 'student'
       );
       return { records: clone(records), total: records.length, incomplete: false };
     },
@@ -255,6 +281,22 @@ function createHarness() {
         total: records.length,
         incomplete: records.length > max
       };
+    },
+    membershipCollection,
+    db: { command },
+    queryAll: async (collection, where = {}, maxRecords = 300) => {
+      if (collection !== membershipCollection) {
+        throw new Error('测试仓储仅支持查询 group_memberships');
+      }
+      const matches = state.memberships.filter((membership) =>
+        Object.entries(where).every(([key, condition]) => {
+          if (condition && condition.kind === 'in') {
+            return condition.values.includes(membership[key]);
+          }
+          return membership[key] === condition;
+        })
+      );
+      return clone(matches.slice(0, maxRecords));
     }
   };
 

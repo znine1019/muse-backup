@@ -333,7 +333,11 @@ test('attendance ranking is withheld when membership history is ambiguous', asyn
     record('limited_1', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN),
     record('limited_2', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN)
   );
-  harness.state.memberships[0].assignedAt = new Date(`${addDays(today, -2)}T00:00:00.000Z`);
+  harness.state.memberships.find(
+    (membership) =>
+      membership.userId === STUDENT_A._id &&
+      membership.groupId === GROUP_A
+  ).assignedAt = new Date(`${addDays(today, -2)}T00:00:00.000Z`);
   const actions = createStatisticsActions({ repository: harness.repository });
   const result = await actions['leaderboard.attendance']({
     identity: IDENTITIES.coachA,

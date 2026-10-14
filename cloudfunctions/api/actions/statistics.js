@@ -33,6 +33,7 @@ const {
 const DEFAULT_EXPORT_MAX_ROWS = 2000;
 const MAX_STATISTICS_SESSIONS = 5000;
 const MAX_STATISTICS_RECORDS = 20000;
+const MAX_COACH_MEMBERSHIPS = 5000;
 
 function isDeveloper(actor) {
   return actor.roles.includes(ROLES.DEVELOPER);
@@ -92,7 +93,7 @@ function emptyAttendanceRow(studentUserId, studentName) {
   };
 }
 
-function buildStudentGroupMaps(memberships, groupsMap, usersMap = new Map()) {
+function buildStudentGroupMaps(memberships, groupsMap, coachNamesByGroup = new Map()) {
   const studentGroupIdsMap = new Map();
   const studentGroupNamesMap = new Map();
   const studentCoachNamesMap = new Map();
@@ -115,13 +116,8 @@ function buildStudentGroupMaps(memberships, groupsMap, usersMap = new Map()) {
     }
     studentGroupNamesMap.set(membership.userId, names);
 
-    const coachIds = group.coachUserIds || [];
     const coachNames = studentCoachNamesMap.get(membership.userId) || [];
-    for (const coachId of coachIds) {
-      const coachName =
-        (usersMap.get(coachId) || {}).displayName ||
-        (usersMap.get(coachId) || {}).name ||
-        coachId;
+    for (const coachName of coachNamesByGroup.get(membership.groupId) || []) {
       if (coachName && !coachNames.includes(coachName)) {
         coachNames.push(coachName);
       }
@@ -133,6 +129,110 @@ function buildStudentGroupMaps(memberships, groupsMap, usersMap = new Map()) {
     studentGroupNamesMap,
     studentCoachNamesMap
   };
+}
+
+function coachNameForUser(userId, user) {
+  const displayName = String(
+    (user && (user.displayName || user.name)) || ''
+  ).trim();
+  return displayName || String(userId || '').trim();
+}
+
+function isActiveCoachUser(user) {
+  return Boolean(
+    user &&
+      user.status === USER_STATUS.ACTIVE &&
+      Array.isArray(user.roles) &&
+      user.roles.includes(ROLES.COACH)
+  );
+}
+
+async function listActiveCoachMembershipsForGroups(repository, groupIds) {
+  const records = [];
+  for (let index = 0; index < groupIds.length; index += 100) {
+    const chunk = groupIds.slice(index, index + 100);
+    const batch = await repository.queryAll(
+      repository.membershipCollection,
+      {
+        groupId: repository.db.command.in(chunk),
+        roleInGroup: ROLES.COACH,
+        status: MEMBERSHIP_STATUS.ACTIVE
+      },
+      MAX_COACH_MEMBERSHIPS + 1
+    );
+    records.push(...batch);
+    if (records.length > MAX_COACH_MEMBERSHIPS) {
+      fail(
+        'STATISTICS_INCOMPLETE',
+        '教练成员数据读取不完整，暂时无法生成准确统计。'
+      );
+    }
+  }
+  return records;
+}
+
+async function getScopeCoachContext(repository, scope) {
+  if (!scope.coachContextPromise) {
+    scope.coachContextPromise = (async () => {
+      const memberships = await listActiveCoachMembershipsForGroups(
+        repository,
+        scope.groupIds
+      );
+      const userIds = Array.from(
+        new Set(memberships.map((membership) => membership.userId).filter(Boolean))
+      );
+      const usersMap = await repository.getUsersMap(userIds);
+      const seenRelations = new Set();
+      const validCoachIdsByGroup = new Map();
+      const validCoachIds = new Set();
+
+      for (const membership of memberships) {
+        if (
+          !membership.groupId ||
+          !membership.userId ||
+          !scope.groupsMap.has(membership.groupId)
+        ) {
+          continue;
+        }
+        const relationKey = `${membership.groupId}|${membership.userId}`;
+        if (seenRelations.has(relationKey)) {
+          continue;
+        }
+        if (!isActiveCoachUser(usersMap.get(membership.userId))) {
+          continue;
+        }
+        seenRelations.add(relationKey);
+        validCoachIds.add(membership.userId);
+        const groupCoachIds = validCoachIdsByGroup.get(membership.groupId) || new Set();
+        groupCoachIds.add(membership.userId);
+        validCoachIdsByGroup.set(membership.groupId, groupCoachIds);
+      }
+
+      const coachNamesByGroup = new Map();
+      for (const [groupId, groupCoachIds] of validCoachIdsByGroup.entries()) {
+        const names = Array.from(groupCoachIds)
+          .map((userId) => ({
+            userId,
+            name: coachNameForUser(userId, usersMap.get(userId))
+          }))
+          .sort(
+            (left, right) =>
+              left.name.localeCompare(right.name, 'zh-CN') ||
+              left.userId.localeCompare(right.userId)
+          )
+          .map((item) => item.name)
+          .filter(Boolean);
+        coachNamesByGroup.set(groupId, names);
+      }
+
+      return {
+        coachCount: validCoachIds.size,
+        coachIds: Array.from(validCoachIds).sort(),
+        coachNamesByGroup
+      };
+    })();
+  }
+  return scope.coachContextPromise;
 }
 
 function decoratePerformanceRecords(records, profilesMap, groupNamesMap, coachNamesMap) {
@@ -208,18 +308,11 @@ function createStatisticsActions({ repository }) {
   }
 
   async function loadGroupMapsForScope(scope) {
-    const coachIds = Array.from(
-      new Set(
-        Array.from(scope.groupsMap.values()).flatMap(
-          (group) => group.coachUserIds || []
-        )
-      )
-    );
-    const usersMap = await repository.getUsersMap(coachIds);
+    const coachContext = await getScopeCoachContext(repository, scope);
     return buildStudentGroupMaps(
       scope.memberships,
       scope.groupsMap,
-      usersMap
+      coachContext.coachNamesByGroup
     );
   }
 
@@ -312,14 +405,7 @@ function createStatisticsActions({ repository }) {
   async function getMeta({ identity }) {
     const actor = await loadActiveActor(repository, identity, []);
     const scope = await resolveScope(actor, '');
-    const coachIds = Array.from(
-      new Set(
-        Array.from(scope.groupsMap.values()).flatMap(
-          (group) => group.coachUserIds || []
-        )
-      )
-    );
-    const usersMap = await repository.getUsersMap(coachIds);
+    const coachContext = await getScopeCoachContext(repository, scope);
     return {
       role: isDeveloper(actor)
         ? ROLES.DEVELOPER
@@ -333,9 +419,7 @@ function createStatisticsActions({ repository }) {
         name: group.name,
         seasonLabel: group.seasonLabel || '未标注',
         enabled: group.enabled === true,
-        coachNames: (group.coachUserIds || [])
-          .map((coachId) => (usersMap.get(coachId) || {}).displayName || coachId)
-          .filter(Boolean)
+        coachNames: coachContext.coachNamesByGroup.get(group._id) || []
       })),
       minAttendanceSampleSessions: 3
     };
@@ -470,7 +554,7 @@ function createStatisticsActions({ repository }) {
     const range = periodRange(input);
     const scope = await resolveScope(actor, input.trainingGroupId);
     const studentIds = scope.allStudentIds;
-    const [attendanceDataset, performanceResult, feedbackResult] = await Promise.all([
+    const [attendanceDataset, performanceResult, feedbackResult, coachContext] = await Promise.all([
       loadAttendance(scope, range, studentIds),
       loadPerformance(scope, range, '', MAX_STATISTICS_RECORDS),
       studentIds.length
@@ -480,7 +564,8 @@ function createStatisticsActions({ repository }) {
             toDate: addDays(range.endExclusive, -1),
             maxRecords: MAX_STATISTICS_RECORDS
           })
-        : Promise.resolve({ records: [], total: 0, incomplete: false })
+        : Promise.resolve({ records: [], total: 0, incomplete: false }),
+      getScopeCoachContext(repository, scope)
     ]);
     if (performanceResult.incomplete || feedbackResult.incomplete) {
       fail('STATISTICS_INCOMPLETE', '管理统计数据读取不完整。');
@@ -531,12 +616,6 @@ function createStatisticsActions({ repository }) {
       };
     });
     const activeStudentIds = new Set(scope.activeStudentIds);
-    const coachUserIds = new Set();
-    for (const group of scope.groupsMap.values()) {
-      for (const coachUserId of group.coachUserIds || []) {
-        coachUserIds.add(coachUserId);
-      }
-    }
     return {
       period: serializePeriod(range),
       scope: {
@@ -546,7 +625,7 @@ function createStatisticsActions({ repository }) {
           (group) => group.enabled === true
         ).length,
         studentCount: Array.from(activeStudentIds).length,
-        coachCount: coachUserIds.size
+        coachCount: coachContext.coachCount
       },
       attendance,
       performance: {
