@@ -174,8 +174,9 @@
                 <view wx:if="{{item.record && item.record.distanceMeters !== null}}" class="jg-row-m">距训练点：{{item.record.distanceMeters}} 米 · 精度 {{item.record.accuracyMeters}} 米</view>
                 <view wx:if="{{item.record && item.record.adjustReason}}" class="jg-row-m">核实说明：{{item.record.adjustReason}}</view>
               </view>
-              <view class="jg-row-e">
+              <view class="jg-row-e roster-actions">
                 <button class="jg-btn jg-btn-sm jg-btn-ghost" data-student-user-id="{{item.studentUserId}}" bindtap="manualVerify">人工核实</button>
+                <button class="jg-btn jg-btn-sm jg-btn-ghost" data-student-user-id="{{item.studentUserId}}" bindtap="goStudentProfile">查看档案</button>
               </view>
             </view>
           </view>

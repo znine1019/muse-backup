@@ -242,6 +242,19 @@ Page({
     }
   },
 
+  goStudentProfile(event) {
+    const userId = String(
+      (event && event.currentTarget && event.currentTarget.dataset &&
+        event.currentTarget.dataset.studentUserId) || ''
+    ).trim();
+    if (!userId) {
+      return;
+    }
+    wx.navigateTo({
+      url: `/pages/profile-view/profile-view?userId=${encodeURIComponent(userId)}`
+    });
+  },
+
   async manualVerify(event) {
     const studentUserId = event.currentTarget.dataset.studentUserId;
     const sessionId = this.data.selectedSessionId;

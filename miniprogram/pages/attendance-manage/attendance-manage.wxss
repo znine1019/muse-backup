@@ -10,6 +10,15 @@
   align-items: flex-start;
 }
 
+.roster-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.roster-actions .jg-btn + .jg-btn {
+  margin-top: 12rpx;
+}
+
 .leave-actions {
   flex-direction: column;
   align-items: stretch;
