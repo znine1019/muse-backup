@@ -75,7 +75,7 @@
     <view class="jg-sect" id="sec-plans">
       <view class="jg-sect-h"><text class="jg-sect-t">训练计划（本月）</text><text class="jg-sect-c">{{planItems.length}} 份</text></view>
       <jg-empty wx:if="{{!planItems.length}}" title="暂无训练安排" message="教练发布训练计划后会显示在这里。" />
-      <view wx:else class="jg-list plan-list">
+      <view wx:else class="jg-list">
         <view wx:for="{{planItems}}" wx:key="planId" class="plan-block">
           <view
             class="jg-row plan-row"

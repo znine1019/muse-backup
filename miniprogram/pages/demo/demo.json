@@ -1,7 +1,6 @@
 {
   "navigationBarTitleText": "演示预览",
   "usingComponents": {
-    "jg-page-head": "/components/jg-page-head/jg-page-head",
-    "jg-empty": "/components/jg-empty/jg-empty"
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
   }
 }
