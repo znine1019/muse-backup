@@ -2,7 +2,7 @@
   <jg-page-head
     title="{{planId ? '编辑训练计划' : '新建训练计划'}}"
     meta="草稿仅教练可见；发布后所属训练组学生可以查看。"
-    role-label="教练员"
+    role-label="计划编辑"
     role-tone="brand"
   />
 

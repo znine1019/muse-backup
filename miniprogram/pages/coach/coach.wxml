@@ -2,7 +2,7 @@
   <jg-page-head
     title="教练工作台"
     meta="{{headMeta}}"
-    role-label="教练员"
+    role-label="训练管理"
     role-tone="brand"
   />
 

@@ -2,7 +2,7 @@
   <jg-page-head
     title="训练计划"
     meta="创建、发布和复用训练组计划；草稿仅教练可见，发布后学生才能查看。"
-    role-label="教练员"
+    role-label="训练计划"
     role-tone="brand"
   />
 
