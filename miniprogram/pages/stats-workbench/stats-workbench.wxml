@@ -1,92 +1,192 @@
-<view class="container">
-  <view class="brand">COACH / STATISTICS</view>
-  <view class="title">统计工作台</view>
-  <view class="sub">汇总本人授权训练组的成绩、考勤和训练反馈，并导出标准XLSX报表。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="统计工作台"
+    meta="汇总当前授权范围的成绩、考勤和训练反馈，并导出标准 XLSX 报表。"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在计算统计数据...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">统计工作台加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
-  <view wx:if="{{success}}" class="success">{{success}}</view>
+
+  <view wx:if="{{success}}" class="jg-note">
+    <view>
+      <view class="jg-note-t">导出完成</view>
+      <view class="jg-note-m">{{success}}</view>
+    </view>
+  </view>
 
   <block wx:if="{{!loading && overview}}">
-    <view class="card">
-      <view class="section-title">筛选条件</view>
-      <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-        <view class="picker-field">训练组：{{groups[groupIndex].name}}</view>
-      </picker>
-      <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-        <view class="picker-field">周期：{{periodTypeOptions[periodTypeIndex].label}}</view>
-      </picker>
-      <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-        <view class="picker-field">年份：{{yearOptions[yearIndex].label}}</view>
-      </picker>
-      <picker wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-        <view class="picker-field">月份：{{monthOptions[monthIndex].label}}</view>
-      </picker>
-      <picker wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-        <view class="picker-field">季度：{{quarterOptions[quarterIndex].label}}</view>
-      </picker>
-      <view class="tag">{{overview.period.label}}</view>
-    </view>
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">筛选条件</text>
+        <text class="jg-chip jg-chip-brand">{{overview.period.label}}</text>
+      </view>
 
-    <view class="card">
-      <view class="section-title">范围概览</view>
-      <view class="overview-grid">
-        <view class="overview-item"><view class="overview-label">负责训练组</view><view class="overview-value">{{overview.scope.groupCount}}</view></view>
-        <view class="overview-item"><view class="overview-label">学生人数</view><view class="overview-value">{{overview.scope.studentCount}}</view></view>
-        <view class="overview-item"><view class="overview-label">有效考勤场次</view><view class="overview-value">{{overview.attendance.sessionCounts.valid}}</view></view>
-        <view class="overview-item"><view class="overview-label">已审核成绩</view><view class="overview-value">{{overview.performance.approvedCount}}</view></view>
+      <view class="jg-field-row">
+        <view class="jg-field-label">训练组</view>
+        <view class="jg-field-body">
+          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">统计周期</view>
+        <view class="jg-field-body">
+          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">年份</view>
+        <view class="jg-field-body">
+          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-field-row">
+        <view class="jg-field-label">月份</view>
+        <view class="jg-field-body">
+          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+
+      <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-field-row">
+        <view class="jg-field-label">季度</view>
+        <view class="jg-field-body">
+          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+          </picker>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">考勤汇总</view>
-      <view class="overview-grid">
-        <view class="overview-item"><view class="overview-label">计划应到</view><view class="overview-value">{{overview.attendanceSummary.plannedExpected}}</view></view>
-        <view class="overview-item"><view class="overview-label">实际应签到</view><view class="overview-value">{{overview.attendanceSummary.actualExpected}}</view></view>
-        <view class="overview-item"><view class="overview-label">有效出勤</view><view class="overview-value">{{overview.attendanceSummary.validAttendance}}</view></view>
-        <view class="overview-item"><view class="overview-label">出勤率</view><view class="overview-value">{{overview.attendanceSummary.attendanceRateText}}</view></view>
-        <view class="overview-item"><view class="overview-label">已批准请假</view><view class="overview-value">{{overview.attendanceSummary.approvedLeave}}</view></view>
-        <view class="overview-item"><view class="overview-label">待核实</view><view class="overview-value">{{overview.attendanceSummary.pendingVerification}}</view></view>
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">范围概览</text></view>
+      <view class="jg-dstrip">
+        <view class="jg-ds">
+          <view class="jg-ds-l">负责训练组</view>
+          <view class="jg-ds-v">{{overview.scope.groupCount}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">学生人数</view>
+          <view class="jg-ds-v">{{overview.scope.studentCount}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">有效考勤场次</view>
+          <view class="jg-ds-v">{{overview.attendance.sessionCounts.valid}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">已审核成绩</view>
+          <view class="jg-ds-v">{{overview.performance.approvedCount}}</view>
+        </view>
       </view>
-      <view class="muted">已取消场次不计入；未结束场次不计入最终出勤率；待核实异常单独统计。</view>
     </view>
 
-    <view class="card">
-      <view class="section-title">训练组比较</view>
-      <view wx:if="{{!overview.groupComparison.length}}" class="muted">当前范围暂无训练组数据。</view>
-      <view wx:for="{{overview.groupComparison}}" wx:key="trainingGroupId" class="list-item">
-        <view class="list-title">{{item.trainingGroupName}}</view>
-        <view class="list-meta">学生：{{item.studentCount}} · 已审核成绩：{{item.approvedCount}}</view>
-        <view class="list-meta">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}} · {{item.attendanceRateText}}</view>
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">考勤汇总</text>
+        <text class="jg-card-c">已结束场次口径</text>
+      </view>
+      <view class="jg-dstrip">
+        <view class="jg-ds">
+          <view class="jg-ds-l">计划应到</view>
+          <view class="jg-ds-v">{{overview.attendanceSummary.plannedExpected}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">实际应签到</view>
+          <view class="jg-ds-v">{{overview.attendanceSummary.actualExpected}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">有效出勤</view>
+          <view class="jg-ds-v jg-ds-v-ok">{{overview.attendanceSummary.validAttendance}}</view>
+        </view>
+      </view>
+      <view class="jg-dstrip jg-mt-12">
+        <view class="jg-ds">
+          <view class="jg-ds-l">出勤率</view>
+          <view class="jg-ds-v">{{overview.attendanceSummary.attendanceRateText}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">已批准请假</view>
+          <view class="jg-ds-v">{{overview.attendanceSummary.approvedLeave}}</view>
+        </view>
+        <view class="jg-ds">
+          <view class="jg-ds-l">待核实</view>
+          <view class="jg-ds-v jg-ds-v-warn">{{overview.attendanceSummary.pendingVerification}}</view>
+        </view>
+      </view>
+      <view class="jg-note">
+        <view>
+          <view class="jg-note-m">已取消场次不计入；未结束场次不计入最终出勤率；待核实异常单独统计。</view>
+        </view>
       </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">成绩与反馈</view>
-      <view class="list-meta">正式成绩：{{overview.performance.approvedCount}} 条</view>
-      <view wx:if="{{overview.performance.summary.eventCounts.length}}">
-        <view wx:for="{{overview.performance.summary.eventCounts}}" wx:key="eventCode" class="list-meta">{{item.eventName}}：{{item.count}} 条</view>
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">训练组比较</text>
+        <text class="jg-sect-c">{{overview.groupComparison.length}} 组</text>
       </view>
-      <view class="list-meta">训练反馈：{{overview.feedback.total}} 条 · 需要关注：{{overview.feedback.attentionCount}} 条</view>
-      <view class="list-meta">教练已评价：{{overview.feedback.coachReviewed}} 条 · 平均RPE：{{overview.feedback.averageRpe === null ? '暂无' : overview.feedback.averageRpe}}</view>
+
+      <jg-empty
+        wx:if="{{!overview.groupComparison.length}}"
+        title="当前范围暂无训练组数据"
+        message="调整统计周期或训练组后再查看。"
+      />
+
+      <view wx:else class="jg-list">
+        <view wx:for="{{overview.groupComparison}}" wx:key="trainingGroupId" class="jg-row">
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.trainingGroupName}}</view>
+            <view class="jg-row-m">学生：{{item.studentCount}} · 已审核成绩：{{item.approvedCount}}</view>
+            <view class="jg-row-m">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}} · {{item.attendanceRateText}}</view>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <view class="card">
-      <view class="section-title">报表与排行</view>
-      <view class="button-row">
-        <button class="button-secondary" bindtap="goPerformanceLeaderboard">成绩排行榜</button>
-        <button class="button-secondary" bindtap="goAttendanceStatistics">考勤排行榜</button>
+    <view class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">成绩与反馈</text></view>
+      <view class="jg-body-s">正式成绩：{{overview.performance.approvedCount}} 条</view>
+      <view wx:if="{{overview.performance.summary.eventCounts.length}}" class="jg-mt-8">
+        <view wx:for="{{overview.performance.summary.eventCounts}}" wx:key="eventCode" class="jg-row-m">{{item.eventName}}：{{item.count}} 条</view>
       </view>
-      <button class="button-primary" loading="{{exporting === 'performance'}}" bindtap="exportPerformance">导出正式成绩XLSX</button>
-      <button class="button-primary" loading="{{exporting === 'attendance'}}" bindtap="exportAttendance">导出考勤XLSX</button>
-      <view class="muted">导出只包含当前授权范围；超过系统上限时会明确提示缩小周期或训练组，不会静默截断。</view>
+      <view class="jg-body-s jg-mt-8">训练反馈：{{overview.feedback.total}} 条 · 需要关注：{{overview.feedback.attentionCount}} 条</view>
+      <view class="jg-body-s jg-mt-8">教练已评价：{{overview.feedback.coachReviewed}} 条 · 平均 RPE：{{overview.feedback.averageRpe === null ? '暂无' : overview.feedback.averageRpe}}</view>
     </view>
 
-    <view wx:if="{{overview.dataQuality}}" class="notice">
-      {{overview.dataQuality.membershipHistoryNote}} 出勤率按已结束场次计算，最低样本门槛 {{overview.dataQuality.minSampleSessions}} 场。
+    <view class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">报表与排行</text></view>
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-ghost" bindtap="goPerformanceLeaderboard">成绩排行榜</button>
+        <button class="jg-btn jg-btn-ghost" bindtap="goAttendanceStatistics">考勤排行榜</button>
+      </view>
+      <button class="jg-btn jg-btn-block jg-mt-12" loading="{{exporting === 'performance'}}" bindtap="exportPerformance">导出正式成绩XLSX</button>
+      <button class="jg-btn jg-btn-block jg-mt-12" loading="{{exporting === 'attendance'}}" bindtap="exportAttendance">导出考勤XLSX</button>
+      <view class="jg-note">
+        <view>
+          <view class="jg-note-m">导出只包含当前授权范围；超过系统上限时会明确提示缩小周期或训练组，不会静默截断。</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{overview.dataQuality}}" class="jg-note">
+      <view>
+        <view class="jg-note-t">统计口径</view>
+        <view class="jg-note-m">{{overview.dataQuality.membershipHistoryNote}} 出勤率按已结束场次计算，最低样本门槛 {{overview.dataQuality.minSampleSessions}} 场。</view>
+      </view>
     </view>
   </block>
 </view>
