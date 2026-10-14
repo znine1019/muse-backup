@@ -416,6 +416,12 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+    </view>
+  </view>
+
+  <view class="jg-sect">
+    <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+    <view class="jg-list">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">

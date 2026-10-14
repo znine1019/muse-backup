@@ -302,6 +302,19 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+    </view>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-t">权限与数据范围</view>
+        <view class="jg-note-m">待办与考勤只包含本人负责训练组的数据；审核、审批与办理结果由云函数重新校验范围并写入审计日志。</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="jg-sect">
+    <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+    <view class="jg-list">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">
@@ -309,13 +322,6 @@
           <view class="jg-row-m">退出后需重新微信登录</view>
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-    </view>
-
-    <view class="jg-note">
-      <view>
-        <view class="jg-note-t">权限与数据范围</view>
-        <view class="jg-note-m">待办与考勤只包含本人负责训练组的数据；审核、审批与办理结果由云函数重新校验范围并写入审计日志。</view>
       </view>
     </view>
   </view>

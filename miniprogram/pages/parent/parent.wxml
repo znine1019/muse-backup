@@ -197,6 +197,12 @@
           <view class="jg-row-main"><view class="jg-row-t">全部功能</view><view class="jg-row-m">按业务分类查看已授权的家长端功能（只读）</view></view>
           <view class="jg-row-e"><text class="jg-chev">›</text></view>
         </view>
+      </view>
+    </view>
+
+    <view class="jg-sect">
+      <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+      <view class="jg-list">
         <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
           <view class="jg-row-ic jg-row-ic-plain">退</view>
           <view class="jg-row-main"><view class="jg-row-t">退出当前会话</view><view class="jg-row-m">退出后需重新微信登录</view></view>
