@@ -1,1 +1,13 @@
-/* 应用全局公共样式 */
+/* 学生档案（F1-C2）：复用 jg- 设计系统，本文件只保留长文本换行 */
+.profile-name,
+.profile-value {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.profile-value {
+  max-width: 360rpx;
+  text-align: right;
+  font-size: 26rpx;
+  line-height: 1.45;
+}

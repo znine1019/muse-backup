@@ -1,17 +1,36 @@
-<view class="container">
-  <view class="brand">SECURE BOOTSTRAP</view>
-  <view class="title">开发者初始化</view>
-  <view class="sub">仅用于系统首次建立最高权限账号。普通登录流程不会调用此功能，也不得向普通用户提供入口。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="开发者安全初始化"
+    meta="仅用于系统首次建立最高权限账号。"
+  />
 
-  <view class="notice">初始化码只能配置在云函数环境变量中。使用完成后请立即删除该环境变量并重新部署云函数。</view>
-
-  <view class="card">
-    <view class="field">
-      <text class="field-label">一次性初始化码</text>
-      <input class="input" password value="{{bootstrapCode}}" bindinput="onInput" placeholder="请输入云函数环境中的初始化码" />
+  <view class="jg-note jg-note-warn">
+    <view>
+      <view class="jg-note-t">安全说明</view>
+      <view class="jg-note-m">初始化码只能配置在云函数环境变量中。普通登录不会调用此功能，也不得向普通用户提供入口。使用完成后请立即删除环境变量并重新部署云函数。</view>
     </view>
-    <button class="button-primary" loading="{{submitting}}" disabled="{{submitting || !bootstrapCode}}" bindtap="handleSubmit">建立首个开发者账号</button>
-    <view wx:if="{{error}}" class="error">{{error}}</view>
-    <view wx:if="{{message}}" class="success">{{message}}</view>
+  </view>
+
+  <view class="jg-card">
+    <view class="jg-field-row">
+      <view class="jg-field-label">一次性初始化码</view>
+      <view class="jg-field-body">
+        <input class="jg-input" password value="{{bootstrapCode}}" bindinput="onInput" placeholder="请输入云函数环境中的初始化码" />
+      </view>
+    </view>
+
+    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" disabled="{{submitting || !bootstrapCode}}" bindtap="handleSubmit">建立首个开发者账号</button>
+
+    <view wx:if="{{error}}" class="jg-state-err jg-mt-12">
+      <view class="jg-state-err-t">初始化失败</view>
+      <view class="jg-state-err-m">{{error}}</view>
+    </view>
+
+    <view wx:if="{{message}}" class="jg-note jg-mt-12">
+      <view>
+        <view class="jg-note-t">初始化成功</view>
+        <view class="jg-note-m">{{message}}</view>
+      </view>
+    </view>
   </view>
 </view>

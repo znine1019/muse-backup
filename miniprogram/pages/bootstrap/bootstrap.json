@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"开发者安全初始化"}
+{
+  "navigationBarTitleText": "开发者安全初始化",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
+  }
+}
