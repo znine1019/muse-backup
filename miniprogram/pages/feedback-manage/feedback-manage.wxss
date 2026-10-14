@@ -1,1 +1,16 @@
-/* 应用全局公共样式 */
+/* 训练反馈管理（F1-C1c）：复用 jg- 设计系统，本文件只保留开关与长文本布局 */
+.switch-line {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+}
+
+.switch-line .jg-sub {
+  margin-left: 16rpx;
+  line-height: 1.4;
+}
+
+.feedback-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

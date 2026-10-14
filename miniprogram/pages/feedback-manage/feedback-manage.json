@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "训练反馈管理"
+  "navigationBarTitleText": "训练反馈管理",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-empty": "/components/jg-empty/jg-empty"
+  }
 }

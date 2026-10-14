@@ -1,57 +1,101 @@
-<view class="container">
-  <view class="brand">COACH / NOTICES</view>
-  <view class="title">通知管理</view>
-  <view class="sub">向本人负责训练组发布训练安排、赛事通知和俱乐部公告；已发布内容可撤回或归档，学生只看到已发布通知。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="通知管理"
+    meta="向当前授权范围发布训练安排、赛事通知和俱乐部公告；学生和家长只看到已发布通知。"
+  />
 
-  <view class="button-row">
-    <button class="button-primary" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建通知'}}</button>
+  <view class="jg-btn-row jg-mb-12">
+    <button class="jg-btn" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建通知'}}</button>
   </view>
 
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
-  </view>
-  <view wx:if="{{loading}}" class="empty">正在读取通知数据...</view>
-
-  <view wx:if="{{showCreateForm}}" class="card">
-    <view class="section-title">创建通知</view>
-    <input class="input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="通知标题" />
-    <picker range="{{categoryOptions}}" range-key="label" value="{{form.categoryIndex}}" bindchange="onCategoryChange">
-      <view class="picker-field">分类：{{categoryOptions[form.categoryIndex].label}}</view>
-    </picker>
-    <picker range="{{priorityOptions}}" range-key="label" value="{{form.priorityIndex}}" bindchange="onPriorityChange">
-      <view class="picker-field">重要程度：{{priorityOptions[form.priorityIndex].label}}</view>
-    </picker>
-    <textarea class="textarea" value="{{form.content}}" data-field="content" bindinput="onFormInput" maxlength="3000" placeholder="通知正文" />
-    <view class="field">
-      <text class="field-label">可见训练组</text>
-      <checkbox-group bindchange="onGroupSelect">
-        <label wx:for="{{groups}}" wx:key="id" class="list-meta">
-          <checkbox value="{{item.id}}" /> {{item.name}}
-        </label>
-      </checkbox-group>
-      <view wx:if="{{isDeveloper}}" class="muted">developer 可不选训练组，创建全体可见通知。</view>
-      <view wx:else class="muted">教练必须选择本人负责训练组。</view>
-    </view>
-    <button class="button-primary" loading="{{creating}}" bindtap="createNotice">保存通知草稿</button>
+  <view wx:if="{{error}}" class="jg-state-err">
+    <view class="jg-state-err-t">通知操作未完成</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
-  <view wx:if="{{!loading}}" class="card">
-    <view class="section-title">通知列表</view>
-    <view wx:if="{{!notices.length}}" class="empty">暂无通知。</view>
-    <view wx:for="{{notices}}" wx:key="noticeId" class="list-item">
-      <view class="list-title">{{item.title}}</view>
-      <view class="list-meta">{{item.categoryLabel}} · {{item.priorityLabel}} · {{item.statusLabel}}</view>
-      <view class="list-meta">可见范围：{{item.groupText}}</view>
-      <view class="list-meta">更新时间：{{item.timeText}}</view>
-      <view class="list-meta">{{item.content}}</view>
-      <view class="button-row">
-        <button wx:if="{{item.status === 'draft'}}" class="button-primary" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition" loading="{{busyId === item.noticeId}}">发布</button>
-        <button wx:if="{{item.status === 'published'}}" class="button-secondary" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="withdraw" bindtap="transition" loading="{{busyId === item.noticeId}}">撤回</button>
-        <button wx:if="{{item.status !== 'archived'}}" class="button-danger" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition" loading="{{busyId === item.noticeId}}">归档</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{showCreateForm}}" class="jg-card">
+    <view class="jg-card-h"><text class="jg-card-t">创建通知</text></view>
+    <view class="jg-field-row">
+      <view class="jg-field-label">通知标题</view>
+      <view class="jg-field-body">
+        <input class="jg-input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="通知标题" />
       </view>
     </view>
+    <view class="jg-field-row">
+      <view class="jg-field-label">分类</view>
+      <view class="jg-field-body">
+        <picker range="{{categoryOptions}}" range-key="label" value="{{form.categoryIndex}}" bindchange="onCategoryChange">
+          <view class="jg-input jg-picker">{{categoryOptions[form.categoryIndex].label}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="jg-field-row">
+      <view class="jg-field-label">重要程度</view>
+      <view class="jg-field-body">
+        <picker range="{{priorityOptions}}" range-key="label" value="{{form.priorityIndex}}" bindchange="onPriorityChange">
+          <view class="jg-input jg-picker">{{priorityOptions[form.priorityIndex].label}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="jg-field-row">
+      <view class="jg-field-label">通知正文</view>
+      <view class="jg-field-body">
+        <textarea class="jg-textarea" value="{{form.content}}" data-field="content" bindinput="onFormInput" maxlength="3000" placeholder="通知正文" />
+      </view>
+    </view>
+    <view class="jg-field-row">
+      <view class="jg-field-label">可见训练组</view>
+      <view class="jg-field-body">
+        <checkbox-group class="check-list" bindchange="onGroupSelect">
+          <label wx:for="{{groups}}" wx:key="id" class="check-item">
+            <checkbox value="{{item.id}}" /> {{item.name}}
+          </label>
+        </checkbox-group>
+        <view wx:if="{{isDeveloper}}" class="jg-sub jg-mt-8">开发者可不选训练组，创建全体可见通知。</view>
+        <view wx:else class="jg-sub jg-mt-8">教练必须选择本人负责训练组。</view>
+      </view>
+    </view>
+    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{creating}}" bindtap="createNotice">保存通知草稿</button>
   </view>
 
-  <view class="notice">通知发布和范围由服务端按当前账号角色与训练组权限重新校验；归档只保留历史，不删除记录。</view>
+  <view wx:if="{{!loading}}" class="jg-sect">
+    <view class="jg-sect-h">
+      <text class="jg-sect-t">通知列表</text>
+      <text class="jg-sect-c">{{notices.length}} 条</text>
+    </view>
+
+    <jg-empty
+      wx:if="{{!notices.length}}"
+      title="暂无通知"
+      message="创建通知草稿后，可在此发布或归档。"
+    />
+
+    <block wx:else>
+      <view wx:for="{{notices}}" wx:key="noticeId" class="jg-card">
+        <view class="jg-card-h">
+          <text class="jg-card-t">{{item.title}}</text>
+          <text class="jg-chip {{item.status === 'published' ? 'jg-chip-ok' : (item.status === 'draft' ? 'jg-chip-warn' : '')}}">{{item.statusLabel}}</text>
+        </view>
+        <view class="jg-body-s">{{item.categoryLabel}} · {{item.priorityLabel}}</view>
+        <view class="jg-body-s jg-mt-8">可见范围：{{item.groupText}}</view>
+        <view class="jg-body-s jg-mt-8">更新时间：{{item.timeText}}</view>
+        <view class="jg-body-s jg-mt-8 notice-content">{{item.content}}</view>
+
+        <view class="jg-actions-wrap">
+          <button wx:if="{{item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition" loading="{{busyId === item.noticeId}}">发布</button>
+          <button wx:if="{{item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="withdraw" bindtap="transition" loading="{{busyId === item.noticeId}}">撤回</button>
+          <button wx:if="{{item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition" loading="{{busyId === item.noticeId}}">归档</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="jg-note">
+    <view>
+      <view class="jg-note-m">通知发布和范围由服务端按当前账号角色与训练组权限重新校验；归档只保留历史，不删除记录。</view>
+    </view>
+  </view>
 </view>

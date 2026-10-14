@@ -1,41 +1,82 @@
-<view class="container">
-  <view class="brand">COACH / FEEDBACK</view>
-  <view class="title">训练反馈管理</view>
-  <view class="sub">查看本人负责训练组学生的训练反馈，对需要关注的记录补充教练评价。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="训练反馈管理"
+    meta="查看当前授权训练组学生的训练反馈，对需要关注的记录补充教练评价。"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在读取训练反馈...</view>
-  <view wx:if="{{error}}" class="error">
-    <view>{{error}}</view>
-    <button class="button-secondary" bindtap="retry">重新加载</button>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">训练反馈加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
-  <block wx:if="{{!loading}}">
-    <view class="card">
-      <view class="section-title">反馈概览</view>
-      <view class="list-meta">需要关注：{{attentionCount}} 条</view>
-      <view class="field">
-        <text class="field-label">只看需要关注</text>
-        <switch checked="{{attentionOnly}}" bindchange="onAttentionToggle" />
+  <block wx:if="{{!loading && !error}}">
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">反馈概览</text>
+        <text class="jg-chip jg-chip-warn">需要关注 {{attentionCount}} 条</text>
       </view>
-      <view class="notice">需要关注包含未完成、RPE较高或反馈中出现困难、不适等提示内容。</view>
-    </view>
-
-    <view class="card">
-      <view class="section-title">反馈列表</view>
-      <view wx:if="{{!feedback.length}}" class="empty">当前没有符合条件的训练反馈。</view>
-      <view wx:for="{{feedback}}" wx:key="feedbackId" class="list-item">
-        <view class="list-title">{{item.studentName || '学生'}} · {{item.attendanceDate}}</view>
-        <view class="list-meta">训练组：{{item.trainingGroupId}}</view>
-        <view class="list-meta">完成情况：{{item.completionLabel}} · {{item.rpeText}} · {{item.commentTimeText}}</view>
-        <view class="tag" wx:if="{{item.needsAttention}}">需要关注</view>
-        <view class="list-meta" wx:if="{{item.comment}}">学生说明：{{item.comment}}</view>
-        <view class="notice" wx:if="{{item.coachComment}}">教练评价：{{item.coachComment}}</view>
-        <view class="button-row">
-          <button class="button-primary" data-feedback-id="{{item.feedbackId}}" data-version="{{item.coachCommentVersion}}" bindtap="review" loading="{{reviewingId === item.feedbackId}}">{{item.coachComment ? '更新评价' : '添加评价'}}</button>
+      <view class="jg-field-row">
+        <view class="jg-field-label">只看关注</view>
+        <view class="jg-field-body switch-line">
+          <switch checked="{{attentionOnly}}" bindchange="onAttentionToggle" />
+          <text class="jg-sub">未完成、RPE 较高或反馈中出现困难、不适等提示</text>
         </view>
       </view>
     </view>
 
-    <view class="notice">教练只能查看和评价本人负责训练组学生的反馈；评价版本由服务端校验，避免并发覆盖。</view>
+    <view class="jg-sect">
+      <view class="jg-sect-h">
+        <text class="jg-sect-t">反馈列表</text>
+        <text class="jg-sect-c">{{feedback.length}} 条</text>
+      </view>
+
+      <jg-empty
+        wx:if="{{!feedback.length}}"
+        title="当前没有符合条件的训练反馈"
+        message="调整关注筛选或等待学生提交反馈后再查看。"
+      />
+
+      <block wx:else>
+        <view wx:for="{{feedback}}" wx:key="feedbackId" class="jg-card">
+          <view class="jg-card-h">
+            <text class="jg-card-t">{{item.studentName || '学生'}} · {{item.attendanceDate}}</text>
+            <text wx:if="{{item.needsAttention}}" class="jg-chip jg-chip-warn">需要关注</text>
+          </view>
+
+          <view class="jg-body-s">训练组：{{item.trainingGroupId}}</view>
+          <view class="jg-body-s jg-mt-8">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
+          <view class="jg-body-s jg-mt-8">提交时间：{{item.commentTimeText}}</view>
+          <view wx:if="{{item.comment}}" class="jg-note">
+            <view>
+              <view class="jg-note-t">学生说明</view>
+              <view class="jg-note-m feedback-text">{{item.comment}}</view>
+            </view>
+          </view>
+          <view wx:if="{{item.coachComment}}" class="jg-note">
+            <view>
+              <view class="jg-note-t">教练评价</view>
+              <view class="jg-note-m feedback-text">{{item.coachComment}}</view>
+            </view>
+          </view>
+
+          <button
+            class="jg-btn jg-btn-block jg-mt-12"
+            data-feedback-id="{{item.feedbackId}}"
+            data-version="{{item.coachCommentVersion}}"
+            bindtap="review"
+            loading="{{reviewingId === item.feedbackId}}"
+          >{{item.coachComment ? '更新评价' : '添加评价'}}</button>
+        </view>
+      </block>
+    </view>
+
+    <view class="jg-note">
+      <view>
+        <view class="jg-note-m">教练只能查看和评价当前授权训练组学生的反馈；评价版本由服务端校验，避免并发覆盖。</view>
+      </view>
+    </view>
   </block>
 </view>
