@@ -13,9 +13,7 @@
 
   <view class="jg-card">
     <view class="jg-card-h"><text class="jg-card-t">输入关联凭证</text><text class="jg-card-c">10 位字符</text></view>
-    <view class="input">
-      <input value="{{code}}" maxlength="14" bindinput="onCodeInput" placeholder="例如 K7MPQ2XR9T" />
-    </view>
+    <input class="jg-input" value="{{code}}" maxlength="14" bindinput="onCodeInput" placeholder="例如 K7MPQ2XR9T" />
     <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="redeem">提交关联申请</button>
     <view class="jg-note"><view><view class="jg-note-m">凭证由学生本人生成，30 分钟内有效且只能使用一次；俱乐部不会要求您提供学生姓名或学号。</view></view></view>
   </view>

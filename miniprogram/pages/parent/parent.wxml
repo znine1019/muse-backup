@@ -75,11 +75,46 @@
     <view class="jg-sect" id="sec-plans">
       <view class="jg-sect-h"><text class="jg-sect-t">训练计划（本月）</text><text class="jg-sect-c">{{planItems.length}} 份</text></view>
       <jg-empty wx:if="{{!planItems.length}}" title="暂无训练安排" message="教练发布训练计划后会显示在这里。" />
-      <view wx:else class="jg-list">
-        <view wx:for="{{planItems}}" wx:key="planId" class="jg-row">
-          <view class="jg-row-main">
-            <view class="jg-row-t">{{item.title}}</view>
-            <view class="jg-row-m">{{item.startDate}} 至 {{item.endDate}} · {{item.itemCount}} 项内容</view>
+      <view wx:else class="jg-list plan-list">
+        <view wx:for="{{planItems}}" wx:key="planId" class="plan-block">
+          <view
+            class="jg-row plan-row"
+            hover-class="jg-row-hover"
+            data-plan-id="{{item.planId}}"
+            bindtap="togglePlanDetail"
+          >
+            <view class="jg-row-main">
+              <view class="jg-row-t">{{item.title}}</view>
+              <view class="jg-row-m">{{item.startDate}} 至 {{item.endDate}} · {{item.itemCount}} 项内容</view>
+            </view>
+            <view class="jg-row-e">
+              <text class="plan-toggle">{{expandedPlanId === item.planId ? '收起' : '查看'}}</text>
+              <text class="jg-chev">{{expandedPlanId === item.planId ? '▾' : '›'}}</text>
+            </view>
+          </view>
+
+          <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
+            <view wx:if="{{item.items.length}}">
+              <view
+                wx:for="{{item.items}}"
+                wx:for-item="trainingItem"
+                wx:key="key"
+                class="jg-row plan-item"
+              >
+                <view class="jg-row-ic jg-row-ic-brand">{{index + 1}}</view>
+                <view class="jg-row-main">
+                  <view class="jg-row-t">{{trainingItem.name}}</view>
+                  <view wx:if="{{trainingItem.requirementText}}" class="jg-row-m">{{trainingItem.requirementText}}</view>
+                </view>
+              </view>
+            </view>
+            <view wx:else class="jg-sub">当前接口未返回可展示的训练明细。</view>
+
+            <view wx:if="{{item.hasTruncatedItems}}" class="jg-note jg-note-warn">
+              <view>
+                <view class="jg-note-m">当前仅展示前 {{item.items.length}} 项，共 {{item.itemCount}} 项；这不是完整详情。</view>
+              </view>
+            </view>
           </view>
         </view>
       </view>

@@ -31,6 +31,37 @@ const JUMP_SECTIONS = Object.freeze([
 
 const JUMP_KEYS = JUMP_SECTIONS.map((item) => item.key);
 
+function itemRequirementText(item) {
+  const parts = [];
+  if (item.sets) {
+    parts.push(`${item.sets} 组`);
+  }
+  if (item.reps) {
+    parts.push(`${item.reps} 次`);
+  }
+  if (item.distanceMeters) {
+    parts.push(`${item.distanceMeters} 米`);
+  }
+  if (item.restSeconds) {
+    parts.push(`恢复 ${item.restSeconds} 秒`);
+  }
+  return parts.join(' · ');
+}
+
+function decoratePlan(plan, planIndex) {
+  const items = (plan.items || []).map((item, itemIndex) => ({
+    ...item,
+    key: `${plan.planId || planIndex}_${itemIndex + 1}`,
+    requirementText: itemRequirementText(item)
+  }));
+  const itemCount = Number(plan.itemCount) || items.length;
+  return {
+    ...plan,
+    items,
+    hasTruncatedItems: itemCount > items.length
+  };
+}
+
 Page({
   data: {
     loading: true,
@@ -44,6 +75,7 @@ Page({
     feedbackRows: [],
     competitionRows: [],
     noticeRows: [],
+    expandedPlanId: '',
     jumpItems: [],
     activeSection: '',
     scrollIntoView: ''
@@ -66,6 +98,7 @@ Page({
   },
 
   async loadPage(options = {}) {
+    this.clearStudentData();
     this.setData({ loading: true, error: '' });
     try {
       const session = await getApp().ensureSession({ force: true });
@@ -78,7 +111,8 @@ Page({
       /* 有学生时展示分区跳转；无学生时跳转无目标，故不展示 */
       this.setData({ students, jumpItems: students.length ? JUMP_SECTIONS : [] });
       if (!students.length) {
-        this.setData({ loading: false, overview: null });
+        this.clearStudentData();
+        this.setData({ loading: false, jumpItems: [] });
         return;
       }
       const index = Math.min(this.data.studentIndex, students.length - 1);
@@ -93,35 +127,62 @@ Page({
     }
   },
 
-  /* 共享的数据写入逻辑：首次加载与重试都复用，重试不会清空已加载内容 */
-  applyOverview(overview) {
+  clearStudentData() {
     this.setData({
-        loading: false,
-        overview,
-        planItems: overview.plans || [],
-        performanceRows: (overview.performance && overview.performance.personalBests) || [],
-        attendanceRows: (overview.attendance && overview.attendance.rows) || [],
-        feedbackRows: ((overview.feedback && overview.feedback.rows) || []).map((item) => ({
-          ...item,
-          completionLabel: COMPLETION_LABELS[item.completionStatus] || item.completionStatus
-        })),
-        competitionRows: (overview.competitions || []).map((item) => ({
-          ...item,
-          statusLabel: COMPETITION_LABELS[item.status] || item.status
-        })),
-        noticeRows: overview.notices || []
+      overview: null,
+      planItems: [],
+      performanceRows: [],
+      attendanceRows: [],
+      feedbackRows: [],
+      competitionRows: [],
+      noticeRows: [],
+      expandedPlanId: ''
+    });
+  },
+
+  applyOverview(overview) {
+    const plans = (overview.plans || []).map(decoratePlan);
+    const expandedPlanId = plans.some((plan) => plan.planId === this.data.expandedPlanId)
+      ? this.data.expandedPlanId
+      : '';
+    this.setData({
+      loading: false,
+      error: '',
+      overview,
+      planItems: plans,
+      performanceRows: (overview.performance && overview.performance.personalBests) || [],
+      attendanceRows: (overview.attendance && overview.attendance.rows) || [],
+      feedbackRows: ((overview.feedback && overview.feedback.rows) || []).map((item) => ({
+        ...item,
+        completionLabel: COMPLETION_LABELS[item.completionStatus] || item.completionStatus
+      })),
+      competitionRows: (overview.competitions || []).map((item) => ({
+        ...item,
+        statusLabel: COMPETITION_LABELS[item.status] || item.status
+      })),
+      noticeRows: overview.notices || [],
+      expandedPlanId
     });
   },
 
   async loadOverview(studentUserId) {
+    const requestId = (this.overviewRequestId || 0) + 1;
+    this.overviewRequestId = requestId;
+    this.clearStudentData();
     this.setData({ loading: true, error: '' });
     try {
       const overview = await api.getParentStudentOverview({ studentUserId });
+      if (requestId !== this.overviewRequestId) {
+        return;
+      }
       this.applyOverview(overview);
+      this.consumePendingSection();
     } catch (error) {
+      if (requestId !== this.overviewRequestId) {
+        return;
+      }
       this.setData({ loading: false, error: error.message || '学生数据加载失败。' });
     }
-    this.consumePendingSection();
   },
 
   /* 分类页以 ?section=plan 进入时，数据到位后再定位分区 */
@@ -151,13 +212,23 @@ Page({
     this.scrollToSection(section);
   },
 
+  togglePlanDetail(event) {
+    const planId = event.currentTarget.dataset.planId;
+    if (!planId) {
+      return;
+    }
+    this.setData({
+      expandedPlanId: this.data.expandedPlanId === planId ? '' : planId
+    });
+  },
+
   onStudentChange(event) {
     const index = Number(event.detail.value);
     const student = this.data.students[index];
     if (!student) {
       return;
     }
-    this.setData({ studentIndex: index });
+    this.setData({ studentIndex: index, expandedPlanId: '' });
     this.loadOverview(student.studentUserId);
   },
 

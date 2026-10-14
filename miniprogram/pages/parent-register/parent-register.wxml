@@ -21,26 +21,29 @@
       </view>
     </view>
 
-    <view class="fset">
-      <view class="fs-h"><text class="t">家长资料</text><text class="s">必填 2 项</text></view>
-      <view class="fs-b">
-        <view class="field">
-          <view class="lb"><text>家长姓名 <text class="req">*</text></text></view>
-          <view class="input">
-            <input value="{{name}}" maxlength="40" bindinput="onNameInput" placeholder="请输入真实姓名" />
-          </view>
+    <view class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">家长资料</text><text class="jg-card-c">必填 2 项</text></view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">家长姓名 <text class="form-req">*</text></view>
+        <view class="jg-field-body">
+          <input class="jg-input" value="{{name}}" maxlength="40" bindinput="onNameInput" placeholder="请输入真实姓名" />
         </view>
-        <view class="field">
-          <view class="lb"><text>监护人关系 <text class="req">*</text></text></view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">监护人关系 <text class="form-req">*</text></view>
+        <view class="jg-field-body">
           <picker range="{{relationOptions}}" range-key="label" value="{{relationIndex}}" bindchange="onRelationChange">
-            <view class="input jg-picker">{{relationOptions[relationIndex].label}}</view>
+            <view class="jg-input jg-picker">{{relationOptions[relationIndex].label}}</view>
           </picker>
         </view>
-        <view class="field" style="margin-bottom:0">
-          <view class="lb"><text>备注</text><text class="opt">选填</text></view>
-          <view class="input">
-            <input value="{{note}}" maxlength="200" bindinput="onNoteInput" placeholder="例如需要核验的说明" />
-          </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">备注 <text class="form-opt">选填</text></view>
+        <view class="jg-field-body">
+          <input class="jg-input" value="{{note}}" maxlength="200" bindinput="onNoteInput" placeholder="例如需要核验的说明" />
         </view>
       </view>
     </view>
