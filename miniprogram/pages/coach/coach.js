@@ -604,9 +604,16 @@ Page({
     wx.navigateTo({ url: '/pages/attendance-manage/attendance-manage' });
   },
 
-  goSessionRoster() {
+  goSessionRoster(event) {
     this.markNeedsRefresh();
-    wx.navigateTo({ url: '/pages/attendance-manage/attendance-manage' });
+    const sessionId = String(
+      (event && event.currentTarget && event.currentTarget.dataset &&
+        event.currentTarget.dataset.sessionId) || ''
+    ).trim();
+    const url = sessionId
+      ? `/pages/attendance-manage/attendance-manage?sessionId=${encodeURIComponent(sessionId)}`
+      : '/pages/attendance-manage/attendance-manage';
+    wx.navigateTo({ url });
   },
 
   goPlans() {

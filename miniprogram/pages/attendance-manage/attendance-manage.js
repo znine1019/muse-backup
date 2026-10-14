@@ -82,11 +82,16 @@ Page({
     reviewingLeaveId: ''
   },
 
+  onLoad(options = {}) {
+    this.requestedSessionId = String(options.sessionId || '').trim();
+  },
+
   onShow() {
     this.loadPage();
   },
 
   async loadPage() {
+    const requestedSessionId = this.requestedSessionId || '';
     this.setData({ loading: true, error: '' });
     try {
       const session = await getApp().ensureSession({ force: true });
@@ -102,17 +107,21 @@ Page({
         api.listPendingLeaves(),
         api.listPlanMeta()
       ]);
+      const sessions = (sessionResult.sessions || []).map(decorateSession);
       this.setData({
         loading: false,
         groups: meta.groups || [],
         groupIndex: 0,
-        sessions: (sessionResult.sessions || []).map(decorateSession),
+        sessions,
         pendingLeaves: (leaveResult.leaves || []).map((leave) => ({
           ...leave,
           statusLabel: LEAVE_STATUS_LABELS[leave.status] || leave.status
         })),
         pendingCount: Number(leaveResult.pendingCount) || 0
       });
+      if (requestedSessionId) {
+        await this.selectRequestedSession(requestedSessionId, sessions);
+      }
     } catch (error) {
       this.setData({
         loading: false,
@@ -176,7 +185,7 @@ Page({
 
   async selectSession(event) {
     const sessionId = event.currentTarget.dataset.sessionId;
-    if (!sessionId || this.data.busySessionId) {
+    if (!sessionId || this.data.busySessionId === sessionId) {
       return;
     }
     if (this.data.selectedSessionId === sessionId) {
@@ -186,10 +195,30 @@ Page({
     await this.loadRoster(sessionId);
   },
 
+  async selectRequestedSession(sessionId, sessions) {
+    const target = sessions.find((item) => item.sessionId === sessionId);
+    this.requestedSessionId = '';
+    if (!target) {
+      this.setData({
+        error: '指定考勤场次不存在或不在当前授权范围内，请从列表中选择场次。'
+      });
+      return;
+    }
+    if (this.data.selectedSessionId === sessionId) {
+      return;
+    }
+    await this.selectSession({ currentTarget: { dataset: { sessionId } } });
+  },
+
   async loadRoster(sessionId) {
+    const requestId = (this.rosterRequestId || 0) + 1;
+    this.rosterRequestId = requestId;
     this.setData({ busySessionId: sessionId, error: '' });
     try {
       const result = await api.getAttendanceRoster(sessionId);
+      if (requestId !== this.rosterRequestId) {
+        return;
+      }
       this.setData({
         selectedSessionId: sessionId,
         roster: (result.roster || []).map((item) => ({
@@ -202,9 +231,14 @@ Page({
         summary: result.summary || null
       });
     } catch (error) {
+      if (requestId !== this.rosterRequestId) {
+        return;
+      }
       this.setData({ error: error.message || '考勤名单加载失败。' });
     } finally {
-      this.setData({ busySessionId: '' });
+      if (requestId === this.rosterRequestId) {
+        this.setData({ busySessionId: '' });
+      }
     }
   },
 

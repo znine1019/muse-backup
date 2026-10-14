@@ -83,7 +83,7 @@
           </view>
         </block>
 
-        <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goSessionRoster">
+        <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" data-session-id="{{item.sessionId}}" bindtap="goSessionRoster">
           查看名单 · 人工核实 · 请假审批
         </button>
       </view>
