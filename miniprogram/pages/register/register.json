@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"学生首次注册"}
+{
+  "navigationBarTitleText": "学生首次注册",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
+  }
+}

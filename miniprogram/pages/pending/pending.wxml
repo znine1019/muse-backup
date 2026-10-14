@@ -1,41 +1,63 @@
-<view class="container">
-  <view class="brand">ACCOUNT / REVIEW</view>
-  <view class="title">{{statusLabel || '账号状态'}}</view>
-  <view class="sub">审核结果和角色授权均以云函数返回为准，前端显示不构成正式权限。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="账号状态"
+    meta="审核结果和角色授权均以云函数返回为准，前端显示不构成正式权限。"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在读取账号状态...</view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <block wx:if="{{!loading}}">
-    <view class="card">
-      <view class="card-title">当前状态</view>
-      <view class="card-sub">{{statusLabel}}</view>
-      <view wx:if="{{status === 'pending_review'}}" class="notice">资料已提交，等待负责教练员或开发者审核。</view>
-      <view wx:if="{{status === 'rejected'}}" class="error">审核未通过{{reviewComment ? '：' + reviewComment : '，请修改资料后重新提交。'}}</view>
-      <view wx:if="{{status === 'disabled'}}" class="error">账号已停用，不能访问内部业务数据。</view>
-      <view wx:if="{{status === 'pending_profile'}}" class="notice">尚未提交注册资料。</view>
-    </view>
+  <view wx:if="{{error && !loading}}" class="jg-state-err">
+    <view class="jg-state-err-t">账号状态加载失败</view>
+    <view class="jg-state-err-m">{{error}}</view>
+    <view class="jg-retry" bindtap="refresh">重新加载</view>
+  </view>
 
-    <view wx:if="{{profile}}" class="card">
-      <view class="card-title">已提交资料</view>
-      <view class="list-meta">姓名：{{profile.name}}</view>
-      <view class="list-meta">出生日期：{{profile.birthDate}}</view>
-      <view class="list-meta">主要项目：{{profile.primaryTrainingProject}}</view>
-      <view class="list-meta">身高／体重：{{profile.heightCm}} cm / {{profile.weightKg}} kg</view>
-    </view>
+  <block wx:if="{{!loading && !error}}">
+    <view class="jg-card">
+      <view class="jg-card-h">
+        <text class="jg-card-t">当前状态</text>
+        <text class="jg-chip {{status === 'rejected' || status === 'disabled' ? 'jg-chip-danger' : (status === 'pending_review' ? 'jg-chip-warn' : 'jg-chip-brand')}}">{{statusLabel}}</text>
+      </view>
 
-    <view class="button-row">
-      <button wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="button-primary" bindtap="goRegister">填写或修改资料</button>
-      <button class="button-secondary" bindtap="refresh">刷新状态</button>
-    </view>
-    <view wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="card">
-      <view class="card-title">首次注册身份</view>
-      <view class="card-sub">学生填写完整训练档案；家长只需姓名与监护人关系，不需要填写运动专项、成绩或体测数据。</view>
-      <view class="button-row">
-        <button class="button-primary" bindtap="goRegister">学生注册</button>
-        <button class="button-secondary" bindtap="goParentRegister">家长注册</button>
+      <view wx:if="{{status === 'pending_review'}}" class="jg-note">
+        <view><view class="jg-note-m">资料已提交，等待负责教练员或开发者审核。</view></view>
+      </view>
+      <view wx:if="{{status === 'rejected'}}" class="jg-note jg-note-warn">
+        <view><view class="jg-note-m">审核未通过{{reviewComment ? '：' + reviewComment : '，请修改资料后重新提交。'}}</view></view>
+      </view>
+      <view wx:if="{{status === 'disabled'}}" class="jg-state-err jg-mt-12">
+        <view class="jg-state-err-t">账号已停用</view>
+        <view class="jg-state-err-m">不能访问内部业务数据。</view>
+      </view>
+      <view wx:if="{{status === 'pending_profile'}}" class="jg-note">
+        <view><view class="jg-note-m">尚未提交注册资料。</view></view>
       </view>
     </view>
-    <button class="button-secondary" bindtap="goHome">退出当前会话</button>
+
+    <view wx:if="{{profile}}" class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">已提交资料</text></view>
+      <view class="jg-list">
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">姓名</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.name}}</text></view></view>
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">出生日期</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.birthDate}}</text></view></view>
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">主要项目</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.primaryTrainingProject}}</text></view></view>
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">身高／体重</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.heightCm}} cm / {{profile.weightKg}} kg</text></view></view>
+      </view>
+    </view>
+
+    <view class="jg-btn-row">
+      <button wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="jg-btn" bindtap="goRegister">填写或修改资料</button>
+      <button class="jg-btn jg-btn-ghost" bindtap="refresh">刷新状态</button>
+    </view>
+
+    <view wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">首次注册身份</text></view>
+      <view class="jg-body-s">学生填写完整训练档案；家长只需姓名与监护人关系，不需要填写运动专项、成绩或体测数据。</view>
+      <view class="jg-btn-row jg-mt-12">
+        <button class="jg-btn" bindtap="goRegister">学生注册</button>
+        <button class="jg-btn jg-btn-ghost" bindtap="goParentRegister">家长注册</button>
+      </view>
+    </view>
+
+    <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goHome">退出当前会话</button>
   </block>
 </view>

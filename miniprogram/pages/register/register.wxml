@@ -1,54 +1,84 @@
-<view class="container">
-  <view class="brand">STUDENT / REGISTRATION</view>
-  <view class="title">首次注册</view>
-  <view class="sub">请使用模拟数据完成开发测试。提交后账号进入待审核状态，审核通过前不能访问内部业务功能。</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="学生首次注册"
+    meta="提交后账号进入待审核状态，审核通过前不能访问内部业务功能。"
+  />
 
-  <view wx:if="{{loading}}" class="empty">正在加载注册信息...</view>
-  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <form wx:else class="card form-card" bindsubmit="handleSubmit">
-    <view class="field">
-      <text class="field-label">姓名</text>
-      <input class="input" name="name" value="{{form.name}}" data-field="name" bindinput="onFieldInput" placeholder="请输入姓名" />
+  <block wx:else>
+    <view wx:if="{{error}}" class="jg-state-err">
+      <view class="jg-state-err-t">注册资料加载失败</view>
+      <view class="jg-state-err-m">{{error}}</view>
     </view>
 
-    <view class="field">
-      <text class="field-label">性别</text>
-      <picker range="{{genderOptions}}" range-key="label" value="{{genderIndex}}" bindchange="onGenderChange">
-        <view class="picker-field">{{genderOptions[genderIndex].label}}</view>
-      </picker>
-    </view>
+    <form wx:else bindsubmit="handleSubmit">
+      <view class="jg-card">
+        <view class="jg-card-h"><text class="jg-card-t">个人基础信息</text></view>
 
-    <view class="field">
-      <text class="field-label">出生日期</text>
-      <picker mode="date" value="{{form.birthDate}}" end="{{maxDate}}" bindchange="onBirthDateChange">
-        <view class="picker-field">{{form.birthDate || '请选择出生日期'}}</view>
-      </picker>
-    </view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">姓名</view>
+          <view class="jg-field-body">
+            <input class="jg-input" name="name" value="{{form.name}}" data-field="name" bindinput="onFieldInput" placeholder="请输入姓名" />
+          </view>
+        </view>
 
-    <view class="field">
-      <text class="field-label">身高（厘米）</text>
-      <input class="input" type="digit" name="heightCm" value="{{form.heightCm}}" data-field="heightCm" bindinput="onFieldInput" placeholder="例如 175" />
-    </view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">性别</view>
+          <view class="jg-field-body">
+            <picker range="{{genderOptions}}" range-key="label" value="{{genderIndex}}" bindchange="onGenderChange">
+              <view class="jg-input jg-picker">{{genderOptions[genderIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
 
-    <view class="field">
-      <text class="field-label">体重（千克）</text>
-      <input class="input" type="digit" name="weightKg" value="{{form.weightKg}}" data-field="weightKg" bindinput="onFieldInput" placeholder="例如 65" />
-    </view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">出生日期</view>
+          <view class="jg-field-body">
+            <picker mode="date" value="{{form.birthDate}}" end="{{maxDate}}" bindchange="onBirthDateChange">
+              <view class="jg-input jg-picker">{{form.birthDate || '请选择出生日期'}}</view>
+            </picker>
+          </view>
+        </view>
 
-    <view class="field">
-      <text class="field-label">主要训练项目</text>
-      <input class="input" name="primaryTrainingProject" value="{{form.primaryTrainingProject}}" data-field="primaryTrainingProject" bindinput="onFieldInput" placeholder="例如 100米" />
-    </view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">身高（厘米）</view>
+          <view class="jg-field-body">
+            <input class="jg-input" type="digit" name="heightCm" value="{{form.heightCm}}" data-field="heightCm" bindinput="onFieldInput" placeholder="例如 175" />
+          </view>
+        </view>
 
-    <view class="field">
-      <text class="field-label">申请教练员或训练组</text>
-      <picker range="{{groupOptions}}" range-key="label" value="{{groupIndex}}" bindchange="onGroupChange">
-        <view class="picker-field">{{groupOptions[groupIndex].label}}</view>
-      </picker>
-      <view class="muted">训练组为空时，请联系开发者先在后台建立基础训练组。</view>
-    </view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">体重（千克）</view>
+          <view class="jg-field-body">
+            <input class="jg-input" type="digit" name="weightKg" value="{{form.weightKg}}" data-field="weightKg" bindinput="onFieldInput" placeholder="例如 65" />
+          </view>
+        </view>
 
-    <button class="button-primary" form-type="submit" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
-  </form>
+        <view class="jg-field-row">
+          <view class="jg-field-label">主要训练项目</view>
+          <view class="jg-field-body">
+            <input class="jg-input" name="primaryTrainingProject" value="{{form.primaryTrainingProject}}" data-field="primaryTrainingProject" bindinput="onFieldInput" placeholder="例如 100米" />
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-card">
+        <view class="jg-card-h"><text class="jg-card-t">训练组申请</text></view>
+        <view class="jg-field-row">
+          <view class="jg-field-label">申请训练组</view>
+          <view class="jg-field-body">
+            <picker range="{{groupOptions}}" range-key="label" value="{{groupIndex}}" bindchange="onGroupChange">
+              <view class="jg-input jg-picker">{{groupOptions[groupIndex].label}}</view>
+            </picker>
+          </view>
+        </view>
+        <view class="jg-note">
+          <view><view class="jg-note-m">训练组为空时，请联系开发者先在后台建立基础训练组。</view></view>
+        </view>
+      </view>
+
+      <button class="jg-btn jg-btn-block" form-type="submit" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
+    </form>
+  </block>
 </view>

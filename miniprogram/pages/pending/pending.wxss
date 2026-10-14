@@ -1,1 +1,9 @@
-/* 使用全局状态与表单样式 */
+/* 多角色账号状态（F1-D2a）：复用 jg- 设计系统，本文件只保留长状态值换行 */
+.pending-value {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 360rpx;
+  text-align: right;
+  font-size: 26rpx;
+  line-height: 1.45;
+}

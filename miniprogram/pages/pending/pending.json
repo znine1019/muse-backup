@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"注册审核状态"}
+{
+  "navigationBarTitleText": "注册审核状态",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
+  }
+}

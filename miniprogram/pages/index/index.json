@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"乔格训迹系统"}
+{
+  "navigationBarTitleText": "乔格训迹系统",
+  "usingComponents": {
+    "jg-page-head": "/components/jg-page-head/jg-page-head"
+  }
+}

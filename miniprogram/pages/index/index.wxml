@@ -1,25 +1,49 @@
-<view class="container">
-  <view class="brand">JOGER SPORTS / INTERNAL</view>
-  <view class="title">乔格体育<view>数字化训练管理</view></view>
-  <view class="sub">微信小程序 · V1.6 阶段1</view>
-  <view class="pill">{{loading ? '正在识别身份' : '微信可信身份登录'}}</view>
+<view class="jg-page jg-safe-bottom">
+  <jg-page-head
+    title="乔格训迹"
+    meta="乔格体育数字化训练管理 · V1.6"
+  />
 
-  <view class="card">
-    <view class="card-title">{{session ? '当前账号状态' : '登录乔格训迹'}}</view>
-    <view wx:if="{{session}}" class="card-sub">账号状态：{{statusLabel}}</view>
-    <view wx:else class="card-sub">使用微信身份进入系统。首次登录会创建待完善账号，不会自动获得任何管理权限。</view>
-    <button class="button-primary" loading="{{loading}}" bindtap="{{session ? 'handleContinue' : 'handleLogin'}}">
-      {{session ? actionLabel : '微信一键登录'}}
-    </button>
-    <view wx:if="{{error}}" class="error">{{error}}</view>
+  <view class="jg-note">
+    <view>
+      <view class="jg-note-t">可信身份入口</view>
+      <view class="jg-note-m">使用微信身份进入系统。首次登录会创建待完善账号，不会自动获得任何管理权限。</view>
+    </view>
   </view>
 
-  <view class="card">
-    <view class="card-title">云开发连接测试</view>
-    <view class="card-sub">仅验证云函数环境与数据库连接，不执行部署或数据写入。</view>
-    <button class="button-secondary" bindtap="handleHealthCheck">检查连接</button>
-    <view wx:if="{{healthText}}" class="muted">{{healthText}}</view>
+  <view class="jg-card">
+    <view class="jg-card-h">
+      <text class="jg-card-t">{{session ? '当前账号状态' : '登录乔格训迹'}}</text>
+      <text class="jg-chip {{loading ? 'jg-chip-brand' : 'jg-chip-ok'}}">{{loading ? '正在识别身份' : '微信可信身份登录'}}</text>
+    </view>
+
+    <view wx:if="{{session}}" class="jg-body-s">账号状态：{{statusLabel}}</view>
+    <view wx:else class="jg-body-s">首次登录会创建待完善账号，审核通过前不能访问内部业务数据。</view>
+
+    <button
+      class="jg-btn jg-btn-block jg-mt-12"
+      loading="{{loading}}"
+      bindtap="{{session ? 'handleContinue' : 'handleLogin'}}"
+    >{{session ? actionLabel : '微信一键登录'}}</button>
+
+    <view wx:if="{{error}}" class="jg-state-err jg-mt-12">
+      <view class="jg-state-err-t">身份识别失败</view>
+      <view class="jg-state-err-m">{{error}}</view>
+    </view>
   </view>
 
-  <view class="notice">未授权账号不能访问内部数据；页面跳转不代表权限已通过，所有数据操作仍由云函数重新校验。</view>
+  <view class="jg-card">
+    <view class="jg-card-h"><text class="jg-card-t">云开发连接测试</text></view>
+    <view class="jg-body-s">仅验证云函数环境与数据库连接，不执行部署或数据写入。</view>
+    <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="handleHealthCheck">检查连接</button>
+    <view wx:if="{{healthText}}" class="jg-note jg-mt-12">
+      <view><view class="jg-note-m">{{healthText}}</view></view>
+    </view>
+  </view>
+
+  <view class="jg-note">
+    <view>
+      <view class="jg-note-m">未授权账号不能访问内部数据；页面跳转不代表权限已通过，所有数据操作仍由云函数重新校验。</view>
+    </view>
+  </view>
 </view>
