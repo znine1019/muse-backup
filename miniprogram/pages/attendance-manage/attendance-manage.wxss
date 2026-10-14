@@ -1,31 +1,20 @@
-/* 应用全局公共样式 */
-
-.plan-detail {
-  margin-top: 16rpx;
+/* 考勤管理（F1-C1a）：复用 jg- 设计系统，本文件只保留名单操作布局 */
+.attendance-detail {
+  margin-top: 24rpx;
   padding-top: 8rpx;
-  border-top: 1rpx solid #E7EDF1;
+  border-top: 2rpx solid #EDF1F6;
 }
 
-.overview-grid {
-  display: flex;
-  flex-wrap: wrap;
+.roster-row,
+.leave-row {
+  align-items: flex-start;
+}
+
+.leave-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.leave-actions .jg-btn + .jg-btn {
   margin-top: 12rpx;
-}
-
-.overview-item {
-  width: 33.33%;
-  box-sizing: border-box;
-  padding: 12rpx 12rpx 0 0;
-}
-
-.overview-label {
-  color: #718493;
-  font-size: 22rpx;
-}
-
-.overview-value {
-  margin-top: 6rpx;
-  color: #123C4D;
-  font-size: 32rpx;
-  font-weight: 700;
 }
