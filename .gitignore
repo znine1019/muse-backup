@@ -24,3 +24,6 @@ coverage/
 *.zip
 *.xlsx
 !docs/*.xlsx
+
+# Local project data (backups, keys, archives, migration manifests)
+/_project_data/
