@@ -21,7 +21,9 @@ const {
   validateUserStatusPayload
 } = require('../lib/validation');
 
-const MAX_PARENT_LINKS_PER_REVOCATION = 50;
+// Each revocation performs 4 + 3N transaction operations. Keep N at 20
+// so the worst case is 64 operations, below CloudBase's 100-operation limit.
+const MAX_PARENT_LINKS_PER_REVOCATION = 20;
 const REVOCABLE_PARENT_LINK_STATUSES = Object.freeze([
   PARENT_LINK_STATUS.ACTIVE,
   PARENT_LINK_STATUS.PENDING_STUDENT,

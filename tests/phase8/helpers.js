@@ -71,7 +71,15 @@ function createFakeRepository(seed = {}) {
   for (const user of usersByOpenId.values()) {
     usersById.set(user._id, user);
   }
-  const counters = { reads: 0, writes: 0, transactions: 0 };
+  const counters = {
+    reads: 0,
+    writes: 0,
+    transactions: 0,
+    lastTransactionReads: 0,
+    lastTransactionWrites: 0,
+    lastTransactionOperations: 0,
+    maxTransactionOperations: 0
+  };
 
   /* 事务内对 users 集合的写入同步到外部映射，保证事务提交后读取与断言看到同一份数据 */
   function syncUsers(name, record) {
@@ -85,6 +93,40 @@ function createFakeRepository(seed = {}) {
     }
   }
 
+  function cloneRecords(records) {
+    return new Map(
+      Array.from(records.entries()).map(([id, record]) => [id, clone(record)])
+    );
+  }
+
+  function snapshotState() {
+    return {
+      collections: new Map(
+        Array.from(collections.entries()).map(([name, records]) => [
+          name,
+          cloneRecords(records)
+        ])
+      ),
+      usersById: cloneRecords(usersById),
+      usersByOpenId: cloneRecords(usersByOpenId)
+    };
+  }
+
+  function restoreState(snapshot) {
+    collections.clear();
+    for (const [name, records] of snapshot.collections.entries()) {
+      collections.set(name, cloneRecords(records));
+    }
+    usersById.clear();
+    for (const [id, user] of snapshot.usersById.entries()) {
+      usersById.set(id, clone(user));
+    }
+    usersByOpenId.clear();
+    for (const [openid, user] of snapshot.usersByOpenId.entries()) {
+      usersByOpenId.set(openid, clone(user));
+    }
+  }
+
   const db = {
     serverDate: () => new Date(),
     command: {
@@ -93,6 +135,17 @@ function createFakeRepository(seed = {}) {
     },
     async runTransaction(handler) {
       counters.transactions += 1;
+      const snapshot = snapshotState();
+      let transactionReads = 0;
+      let transactionWrites = 0;
+      const countRead = () => {
+        counters.reads += 1;
+        transactionReads += 1;
+      };
+      const countWrite = () => {
+        counters.writes += 1;
+        transactionWrites += 1;
+      };
       const transaction = {
         collection(name) {
           const col = collection(name);
@@ -100,7 +153,7 @@ function createFakeRepository(seed = {}) {
             doc(id) {
               return {
                 async get() {
-                  counters.reads += 1;
+                  countRead();
                   const record = col.get(id);
                   if (!record) {
                     throw new Error('document not found');
@@ -108,14 +161,14 @@ function createFakeRepository(seed = {}) {
                   return { data: clone(record) };
                 },
                 async set({ data }) {
-                  counters.writes += 1;
+                  countWrite();
                   const record = { _id: id, ...clone(data) };
                   col.set(id, record);
                   syncUsers(name, record);
                   return { ok: true };
                 },
                 async update({ data }) {
-                  counters.writes += 1;
+                  countWrite();
                   const existing = col.get(id);
                   if (!existing) {
                     throw new Error('document not found');
@@ -130,7 +183,27 @@ function createFakeRepository(seed = {}) {
           };
         }
       };
-      return handler(transaction);
+      try {
+        const result = await handler(transaction);
+        counters.lastTransactionReads = transactionReads;
+        counters.lastTransactionWrites = transactionWrites;
+        counters.lastTransactionOperations = transactionReads + transactionWrites;
+        counters.maxTransactionOperations = Math.max(
+          counters.maxTransactionOperations,
+          counters.lastTransactionOperations
+        );
+        return result;
+      } catch (error) {
+        restoreState(snapshot);
+        counters.lastTransactionReads = transactionReads;
+        counters.lastTransactionWrites = transactionWrites;
+        counters.lastTransactionOperations = transactionReads + transactionWrites;
+        counters.maxTransactionOperations = Math.max(
+          counters.maxTransactionOperations,
+          counters.lastTransactionOperations
+        );
+        throw error;
+      }
     }
   };
 
@@ -140,6 +213,8 @@ function createFakeRepository(seed = {}) {
     counters,
     usersById,
     usersByOpenId,
+    snapshot: snapshotState,
+    restore: restoreState,
 
     async ensureUser(identity) {
       const existing = usersByOpenId.get(identity.openid);
@@ -205,6 +280,18 @@ function createFakeRepository(seed = {}) {
         _id: id,
         ...clone(entry),
         createdAt: new Date()
+      });
+    },
+    async setRoleBinding({ userId, role, grantedBy, active }) {
+      const id = repository.roleBindingId(userId, role);
+      collection('role_bindings').set(id, {
+        _id: id,
+        userId,
+        role,
+        status: active ? 'active' : 'revoked',
+        grantedBy,
+        ...(active ? { grantedAt: new Date() } : { revokedAt: new Date() }),
+        updatedAt: new Date()
       });
     },
     async getUsersMap(userIds) {
