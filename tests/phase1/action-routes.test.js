@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const createAuthActions = require('../../cloudfunctions/api/actions/auth');
 const createAttendanceActions = require('../../cloudfunctions/api/actions/attendance');
 const createCompetitionActions = require('../../cloudfunctions/api/actions/competitions');
+const createCoachActions = require('../../cloudfunctions/api/actions/coach');
 const createDirectoryActions = require('../../cloudfunctions/api/actions/directory');
 const createFeedbackActions = require('../../cloudfunctions/api/actions/feedback');
 const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups');
@@ -24,6 +25,7 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     ...createAuthActions({ repository }),
     ...createAttendanceActions({ repository }),
     ...createCompetitionActions({ repository }),
+    ...createCoachActions({ repository }),
     ...createDirectoryActions({ repository }),
     ...createFeedbackActions({ repository }),
     ...createNoticeActions({ repository }),
@@ -46,14 +48,20 @@ test('phase 1 and phase 2 business action routes remain registered', () => {
     'profile.add_measurement',
     'profile.list_measurements',
     'profile.submit',
+    'coach.get_profile',
+    'coach.submit_profile',
     'admin.list_student_profiles',
     'admin.get_student_profile',
     'admin.list_pending_registrations',
     'admin.review_registration',
     'admin.list_users',
+    'admin.get_user_deletion_impact',
+    'admin.delete_user',
     'admin.assign_role',
     'admin.set_user_status',
     'admin.list_training_groups',
+    'admin.get_training_group_deletion_impact',
+    'admin.delete_training_group',
     'admin.create_training_group',
     'admin.set_training_group_enabled',
     'admin.set_group_coach',

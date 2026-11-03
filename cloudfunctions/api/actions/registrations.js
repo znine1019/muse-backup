@@ -13,6 +13,7 @@ const {
   canReviewRegistration,
   nextParentAuthorizationVersion
 } = require('../lib/policy');
+const { hasRealNameProfile } = require('../lib/profile-name');
 const { loadActiveActor } = require('../lib/session');
 const { assertRegistrationPending } = require('../lib/state-guards');
 const { getDocumentOrNull } = require('../lib/transaction');
@@ -47,7 +48,9 @@ function createRegistrationActions({ repository }) {
     }
 
     const allProfiles = await repository.queryAll(repository.profileCollection, where, 300);
-    const profiles = allProfiles.sort((left, right) => {
+    const profiles = allProfiles
+      .filter((profile) => hasRealNameProfile(profile))
+      .sort((left, right) => {
       const leftTime = new Date(left.submittedAt || 0).getTime();
       const rightTime = new Date(right.submittedAt || 0).getTime();
       return rightTime - leftTime;
@@ -94,6 +97,7 @@ function createRegistrationActions({ repository }) {
             const rightTime = new Date(right.submittedAt || 0).getTime();
             return rightTime - leftTime;
           })
+          .filter((profile) => hasRealNameProfile(profile))
           .map((profile) => ({
             userId: profile.userId,
             profileId: profile._id,
@@ -111,7 +115,51 @@ function createRegistrationActions({ repository }) {
           }))
       : [];
 
-    return { registrations: studentRegistrations.concat(parentRegistrations) };
+    /* 教练实名注册仅开发者可审核，避免无姓名账号直接开通教练权限 */
+    const coachRegistrations = isDeveloper
+      ? (
+          await repository.queryAll(
+            repository.coachProfileCollection,
+            { reviewStatus: REVIEW_STATUS.PENDING },
+            200
+          )
+        )
+          .sort((left, right) => {
+            const leftTime = new Date(left.submittedAt || 0).getTime();
+            const rightTime = new Date(right.submittedAt || 0).getTime();
+            return rightTime - leftTime;
+          })
+          .filter((profile) => hasRealNameProfile(profile))
+          .map((profile) => ({
+            userId: profile.userId,
+            profileId: profile._id,
+            profileType: ROLES.COACH,
+            name: profile.name,
+            gender: '',
+            birthDate: '',
+            heightCm: null,
+            weightKg: null,
+            primaryTrainingProject: '',
+            coachIdentityNote: profile.identityNote || '',
+            coachProfileSource: profile.source || '',
+            requestedTrainingGroupId: '',
+            requestedTrainingGroupName: '教练账号',
+            submittedAt: profile.submittedAt
+          }))
+      : [];
+
+    const registrations = studentRegistrations
+      .concat(parentRegistrations)
+      .concat(coachRegistrations);
+    const linkedUsers = await repository.getUsersMap(
+      Array.from(new Set(registrations.map((item) => item.userId).filter(Boolean)))
+    );
+    return {
+      registrations: registrations.filter((item) => {
+        const user = linkedUsers.get(item.userId);
+        return Boolean(user && user.status !== USER_STATUS.DELETED);
+      })
+    };
   }
 
   async function reviewRegistration({ identity, payload }) {
@@ -124,12 +172,18 @@ function createRegistrationActions({ repository }) {
     if (reviewInput.profileType === ROLES.PARENT) {
       return reviewParentRegistration({ actor, reviewInput });
     }
+    if (reviewInput.profileType === ROLES.COACH) {
+      return reviewCoachRegistration({ actor, reviewInput });
+    }
 
     if (!initialUser) {
       fail('USER_NOT_FOUND', '未找到待审核用户。');
     }
 
     const initialProfile = await repository.getProfile(initialUser._id);
+    if (!hasRealNameProfile(initialProfile)) {
+      fail('REGISTRATION_NAME_INVALID', '注册资料未填写有效真实姓名，不能审核。');
+    }
     assertRegistrationPending(initialProfile);
 
     let coachGroupIds = [];
@@ -304,6 +358,9 @@ function createRegistrationActions({ repository }) {
     }
     const profileId = repository.parentProfileIdForUser(initialUser._id);
     const initialProfile = await repository.getParentProfile(initialUser._id);
+    if (!hasRealNameProfile(initialProfile)) {
+      fail('REGISTRATION_NAME_INVALID', '家长注册资料未填写有效真实姓名，不能审核。');
+    }
     if (!initialProfile || initialProfile.reviewStatus !== REVIEW_STATUS.PENDING) {
       fail('REVIEW_NOT_PENDING', '该家长资料当前不可审核。');
     }
@@ -415,6 +472,141 @@ function createRegistrationActions({ repository }) {
         status: nextStatus,
         roles: nextRoles,
         profileType: ROLES.PARENT
+      };
+    });
+  }
+
+  async function reviewCoachRegistration({ actor, reviewInput }) {
+    if (!actor.roles.includes(ROLES.DEVELOPER)) {
+      fail('OUT_OF_SCOPE', '教练实名注册仅开发者可以审核。');
+    }
+
+    const initialUser = await repository.getUserById(reviewInput.targetUserId);
+    if (!initialUser) {
+      fail('USER_NOT_FOUND', '未找到待审核用户。');
+    }
+    const profileId = repository.coachProfileIdForUser(initialUser._id);
+    const initialProfile = await repository.getCoachProfile(initialUser._id);
+    if (!hasRealNameProfile(initialProfile)) {
+      fail('REGISTRATION_NAME_INVALID', '教练注册资料未填写有效真实姓名，不能审核。');
+    }
+    if (!initialProfile || initialProfile.reviewStatus !== REVIEW_STATUS.PENDING) {
+      fail('REVIEW_NOT_PENDING', '该教练实名资料当前不可审核。');
+    }
+    const approved = reviewInput.decision === 'approve';
+
+    return repository.db.runTransaction(async (transaction) => {
+      const profileReference = transaction
+        .collection(COLLECTIONS.COACH_PROFILES)
+        .doc(profileId);
+      const currentProfile = await getDocumentOrNull(profileReference);
+      if (!currentProfile || currentProfile.reviewStatus !== REVIEW_STATUS.PENDING) {
+        fail('REVIEW_NOT_PENDING', '该教练实名资料已被处理。');
+      }
+
+      const userReference = transaction
+        .collection(COLLECTIONS.USERS)
+        .doc(initialUser._id);
+      const currentUser = await getDocumentOrNull(userReference);
+      if (!currentUser) {
+        fail('USER_NOT_FOUND', '未找到待审核用户。');
+      }
+      if (currentUser.status === USER_STATUS.DISABLED) {
+        fail('ACCOUNT_DISABLED', '该账号已停用，请先启用账号再审核教练资料。');
+      }
+
+      const currentRoles = currentUser.roles || [];
+      const otherRoles = currentRoles.filter((role) => role !== ROLES.COACH);
+      const nextRoles = approved
+        ? Array.from(new Set([...currentRoles, ROLES.COACH]))
+        : currentRoles;
+      let nextStatus = USER_STATUS.ACTIVE;
+      if (!approved && !otherRoles.length) {
+        nextStatus = USER_STATUS.REJECTED;
+      }
+
+      await userReference.update({
+        data: {
+          status: nextStatus,
+          roles: nextRoles,
+          pendingProfileType:
+            approved || otherRoles.length ? '' : ROLES.COACH,
+          updatedAt: repository.db.serverDate()
+        }
+      });
+
+      await profileReference.update({
+        data: {
+          reviewStatus: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
+          reviewComment: reviewInput.comment,
+          reviewedBy: actor._id,
+          reviewedAt: repository.db.serverDate(),
+          updatedAt: repository.db.serverDate()
+        }
+      });
+
+      if (currentProfile.currentReviewId) {
+        await transaction
+          .collection(COLLECTIONS.REGISTRATION_REVIEWS)
+          .doc(currentProfile.currentReviewId)
+          .update({
+            data: {
+              status: approved ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.REJECTED,
+              comment: reviewInput.comment,
+              reviewedBy: actor._id,
+              reviewedAt: repository.db.serverDate()
+            }
+          });
+      }
+
+      if (approved) {
+        const roleBindingReference = transaction
+          .collection(COLLECTIONS.ROLE_BINDINGS)
+          .doc(repository.roleBindingId(initialUser._id, ROLES.COACH));
+        const currentCoachBinding = await getDocumentOrNull(roleBindingReference);
+        if (!currentCoachBinding || currentCoachBinding.status !== 'active') {
+          await roleBindingReference.set({
+            data: {
+              userId: initialUser._id,
+              role: ROLES.COACH,
+              status: 'active',
+              grantedBy: actor._id,
+              grantedAt: repository.db.serverDate(),
+              updatedAt: repository.db.serverDate()
+            }
+          });
+        }
+      }
+
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(
+          deterministicId(
+            'audit_coach_review',
+            initialUser._id,
+            currentProfile.currentReviewId || profileId,
+            actor._id
+          )
+        )
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: approved
+              ? AUDIT_ACTIONS.REGISTRATION_APPROVED
+              : AUDIT_ACTIONS.REGISTRATION_REJECTED,
+            targetType: 'user',
+            targetId: initialUser._id,
+            result: 'success',
+            metadata: { profileType: ROLES.COACH, decision: reviewInput.decision },
+            createdAt: repository.db.serverDate()
+          }
+        });
+
+      return {
+        userId: initialUser._id,
+        status: nextStatus,
+        roles: nextRoles,
+        profileType: ROLES.COACH
       };
     });
   }

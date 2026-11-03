@@ -3,6 +3,7 @@
 const COLLECTIONS = Object.freeze({
   USERS: 'users',
   STUDENT_PROFILES: 'student_profiles',
+  COACH_PROFILES: 'coach_profiles',
   ROLE_BINDINGS: 'role_bindings',
   REGISTRATION_REVIEWS: 'registration_reviews',
   TRAINING_GROUPS: 'training_groups',
@@ -65,7 +66,8 @@ const USER_STATUS = Object.freeze({
   PENDING_REVIEW: 'pending_review',
   ACTIVE: 'active',
   REJECTED: 'rejected',
-  DISABLED: 'disabled'
+  DISABLED: 'disabled',
+  DELETED: 'deleted'
 });
 
 const REVIEW_STATUS = Object.freeze({
@@ -147,12 +149,14 @@ const AUDIT_ACTIONS = Object.freeze({
   LOGIN_CREATED: 'auth.login.created',
   DEVELOPER_BOOTSTRAPPED: 'auth.bootstrap.developer_created',
   PROFILE_SUBMITTED: 'profile.submitted',
+  COACH_PROFILE_SUBMITTED: 'coach.profile.submitted',
   REGISTRATION_APPROVED: 'admin.registration.approved',
   REGISTRATION_REJECTED: 'admin.registration.rejected',
   ROLE_GRANTED: 'admin.role.granted',
   ROLE_REVOKED: 'admin.role.revoked',
   USER_ENABLED: 'admin.user.enabled',
   USER_DISABLED: 'admin.user.disabled',
+  USER_DELETED: 'admin.user.deleted',
   PROFILE_UPDATED: 'profile.updated',
   MEASUREMENT_RECORDED: 'profile.measurement_recorded',
   PERFORMANCE_SUBMITTED: 'performance.submitted',
@@ -190,6 +194,7 @@ const AUDIT_ACTIONS = Object.freeze({
   FEEDBACK_REVIEWED: 'coach.training_feedback.reviewed',
   GROUP_CREATED: 'admin.training_group.created',
   GROUP_STATUS_CHANGED: 'admin.training_group.status_changed',
+  GROUP_DELETED: 'admin.training_group.deleted',
   PARENT_PROFILE_SUBMITTED: 'parent.profile.submitted',
   PARENT_INVITE_CREATED: 'parent.link.invite_created',
   PARENT_LINK_REQUESTED: 'parent.link.requested',
@@ -221,6 +226,8 @@ const LIMITS = Object.freeze({
   maxCompetitionEvents: 20,
   maxEventCategories: 10,
   parentNameMaxLength: 40,
+  coachNameMaxLength: 40,
+  coachNoteMaxLength: 200,
   parentNoteMaxLength: 200,
   parentInviteCodeLength: 10,
   parentInviteTtlMinutes: 30,

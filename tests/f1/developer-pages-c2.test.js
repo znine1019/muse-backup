@@ -67,6 +67,12 @@ function loadPage(relativePath, api, options = {}) {
               Boolean(value && value.user && (value.user.roles || []).includes(role))
           };
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         throw new Error(`未打桩的依赖：${request}`);
       },
       Page: (value) => {

@@ -30,7 +30,15 @@ const {
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
-const { loadActiveActor, loadUser } = require('../lib/session');
+const {
+  loadActiveActor,
+  loadOptionalUser,
+  loadUser
+} = require('../lib/session');
+const {
+  getOrCreateRegistrationUser,
+  resolveRegistrationIdentity
+} = require('../lib/registration-account');
 const {
   parentAuthorizationVersion
 } = require('../lib/policy');
@@ -210,13 +218,21 @@ function createParentActions({ repository }) {
   /* ---------- 1. 家长注册 ---------- */
 
   async function submitParentProfile({ identity, payload }) {
-    const user = await loadUser(repository, identity);
     const input = validateParentProfilePayload(payload);
-
-    const profileId = repository.parentProfileIdForUser(user._id);
-    const reviewId = deterministicId('parent_review', user._id, Date.now());
+    const registration = await resolveRegistrationIdentity(
+      repository,
+      identity,
+      ROLES.PARENT
+    );
+    const profileId = repository.parentProfileIdForUser(registration.userId);
 
     return repository.db.runTransaction(async (transaction) => {
+      const account = await getOrCreateRegistrationUser(
+        repository,
+        transaction,
+        registration
+      );
+      const { user: currentUser, userReference } = account;
       const profileReference = transaction
         .collection(COLLECTIONS.PARENT_PROFILES)
         .doc(profileId);
@@ -224,20 +240,38 @@ function createParentActions({ repository }) {
       if (current && current.reviewStatus === REVIEW_STATUS.APPROVED) {
         fail('PARENT_PROFILE_APPROVED', '家长资料已通过审核，无需重复提交。');
       }
+      if (current && current.reviewStatus === REVIEW_STATUS.PENDING) {
+        fail('REVIEW_ALREADY_PENDING', '家长资料正在审核中，请勿重复提交。');
+      }
+
+      const nextSubmissionCount =
+        (Number(current && current.submissionCount) || 0) + 1;
+      const reviewId = deterministicId(
+        'parent_review',
+        currentUser._id,
+        String(nextSubmissionCount)
+      );
+      const nextStatus =
+        currentUser.status === USER_STATUS.ACTIVE
+          ? USER_STATUS.ACTIVE
+          : USER_STATUS.PENDING_REVIEW;
+      const submittedAt = repository.db.serverDate();
 
       await profileReference.set({
         data: {
-          userId: user._id,
+          userId: currentUser._id,
           name: input.name,
           relation: input.relation,
           note: input.note,
           reviewStatus: REVIEW_STATUS.PENDING,
           reviewComment: '',
           currentReviewId: reviewId,
-          submittedAt: repository.db.serverDate(),
+          submissionCount: nextSubmissionCount,
+          submittedAt,
           reviewedBy: '',
           reviewedAt: null,
-          createdAt: (current && current.createdAt) || repository.db.serverDate(),
+          createdAt:
+            (current && current.createdAt) || repository.db.serverDate(),
           updatedAt: repository.db.serverDate(),
           schemaVersion: 1
         }
@@ -249,7 +283,8 @@ function createParentActions({ repository }) {
         .set({
           data: {
             reviewId,
-            userId: user._id,
+            userId: currentUser._id,
+            profileId,
             profileType: ROLES.PARENT,
             status: REVIEW_STATUS.PENDING,
             comment: '',
@@ -259,17 +294,6 @@ function createParentActions({ repository }) {
             reviewedAt: null
           }
         });
-
-      const userReference = transaction.collection(COLLECTIONS.USERS).doc(user._id);
-      const currentUser = await getDocumentOrNull(userReference);
-      if (!currentUser) {
-        fail('USER_NOT_FOUND', '未找到当前账号。');
-      }
-      /* 已有其它有效角色的账号不因家长资料待审而降级 */
-      const nextStatus =
-        currentUser.status === USER_STATUS.ACTIVE
-          ? USER_STATUS.ACTIVE
-          : USER_STATUS.PENDING_REVIEW;
 
       await userReference.update({
         data: {
@@ -281,36 +305,48 @@ function createParentActions({ repository }) {
 
       await transaction
         .collection(COLLECTIONS.AUDIT_LOGS)
-        .doc(deterministicId('audit_parent_profile', user._id, reviewId))
+        .doc(deterministicId('audit_parent_profile', currentUser._id, reviewId))
         .set({
           data: {
-            actorUserId: user._id,
+            actorUserId: currentUser._id,
             action: AUDIT_ACTIONS.PARENT_PROFILE_SUBMITTED,
             targetType: 'user',
-            targetId: user._id,
+            targetId: currentUser._id,
             result: 'success',
             metadata: { relation: input.relation },
             createdAt: repository.db.serverDate()
           }
         });
 
-      return { status: nextStatus, profile: readableParentProfile({
-        userId: user._id,
-        name: input.name,
-        relation: input.relation,
-        note: input.note,
-        reviewStatus: REVIEW_STATUS.PENDING,
-        reviewComment: '',
-        submittedAt: null
-      }) };
+      return {
+        status: nextStatus,
+        profile: readableParentProfile({
+          userId: currentUser._id,
+          name: input.name,
+          relation: input.relation,
+          note: input.note,
+          reviewStatus: REVIEW_STATUS.PENDING,
+          reviewComment: '',
+          submittedAt: null
+        })
+      };
     });
   }
 
   async function getParentProfile({ identity }) {
-    const user = await loadUser(repository, identity);
+    const user = await loadOptionalUser(repository, identity);
+    if (!user) {
+      return {
+        userStatus: 'unregistered',
+        registered: false,
+        roles: [],
+        profile: null
+      };
+    }
     const profile = await repository.getParentProfile(user._id);
     return {
       userStatus: user.status,
+      registered: true,
       roles: user.roles || [],
       profile: readableParentProfile(profile)
     };
@@ -437,6 +473,9 @@ function createParentActions({ repository }) {
       await repository.recordParentInviteFailure(actor._id);
       fail('INVALID_INVITE_CODE', '关联凭证无效或已被使用，请向学生确认最新凭证。');
     }
+    if (candidates.length > 1) {
+      fail('INVALID_INVITE_CODE', '关联凭证无效或已被使用，请向学生确认最新凭证。');
+    }
 
     /* 单张凭证自身的失败次数上限（已知凭证在无效状态被反复提交时累计） */
     if (
@@ -494,21 +533,95 @@ function createParentActions({ repository }) {
       if (authorization.version !== actorVersion) {
         fail('PARENT_AUTHORIZATION_CHANGED', '家长授权状态已变化，请重新发起关联。');
       }
-      const linkReference = transaction
-        .collection(COLLECTIONS.PARENT_LINKS)
-        .doc(pairId);
       const inviteReference = transaction
         .collection(COLLECTIONS.PARENT_LINKS)
         .doc(invite._id);
+      const currentInvite = await getDocumentOrNull(inviteReference);
+      if (
+        !currentInvite ||
+        currentInvite.kind !== PARENT_LINK_KIND.INVITE ||
+        currentInvite.codeHash !== codeHash ||
+        currentInvite.status !== PARENT_LINK_STATUS.OPEN
+      ) {
+        fail('INVALID_INVITE_CODE', '关联凭证无效或已被使用，请向学生确认最新凭证。');
+      }
+      if (
+        Number(currentInvite.attempts || 0) >=
+        Number(currentInvite.maxAttempts || LIMITS.parentInviteMaxAttempts)
+      ) {
+        fail('INVITE_LOCKED', '该关联凭证失败次数过多，已失效，请让学生重新生成。');
+      }
+      if (
+        currentInvite.expiresAt &&
+        new Date(currentInvite.expiresAt).getTime() <= Date.now()
+      ) {
+        fail('INVITE_EXPIRED', '关联凭证已过期，请让学生重新生成。');
+      }
+      if (currentInvite.studentUserId === actor._id) {
+        fail('INVALID_INVITE_CODE', '不能使用自己生成的关联凭证。');
+      }
+
+      const studentReference = transaction
+        .collection(COLLECTIONS.USERS)
+        .doc(currentInvite.studentUserId);
+      const studentUser = await getDocumentOrNull(studentReference);
+      if (
+        !studentUser ||
+        studentUser.status !== USER_STATUS.ACTIVE ||
+        !(studentUser.roles || []).includes(ROLES.STUDENT)
+      ) {
+        fail('STUDENT_NOT_ACTIVE', '该学生账号当前不可关联。');
+      }
+
+      const currentPairId = repository.parentLinkIdForPair(
+        actor._id,
+        currentInvite.studentUserId
+      );
+      const currentLinkReference = transaction
+        .collection(COLLECTIONS.PARENT_LINKS)
+        .doc(currentPairId);
+      const currentLink = await getDocumentOrNull(currentLinkReference);
+      const currentLinkIsCurrent =
+        currentLink &&
+        parentAuthorizationVersion(currentLink) === authorization.version;
+      if (
+        currentLinkIsCurrent &&
+        currentLink.status === PARENT_LINK_STATUS.ACTIVE
+      ) {
+        fail('LINK_ALREADY_ACTIVE', '已与该学生建立有效关联，无需重复申请。');
+      }
+      if (
+        currentLinkIsCurrent &&
+        (currentLink.status === PARENT_LINK_STATUS.PENDING_STUDENT ||
+          currentLink.status === PARENT_LINK_STATUS.PENDING_REVIEW)
+      ) {
+        fail('LINK_ALREADY_PENDING', '该关联申请正在处理中，请等待学生确认与开发者核验。');
+      }
+
+      const activeLinks = await transaction
+        .collection(COLLECTIONS.PARENT_LINKS)
+        .where({
+          kind: PARENT_LINK_KIND.RELATION,
+          parentUserId: actor._id,
+          status: PARENT_LINK_STATUS.ACTIVE
+        })
+        .limit(LIMITS.parentMaxLinkedStudents)
+        .get();
+      if ((activeLinks.data || []).length >= LIMITS.parentMaxLinkedStudents) {
+        fail('LINK_LIMIT_REACHED', '已达到可关联学生数量上限，请先解除部分关联。');
+      }
+      const linkReference = transaction
+        .collection(COLLECTIONS.PARENT_LINKS)
+        .doc(currentPairId);
 
       await linkReference.set({
         data: {
           kind: PARENT_LINK_KIND.RELATION,
           parentUserId: actor._id,
-          studentUserId: invite.studentUserId,
+          studentUserId: currentInvite.studentUserId,
           status: PARENT_LINK_STATUS.PENDING_STUDENT,
           parentAuthorizationVersion: authorization.version,
-          createdFrom: invite._id,
+          createdFrom: currentInvite._id,
           studentConfirmedAt: null,
           reviewedBy: '',
           reviewedAt: null,
@@ -533,20 +646,20 @@ function createParentActions({ repository }) {
 
       await transaction
         .collection(COLLECTIONS.AUDIT_LOGS)
-        .doc(deterministicId('audit_parent_link_req', pairId, actor._id))
+        .doc(deterministicId('audit_parent_link_req', currentPairId, actor._id))
         .set({
           data: {
             actorUserId: actor._id,
             action: AUDIT_ACTIONS.PARENT_LINK_REQUESTED,
             targetType: 'parent_link',
-            targetId: pairId,
+            targetId: currentPairId,
             result: 'success',
-            metadata: { studentUserId: invite.studentUserId },
+            metadata: { studentUserId: currentInvite.studentUserId },
             createdAt: repository.db.serverDate()
           }
         });
 
-      return { linkId: pairId, status: PARENT_LINK_STATUS.PENDING_STUDENT };
+      return { linkId: currentPairId, status: PARENT_LINK_STATUS.PENDING_STUDENT };
     });
   }
 

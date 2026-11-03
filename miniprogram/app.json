@@ -6,6 +6,7 @@
     "pages/role-select/role-select",
     "pages/all-features/all-features",
     "pages/parent-register/parent-register",
+    "pages/coach-register/coach-register",
     "pages/parent/parent",
     "pages/parent-bind/parent-bind",
     "pages/link-manage/link-manage",

@@ -89,18 +89,19 @@
 
     <jg-empty
       wx:elif="{{registrations.length === 0}}"
-      title="没有待审核的学生注册"
-      message="学生提交注册资料后会出现在这里，由开发者或负责教练审核。"
+      title="没有待审核注册"
+      message="学生、家长或教练提交注册资料后会出现在这里。"
     />
 
     <view wx:else class="jg-list">
       <view wx:for="{{registrations}}" wx:key="userId" class="jg-todo jg-todo-p1">
         <view class="jg-todo-bar"></view>
         <view class="jg-todo-main">
-          <view class="jg-todo-t">{{item.name}}<text class="jg-chip {{item.profileType === 'parent' ? 'jg-chip-accent' : 'jg-chip-brand'}}">{{item.profileType === 'parent' ? '家长注册' : '学生注册'}}</text></view>
+          <view class="jg-todo-t">{{item.name}}<text class="jg-chip {{item.profileType === 'parent' ? 'jg-chip-accent' : (item.profileType === 'coach' ? 'jg-chip-warn' : 'jg-chip-brand')}}">{{item.profileType === 'parent' ? '家长注册' : (item.profileType === 'coach' ? '教练实名' : '学生注册')}}</text></view>
           <view wx:if="{{item.profileType === 'parent'}}" class="jg-todo-m">监护人关系：{{item.parentRelation}} · 无需训练组归属</view>
+          <view wx:elif="{{item.profileType === 'coach'}}" class="jg-todo-m">身份说明：{{item.coachIdentityNote || '未填写'}}</view>
           <view wx:else class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
-          <view wx:if="{{item.profileType !== 'parent'}}" class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}}</view>
+          <view wx:if="{{item.profileType === 'student'}}" class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}}</view>
         </view>
         <view class="jg-todo-a">
           <button
@@ -151,6 +152,21 @@
       </view>
 
       <block wx:if="{{showUserPanel}}">
+        <view class="jg-filter-grid jg-mt-12">
+          <picker range="{{userNameFilters}}" range-key="label" value="{{userFilterIndexes.nameStatus}}" data-filter="nameStatus" bindchange="onUserFilterChange">
+            <view class="jg-input jg-picker">{{userNameFilters[userFilterIndexes.nameStatus].label}}</view>
+          </picker>
+          <picker range="{{userRoleFilters}}" range-key="label" value="{{userFilterIndexes.role}}" data-filter="role" bindchange="onUserFilterChange">
+            <view class="jg-input jg-picker">{{userRoleFilters[userFilterIndexes.role].label}}</view>
+          </picker>
+          <picker range="{{userStatusFilters}}" range-key="label" value="{{userFilterIndexes.status}}" data-filter="status" bindchange="onUserFilterChange">
+            <view class="jg-input jg-picker">{{userStatusFilters[userFilterIndexes.status].label}}</view>
+          </picker>
+          <picker range="{{userTimeFilters}}" range-key="label" value="{{userFilterIndexes.time}}" data-filter="time" bindchange="onUserFilterChange">
+            <view class="jg-input jg-picker">{{userTimeFilters[userFilterIndexes.time].label}}</view>
+          </picker>
+        </view>
+        <view class="jg-body-s jg-mt-8">教练角色只能通过实名注册审核授予</view>
         <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
         <view wx:elif="{{accountState.error && !accountState.ready}}" class="jg-state-err jg-mt-12">
           <view class="jg-state-err-t">账号数据加载失败</view>
@@ -160,7 +176,7 @@
         <jg-empty
           wx:elif="{{users.length === 0}}"
           title="暂无账号"
-          message="学生首次登录并提交注册资料后会出现在这里。"
+          message="用户首次登录并提交对应身份资料后会出现在这里。"
         />
         <view wx:else class="jg-list jg-mt-12">
           <view wx:for="{{users}}" wx:key="userId" class="jg-todo">
@@ -169,9 +185,20 @@
               <view class="jg-todo-t">
                 <text>{{item.displayName}}</text>
                 <text class="jg-chip {{item.status === 'active' ? 'jg-chip-ok' : 'jg-chip-danger'}}">{{item.statusLabel}}</text>
+                <text wx:if="{{item.hasCoachRole && !item.coachProfileApproved}}" class="jg-chip jg-chip-warn">历史教练待补实名</text>
               </view>
               <view class="jg-todo-m">当前角色：{{item.rolesText}}</view>
+              <view class="jg-todo-m">申请角色：{{item.applicationRoleText}} · 审核状态：{{item.reviewStatusText}}</view>
+              <view class="jg-todo-m">首次登录：{{item.createdAtText || '未知'}}</view>
+              <view class="jg-todo-m">脱敏标识：{{item.identityHintText}}</view>
+              <view wx:if="{{item.pendingProfileType === 'coach'}}" class="jg-todo-m">教练角色需教练实名注册审核通过后才能授予。</view>
               <view class="jg-actions-wrap">
+                <button
+                  class="jg-btn jg-btn-sm jg-btn-ghost"
+                  data-user-id="{{item.userId}}"
+                  bindtap="toggleAuthorization"
+                >{{item.isAuthorizationExpanded ? '收起授权' : '展开授权'}}</button>
+                <block wx:if="{{item.isAuthorizationExpanded}}">
                 <block wx:for="{{item.roleActions}}" wx:for-item="roleAction" wx:key="role">
                   <button
                     class="jg-btn jg-btn-sm {{roleAction.active ? 'jg-btn-danger' : 'jg-btn-ghost'}}"
@@ -188,11 +215,19 @@
                   bindtap="toggleUserStatus"
                 >{{item.statusActionLabel}}</button>
                 <button
+                  wx:if="{{item.canDeleteAccount}}"
+                  class="jg-btn jg-btn-sm jg-btn-danger"
+                  data-user-id="{{item.userId}}"
+                  loading="{{deletingUserId === item.userId}}"
+                  bindtap="deleteUserAccount"
+                >删除账号</button>
+                <button
                   wx:if="{{item.canViewProfile}}"
                   class="jg-btn jg-btn-sm jg-btn-ghost"
                   data-user-id="{{item.userId}}"
                   bindtap="goStudentProfile"
                 >查看档案</button>
+                </block>
               </view>
             </view>
           </view>
@@ -250,6 +285,12 @@
                   data-enabled="{{item.statusActionValue}}"
                   bindtap="toggleGroupStatus"
                 >{{item.statusActionLabel}}</button>
+                <button
+                  class="jg-btn jg-btn-sm jg-btn-danger"
+                  data-group-id="{{item.id}}"
+                  loading="{{deletingGroupId === item.id}}"
+                  bindtap="deleteTrainingGroup"
+                >删除训练组</button>
               </view>
             </view>
           </view>
@@ -303,12 +344,20 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <!-- 开发者已有合法访问教练工作台的权限（云函数允许 coach/developer），此处仅做跳转，不授予额外角色 -->
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goCoachWorkbench">
+      <!-- 只有已具备有效 coach 角色时才显示工作台切换入口 -->
+      <view wx:if="{{canSwitchCoach}}" class="jg-row" hover-class="jg-row-hover" bindtap="goCoachWorkbench" aria-label="切换教练工作台">
         <view class="jg-row-ic jg-row-ic-accent">教</view>
         <view class="jg-row-main">
-          <view class="jg-row-t">查看教练工作台</view>
-          <view class="jg-row-m">按开发者全局范围查看教练工作台界面</view>
+          <view class="jg-row-t">切换教练工作台</view>
+          <view class="jg-row-m">仅切换当前展示身份，教练端仍按本人训练组范围授权</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view wx:if="{{!canSwitchCoach}}" class="jg-row" hover-class="jg-row-hover" bindtap="goCoachRegistration" aria-label="申请教练员身份">
+        <view class="jg-row-ic jg-row-ic-accent">申</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">申请教练员身份</view>
+          <view class="jg-row-m">提交本人教练实名资料，审核通过后开通教练工作台</view>
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>

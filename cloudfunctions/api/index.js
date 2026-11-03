@@ -9,6 +9,7 @@ const { fail, toPublicError } = require('./lib/errors');
 const createAuthActions = require('./actions/auth');
 const createAttendanceActions = require('./actions/attendance');
 const createCompetitionActions = require('./actions/competitions');
+const createCoachActions = require('./actions/coach');
 const createDirectoryActions = require('./actions/directory');
 const createFeedbackActions = require('./actions/feedback');
 const createGroupAdminActions = require('./actions/groups');
@@ -27,6 +28,7 @@ const actions = Object.freeze({
   ...createAuthActions({ repository }),
   ...createAttendanceActions({ repository }),
   ...createCompetitionActions({ repository }),
+  ...createCoachActions({ repository }),
   ...createDirectoryActions({ repository }),
   ...createFeedbackActions({ repository }),
   ...createProfileActions({ repository }),
@@ -65,7 +67,18 @@ exports.main = async (event, context) => {
       event.payload && typeof event.payload === 'object' && !Array.isArray(event.payload)
         ? event.payload
         : {};
-    const data = await actions[action]({ identity, payload, context: context || {} });
+    const actingRole =
+      payload.actingRole === 'developer' || payload.actingRole === 'coach'
+        ? payload.actingRole
+        : '';
+
+    const businessPayload = { ...payload };
+    delete businessPayload.actingRole;
+
+    identity.actingRole = actingRole;
+    const data = await actions[action](
+      { identity, payload: businessPayload, context: context || {} }
+    );
 
     return {
       ok: true,

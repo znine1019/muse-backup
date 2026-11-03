@@ -37,6 +37,12 @@ function loadPage(relativePath, apiStub, roles, wxOverrides = {}) {
         if (request.includes('xlsx-writer')) {
           return require(path.join(PROJECT_ROOT, 'miniprogram/utils/xlsx-writer.js'));
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         return {
           getSessionDestination: () => ({ url: '/pages/index/index' }),
           sessionHasRole: (session, role) => roles.includes(role)

@@ -15,9 +15,57 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
-const { clearActiveRole } = require('../../utils/active-role');
+const {
+  clearActiveRole,
+  saveActiveRole
+} = require('../../utils/active-role');
+
+function persistActiveRole(role, session) {
+  const user = (session && session.user) || {};
+  if (typeof saveActiveRole !== 'function' || !user.id) {
+    return;
+  }
+  saveActiveRole(role, {
+    userId: user.id,
+    roles: Array.isArray(user.roles) ? user.roles : []
+  });
+}
 
 const ROLE_OPTIONS = Object.freeze(['student', 'coach', 'developer']);
+
+const USER_NAME_FILTERS = Object.freeze([
+  { value: 'all', label: '全部实名状态' },
+  { value: 'named', label: '有姓名' }
+]);
+
+const USER_ROLE_FILTERS = Object.freeze([
+  { value: 'all', label: '全部角色' },
+  { value: 'student', label: '学生' },
+  { value: 'coach', label: '教练' },
+  { value: 'parent', label: '家长' },
+  { value: 'developer', label: '开发者' }
+]);
+
+const USER_STATUS_FILTERS = Object.freeze([
+  { value: 'all', label: '全部状态' },
+  { value: 'active', label: '已启用' },
+  { value: 'pending_profile', label: '待完善资料' },
+  { value: 'pending_review', label: '待审核' },
+  { value: 'rejected', label: '审核未通过' },
+  { value: 'disabled', label: '已停用' }
+]);
+
+const USER_TIME_FILTERS = Object.freeze([
+  { value: 'all', label: '全部时间' },
+  { value: '7', label: '最近7天' },
+  { value: '30', label: '最近30天' }
+]);
+
+const REVIEW_STATUS_LABELS = Object.freeze({
+  pending: '待审核',
+  approved: '已通过',
+  rejected: '未通过'
+});
 
 const SECTION_STATE_KEYS = Object.freeze({
   system: 'systemState',
@@ -37,6 +85,45 @@ function settleOf(invoke) {
   } catch (error) {
     return Promise.resolve({ ok: false, error });
   }
+}
+
+function formatDeletionImpact(impact) {
+  const counts = (impact && impact.associationCounts) || {};
+  const labels = [
+    ['registrationReviews', '注册审核'],
+    ['roleBindings', '角色绑定'],
+    ['groupMemberships', '训练组成员'],
+    ['performanceRecords', '成绩'],
+    ['attendanceRecords', '考勤'],
+    ['leaveRequests', '请假'],
+    ['trainingPlans', '训练计划'],
+    ['trainingFeedback', '训练反馈'],
+    ['competitions', '赛事'],
+    ['parentLinks', '亲子关系']
+  ];
+  const parts = labels
+    .filter(([field]) => Number(counts[field]) > 0)
+    .map(([field, label]) => `${label}${counts[field]}条`);
+  return parts.length ? parts.join('、') : '无业务关联';
+}
+
+function formatGroupDeletionImpact(impact) {
+  const counts = (impact && impact.associationCounts) || {};
+  const labels = [
+    ['groupMemberships', '成员'],
+    ['studentProfileRequests', '学生申请'],
+    ['trainingPlans', '训练计划'],
+    ['performanceRecords', '成绩'],
+    ['attendanceSessions', '考勤场次'],
+    ['attendanceRecords', '考勤记录'],
+    ['trainingFeedback', '训练反馈'],
+    ['competitions', '赛事'],
+    ['notices', '通知']
+  ];
+  const parts = labels
+    .filter(([field]) => Number(counts[field]) > 0)
+    .map(([field, label]) => `${label}${counts[field]}条`);
+  return parts.length ? parts.join('、') : '无业务关联';
 }
 
 function formatServerTime(value) {
@@ -76,6 +163,19 @@ Page({
       pendingReview: 0
     },
 
+    userFilters: {
+      nameStatus: 'all',
+      role: 'all',
+      status: 'all',
+      time: 'all'
+    },
+    userNameFilters: USER_NAME_FILTERS,
+    userRoleFilters: USER_ROLE_FILTERS,
+    userStatusFilters: USER_STATUS_FILTERS,
+    userTimeFilters: USER_TIME_FILTERS,
+    userFilterIndexes: { nameStatus: 0, role: 0, status: 0, time: 0 },
+    allUsers: [],
+
     groupState: { loading: true, error: '', ready: false },
     groupSummary: { total: 0, enabled: 0, coaches: 0 },
 
@@ -99,12 +199,79 @@ Page({
     newGroupName: '',
     newGroupSeasonLabel: String(new Date().getFullYear()),
     busyUserId: '',
+    deletingUserId: '',
+    deletingGroupId: '',
     actionError: '',
-    demoAvailable: false
+    demoAvailable: false,
+    canSwitchCoach: false
   },
 
   onShow() {
+    this.expandedUserIds = new Set();
+    this.syncAuthorizationExpansion();
+    this.activateDeveloperRole();
     this.enterWorkbench();
+  },
+
+  activateDeveloperRole() {
+    try {
+      const session = getApp().globalData.session;
+      if (sessionHasRole(session, 'developer')) {
+        persistActiveRole('developer', session);
+      }
+    } catch (error) {
+      /* 会话尚未恢复时由 runLoad 的 ensureSession 继续校验 */
+    }
+  },
+
+  ensureExpandedUserIds() {
+    if (!(this.expandedUserIds instanceof Set)) {
+      this.expandedUserIds = new Set();
+    }
+    return this.expandedUserIds;
+  },
+
+  decorateAuthorizationState(user) {
+    const expandedUserIds = this.ensureExpandedUserIds();
+    return {
+      ...user,
+      isAuthorizationExpanded: expandedUserIds.has(user.userId)
+    };
+  },
+
+  syncAuthorizationExpansion() {
+    const allUsers = (this.data.allUsers || []).map((user) =>
+      this.decorateAuthorizationState(user)
+    );
+    const users = (this.data.users || []).map((user) =>
+      this.decorateAuthorizationState(user)
+    );
+    if (allUsers.length || users.length) {
+      this.controllerSetIfChanged({ allUsers, users });
+    }
+  },
+
+  toggleAuthorization(event) {
+    const userId = String(
+      (event && event.currentTarget && event.currentTarget.dataset &&
+        event.currentTarget.dataset.userId) || ''
+    ).trim();
+    if (!userId) {
+      return;
+    }
+    const expandedUserIds = this.ensureExpandedUserIds();
+    if (expandedUserIds.has(userId)) {
+      expandedUserIds.delete(userId);
+    } else {
+      expandedUserIds.add(userId);
+    }
+    const allUsers = (this.data.allUsers || []).map((user) =>
+      this.decorateAuthorizationState(user)
+    );
+    const users = (this.data.users || []).map((user) =>
+      this.decorateAuthorizationState(user)
+    );
+    this.controllerSetIfChanged({ allUsers, users });
   },
 
   onPullDownRefresh() {
@@ -206,8 +373,10 @@ Page({
       return;
     }
 
+    persistActiveRole('developer', session);
     this.controllerSetIfChanged({
       demoAvailable: isDemoAllowed(),
+      canSwitchCoach: sessionHasRole(session, 'coach'),
       headMeta: `${getRoleLabel('developer')} · 全局管理权限 · 敏感操作写入审计日志`
     });
 
@@ -303,6 +472,7 @@ Page({
   },
 
   clearCachedData() {
+    this.expandedUserIds = new Set();
     this.controllerSetIfChanged({
       hasData: false,
       lastUpdatedText: '',
@@ -323,11 +493,13 @@ Page({
       pendingLeaves: 0,
       pendingTotal: 0,
       users: [],
+      allUsers: [],
       groups: [],
       coachOptions: [],
       groupOptions: [],
       showUserPanel: false,
       showGroupPanel: false,
+      canSwitchCoach: false,
       systemState: { loading: true, error: '', ready: false },
       accountState: { loading: true, error: '', ready: false },
       groupState: { loading: true, error: '', ready: false },
@@ -389,16 +561,32 @@ Page({
       'account',
       () => api.listUsers(),
       (result) => {
-        const users = (result.users || []).map((user) => {
+        const allUsers = (result.users || []).map((user) => {
           const roles = user.roles || [];
           return {
             ...user,
+            isAuthorizationExpanded: this.ensureExpandedUserIds().has(user.userId),
             statusLabel: getStatusLabel(user.status),
             statusActionLabel: user.status === 'disabled' ? '启用账号' : '停用账号',
             statusActionValue: user.status === 'disabled' ? 'active' : 'disabled',
             rolesText: roles.map((role) => getRoleLabel(role)).join('、') || '未授权',
+            hasCoachRole: roles.includes('coach'),
+            applicationRoleText: user.applicationRole
+              ? getRoleLabel(user.applicationRole)
+              : '未申请',
+            reviewStatusText: user.reviewStatus
+              ? REVIEW_STATUS_LABELS[user.reviewStatus] || user.reviewStatus
+              : '无实名资料',
+            createdAtText: formatServerTime(user.createdAt),
+            identityHintText: user.identityHint || '账号尾号未知',
+            canDeleteAccount: !roles.includes('developer'),
             canViewProfile: user.status === 'active' && roles.includes('student'),
-            roleActions: ROLE_OPTIONS.map((role) => ({
+            roleActions: ROLE_OPTIONS.filter((role) => {
+              if (role !== 'coach' || roles.includes('coach')) {
+                return true;
+              }
+              return user.coachProfileApproved === true;
+            }).map((role) => ({
               role,
               label: getRoleLabel(role),
               active: roles.includes(role),
@@ -407,22 +595,78 @@ Page({
             }))
           };
         });
+        const filteredUsers = this.filterUsers(allUsers, this.data.userFilters);
         this.controllerSetIfChanged({
-          users,
-          coachOptions: users
+          allUsers,
+          users: filteredUsers,
+          coachOptions: allUsers
             .filter((user) => (user.roles || []).includes('coach'))
             .map((user) => ({ userId: user.userId, label: user.displayName })),
           accountSummary: {
-            total: users.length,
-            students: users.filter((user) => (user.roles || []).includes('student')).length,
-            coaches: users.filter((user) => (user.roles || []).includes('coach')).length,
-            developers: users.filter((user) => (user.roles || []).includes('developer')).length,
-            disabled: users.filter((user) => user.status === 'disabled').length,
+            total: allUsers.length,
+            students: allUsers.filter((user) => (user.roles || []).includes('student')).length,
+            coaches: allUsers.filter((user) => (user.roles || []).includes('coach')).length,
+            developers: allUsers.filter((user) => (user.roles || []).includes('developer')).length,
+            disabled: allUsers.filter((user) => user.status === 'disabled').length,
             pendingReview: (this.data.registrations || []).length
           }
         });
       }
     );
+  },
+
+  filterUsers(users, filters = {}) {
+    const now = Date.now();
+    const days = filters.time === '7' || filters.time === '30' ? Number(filters.time) : 0;
+    return users.filter((user) => {
+      if (filters.nameStatus === 'named' && user.hasRealName !== true) {
+        return false;
+      }
+      if (
+        filters.role &&
+        filters.role !== 'all' &&
+        !(user.roles || []).includes(filters.role) &&
+        user.applicationRole !== filters.role
+      ) {
+        return false;
+      }
+      if (
+        filters.status &&
+        filters.status !== 'all' &&
+        user.status !== filters.status
+      ) {
+        return false;
+      }
+      if (days > 0) {
+        const created = new Date(user.createdAt || 0).getTime();
+        if (!created || now - created > days * 24 * 60 * 60 * 1000) {
+          return false;
+        }
+      }
+      return true;
+    });
+  },
+
+  onUserFilterChange(event) {
+    const field = event.currentTarget.dataset.filter;
+    const index = Number(event.detail.value);
+    const options = {
+      nameStatus: this.data.userNameFilters,
+      role: this.data.userRoleFilters,
+      status: this.data.userStatusFilters,
+      time: this.data.userTimeFilters
+    };
+    const selected = (options[field] || [])[index];
+    if (!selected) {
+      return;
+    }
+    const filters = { ...this.data.userFilters, [field]: selected.value };
+    const indexes = { ...this.data.userFilterIndexes, [field]: index };
+    this.controllerSetIfChanged({
+      userFilters: filters,
+      userFilterIndexes: indexes,
+      users: this.filterUsers(this.data.allUsers || [], filters)
+    });
   },
 
   loadGroups() {
@@ -435,6 +679,7 @@ Page({
           displayName: `${group.name}（${group.seasonLabel || '未标注'}）`,
           statusActionLabel: group.enabled ? '停用训练组' : '启用训练组',
           statusActionValue: group.enabled ? 'false' : 'true',
+          canDeleteGroup: true,
           coachNames: (group.coachUserIds || [])
             .map((userId) => this.coachNameOf(userId))
             .filter(Boolean)
@@ -579,7 +824,7 @@ Page({
     this.controllerSetIfChanged({ showGroupPanel: !this.data.showGroupPanel });
   },
 
-  /* 开发者已有合法访问教练工作台的权限（云函数允许 coach/developer），无需授予 coach 角色 */
+  /* Developer+Coach 仅切换展示身份；无 coach 时进入实名申请，不在客户端授予角色。 */
   /* V1.6 阶段8：进入按业务分类的全部功能目录（只做导航，不写入数据） */
   goAllFeatures() {
     this.markNeedsRefresh();
@@ -587,8 +832,29 @@ Page({
   },
 
   goCoachWorkbench() {
+    if (!this.data.canSwitchCoach) {
+      return;
+    }
+    try {
+      const session = getApp().globalData.session;
+      if (!sessionHasRole(session, 'coach')) {
+        return;
+      }
+      persistActiveRole('coach', session);
+    } catch (error) {
+      return;
+    }
     this.markNeedsRefresh();
     wx.navigateTo({ url: '/pages/coach/coach' });
+  },
+
+  goCoachRegistration() {
+    if (this.data.canSwitchCoach) {
+      this.goCoachWorkbench();
+      return;
+    }
+    this.markNeedsRefresh();
+    wx.navigateTo({ url: '/pages/coach-register/coach-register' });
   },
 
   goPerformanceReview() {
@@ -664,7 +930,14 @@ Page({
     const modal = await new Promise((resolve) => {
       wx.showModal({
         title: decision === 'approve' ? '确认通过注册' : '填写驳回原因',
-        content: decision === 'approve' ? '通过后学生角色由服务端正式授权。' : '',
+        content:
+          decision === 'approve'
+            ? profileType === 'coach'
+              ? '通过后教练实名资料生效；新教练获得教练角色，历史教练保持原权限。'
+              : profileType === 'parent'
+                ? '通过后家长角色由服务端正式授权，但不会自动获得学生数据。'
+                : '通过后学生角色由服务端正式授权。'
+            : '',
         editable: decision === 'reject',
         placeholderText: '可填写审核意见',
         success: resolve,
@@ -684,6 +957,7 @@ Page({
       });
       wx.showToast({ title: '已处理', icon: 'success' });
       await this.loadRegistrations();
+      await this.loadUsers();
       this.markNeedsRefresh();
     } catch (error) {
       this.controllerSetIfChanged({ actionError: error.message || '审核失败。' });
@@ -750,6 +1024,78 @@ Page({
     }
   },
 
+  async deleteUserAccount(event) {
+    const userId = event.currentTarget.dataset.userId;
+    if (!userId || this.data.deletingUserId) {
+      return;
+    }
+    this.controllerSetIfChanged({ deletingUserId: userId, actionError: '' });
+    try {
+      const result = await api.getUserDeletionImpact(userId);
+      const impact = result.impact || {};
+      if (impact.protectedDeveloper || impact.deleted) {
+        await new Promise((resolve) => {
+          wx.showModal({
+            title: impact.deleted ? '账号已经删除' : '开发者账号受保护',
+            content: impact.deleted
+              ? '该账号已处于删除状态，不能重复删除。'
+              : '不能删除任何具有有效开发者权限的账号。',
+            showCancel: false,
+            success: resolve,
+            fail: resolve
+          });
+        });
+        return;
+      }
+      const impactText = formatDeletionImpact(impact);
+      const firstConfirm = await new Promise((resolve) => {
+        wx.showModal({
+          title: '检查账号关联后删除',
+          content: `${impact.identityHint || '账号尾号未知'}。\n${impactText}。\n账号将逻辑删除、撤销有效权限并退出正常账号列表，历史业务记录保留。`,
+          confirmText: '继续删除',
+          confirmColor: '#B42318',
+          success: resolve,
+          fail: () => resolve({ confirm: false })
+        });
+      });
+      if (!firstConfirm.confirm) {
+        return;
+      }
+      const secondConfirm = await new Promise((resolve) => {
+        wx.showModal({
+          title: '二次确认删除账号',
+          content: '请输入“删除账号”后确认。',
+          editable: true,
+          placeholderText: '删除账号',
+          confirmText: '确认删除',
+          confirmColor: '#B42318',
+          success: resolve,
+          fail: () => resolve({ confirm: false })
+        });
+      });
+      if (!secondConfirm.confirm) {
+        return;
+      }
+      if (String(secondConfirm.content || '').trim() !== '删除账号') {
+        throw new Error('二次确认文字不正确，未执行删除。');
+      }
+      await api.deleteUser({
+        targetUserId: userId,
+        confirmationText: 'DELETE_ACCOUNT',
+        acknowledgeAssociations: impact.requiresAcknowledgement === true
+      });
+      wx.showToast({ title: '账号已删除', icon: 'success' });
+      await this.loadUsers();
+      await this.loadGroups();
+      this.decorateGroupCoachNames();
+      this.markNeedsRefresh();
+    } catch (error) {
+      this.controllerSetIfChanged({ actionError: error.message || '账号删除失败。' });
+    } finally {
+      this.controllerSetIfChanged({ deletingUserId: '' });
+    }
+  },
+
   onNewGroupInput(event) {
     this.controllerSetIfChanged({ newGroupName: event.detail.value });
   },
@@ -805,6 +1151,76 @@ Page({
       await this.loadGroups();
     } catch (error) {
       this.controllerSetIfChanged({ actionError: error.message || '训练组状态更新失败。' });
+    }
+  },
+
+  async deleteTrainingGroup(event) {
+    const groupId = event.currentTarget.dataset.groupId;
+    if (!groupId || this.data.deletingGroupId) {
+      return;
+    }
+    this.controllerSetIfChanged({ deletingGroupId: groupId, actionError: '' });
+    try {
+      const result = await api.getTrainingGroupDeletionImpact(groupId);
+      const impact = result.impact || {};
+      const impactText = formatGroupDeletionImpact(impact);
+      if (!impact.canDelete || impact.deleted) {
+        await new Promise((resolve) => {
+          wx.showModal({
+            title: impact.deleted ? '训练组已经删除' : '训练组存在业务关联',
+            content: impact.deleted
+              ? '该训练组已归档，不能重复删除。'
+              : `${impactText}。请先保留或人工处理相关数据。`,
+            showCancel: false,
+            success: resolve,
+            fail: resolve
+          });
+        });
+        return;
+      }
+      const firstConfirm = await new Promise((resolve) => {
+        wx.showModal({
+          title: '检查训练组关联后删除',
+          content: `${impact.name || '当前训练组'}（${impact.seasonLabel || '未标注'}）。\n${impactText}。\n删除后训练组将归档，不再出现在正常选择与统计中。`,
+          confirmText: '继续删除',
+          confirmColor: '#B42318',
+          success: resolve,
+          fail: () => resolve({ confirm: false })
+        });
+      });
+      if (!firstConfirm.confirm) {
+        return;
+      }
+      const secondConfirm = await new Promise((resolve) => {
+        wx.showModal({
+          title: '二次确认删除训练组',
+          content: '请输入“删除训练组”后确认。',
+          editable: true,
+          placeholderText: '删除训练组',
+          confirmText: '确认删除',
+          confirmColor: '#B42318',
+          success: resolve,
+          fail: () => resolve({ confirm: false })
+        });
+      });
+      if (!secondConfirm.confirm) {
+        return;
+      }
+      if (String(secondConfirm.content || '').trim() !== '删除训练组') {
+        throw new Error('二次确认文字不正确，未执行删除。');
+      }
+      await api.deleteTrainingGroup({
+        trainingGroupId: groupId,
+        confirmationText: 'DELETE_TRAINING_GROUP'
+      });
+      wx.showToast({ title: '训练组已删除', icon: 'success' });
+      await this.loadGroups();
+      this.decorateGroupCoachNames();
+      this.markNeedsRefresh();
+    } catch (error) {
+      this.controllerSetIfChanged({ actionError: error.message || '训练组删除失败。' });
+    } finally {
+      this.controllerSetIfChanged({ deletingGroupId: '' });
     }
   },
 

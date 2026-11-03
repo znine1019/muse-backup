@@ -37,9 +37,14 @@ function compareTrainingGroups(left, right) {
   return String(left.name || '').localeCompare(String(right.name || ''), 'zh-CN');
 }
 
+function isTrainingGroupDeleted(group) {
+  return Boolean(group && (group.status === 'deleted' || group.deletedAt));
+}
+
 function createRepository(db) {
   const userCollection = db.collection(COLLECTIONS.USERS);
   const profileCollection = db.collection(COLLECTIONS.STUDENT_PROFILES);
+  const coachProfileCollection = db.collection(COLLECTIONS.COACH_PROFILES);
   const parentProfileCollection = db.collection(COLLECTIONS.PARENT_PROFILES);
   const parentLinkCollection = db.collection(COLLECTIONS.PARENT_LINKS);
   const reviewCollection = db.collection(COLLECTIONS.REGISTRATION_REVIEWS);
@@ -80,6 +85,10 @@ function createRepository(db) {
 
   function profileIdForUser(userId) {
     return deterministicId('profile', userId);
+  }
+
+  function coachProfileIdForUser(userId) {
+    return deterministicId('coach_profile', userId);
   }
 
   function parentProfileIdForUser(userId) {
@@ -183,58 +192,20 @@ function createRepository(db) {
     return (result.data || [])[0] || null;
   }
 
-  async function ensureUser(identity) {
-    const userId = userIdForIdentity(identity);
-    let user = await getUserById(userId);
-
+  async function getUserByIdentity(identity) {
+    const user = await getUserById(userIdForIdentity(identity));
     if (user) {
       return user;
     }
+    return getUserByOpenId(identity.openid);
+  }
 
-    user = await getUserByOpenId(identity.openid);
-    if (user) {
-      return user;
-    }
-
-    const userData = {
-      _id: userId,
-      _openid: identity.openid,
-      unionid: identity.unionid || '',
-      status: USER_STATUS.PENDING_PROFILE,
-      roles: [],
-      schemaVersion: 1,
-      createdAt: db.serverDate(),
-      updatedAt: db.serverDate()
-    };
-
-    try {
-      await userCollection.add({ data: userData });
-    } catch (error) {
-      user = await getUserById(userId);
-      if (!user) {
-        user = await getUserByOpenId(identity.openid);
-      }
-      if (!user) {
-        throw error;
-      }
-      return user;
-    }
-
-    user = await getUserById(userId);
-    if (!user) {
-      throw new Error('USER_CREATE_READBACK_FAILED');
-    }
-
-    await writeAudit({
-      actorUserId: userId,
-      action: 'auth.login.created',
-      targetType: 'user',
-      targetId: userId,
-      result: 'success',
-      metadata: { status: USER_STATUS.PENDING_PROFILE }
-    });
-
-    return user;
+  function hasRealNameProfile(profile) {
+    return Boolean(
+      profile &&
+        typeof profile.name === 'string' &&
+        profile.name.trim().length > 0
+    );
   }
 
   async function getProfile(userId) {
@@ -243,6 +214,10 @@ function createRepository(db) {
 
   async function getParentProfile(userId) {
     return getDoc(parentProfileCollection, parentProfileIdForUser(userId));
+  }
+
+  async function getCoachProfile(userId) {
+    return getDoc(coachProfileCollection, coachProfileIdForUser(userId));
   }
 
   async function getParentLink(linkId) {
@@ -334,6 +309,11 @@ function createRepository(db) {
   }
 
   async function getTrainingGroup(groupId) {
+    const group = await getDoc(groupCollection, groupId);
+    return isTrainingGroupDeleted(group) ? null : group;
+  }
+
+  async function getTrainingGroupIncludingDeleted(groupId) {
     return getDoc(groupCollection, groupId);
   }
 
@@ -1032,12 +1012,16 @@ function createRepository(db) {
   }
   async function listEnabledTrainingGroups() {
     const groups = await queryAll(groupCollection, { enabled: true }, 300);
-    return groups.sort(compareTrainingGroups);
+    return groups
+      .filter((group) => !isTrainingGroupDeleted(group))
+      .sort(compareTrainingGroups);
   }
 
   async function listAllTrainingGroups() {
     const groups = await queryAll(groupCollection, null, 300);
-    return groups.sort(compareTrainingGroups);
+    return groups
+      .filter((group) => !isTrainingGroupDeleted(group))
+      .sort(compareTrainingGroups);
   }
 
   async function getProfilesMap(userIds) {
@@ -1049,6 +1033,40 @@ function createRepository(db) {
       const chunk = userIds.slice(index, index + 100);
       const batch = await queryAll(
         profileCollection,
+        { userId: db.command.in(chunk) },
+        chunk.length
+      );
+      profiles.push(...batch);
+    }
+    return new Map(profiles.map((profile) => [profile.userId, profile]));
+  }
+
+  async function getParentProfilesMap(userIds) {
+    if (!userIds.length) {
+      return new Map();
+    }
+    const profiles = [];
+    for (let index = 0; index < userIds.length; index += 100) {
+      const chunk = userIds.slice(index, index + 100);
+      const batch = await queryAll(
+        parentProfileCollection,
+        { userId: db.command.in(chunk) },
+        chunk.length
+      );
+      profiles.push(...batch);
+    }
+    return new Map(profiles.map((profile) => [profile.userId, profile]));
+  }
+
+  async function getCoachProfilesMap(userIds) {
+    if (!userIds.length) {
+      return new Map();
+    }
+    const profiles = [];
+    for (let index = 0; index < userIds.length; index += 100) {
+      const chunk = userIds.slice(index, index + 100);
+      const batch = await queryAll(
+        coachProfileCollection,
         { userId: db.command.in(chunk) },
         chunk.length
       );
@@ -1088,7 +1106,11 @@ function createRepository(db) {
       );
       groups.push(...batch);
     }
-    return new Map(groups.map((group) => [group._id, group]));
+    return new Map(
+      groups
+        .filter((group) => !isTrainingGroupDeleted(group))
+        .map((group) => [group._id, group])
+    );
   }
 
   async function writeAudit(entry) {
@@ -1155,6 +1177,10 @@ function createRepository(db) {
 
   return {
     attendanceRecordCollection,
+    coachProfileCollection,
+    coachProfileIdForUser,
+    getCoachProfile,
+    getCoachProfilesMap,
     parentProfileCollection,
     parentLinkCollection,
     parentProfileIdForUser,
@@ -1183,7 +1209,8 @@ function createRepository(db) {
     trainingFeedbackCollection,
     bodyMeasurementCollection: measurementCollection,
     db,
-    ensureUser,
+    getUserByIdentity,
+    hasRealNameProfile,
     getMeasurement,
     getPerformanceRecord,
     getCoachGroupIds,
@@ -1207,8 +1234,10 @@ function createRepository(db) {
     getLatestReview,
     getProfile,
     getProfilesMap,
+    getParentProfilesMap,
     getSystemConfig,
     getTrainingGroup,
+    getTrainingGroupIncludingDeleted,
     getTrainingPlan,
     getUserById,
     groupCollection,
@@ -1246,6 +1275,7 @@ function createRepository(db) {
     profileIdForUser,
     reviewCollection,
     queryAll,
+    countWhere,
     roleBindingId,
     roleCollection,
     setGroupMembership,

@@ -19,7 +19,13 @@
         <text class="jg-chip {{status === 'rejected' || status === 'disabled' ? 'jg-chip-danger' : (status === 'pending_review' ? 'jg-chip-warn' : 'jg-chip-brand')}}">{{statusLabel}}</text>
       </view>
 
-      <view wx:if="{{status === 'pending_review'}}" class="jg-note">
+      <view wx:if="{{status === 'pending_review' && pendingProfileType === 'coach'}}" class="jg-note">
+        <view><view class="jg-note-m">教练实名资料已提交，等待开发者审核。审核前不会获得教练角色。</view></view>
+      </view>
+      <view wx:if="{{status === 'unregistered'}}" class="jg-note">
+        <view><view class="jg-note-m">当前微信尚未创建系统账号。请先选择身份并填写本人真实姓名，提交后才会进入审核流程。</view></view>
+      </view>
+      <view wx:elif="{{status === 'pending_review'}}" class="jg-note">
         <view><view class="jg-note-m">资料已提交，等待负责教练员或开发者审核。</view></view>
       </view>
       <view wx:if="{{status === 'rejected'}}" class="jg-note jg-note-warn">
@@ -34,7 +40,15 @@
       </view>
     </view>
 
-    <view wx:if="{{profile}}" class="jg-card">
+    <view wx:if="{{profile && pendingProfileType === 'coach'}}" class="jg-card">
+      <view class="jg-card-h"><text class="jg-card-t">已提交教练实名资料</text></view>
+      <view class="jg-list">
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">真实姓名</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.name}}</text></view></view>
+        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">身份说明</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.identityNote || '未填写'}}</text></view></view>
+      </view>
+    </view>
+
+    <view wx:if="{{profile && pendingProfileType !== 'coach'}}" class="jg-card">
       <view class="jg-card-h"><text class="jg-card-t">已提交资料</text></view>
       <view class="jg-list">
         <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">姓名</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.name}}</text></view></view>
@@ -45,16 +59,19 @@
     </view>
 
     <view class="jg-btn-row">
-      <button wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="jg-btn" bindtap="goRegister">填写或修改资料</button>
+      <button wx:if="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'coach'}}" class="jg-btn" bindtap="goCoachRegister">填写或修改教练资料</button>
+      <button wx:elif="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'parent'}}" class="jg-btn" bindtap="goParentRegister">填写或修改家长资料</button>
+      <button wx:elif="{{(status === 'pending_profile' || status === 'rejected') && pendingProfileType !== 'coach' && pendingProfileType !== 'parent'}}" class="jg-btn" bindtap="goRegister">填写或修改学生资料</button>
       <button class="jg-btn jg-btn-ghost" bindtap="refresh">刷新状态</button>
     </view>
 
-    <view wx:if="{{status === 'pending_profile' || status === 'rejected'}}" class="jg-card">
+    <view wx:if="{{status === 'unregistered' || status === 'pending_profile' || status === 'rejected'}}" class="jg-card">
       <view class="jg-card-h"><text class="jg-card-t">首次注册身份</text></view>
-      <view class="jg-body-s">学生填写完整训练档案；家长只需姓名与监护人关系，不需要填写运动专项、成绩或体测数据。</view>
+      <view class="jg-body-s">学生填写完整训练档案；家长填写姓名与监护人关系；教练员填写本人真实姓名和身份说明。</view>
       <view class="jg-btn-row jg-mt-12">
         <button class="jg-btn" bindtap="goRegister">学生注册</button>
         <button class="jg-btn jg-btn-ghost" bindtap="goParentRegister">家长注册</button>
+        <button class="jg-btn jg-btn-ghost" bindtap="goCoachRegister">教练员注册</button>
       </view>
     </view>
 

@@ -25,7 +25,7 @@
         <view class="jg-field-row jg-mt-0">
           <text class="jg-field-label">主项</text>
           <view class="jg-field-body">
-            <picker range="{{events}}" range-key="name" value="{{primaryEventIndex}}" bindchange="onPrimaryEventChange">
+            <picker range="{{events}}" range-key="label" value="{{primaryEventIndex}}" bindchange="onPrimaryEventChange">
               <view class="jg-input jg-picker">{{events[primaryEventIndex].name || '请选择主项'}}</view>
             </picker>
           </view>
@@ -71,7 +71,7 @@
         <view class="jg-field-row jg-mt-0">
           <text class="jg-field-label">目标项目</text>
           <view class="jg-field-body">
-            <picker range="{{targetEventOptions}}" range-key="name" value="{{targetEventIndex}}" bindchange="onTargetEventChange">
+            <picker range="{{targetEventOptions}}" range-key="label" value="{{targetEventIndex}}" bindchange="onTargetEventChange">
               <view class="jg-input jg-picker">{{targetEventOptions[targetEventIndex].name || '暂不设置'}}</view>
             </picker>
           </view>

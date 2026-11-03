@@ -21,8 +21,23 @@
       </view>
     </view>
 
+    <view wx:if="{{formError}}" class="jg-state-err">
+      <view class="jg-state-err-t">提交前请检查</view>
+      <view class="jg-state-err-m">{{formError}}</view>
+    </view>
+
     <view class="jg-card">
       <view class="jg-card-h"><text class="jg-card-t">家长资料</text><text class="jg-card-c">必填 2 项</text></view>
+
+      <view class="jg-note jg-note-warn jg-realname-alert">
+        <view>
+          <view class="jg-note-t">真实姓名填写提醒</view>
+          <view class="jg-note-m">请务必填写您本人的真实姓名！</view>
+          <view class="jg-note-m">真实姓名将用于俱乐部人员管理、身份审核、训练成绩记录及考勤管理。</view>
+          <view class="jg-note-m">禁止使用微信昵称、网名、虚假姓名或他人姓名。</view>
+          <view class="jg-note-m">请填写家长本人真实姓名，请勿填写孩子的姓名，请认真核对后提交。</view>
+        </view>
+      </view>
 
       <view class="jg-field-row">
         <view class="jg-field-label">家长姓名 <text class="form-req">*</text></view>

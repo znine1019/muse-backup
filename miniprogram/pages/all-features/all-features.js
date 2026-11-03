@@ -11,8 +11,8 @@
 const {
   availableRoles,
   categoriesForRole,
-  featuresForRole,
-  hasCatalog
+  hasCatalog,
+  isFeatureAvailable
 } = require('../../config/feature-catalog');
 const { getRoleLabel, getSessionDestination } = require('../../utils/session');
 const {
@@ -109,13 +109,15 @@ Page({
   render(available, activeRole) {
     /* 统一按固定角色顺序排列，避免调用方传入顺序影响展示与记忆 */
     const roles = availableRoles(available);
-    const categories = categoriesForRole(activeRole).map((category) => ({
-      key: category.key,
-      label: category.label,
-      count: category.items.length,
-      items: category.items.map(tileOf)
-    }));
-    const total = featuresForRole(activeRole).length;
+    const categories = categoriesForRole(activeRole)
+      .map((category) => {
+        const items = category.items
+          .filter((item) => isFeatureAvailable(item, roles))
+          .map(tileOf);
+        return { key: category.key, label: category.label, count: items.length, items };
+      })
+      .filter((category) => category.items.length > 0);
+    const total = categories.reduce((sum, category) => sum + category.items.length, 0);
 
     this.setData({
       loading: false,

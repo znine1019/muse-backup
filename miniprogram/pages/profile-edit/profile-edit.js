@@ -55,14 +55,26 @@ Page({
         api.listMeasurements()
       ]);
       const profile = profileResult.profile || {};
-      const events = eventResult.events || [];
+      const activeEvents = (eventResult.events || []).map((event) => ({
+        ...event,
+        label: `${event.categoryLabel || '运动项目'} · ${event.name}`
+      }));
+      const referencedCodes = new Set([
+        profile.primaryEventCode || '',
+        ...(profile.secondaryEventCodes || []),
+        (profile.examGoal || {}).targetEventCode || ''
+      ].filter(Boolean));
+      const legacyEvents = (eventResult.legacyEvents || [])
+        .filter((event) => referencedCodes.has(event.code))
+        .map((event) => ({ ...event, label: `历史兼容 · ${event.name}` }));
+      const events = activeEvents.concat(legacyEvents);
       const primaryIndex = Math.max(
         0,
         events.findIndex((event) => event.code === profile.primaryEventCode)
       );
       const secondaryCodes = new Set(profile.secondaryEventCodes || []);
       const targetEventOptions = [
-        { code: '', name: '暂不设置数值化目标' },
+        { code: '', name: '暂不设置数值化目标', label: '暂不设置数值化目标' },
         ...events
       ];
       const targetEventCode = (profile.examGoal || {}).targetEventCode || '';

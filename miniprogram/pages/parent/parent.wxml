@@ -129,7 +129,7 @@
             <view class="jg-row-t">{{item.eventName}}</view>
             <view class="jg-row-m">取得日期：{{item.date}}</view>
           </view>
-          <view class="jg-row-e"><text class="jg-row-v">{{item.value}} {{item.unit}}</text></view>
+          <view class="jg-row-e"><text class="jg-row-v">{{item.valueText}}</text></view>
         </view>
       </view>
       <view class="jg-note"><view><view class="jg-note-m">未审核、已驳回的成绩不会展示给家长。</view></view></view>

@@ -10,9 +10,11 @@ const {
 } = require('../../cloudfunctions/api/lib/constants');
 const {
   addDays,
-  clubDateOnly,
   periodRange
 } = require('../../cloudfunctions/api/lib/dates');
+const {
+  buildAttendanceStatistics
+} = require('../../cloudfunctions/api/lib/attendance-rules');
 const {
   COACH_A,
   DEVELOPER,
@@ -27,14 +29,19 @@ const {
   createHarness
 } = require('./helpers');
 
+const FIXED_PERIOD = Object.freeze({
+  periodType: 'month',
+  year: 2026,
+  month: 10
+});
+const FIXED_TODAY = '2026-10-15';
+
+function fixedPayload(extra = {}) {
+  return { ...FIXED_PERIOD, ...extra };
+}
+
 function currentPayload(extra = {}) {
-  const today = clubDateOnly();
-  return {
-    periodType: 'month',
-    year: Number(today.slice(0, 4)),
-    month: Number(today.slice(5, 7)),
-    ...extra
-  };
+  return fixedPayload(extra);
 }
 
 function session(id, groupId, attendanceDate, overrides = {}) {
@@ -57,7 +64,7 @@ function record(sessionId, studentUserId, status, overrides = {}) {
     sessionId,
     studentUserId,
     trainingGroupId: GROUP_A,
-    attendanceDate: clubDateOnly(),
+    attendanceDate: FIXED_TODAY,
     status,
     source: 'gps',
     checkInAt: null,
@@ -72,7 +79,7 @@ function leave(sessionId, studentUserId, status, overrides = {}) {
     sessionId,
     studentUserId,
     trainingGroupId: GROUP_A,
-    attendanceDate: clubDateOnly(),
+    attendanceDate: FIXED_TODAY,
     status,
     reason: '私人原因',
     ...overrides
@@ -134,7 +141,7 @@ test('coach cannot request another group statistics', async () => {
 
 test('performance leaderboard uses approved records and keeps historical PB separate', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   const older = addDays(today, -40);
   harness.state.performances.push(
     performance('perf_a_old', STUDENT_A._id, '100m', 11.5, older),
@@ -157,7 +164,7 @@ test('performance leaderboard uses approved records and keeps historical PB sepa
 
 test('performance leaderboard uses higher-is-better for distance events', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.performances.push(
     performance('jump_a', STUDENT_A._id, 'long_jump', 4.2, today),
     performance('jump_b', STUDENT_B._id, 'long_jump', 5.0, today)
@@ -173,7 +180,7 @@ test('performance leaderboard uses higher-is-better for distance events', async 
 
 test('performance leaderboard assigns standard tied ranks and stable order', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.memberships.push({
     _id: 'member_d_a',
     userId: 'usr_student_d',
@@ -202,7 +209,7 @@ test('performance leaderboard assigns standard tied ranks and stable order', asy
 
 test('student sees own rank with other competitors masked', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.performances.push(
     performance('sa', STUDENT_A._id, '100m', 12.1, today),
     performance('sb', STUDENT_B._id, '100m', 11.9, today)
@@ -220,7 +227,7 @@ test('student sees own rank with other competitors masked', async () => {
 
 test('developer sees authorized global performance data', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.performances.push(
     performance('global_a', STUDENT_A._id, '100m', 12.1, today),
     performance('global_c', STUDENT_C._id, '100m', 11.9, today)
@@ -236,16 +243,12 @@ test('developer sees authorized global performance data', async () => {
 
 test('attendance statistics distinguish leave, verification, absence and open sessions', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(
     session('s1', GROUP_A, addDays(today, -6)),
     session('s2', GROUP_A, addDays(today, -5)),
     session('s3', GROUP_A, addDays(today, -4)),
-    session('s4', GROUP_A, addDays(today, -3)),
-    session('s_open', GROUP_A, today, {
-      checkInOpenTime: '00:00',
-      checkInCloseTime: '23:59'
-    })
+    session('s4', GROUP_A, addDays(today, -3))
   );
   harness.state.records.push(
     record('s1', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN),
@@ -265,12 +268,28 @@ test('attendance statistics distinguish leave, verification, absence and open se
   assert.equal(result.summary.rateExpected, 7);
   assert.equal(result.summary.rateValid, 2);
   assert.equal(result.summary.attendanceRate, 0.2857);
+  assert.equal(result.dataQuality.hasOpenSessions, false);
+});
+
+test('attendance statistics marks an explicitly open session without counting it in the rate', () => {
+  const harness = createHarness();
+  const result = buildAttendanceStatistics({
+    sessions: [session('open_fixed', GROUP_A, '2026-10-10')],
+    records: [],
+    leaves: [],
+    memberships: harness.state.memberships,
+    profilesMap: harness.state.profiles,
+    groupsMap: harness.state.groups,
+    now: new Date('2026-10-10T01:30:00.000Z')
+  });
+  assert.equal(result.sessionCounts.open, 1);
+  assert.equal(result.summary.rateExpected, 0);
   assert.equal(result.dataQuality.hasOpenSessions, true);
 });
 
 test('cancelled sessions are excluded from attendance denominators', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(
     session('cancelled', GROUP_A, addDays(today, -2), { status: 'cancelled' }),
     session('valid', GROUP_A, addDays(today, -1))
@@ -302,7 +321,7 @@ test('zero denominator attendance rate is null instead of fake 100 percent', asy
 
 test('attendance rows expose sample size and minimum sample marker', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(
     session('sample_1', GROUP_A, addDays(today, -2)),
     session('sample_2', GROUP_A, addDays(today, -1))
@@ -324,7 +343,7 @@ test('attendance rows expose sample size and minimum sample marker', async () =>
 
 test('attendance ranking is withheld when membership history is ambiguous', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(
     session('limited_1', GROUP_A, addDays(today, -2)),
     session('limited_2', GROUP_A, addDays(today, -1))
@@ -349,7 +368,7 @@ test('attendance ranking is withheld when membership history is ambiguous', asyn
 
 test('personal statistics include PB, attendance and RPE summary', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(session('personal_session', GROUP_A, addDays(today, -1)));
   harness.state.records.push(
     record('personal_session', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN)
@@ -381,7 +400,7 @@ test('personal statistics include PB, attendance and RPE summary', async () => {
 
 test('personal statistics separate period results from historical personal best', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.performances.push(
     performance('personal_old_pb', STUDENT_A._id, '100m', 11.5, addDays(today, -60)),
     performance('personal_current', STUDENT_A._id, '100m', 11.8, today)
@@ -399,7 +418,7 @@ test('personal statistics separate period results from historical personal best'
 
 test('management overview summarizes groups and marks stable membership scope', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(session('manage_session', GROUP_A, addDays(today, -1)));
   harness.state.records.push(
     record('manage_session', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN)
@@ -420,7 +439,7 @@ test('management overview summarizes groups and marks stable membership scope', 
 
 test('performance export only emits approved rows and enforces an explicit cap', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.performances.push(
     performance('export_ok', STUDENT_A._id, '100m', 12.2, today),
     performance('export_pending', STUDENT_A._id, '100m', 11.9, today, 'pending')
@@ -445,7 +464,7 @@ test('performance export only emits approved rows and enforces an explicit cap',
 
 test('performance export checks the exact row cap and detects one extra record', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   for (let index = 0; index < 2000; index += 1) {
     harness.state.performances.push(
       performance(`cap_${index}`, STUDENT_A._id, '100m', 11 + index / 1000, today)
@@ -473,7 +492,7 @@ test('performance export checks the exact row cap and detects one extra record',
 });
 test('attendance export omits leave reason and GPS coordinates', async () => {
   const harness = createHarness();
-  const today = clubDateOnly();
+  const today = FIXED_TODAY;
   harness.state.sessions.push(session('export_attendance', GROUP_A, addDays(today, -1)));
   harness.state.records.push(
     record('export_attendance', STUDENT_A._id, ATTENDANCE_RECORD_STATUS.CHECKED_IN, {
@@ -526,7 +545,7 @@ test('feedback summary reports completion and attention without ranking RPE', as
       _id: 'fb1',
       studentUserId: STUDENT_A._id,
       trainingGroupId: GROUP_A,
-      attendanceDate: clubDateOnly(),
+      attendanceDate: FIXED_TODAY,
       completionStatus: 'not_completed',
       rpe: 9,
       comment: '身体不适',

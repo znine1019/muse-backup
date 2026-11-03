@@ -150,9 +150,9 @@
         <view class="jg-body-s jg-mt-8">项目：{{item.eventNames}}</view>
 
         <view class="jg-actions-wrap">
-          <button wx:if="{{item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition">发布</button>
-          <button wx:if="{{item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="close" bindtap="transition">关闭意向</button>
-          <button wx:if="{{item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition">归档</button>
+<button wx:if="{{item.canManage && item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition">发布</button>
+<button wx:if="{{item.canManage && item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="close" bindtap="transition">关闭意向</button>
+<button wx:if="{{item.canManage && item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition">归档</button>
           <button class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" bindtap="loadRegistrations">查看报名意向</button>
           <button class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" bindtap="exportRegistrations" loading="{{exporting}}">导出XLSX</button>
         </view>

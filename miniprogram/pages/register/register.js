@@ -18,6 +18,7 @@ Page({
     loading: true,
     submitting: false,
     error: '',
+    formError: '',
     form: { ...EMPTY_FORM },
     genderOptions: [
       { value: 'male', label: '男' },
@@ -118,15 +119,20 @@ Page({
     if (this.data.submitting) {
       return;
     }
-    this.setData({ submitting: true, error: '' });
+    const name = String(this.data.form.name || '').trim();
+    if (!name) {
+      this.setData({ formError: '请填写学生本人真实姓名。' });
+      return;
+    }
+    this.setData({ submitting: true, error: '', formError: '' });
 
     try {
-      await api.submitProfile(this.data.form);
+      await api.submitProfile({ ...this.data.form, name });
       wx.reLaunch({ url: '/pages/pending/pending' });
     } catch (error) {
       this.setData({
         submitting: false,
-        error: error.message || '提交失败，请检查后重试。'
+        formError: error.message || '提交失败，请检查后重试。'
       });
     }
   }

@@ -7,6 +7,11 @@ const {
   ROLES
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
+const {
+  assertCanFullyManageScopesInTransaction,
+  canFullyManageScope,
+  isDeveloperActor
+} = require('../lib/management-scope');
 const { loadActiveActor } = require('../lib/session');
 const { getDocumentOrNull } = require('../lib/transaction');
 const {
@@ -19,7 +24,7 @@ const {
 } = require('../lib/validation');
 
 function isDeveloper(actor) {
-  return actor.roles.includes(ROLES.DEVELOPER);
+  return isDeveloperActor(actor);
 }
 
 function readableNotice(notice, extra = {}) {
@@ -32,6 +37,7 @@ function readableNotice(notice, extra = {}) {
     priority: notice.priority || 'normal',
     trainingGroupIds: notice.trainingGroupIds || [],
     trainingGroupNames: extra.trainingGroupNames || [],
+    canManage: extra.canManage === true,
     status: notice.status,
     version: Number(notice.version) || 1,
     publishedAt: notice.publishedAt || null,
@@ -79,7 +85,13 @@ function createNoticeActions({ repository }) {
       return;
     }
     const coachGroups = await repository.getCoachGroupIds(actor._id);
-    if (!visibleToGroups(notice, coachGroups)) {
+    if (
+      !canFullyManageScope({
+        actor,
+        resourceGroupIds: notice.trainingGroupIds || [],
+        coachGroupIds: coachGroups
+      })
+    ) {
       fail('OUT_OF_SCOPE', '只能管理本人负责训练组的通知。');
     }
   }
@@ -110,7 +122,14 @@ function createNoticeActions({ repository }) {
           readableNotice(notice, {
             trainingGroupNames: (notice.trainingGroupIds || [])
               .map((groupId) => (groupsMap.get(groupId) || {}).name)
-              .filter(Boolean)
+              .filter(Boolean),
+            canManage:
+              isDeveloper(actor) ||
+              canFullyManageScope({
+                actor,
+                resourceGroupIds: notice.trainingGroupIds || [],
+                coachGroupIds: coachGroups || []
+              })
           })
         ),
       total: visible.length,
@@ -131,7 +150,8 @@ function createNoticeActions({ repository }) {
       notice: readableNotice(notice, {
         trainingGroupNames: (notice.trainingGroupIds || [])
           .map((groupId) => (groupsMap.get(groupId) || {}).name)
-          .filter(Boolean)
+          .filter(Boolean),
+        canManage: true
       })
     };
   }
@@ -173,6 +193,11 @@ function createNoticeActions({ repository }) {
       if (current) {
         return;
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [input.trainingGroupIds]
+      });
       await reference.set({ data: noticeData });
       await transaction
         .collection(COLLECTIONS.AUDIT_LOGS)
@@ -218,6 +243,14 @@ function createNoticeActions({ repository }) {
       if (!current) {
         fail('NOTICE_NOT_FOUND', '通知不存在。');
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [
+          current.trainingGroupIds || [],
+          input.trainingGroupIds
+        ]
+      });
       if ((Number(current.version) || 1) !== input.expectedVersion) {
         fail('NOTICE_VERSION_CONFLICT', '通知已被其他操作更新，请重新加载。');
       }
@@ -281,6 +314,11 @@ function createNoticeActions({ repository }) {
       if (!current) {
         fail('NOTICE_NOT_FOUND', '通知不存在。');
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [current.trainingGroupIds || []]
+      });
       if ((Number(current.version) || 1) !== input.expectedVersion) {
         fail('NOTICE_VERSION_CONFLICT', '通知已被其他操作更新，请重新加载。');
       }

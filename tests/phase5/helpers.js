@@ -62,6 +62,9 @@ function matchesWhere(record, where) {
     if (expected && typeof expected === 'object' && expected.__op === 'lte') {
       return record[field] <= expected.value;
     }
+    if (Array.isArray(record[field])) {
+      return record[field].includes(expected);
+    }
     return record[field] === expected;
   });
 }
@@ -77,6 +80,9 @@ const COLLECTION_KEYS = Object.freeze({
   notice_reads: 'reads',
   training_feedback: 'feedback',
   audit_logs: 'audits'
+  ,
+  users: 'users',
+  group_memberships: 'groupMemberships'
 });
 
 function createHarness() {
@@ -89,6 +95,19 @@ function createHarness() {
       [IDENTITIES.studentB.openid, STUDENT_B],
       [IDENTITIES.studentC.openid, STUDENT_C],
       [IDENTITIES.disabledStudent.openid, DISABLED_STUDENT]
+    ]),
+    users: new Map([
+      [COACH_A._id, COACH_A],
+      [COACH_B._id, COACH_B],
+      [DEVELOPER._id, DEVELOPER],
+      [STUDENT_A._id, STUDENT_A],
+      [STUDENT_B._id, STUDENT_B],
+      [STUDENT_C._id, STUDENT_C],
+      [DISABLED_STUDENT._id, DISABLED_STUDENT]
+    ]),
+    groupMemberships: new Map([
+      ['coach_a_group_a', { _id: 'coach_a_group_a', userId: COACH_A._id, groupId: GROUP_A, roleInGroup: 'coach', status: 'active' }],
+      ['coach_b_group_b', { _id: 'coach_b_group_b', userId: COACH_B._id, groupId: GROUP_B, roleInGroup: 'coach', status: 'active' }]
     ]),
     groups: new Map([
       [
@@ -353,6 +372,24 @@ function createHarness() {
               return {
                 doc(id) {
                   return createReference(name, id);
+                }
+                ,
+                where(where) {
+                  let limit = 100;
+                  return {
+                    limit(value) {
+                      limit = Number(value) || limit;
+                      return this;
+                    },
+                    async get() {
+                      return {
+                        data: Array.from(collectionFor(name).values())
+                          .filter((record) => matchesWhere(record, where))
+                          .slice(0, limit)
+                          .map(clone)
+                      };
+                    }
+                  };
                 }
               };
             }

@@ -34,6 +34,11 @@ function createRepository(initialGroup, overrides = {}) {
     ensureUser: async () => DEVELOPER,
     getTrainingGroup: async () => (group ? { ...group } : null),
     getUserById: async () => null,
+    getCoachProfile: async (userId) => ({
+      userId,
+      name: '实名教练',
+      reviewStatus: 'approved'
+    }),
     groupCollection: {
       doc: (id) => ({
         async set({ data }) {
@@ -248,4 +253,40 @@ test('developer assigns and removes a coach membership with audit', async () => 
     'admin.training_group.coach_assigned'
   );
   assert.equal(repository.getAudits()[0].metadata.active, false);
+});
+
+test('coach membership assignment rejects a coach without approved real-name profile', async () => {
+  const repository = createRepository(
+    {
+      _id: 'group_a',
+      groupId: 'group_a',
+      name: '模拟短跑组',
+      seasonLabel: '2026测试周期',
+      enabled: true
+    },
+    {
+      getUserById: async () => ({
+        _id: 'usr_coach',
+        status: 'active',
+        roles: ['coach']
+      }),
+      getCoachProfile: async () => null
+    }
+  );
+  const actions = createGroupAdminActions({ repository });
+
+  const error = await captureError(
+    actions['admin.set_group_coach']({
+      identity: IDENTITY,
+      payload: {
+        coachUserId: 'usr_coach',
+        trainingGroupId: 'group_a',
+        active: true
+      }
+    })
+  );
+
+  assert.equal(error.code, 'INVALID_COACH');
+  assert.equal(repository.getWrites().length, 0);
+  assert.equal(repository.getAudits().length, 0);
 });

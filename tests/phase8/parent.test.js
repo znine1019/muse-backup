@@ -176,7 +176,7 @@ test('家长注册：提交资料写入 parent_profiles 且不包含学生专属
   assert.equal(result.status, 'pending_review');
   const stored = ctx.repository
     .readCollection('parent_profiles')
-    .find((profile) => profile.userId === 'usr_openid_new_parent');
+    .find((profile) => profile.name === '家长丙');
   assert.equal(stored.reviewStatus, 'pending');
   assert.equal(stored.heightCm, undefined);
   assert.equal(stored.primaryTrainingProject, undefined);

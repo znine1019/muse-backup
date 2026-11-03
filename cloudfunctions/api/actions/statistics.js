@@ -13,7 +13,10 @@ const {
   buildAttendanceDetailRows,
   buildAttendanceStatistics
 } = require('../lib/attendance-rules');
-const { listPerformanceEvents, getPerformanceEvent } = require('../lib/performance-events');
+const {
+  getPerformanceEvent,
+  listAllPerformanceEvents
+} = require('../lib/performance-events');
 const { buildAutomaticReport } = require('../lib/report-builder');
 const { loadActiveActor } = require('../lib/session');
 const {
@@ -37,6 +40,14 @@ const MAX_COACH_MEMBERSHIPS = 5000;
 
 function isDeveloper(actor) {
   return actor.roles.includes(ROLES.DEVELOPER);
+}
+
+function profileHasRealName(profile) {
+  return Boolean(
+    profile &&
+      typeof profile.name === 'string' &&
+      profile.name.trim().length > 0
+  );
 }
 
 function serializePeriod(range) {
@@ -131,12 +142,6 @@ function buildStudentGroupMaps(memberships, groupsMap, coachNamesByGroup = new M
   };
 }
 
-function coachNameForUser(userId, user) {
-  const displayName = String(
-    (user && (user.displayName || user.name)) || ''
-  ).trim();
-  return displayName || String(userId || '').trim();
-}
 
 function isActiveCoachUser(user) {
   return Boolean(
@@ -182,6 +187,7 @@ async function getScopeCoachContext(repository, scope) {
         new Set(memberships.map((membership) => membership.userId).filter(Boolean))
       );
       const usersMap = await repository.getUsersMap(userIds);
+      const coachProfilesMap = await repository.getCoachProfilesMap(userIds);
       const seenRelations = new Set();
       const validCoachIdsByGroup = new Map();
       const validCoachIds = new Set();
@@ -201,6 +207,14 @@ async function getScopeCoachContext(repository, scope) {
         if (!isActiveCoachUser(usersMap.get(membership.userId))) {
           continue;
         }
+        const coachProfile = coachProfilesMap.get(membership.userId);
+        if (
+          !coachProfile ||
+          coachProfile.reviewStatus !== 'approved' ||
+          !profileHasRealName(coachProfile)
+        ) {
+          continue;
+        }
         seenRelations.add(relationKey);
         validCoachIds.add(membership.userId);
         const groupCoachIds = validCoachIdsByGroup.get(membership.groupId) || new Set();
@@ -213,7 +227,7 @@ async function getScopeCoachContext(repository, scope) {
         const names = Array.from(groupCoachIds)
           .map((userId) => ({
             userId,
-            name: coachNameForUser(userId, usersMap.get(userId))
+            name: String(coachProfilesMap.get(userId).name).trim()
           }))
           .sort(
             (left, right) =>
@@ -236,12 +250,14 @@ async function getScopeCoachContext(repository, scope) {
 }
 
 function decoratePerformanceRecords(records, profilesMap, groupNamesMap, coachNamesMap) {
-  return buildPerformanceRows(records).map((record) => ({
+  return buildPerformanceRows(records)
+    .filter((record) => profileHasRealName(profilesMap.get(record.studentUserId)))
+    .map((record) => ({
     ...record,
-    studentName: (profilesMap.get(record.studentUserId) || {}).name || '未命名学生',
+    studentName: profilesMap.get(record.studentUserId).name.trim(),
     trainingGroupNames: groupNamesMap.get(record.studentUserId) || [],
     coachNames: coachNamesMap.get(record.studentUserId) || []
-  }));
+    }));
 }
 
 function createStatisticsActions({ repository }) {
@@ -285,24 +301,33 @@ function createStatisticsActions({ repository }) {
       );
     }
     const memberships = membershipResult.records || [];
+    const membershipStudentIds = Array.from(
+      new Set(memberships.map((membership) => membership.userId).filter(Boolean))
+    );
+    const fallbackStudentIds = membershipStudentIds.length
+      ? membershipStudentIds
+      : await repository.getStudentUserIdsForGroups(groupIds);
+    const profilesMap = await repository.getProfilesMap(fallbackStudentIds);
+    const validStudentIds = fallbackStudentIds.filter((userId) =>
+      profileHasRealName(profilesMap.get(userId))
+    );
+    const validStudentIdSet = new Set(validStudentIds);
     const activeStudentIds = Array.from(
       new Set(
         memberships
-          .filter((membership) => membership.status === MEMBERSHIP_STATUS.ACTIVE)
+          .filter(
+            (membership) =>
+              membership.status === MEMBERSHIP_STATUS.ACTIVE &&
+              validStudentIdSet.has(membership.userId)
+          )
           .map((membership) => membership.userId)
       )
     );
-    const allStudentIds = Array.from(
-      new Set(memberships.map((membership) => membership.userId))
-    );
-    const fallbackStudentIds = allStudentIds.length
-      ? allStudentIds
-      : await repository.getStudentUserIdsForGroups(groupIds);
     return {
       groupIds,
       groupsMap,
       memberships,
-      allStudentIds: fallbackStudentIds,
+      allStudentIds: validStudentIds,
       activeStudentIds
     };
   }
@@ -412,7 +437,7 @@ function createStatisticsActions({ repository }) {
         : actor.roles.includes(ROLES.COACH)
           ? ROLES.COACH
           : ROLES.STUDENT,
-      events: listPerformanceEvents(),
+      events: listAllPerformanceEvents(),
       groups: Array.from(scope.groupsMap.values()).map((group) => ({
         id: group._id,
         groupId: group.groupId || group._id,
@@ -433,7 +458,7 @@ function createStatisticsActions({ repository }) {
       repository.getProfile(actor._id),
       repository.getStudentGroupIds(actor._id)
     ]);
-    if (!profile) {
+    if (!profileHasRealName(profile)) {
       fail('PROFILE_NOT_FOUND', '学生档案不存在。');
     }
     const groupsMap = await repository.getGroupsMap(groupIds);
@@ -782,14 +807,16 @@ function createStatisticsActions({ repository }) {
     }
     const profilesMap = await repository.getProfilesMap(studentIds);
     const groupMaps = await loadGroupMapsForScope(scope);
-    const rows = detailRows.map((row) => ({
+    const rows = detailRows
+      .filter((row) => profileHasRealName(profilesMap.get(row.studentUserId)))
+      .map((row) => ({
       trainingGroupId: row.trainingGroupId,
       trainingGroupName:
         (scope.groupsMap.get(row.trainingGroupId) || {}).name || '未命名训练组',
       attendanceDate: row.attendanceDate,
       studentUserId: row.studentUserId,
       studentName:
-        (profilesMap.get(row.studentUserId) || {}).name || '未命名学生',
+        profilesMap.get(row.studentUserId).name.trim(),
       status: row.status,
       phase: row.phase,
       checkInAt: row.checkInAt ? new Date(row.checkInAt).toISOString() : '',

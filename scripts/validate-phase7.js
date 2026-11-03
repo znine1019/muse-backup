@@ -266,7 +266,16 @@ for (const [file, source] of [
 /* 开发者角色文案不得出现教练端标识 */
 const adminWxml = readText('miniprogram/pages/admin/admin.wxml');
 check(!/\bCOACH\b/.test(adminWxml), '开发者工作台不包含 COACH 模块名');
-check(!/教练端/.test(adminWxml), '开发者工作台不包含“教练端”文案');
+check(
+  adminWxml.includes('wx:if="{{canSwitchCoach}}"') &&
+    adminWxml.includes('切换教练工作台'),
+  '已有 Coach 角色时显示切换教练工作台入口'
+);
+check(
+  adminWxml.includes('wx:if="{{!canSwitchCoach}}"') &&
+    adminWxml.includes('申请教练员身份'),
+  '未具备 Coach 角色时显示实名申请入口'
+);
 check(adminWxml.includes('role-label="开发者"'), '开发者工作台使用开发者角色标识');
 
 /* 三端均不重复页面顶部英文模块名 */

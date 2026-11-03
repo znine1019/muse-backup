@@ -9,7 +9,12 @@ const {
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
-const { loadActiveActor, loadUser, readableProfile } = require('../lib/session');
+const { loadActiveActor, loadOptionalUser, readableProfile } = require('../lib/session');
+const { hasRealNameProfile } = require('../lib/profile-name');
+const {
+  getOrCreateRegistrationUser,
+  resolveRegistrationIdentity
+} = require('../lib/registration-account');
 const { getProfileSubmissionDecision } = require('../lib/state-guards');
 const { getDocumentOrNull } = require('../lib/transaction');
 const {
@@ -53,10 +58,21 @@ function readablePerformanceRecord(record) {
 
 function createProfileActions({ repository }) {
   async function getProfile({ identity }) {
-    const user = await loadUser(repository, identity, { allowDisabled: true });
+    const user = await loadOptionalUser(repository, identity, {
+      allowDisabled: true
+    });
+    if (!user) {
+      return {
+        registered: false,
+        userStatus: 'unregistered',
+        profile: null,
+        reviewComment: ''
+      };
+    }
     if (user.status === USER_STATUS.DISABLED) {
       return {
         userStatus: user.status,
+        registered: true,
         profile: null,
         reviewComment: ''
       };
@@ -66,15 +82,23 @@ function createProfileActions({ repository }) {
     const review = await repository.getLatestReview(user._id);
     return {
       userStatus: user.status,
+      registered: true,
       profile: readableProfile(profile),
       reviewComment: (review && review.comment) || (profile && profile.reviewComment) || ''
     };
   }
 
-  async function submitProfile({ identity, payload, context }) {
-    const initialUser = await loadUser(repository, identity);
-    const initialDecision = getProfileSubmissionDecision(initialUser.status);
-    if (initialDecision.action === 'idempotent') {
+  async function submitProfile({ identity, payload }) {
+    const registration = await resolveRegistrationIdentity(
+      repository,
+      identity,
+      ROLES.STUDENT
+    );
+    const initialUser = registration.existingUser;
+    const initialDecision = initialUser
+      ? getProfileSubmissionDecision(initialUser.status)
+      : null;
+    if (initialDecision && initialDecision.action === 'idempotent') {
       return {
         userStatus: USER_STATUS.PENDING_REVIEW,
         reviewStatus: REVIEW_STATUS.PENDING,
@@ -90,21 +114,14 @@ function createProfileActions({ repository }) {
       }
     }
 
-    const profileId = repository.profileIdForUser(initialUser._id);
-    const reviewId = deterministicId(
-      'review',
-      initialUser._id,
-      context.requestId || String(Date.now())
-    );
-
+    const profileId = repository.profileIdForUser(registration.userId);
     return repository.db.runTransaction(async (transaction) => {
-      const userReference = transaction
-        .collection(COLLECTIONS.USERS)
-        .doc(initialUser._id);
-      const currentUser = await getDocumentOrNull(userReference);
-      if (!currentUser) {
-        fail('USER_NOT_FOUND', '当前用户账号不存在。');
-      }
+      const account = await getOrCreateRegistrationUser(
+        repository,
+        transaction,
+        registration
+      );
+      const { user: currentUser, userReference } = account;
       const currentDecision = getProfileSubmissionDecision(currentUser.status);
       if (currentDecision.action === 'idempotent') {
         return {
@@ -117,6 +134,14 @@ function createProfileActions({ repository }) {
       const profileReference = transaction
         .collection(COLLECTIONS.STUDENT_PROFILES)
         .doc(profileId);
+      const currentProfile = await getDocumentOrNull(profileReference);
+      const nextSubmissionCount =
+        (Number(currentProfile && currentProfile.submissionCount) || 0) + 1;
+      const reviewId = deterministicId(
+        'review_student',
+        currentUser._id,
+        String(nextSubmissionCount)
+      );
       const submittedAt = repository.db.serverDate();
 
       await profileReference.set({
@@ -128,6 +153,7 @@ function createProfileActions({ repository }) {
           submittedAt,
           updatedAt: repository.db.serverDate(),
           currentReviewId: reviewId,
+          submissionCount: nextSubmissionCount,
           schemaVersion: 1
         }
       });
@@ -138,6 +164,7 @@ function createProfileActions({ repository }) {
           data: {
             userId: currentUser._id,
             profileId,
+            profileType: ROLES.STUDENT,
             status: REVIEW_STATUS.PENDING,
             comment: '',
             submittedAt: repository.db.serverDate(),
@@ -147,6 +174,7 @@ function createProfileActions({ repository }) {
       await userReference.update({
         data: {
           status: USER_STATUS.PENDING_REVIEW,
+          pendingProfileType: ROLES.STUDENT,
           updatedAt: repository.db.serverDate()
         }
       });
@@ -318,6 +346,7 @@ function createProfileActions({ repository }) {
     }
     return {
       profiles: profiles
+        .filter((profile) => hasRealNameProfile(profile))
         .filter((profile) => profile.reviewStatus === REVIEW_STATUS.APPROVED)
         .map(readableProfile)
     };
@@ -345,6 +374,9 @@ function createProfileActions({ repository }) {
       }
     }
     const profile = await repository.getProfile(targetUserId);
+    if (!hasRealNameProfile(profile)) {
+      fail('STUDENT_NOT_FOUND', '未找到有效实名学生账号。');
+    }
     if (!profile) {
       fail('PROFILE_NOT_FOUND', '学生档案不存在。');
     }

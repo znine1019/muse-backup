@@ -7,7 +7,11 @@ const {
 } = require('../lib/constants');
 const { fail } = require('../lib/errors');
 const { deterministicId } = require('../lib/repository');
-const { listPerformanceEvents } = require('../lib/performance-events');
+const {
+  listLegacyPerformanceEvents,
+  listPerformanceEvents
+} = require('../lib/performance-events');
+const { hasRealNameProfile } = require('../lib/profile-name');
 const { loadActiveActor } = require('../lib/session');
 const { getDocumentOrNull } = require('../lib/transaction');
 const {
@@ -38,7 +42,10 @@ function readablePerformanceRecord(record) {
 function createPerformanceActions({ repository }) {
   async function listEvents({ identity }) {
     await loadActiveActor(repository, identity, []);
-    return { events: listPerformanceEvents() };
+    return {
+      events: listPerformanceEvents(),
+      legacyEvents: listLegacyPerformanceEvents()
+    };
   }
 
   async function submitPerformance({ identity, payload }) {
@@ -117,7 +124,6 @@ function createPerformanceActions({ repository }) {
       ROLES.COACH
     ]);
     let records = await repository.listPendingPerformanceRecords(300);
-    let scopedStudentIds = null;
 
     if (actor.roles.includes(ROLES.COACH) && !actor.roles.includes(ROLES.DEVELOPER)) {
       const groupIds = await repository.getCoachGroupIds(actor._id);
@@ -126,22 +132,26 @@ function createPerformanceActions({ repository }) {
       records = records.filter((record) =>
         allowedStudents.has(record.studentUserId)
       );
-      scopedStudentIds = studentIds;
     }
 
     const studentUserIds = Array.from(
       new Set(records.map((record) => record.studentUserId))
     );
-    const [profilesMap, groupNamesMap, pendingCount] = await Promise.all([
+    const [profilesMap, groupNamesMap] = await Promise.all([
       repository.getProfilesMap(studentUserIds),
-      repository.getStudentGroupNamesMap(studentUserIds),
-      repository.countPendingPerformanceRecords(scopedStudentIds)
+      repository.getStudentGroupNamesMap(studentUserIds)
     ]);
-    const performances = records.map((record) => ({
+    const validRecords = records.filter((record) =>
+      hasRealNameProfile(profilesMap.get(record.studentUserId))
+    );
+    const performances = validRecords.map((record) => ({
       ...readablePerformanceRecord(record),
-      studentName: (profilesMap.get(record.studentUserId) || {}).name || '',
+      studentName: profilesMap.get(record.studentUserId).name.trim(),
       trainingGroupNames: groupNamesMap.get(record.studentUserId) || []
     }));
+    const pendingCount = await repository.countPendingPerformanceRecords(
+      Array.from(new Set(validRecords.map((record) => record.studentUserId)))
+    );
 
     return {
       performances,

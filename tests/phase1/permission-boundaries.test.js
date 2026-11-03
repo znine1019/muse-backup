@@ -7,6 +7,9 @@ const createGroupAdminActions = require('../../cloudfunctions/api/actions/groups
 const createProfileActions = require('../../cloudfunctions/api/actions/profile');
 const createRegistrationActions = require('../../cloudfunctions/api/actions/registrations');
 const createUserAdminActions = require('../../cloudfunctions/api/actions/users');
+const {
+  createFakeRepository
+} = require('../phase8/helpers');
 
 const IDENTITIES = Object.freeze({
   developer: { appid: 'wx_test_app', openid: 'openid_developer_0001' },
@@ -55,6 +58,11 @@ function createRepository(user, overrides = {}) {
       },
       serverDate: () => new Date()
     },
+    getProfilesMap: async () => new Map(),
+    getParentProfilesMap: async () => new Map(),
+    getCoachProfilesMap: async () => new Map(),
+    getUsersMap: async () => new Map(),
+    getCoachProfile: async () => null,
     ...overrides
   };
 }
@@ -168,6 +176,13 @@ test('coach pending list only returns registrations inside assigned groups', asy
   const repository = createRepository(USERS.coach, {
     getCoachGroupIds: async () => ['group_a'],
     queryAll: async () => profiles,
+    getUsersMap: async (userIds) =>
+      new Map(
+        userIds.map((userId) => [
+          userId,
+          { _id: userId, status: 'pending_review', roles: [] }
+        ])
+      ),
     getGroupsMap: async () =>
       new Map([
         ['group_a', { _id: 'group_a', name: '模拟短跑组', seasonLabel: '2026测试周期' }],
@@ -196,6 +211,7 @@ test('coach cross-group review is rejected before any transaction starts', async
     getProfile: async () => ({
       _id: 'profile_target',
       userId: 'usr_target_student',
+      name: '模拟跨组学生',
       reviewStatus: 'pending',
       requestedTrainingGroupId: 'group_b',
       currentReviewId: 'review_target'
@@ -230,20 +246,21 @@ test('coach cross-group review is rejected before any transaction starts', async
 });
 
 test('last active developer cannot be revoked or disabled', async () => {
-  const targetDeveloper = {
+  const repository = createFakeRepository();
+  const targetDeveloper = repository.seedStudent({
     _id: 'usr_only_developer',
+    openid: IDENTITIES.developer.openid,
     status: 'active',
     roles: ['developer']
-  };
-  const repository = createRepository(USERS.developer, {
-    getUserById: async () => targetDeveloper,
-    userCollection: {
-      where: () => ({
-        limit: () => ({
-          get: async () => ({ data: [targetDeveloper] })
-        })
-      })
-    }
+  });
+  repository.seedRoleBinding(targetDeveloper._id, 'developer', 'active', {
+    grantedBy: 'secure_bootstrap'
+  });
+  repository.seedRecord('system_config', {
+    _id: 'bootstrap',
+    state: 'completed',
+    developerInitialized: true,
+    adminGuardVersion: 0
   });
   const actions = createActions(repository);
 
@@ -291,7 +308,9 @@ test('developer can list users but never receives OpenID in the response', async
   const repository = createRepository(USERS.developer, {
     queryAll: async () => records,
     getProfilesMap: async () =>
-      new Map([['usr_student', { name: '模拟学生' }]])
+      new Map([['usr_student', { name: '模拟学生' }]]),
+    getCoachProfilesMap: async () =>
+      new Map([['usr_developer', { name: '模拟开发者', reviewStatus: 'approved' }]])
   });
   const actions = createActions(repository);
 

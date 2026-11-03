@@ -115,8 +115,9 @@ test('F1-D2c 教练工作台继续用真实会话身份展示动态说明', () =
   const js = read(pageFile('coach', 'js'));
 
   assert.match(wxml, /meta="\{\{headMeta\}\}"/, '工作台页头说明应绑定实际会话数据');
-  assert.match(js, /const isDeveloper = sessionHasRole\(session, 'developer'\)/);
-  assert.match(js, /getRoleLabel\(isDeveloper \? 'developer' : 'coach'\)/);
+  assert.match(js, /const canManage =\s+sessionHasRole\(session, 'coach'\)/);
+  assert.match(js, /canSwitchDeveloper: sessionHasRole\(session, 'developer'\)/);
+  assert.match(js, /getRoleLabel\('coach'\)/);
 });
 
 test('F1-D2c coach/developer 原有服务端权限判断和跳转保留', () => {

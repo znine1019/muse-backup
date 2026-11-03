@@ -63,7 +63,7 @@ function loadPage(relativePath, api, options = {}) {
           return {
             getSessionDestination: () => destination,
             getStatusLabel: (status) =>
-              ({ pending_profile: '待完善资料', pending_review: '待审核', rejected: '审核未通过', disabled: '已停用', active: '已启用' }[status] || status)
+              ({ unregistered: '未注册', pending_profile: '待完善资料', pending_review: '待审核', rejected: '审核未通过', disabled: '已停用', active: '已启用' }[status] || status)
           };
         }
         throw new Error(`未打桩的依赖：${request}`);
@@ -168,16 +168,25 @@ test('F1-D2a 路由和组件注册正确', () => {
   }
 });
 
-test('F1-D2a index 保留身份识别、登录和健康检查绑定', () => {
+test('F1-D2a index 保留身份识别和登录，不展示健康检查入口', () => {
   const wxml = read(pageFile('index', 'wxml'));
   const js = read(pageFile('index', 'js'));
   assert.match(wxml, /bindtap="\{\{session \? 'handleContinue' : 'handleLogin'\}\}"/, '动态登录按钮绑定不得丢失');
-  assert.match(wxml, /bindtap="handleHealthCheck"/, '健康检查入口不得丢失');
-  for (const binding of ['session', 'statusLabel', 'actionLabel', 'loading', 'error', 'healthText']) {
+  assert.doesNotMatch(wxml, /云开发连接测试|bindtap="handleHealthCheck"/, '普通用户首页不得展示健康检查入口');
+  assert.match(wxml, /isUnregistered/, '首页必须区分未注册状态');
+  for (const handler of ['goStudentRegister', 'goParentRegister', 'goCoachRegister']) {
+    assert.match(wxml, new RegExp(`bindtap="${handler}"`), `首页缺少实名注册入口 ${handler}`);
+  }
+  for (const label of ['学生注册', '家长注册', '教练员注册']) {
+    assert.ok(wxml.includes(label), `首页缺少注册文字 ${label}`);
+  }
+  assert.ok(wxml.includes('V1.6.2'), '本地修复版首页应显示 V1.6.2');
+  assert.ok(!wxml.includes('首次登录会创建待完善账号'), '不得继续展示旧自动建号说明');
+  for (const binding of ['session', 'statusLabel', 'actionLabel', 'loading', 'error', 'isUnregistered']) {
     assert.ok(wxml.includes(binding), `index 缺少绑定 ${binding}`);
   }
   assert.ok(js.includes('getSessionDestination'), '应保留身份分流');
-  assert.ok(js.includes('healthCheck'), '应保留连接检查');
+  assert.equal(js.includes('healthCheck'), false, '首页 JS 不应保留测试入口');
 });
 
 test('F1-D2a register 保留全部学生注册字段和提交分支', () => {
@@ -203,6 +212,7 @@ test('F1-D2a pending 保留全部审核状态和原操作', () => {
   for (const handler of ['refresh','goRegister','goParentRegister','goHome']) {
     assert.match(wxml, new RegExp(`bindtap="${handler}"`), `缺少事件 ${handler}`);
   }
+  assert.match(wxml, /bindtap="goCoachRegister"/, '缺少教练注册事件 goCoachRegister');
   for (const binding of ['statusLabel','reviewComment','profile.name','profile.birthDate','profile.primaryTrainingProject','profile.heightCm','profile.weightKg']) {
     assert.ok(wxml.includes(binding), `pending 缺少绑定 ${binding}`);
   }
@@ -250,4 +260,76 @@ test('F1-D2a pending 页面实际加载状态并提供家长注册入口', async
   assert.equal(calls.navigateTo[0], '/pages/parent-register/parent-register');
   instance.goHome();
   assert.equal(calls.reLaunch[0], '/pages/index/index');
+});
+
+test('V1.6.2 未注册身份首页直接显示三类实名入口且不自动跳转', async () => {
+  const { instance, calls } = loadPage(pageFile('index', 'js'), {}, {
+    session: {
+      registered: false,
+      user: { id: '', status: 'unregistered', roles: [], pendingProfileType: '' }
+    },
+    destination: { type: 'register', url: '/pages/pending/pending', label: '开始实名注册' }
+  });
+  instance.onShow();
+  await flush();
+  assert.equal(instance.data.isUnregistered, true);
+  assert.equal(instance.data.statusLabel, '未注册');
+  assert.equal(instance.data.actionLabel, '开始实名注册');
+  assert.deepEqual(calls.reLaunch, []);
+  instance.goStudentRegister();
+  instance.goParentRegister();
+  instance.goCoachRegister();
+  assert.deepEqual(calls.navigateTo, [
+    '/pages/register/register',
+    '/pages/parent-register/parent-register',
+    '/pages/coach-register/coach-register'
+  ]);
+});
+
+test('V1.6.2 pending 未注册状态不调用资料接口或写接口', async () => {
+  let profileReads = 0;
+  const api = {
+    getProfile: async () => { profileReads += 1; return { profile: null }; }
+  };
+  const { instance, calls } = loadPage(pageFile('pending', 'js'), api, {
+    session: {
+      registered: false,
+      user: { id: '', status: 'unregistered', roles: [], pendingProfileType: '' }
+    }
+  });
+  instance.onShow();
+  await flush();
+  assert.equal(profileReads, 0);
+  assert.equal(instance.data.status, 'unregistered');
+  instance.goRegister();
+  instance.goParentRegister();
+  instance.goCoachRegister();
+  assert.deepEqual(calls.navigateTo, [
+    '/pages/register/register',
+    '/pages/parent-register/parent-register',
+    '/pages/coach-register/coach-register'
+  ]);
+});
+
+test('V1.6.2 多角色分流保持 Developer 与 Developer+Coach 原行为', () => {
+  const sessionModule = require('../../miniprogram/utils/session');
+  assert.equal(
+    sessionModule.getSessionDestination({ user: { status: 'active', roles: ['developer'] } }).url,
+    '/pages/admin/admin'
+  );
+  assert.equal(
+    sessionModule.getSessionDestination({ user: { status: 'active', roles: ['developer', 'coach'] } }).url,
+    '/pages/role-select/role-select'
+  );
+});
+
+test('V1.6.2 三个实名注册路由均已注册', () => {
+  const pages = JSON.parse(read('miniprogram/app.json')).pages;
+  for (const route of [
+    'pages/register/register',
+    'pages/parent-register/parent-register',
+    'pages/coach-register/coach-register'
+  ]) {
+    assert.ok(pages.includes(route), `缺少注册路由 ${route}`);
+  }
 });

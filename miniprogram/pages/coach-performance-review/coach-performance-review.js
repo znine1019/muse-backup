@@ -5,6 +5,7 @@ const {
   getSessionDestination,
   sessionHasRole
 } = require('../../utils/session');
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const SOURCE_LABELS = Object.freeze({
   student_report: '学生申报',
@@ -46,6 +47,7 @@ Page({
         loading: false,
         performances: (result.performances || []).map((item) => ({
           ...item,
+          valueText: formatPerformanceValue(item.value, item.unit),
           sourceLabel: SOURCE_LABELS[item.source] || item.source || '未知来源',
           groupText: (item.trainingGroupNames || []).join('、')
         })),

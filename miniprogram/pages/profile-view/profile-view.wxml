@@ -86,7 +86,7 @@
       <view wx:else class="jg-list">
         <view wx:for="{{performances}}" wx:key="id" class="jg-row">
           <view class="jg-row-main">
-            <view class="jg-row-t profile-name">{{item.eventName}}：{{item.value}} {{item.unit}}</view>
+            <view class="jg-row-t profile-name" data-unit="{{item.unit}}">{{item.eventName}}：{{item.valueText}}</view>
             <view class="jg-row-m">取得日期：{{item.achievedAt}}</view>
             <view class="jg-row-m">审核意见：{{item.reviewComment || '无'}}</view>
           </view>

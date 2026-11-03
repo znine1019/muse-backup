@@ -5,6 +5,7 @@ const {
   getSessionDestination,
   sessionHasRole
 } = require('../../utils/session');
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const STATUS_LABELS = Object.freeze({
   pending: '待审核',
@@ -54,6 +55,7 @@ Page({
         measurements: result.measurements || [],
         performances: (result.performances || []).map((item) => ({
           ...item,
+          valueText: formatPerformanceValue(item.value, item.unit),
           statusLabel: STATUS_LABELS[item.status] || item.status
         }))
       });

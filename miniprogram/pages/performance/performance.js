@@ -5,6 +5,7 @@ const {
   getSessionDestination,
   sessionHasRole
 } = require('../../utils/session');
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const STATUS_LABELS = Object.freeze({
   pending: '待教练审核',
@@ -47,9 +48,13 @@ Page({
       ]);
       this.setData({
         loading: false,
-        events: eventResult.events || [],
+        events: (eventResult.events || []).map((event) => ({
+          ...event,
+          label: `${event.categoryLabel || '运动项目'} · ${event.name}`
+        })),
         performances: (performanceResult.performances || []).map((item) => ({
           ...item,
+          valueText: formatPerformanceValue(item.value, item.unit),
           statusLabel: STATUS_LABELS[item.status] || item.status
         }))
       });
