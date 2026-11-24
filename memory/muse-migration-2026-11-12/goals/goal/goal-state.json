@@ -1,0 +1,39 @@
+{
+  "created_at": "2026-11-12T09:36:25Z",
+  "cron": {
+    "delivery_chat_id": "73d0f511-cba9-4acb-a279-375a9f39f14d",
+    "file": "goals/goal/crons/hourly/gongzhonghao-every-3-days__interval@72h.md",
+    "id": "gongzhonghao-every-3-days",
+    "note": "定时任务不能只靠复制文件生效，新号需按 IMPORT.md 重新创建同名目标和定时任务，并把下一期时间按导入当天的日期重新锚定，不要直接沿用 2026-11-16 这个锚点而不核对。",
+    "schedule": "every 96h, anchor 2026-11-16T17:36:45 Asia/Shanghai"
+  },
+  "current_state": "First article delivered 2026-11-12; next article due Mon 2026-11-16 about 17:36 CST, then every 4 days.",
+  "description": "Every 4 days, make one public account article for Kenneth, with the theme chosen by Muse, plus related illustrations and a cover in the recorded house style. Deliver each article in the main chat.",
+  "goal_id": "goal_e2d41558b402",
+  "goal_kind": "habit",
+  "last_activity_at": "2026-11-12T09:37:04Z",
+  "slug": "goal",
+  "status": "active",
+  "timeline": [
+    {
+      "description": "Every 3 days, make one public account article for Kenneth, with the theme chosen by Muse, plus related illustrations and a cover in the recorded house style. Deliver each article in the main chat.",
+      "effective_at": "2026-11-12T09:36:25Z",
+      "title": "Added 公众号每三天一期内容",
+      "update_id": "goal_update_4f15d7f1a58b"
+    },
+    {
+      "description": "First article delivered: 天冷了，体育生热身别再走过场：5分钟动态热身，跑起来更顺， with cover and 2 illustrations.",
+      "effective_at": "2026-11-12T09:37:04Z",
+      "title": "第一期已做完",
+      "update_id": "goal_update_659696263628"
+    },
+    {
+      "description": "2026-11-12 用户要求把周期从每三天改为每四天一次；cron 已改为 interval 96h，下一期为 2026-11-16 17:36 CST。",
+      "effective_at": "2026-11-12T10:20:41Z",
+      "title": "周期改为每四天一期",
+      "update_id": "goal_update_0d505be23865"
+    }
+  ],
+  "title": "公众号每四天一期内容",
+  "workspace_note": "goals/goal/files/、hidden_files/、agent_notes/、briefs/、references/spaces/ 在导出时均为空目录，本包已保留目录结构，不含文件。第一期文章正文和图片不在目标工作区内，在 workspace/your_files/gongzhonghao-2026-11-12/，未包含在本包内，如需迁移请另行复制该文件夹。"
+}
