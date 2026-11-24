@@ -1,0 +1,23 @@
+# experience.md
+
+Episodic experiences and what happened, distilled.
+
+- On 2026-11-17, a Google security alert email arrived at 10:27:43 UTC about Muse being authorized to access some Google account data; the assistant explained it was the expected automatic notice from the Google connections made in the same few minutes (Sheets, Drive, Docs, Gmail), not evidence of a breach, and that no action was needed if the user made those connections. (src: memory/2026-11-17.md:76)
+- On 2026-11-17, the user asked the assistant to look at an email they said contained their previous Muse data file; the email identified was the one forwarded by Ma Qin, and its attachment was not a Muse data package but a .eml file containing a Meta notification. (src: memory/2026-11-17.md:80)
+- On 2026-11-17, the user instructed the assistant to download the Meta information export, and the assistant agreed to download it via the Meta Account Center. (src: memory/2026-11-17.md:84)
+- 2026-11-12 约 21:44 CST，ChatGPT 完整数据导出申请已提交成功，下载链接会在准备好后发到 3282446722@qq.com，收到后 24 小时内失效；截至本窗口结束，导出文件尚未收到或处理，完整导入仍在等待。 (src: memory/muse-migration-2026-11-12/memory/2026-11-12.md:314)
+- 2026-11-12 23:17 CST，WorkBuddy 桌面客户端 5.6.2 已在云电脑上安装完成并启动，已点 Sign In；桌面端登录需跳转浏览器完成，浏览器已打开登录链接，正用用户手机号走短信验证码登录，等待用户发来收到的验证码，尚未完成登录。 (src: memory/muse-migration-2026-11-12/memory/2026-11-12.md:378)
+- 2026-11-13约05:04 CST，云电脑上已装好微信官方 Linux 版 4.1.13，222M 安装包留在 workspace/wechat/ 里，重启后重装用它；安装时微信曾报 Network disconnected，在微信设置里开启代理（云电脑出口代理，端口 3128，不用账号密码）后二维码才出现。用户扫第二张二维码后说“可以了”，表示已完成扫码步骤；窗口结束时助理尚未在聊天界面核实登录态。 (src: memory/muse-migration-2026-11-12/memory/2026-11-12.md:419)
+- 2026-11-14 01:30 CST 用户要求芬奇发邮件问雪梅姐还有没有什么需要修改的、或有其他工作需要帮忙；跟进邮件已发给 2187339904@qq.com，但第一次因用回复方式发送而误发给了用户本人，随后已在同一线程重发给雪梅姐。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:768)
+- ChatGPT 数据导出文件已发到用户邮箱：2026-11-14 01:38 CST 用户说文件发过来了，但从链接进去只是 GPT 页面，并要求芬奇去网页端看从哪下数据。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:772)
+- 2026-11-14 02:06 CST，ChatGPT 数据导出文件仍未下载成功：QQ 邮箱已登入、邮件已找到、绿色下载按钮已点，并按用户指示点了安全跳转页的继续访问，但下载抓了三次都中断，没有存下任何文件，新下载目录为空；直接用链接裸下只拿到一个 ChatGPT 网页，不是 zip。只能由用户在常用设备上自行下载，再把 zip 发到本旁聊；下载链接约在 2026-11-14 21:44 前后失效。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:782)
+- 2026-11-14 约 01:53–01:59 CST，QQ 邮箱登录已成功：用户确认后，收件箱页面已出来，OpenAI 的数据导出邮件已找到。这取代了此前截至 01:43 卡在 QQ 邮箱登录一步的状态。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:786)
+- 2026-11-14凌晨，在聊骆姿莼时，芬奇说10月的LLL对话“不是她本人的动静”后，用户当即反问，对这种把GPT对话与她本人动静对立起来的说法表示了异议；本条只记录用户这次反问本身，不把芬奇随后说的“最完整的记录、很有价值”等表述归于用户。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:801)
+- 2026-11-13 21:36 UTC（北京时间 2026-11-14 05:36），用户要求搭一个摇六爻的空间；空间的具体形态（只做摇卦出卦工具，还是摇卦加保存每次起卦记录和解卦）当时尚未确定，助理正在向用户确认。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:858)
+- 2026-11-14 06:28 CST，用户在说“我们开始吧”启动收件箱整理后随即决定先不开：不启用每 30 分钟检查一次收件箱和每天早报的长期整理，助理提出的早报时间、噪音过滤、重点人/关键词、新闻偏好四个问题也不再需要回答。 (src: memory/muse-migration-2026-11-12/memory/2026-11-13.md:884)
+- 2026-11-15凌晨，用户在电影院看比赛，比赛03:00开始、另有开幕式、约04:00才开打；他持有当天早上09:30的车票，电影院距车站六公里多。 (src: memory/muse-migration-2026-11-12/memory/2026-11-14.md:1040)
+- 用户发来其在云端浏览器截的图（存于 `workspace/user/files/95383F7F-AB69-4DB2-9B73-954270B664A8-photo-CDE355FA-CA42-4D55-90CA-F7B97DB48450.jpg`）：截图显示浏览器 “Recent download history” 列表里有 `466aa23d45e2630a386eb9c7bc69484669e45af2f6a06ec534ebb4-2026-11-12-20-10-56-594eb9244bd94ea59baf1eea3587a30c (3).zip`，383 MB，标注 “7 min ago”，无 Resume/Canceled 标记；列表里另有同名 `(2).zip`（383 MB，Yesterday）及更早的同名 `(1).zip`/无后缀版（383 MB）等多次下载记录。据此更正：导出 zip 实际已在云端浏览器里下载完成过多次，只是未落到芬奇可直接读取的 `~/workspace/browser_downloads/` 路径，芬奇此前据文件系统判断“未下载”不完整。 (src: memory/muse-migration-2026-11-12/memory/2026-11-14.md:141)
+- 2026-11-15，用户把车票改签到了九点半。 (src: memory/muse-migration-2026-11-12/memory/2026-11-15.md:30)
+- 2026-11-15，BLG 在英雄联盟全球总决赛决赛中 3-1 战胜 GEN 夺冠，用户以“我们是冠军”庆祝。 (src: memory/muse-migration-2026-11-12/memory/2026-11-15.md:34)
+- Episodic experiences and what happened, distilled. (src: memory/muse-migration-2026-11-12/memory/bank/experience.md:3)
+- 用户发来其在云端浏览器截的图（存于 `workspace/user/files/95383F7F-AB69-4DB2-9B73-954270B664A8-photo-CDE355FA-CA42-4D55-90CA-F7B97DB48450.jpg`）：截图显示浏览器 “Recent download history” 列表里有 `466aa23d45e2630a386eb9c7bc69484669e45af2f6a06ec534ebb4-2026-11-12-20-10-56-594eb9244bd94ea59baf1eea3587a30c (3).zip`，383 MB，标注 “7 min ago”，无 Resume/Canceled 标记；列表里另有同名 `(2).zip`（383 MB，Yesterday）及更早的同名 `(1).zip`/无后缀版（383 MB）等多次下载记录。据此更正：导出 zip 实际已在云端浏览器里下载完成过多次，只是未落到芬奇可直接读取的 `~/workspace/browser_downloads/` 路径，芬奇此前据文件系统判断“未下载”不完整。 (src: memory/2026-11-14.md:141) (src: memory/muse-migration-2026-11-12/memory/bank/reflections.md:1095)
