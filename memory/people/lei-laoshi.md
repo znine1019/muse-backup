@@ -3,7 +3,7 @@ display_name: "雷老师"
 last_name: "雷"
 nickname: "雷老师"
 summary: "乔格体育俱乐部小学田径招生海报的联系人，用户称其为雷老师。"
-rank: 7
+rank: 8
 updated: "2026-11-17"
 ---
 

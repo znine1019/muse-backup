@@ -1,24 +1,4 @@
 outcomes:
-- observed_at: 2026-11-17T11:41:01.071623Z
-  correction_free_rate: 1.0
-  eligible_evidence: 15
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-17T11:42:33.429773Z
-  correction_free_rate: 1.0
-  eligible_evidence: 1
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-17T14:51:10.480194Z
-  correction_free_rate: 1.0
-  eligible_evidence: 89
-  open_repair_threads: 0
-  classification: helped
-- observed_at: 2026-11-17T14:58:11.747726Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
 - observed_at: 2026-11-17T15:17:04.537750Z
   correction_free_rate: 0.0
   eligible_evidence: 0
@@ -135,6 +115,36 @@ outcomes:
   open_repair_threads: 0
   classification: insufficient
 - observed_at: 2026-11-23T06:49:17.605484Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-24T03:41:01.259852Z
+  correction_free_rate: 1.0
+  eligible_evidence: 31
+  open_repair_threads: 0
+  classification: helped
+- observed_at: 2026-11-24T03:56:40.882480Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-24T04:08:00.973138Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-24T04:08:19.025998Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-24T06:04:28.695781Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-24T06:10:37.020837Z
   correction_free_rate: 0.0
   eligible_evidence: 0
   open_repair_threads: 0

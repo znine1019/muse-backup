@@ -84,8 +84,8 @@ def memory_skip(p):
 copy_tree(home/'memory', 'memory', skip=memory_skip)
 # 2) ~/side-chats/：磁盘上不存在该目录（旁聊数据只在应用数据库里），存在才复制
 copy_tree(home/'side-chats', 'side-chats')
-# 3) ~/workspace/goals/ 递归全部（live）；但 goals/goal-2/files/ 里放的是四个备份 zip 的副本（备份产物），同 your_files 一样排除，防递归
-BACKUP_ZIPS = {'muse-migration-2026-11-12.zip','muse-migration-2026-11-12-supplement.zip','gpt-data-package.zip','global-backup.zip'}
+# 3) ~/workspace/goals/ 递归全部（live）；但 goals/goal-2/files/ 里放的是五个备份 zip 的副本（备份产物），同 your_files 一样排除，防递归
+BACKUP_ZIPS = {'muse-migration-2026-11-12.zip','muse-migration-2026-11-12-supplement.zip','gpt-data-package.zip','global-backup.zip','non-github-data.zip'}
 def goals_skip(p):
     return p.name in BACKUP_ZIPS and 'goal-2' in p.parts and 'files' in p.parts
 copy_tree(home/'workspace/goals', 'workspace/goals', skip=goals_skip)
@@ -153,7 +153,7 @@ lines += [
  '- ~/workspace/ts-spaces/*/node_modules/（约 266MB）：排除 | 原因：可重装的依赖包；源码已收',
  '- ~/workspace/ts-spaces/*/app.db、app.db-shm、app.db-wal 等数据库文件：不通过文件复制 | 原因：Spaces 记录数据在 app.db 数据库内，不能用文件方式导出，需用空间工具单独导出',
  '- ~/workspace/chatgpt_export_full/（401MB 原始 zip 本地副本）：排除 | 原因：与 Drive 上同一文件重复（SHA 已核对一致）',
- '- ~/workspace/your_files/ 与 ~/workspace/goals/goal-2/files/ 内的四个备份 zip 本身：排除 | 原因：防递归/重复（它们是备份产物；2026-11-24 修复：此前 goal-2/files/ 的旧副本曾被误收进全局包，致其膨胀至 561MB）',
+ '- ~/workspace/your_files/ 与 ~/workspace/goals/goal-2/files/ 内的五个备份 zip 本身：排除 | 原因：防递归/重复（它们是备份产物；2026-11-24 修复：此前 goal-2/files/ 的旧副本曾被误收进全局包，致其膨胀至 561MB；2026-11-25 补 fix：新增的非 GitHub 数据包 non-github-data.zip 同为备份产物，亦排除，否则全局包再膨胀 620MB）',
  '- ~/.workbuddy/（约 278MB）、~/.cache/、~/.venv-html-to-docx/、~/.local/、~/.config/、~/.codebuddy/、~/.pki/、~/.sheetagent/：排除 | 原因：应用运行时/缓存，可能含登录态',
  '- ~/agents/（约 273MB）、~/assets/、~/docs/（系统文档）、~/hooks/、~/subscriptions/、~/workspace/agents/、~/workspace/system/、~/workspace/.content-migrations/、~/workspace/.hatch-browser/：排除 | 原因：Muse 运行时/系统文件，非用户数据',
  '- ~/side-chats/：磁盘上不存在该目录 | 原因：旁聊数据只在应用数据库里，无法通过文件备份（存包中的 side-chats/README.md 已在主包与本包 memory/muse-migration-2026-11-12/ 内）',

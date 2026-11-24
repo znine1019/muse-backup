@@ -1,7 +1,7 @@
 ---
 objective_id: skill_improvement
-run_id: sirun_39f1bd17033e41c990eae772cfea9920
-created_at: 2026-11-23T03:43:41.323301726+00:00
+run_id: sirun_7053819a3d324eeeb5aa229ee8a62661
+created_at: 2026-11-24T03:49:47.022858960+00:00
 card_id: skill_improvement
 worker_outcome: insufficient
 ---
