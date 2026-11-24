@@ -1,0 +1,18 @@
+{
+  "version": "1795536084645-9b765483a15d4b48b2781e487288e78e",
+  "captured_at_ms": 1795536084645,
+  "capture_source": "build_audit_frame",
+  "source_image": ".previews/1795536084645-9b765483a15d4b48b2781e487288e78e/space-source.png",
+  "thumbnail": {
+    "path": ".previews/1795536084645-9b765483a15d4b48b2781e487288e78e/space-thumbnail_360x360.webp",
+    "width_px": 360,
+    "height_px": 360,
+    "content_type": "image/webp"
+  },
+  "preview_card": {
+    "path": ".previews/1795536084645-9b765483a15d4b48b2781e487288e78e/space-preview-card_640x400.webp",
+    "width_px": 640,
+    "height_px": 400,
+    "content_type": "image/webp"
+  }
+}

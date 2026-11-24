@@ -1,0 +1,8 @@
+{
+  "schema_version": "hatch.probe_ui_session.v1",
+  "socket": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/.harness/probe-ui/sock",
+  "slug": "hua-shan-quan-aixun-lian",
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-9a250ef2-9bed-43d2-817b-2aad60b6ee9b/",
+  "audit_session_id": "04b2236d-dea6-454e-9cce-5331161fb462",
+  "pid": 5716
+}
