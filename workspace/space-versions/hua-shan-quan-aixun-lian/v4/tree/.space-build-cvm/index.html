@@ -1,0 +1,3133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light"/>
+<link rel="icon" href="data:,"/>
+<title>花山拳小勇士 · AI 训练乐园</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#FFF3D6; --bg2:#E3F4FF;
+  --card:#FFFFFF; --card-soft:#FFF9EC;
+  --ink:#33302E; --ink2:#5C554E; --muted:#8A7F72;
+  --line:#3A3230;
+  --red:#FF5A3C; --red-d:#E63E22; --orange:#FF9F1C; --yellow:#FFC93C; --yellow-soft:#FFE9A8;
+  --blue:#38B6E8; --blue-d:#1B93C9; --blue-soft:#D8F1FD;
+  --green:#2FBF71; --green-d:#1E9E57; --green-soft:#D9F7E6;
+  --pink:#FF8FB2; --purple:#8B7CF6;
+  --r-lg:26px; --r-md:20px; --r-sm:14px;
+  --shadow:0 5px 0 rgba(58,50,48,.9);
+  --shadow-soft:0 4px 0 rgba(58,50,48,.16);
+  --font:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --fun:"ZCOOL KuaiLe","Noto Sans SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;font-family:var(--font);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;
+  background:linear-gradient(180deg,#FFF6DE 0%,#FFF3D6 45%,#EAF7FF 100%);
+  min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px 56px}
+/* ===== Header ===== */
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:3px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:12px 18px 12px 12px}
+.mascot{width:76px;height:76px;flex-shrink:0}
+.topbar h1{font-family:var(--fun);font-weight:400;margin:0;font-size:clamp(24px,4.5vw,36px);line-height:1.15;letter-spacing:.02em}
+.topbar h1 .hl{color:var(--red-d)}
+.topbar .sub{margin:2px 0 0;color:var(--ink2);font-size:13px;font-weight:700}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.star-pill{display:flex;align-items:center;gap:8px;background:var(--yellow-soft);border:3px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:900;font-size:15px;box-shadow:var(--shadow-soft)}
+.star-pill svg{width:20px;height:20px}
+.level-pill{background:var(--blue-soft);border:3px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:900;font-size:15px;box-shadow:var(--shadow-soft)}
+.level-pill b{color:var(--blue-d)}
+/* ===== Tabs ===== */
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:18px 0 20px}
+.tabs button{border:3px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink2);font-weight:900;font-size:16px;padding:12px 4px;box-shadow:var(--shadow-soft);display:flex;align-items:center;justify-content:center;gap:7px;min-height:52px;transition:transform .08s}
+.tabs button svg{width:20px;height:20px;flex-shrink:0}
+.tabs button:active{transform:translateY(2px)}
+.tabs button.active{color:#fff;box-shadow:var(--shadow)}
+.tabs button[data-tab="train"].active{background:var(--red)}
+.tabs button[data-tab="demo"].active{background:var(--blue)}
+.tabs button[data-tab="challenge"].active{background:var(--orange)}
+.tabs button[data-tab="growth"].active{background:var(--green)}
+.tabs button[data-tab="history"].active{background:var(--purple)}
+.view{display:none}.view.active{display:block}
+/* ===== Cards & panels ===== */
+.card{background:var(--card);border:3px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 18px 0}
+.card-head b{font-family:var(--fun);font-weight:400;font-size:19px;letter-spacing:.03em;display:flex;align-items:center;gap:8px}
+.card-head .tag{font-size:12px;font-weight:900;background:var(--card-soft);border:2px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--ink2)}
+.sec-title{font-family:var(--fun);font-weight:400;font-size:clamp(22px,4vw,30px);margin:6px 0 4px;line-height:1.25}
+.sec-sub{color:var(--ink2);font-size:14.5px;margin:0 0 16px;font-weight:500;max-width:680px}
+/* ===== Train layout ===== */
+.console{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+.modeRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px 4px}
+.modeCard{border:3px solid var(--line);border-radius:var(--r-md);background:var(--card-soft);color:var(--ink2);padding:13px 14px;text-align:left;width:100%;box-shadow:var(--shadow-soft)}
+.modeCard .m-emoji{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:12px;border:2.5px solid var(--line);background:#fff;margin-bottom:6px}
+.modeCard .m-emoji svg{width:22px;height:22px}
+.modeCard b{font-family:var(--fun);font-weight:400;font-size:20px;display:block;color:var(--ink)}
+.modeCard small{color:var(--ink2);font-weight:500;font-size:12.5px;line-height:1.5;display:block;margin-top:2px}
+.modeCard.active{background:#FFE3D9;box-shadow:0 4px 0 var(--red-d)}
+.modeCard.active.horse{background:var(--blue-soft);box-shadow:0 4px 0 var(--blue-d)}
+.stageBox{padding:14px 16px 16px}
+.stage{background:#20303C;border-radius:var(--r-md);overflow:hidden;position:relative;aspect-ratio:4/3;border:3px solid var(--line)}
+@media(min-width:700px){.stage{aspect-ratio:16/10}}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.stagePlaceholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#EAF6FF;padding:24px;background:linear-gradient(160deg,#2E5F7A,#20303C)}
+.stagePlaceholder .mascot-sm{width:92px;height:92px;margin:0 auto 6px}
+.stagePlaceholder strong{font-family:var(--fun);font-weight:400;font-size:clamp(20px,3.4vw,27px);display:block;color:#fff;margin:6px 0}
+.stagePlaceholder p{color:#C9E4F2;font-size:13.5px;max-width:430px;margin:0 auto;line-height:1.75;font-weight:500}
+.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;z-index:4;flex-wrap:wrap}
+.hud div{background:rgba(255,255,255,.94);color:var(--ink);padding:6px 12px;font-weight:900;font-size:13px;border-radius:999px;border:2.5px solid var(--line)}
+.hud .live-dot{color:var(--red-d)}
+.hud .live-dot::before{content:"● ";animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+@media(prefers-reduced-motion:reduce){.hud .live-dot::before{animation:none}.tabs button{transition:none}}
+.feedback{display:flex;align-items:center;gap:12px;margin:0 16px 16px;padding:15px 18px;font-size:18px;font-weight:900;line-height:1.4;background:var(--yellow-soft);border:3px solid var(--line);border-radius:var(--r-md);min-height:62px}
+.feedback .fb-ico{font-size:24px;flex-shrink:0;line-height:1}
+.feedback.good{background:var(--green-soft)}
+.feedback.warn{background:#FFE8D6}
+.error{display:none;background:#FFE1DA;border:3px solid var(--red-d);color:#8F2412;border-radius:var(--r-md);padding:13px 16px;margin:0 16px 16px;font-weight:700;font-size:14px;line-height:1.65}
+.error.show{display:block}
+/* Dashboard */
+.gaugeBox{padding:16px 14px 6px;text-align:center}
+.gaugeWrap{position:relative;width:188px;height:188px;margin:0 auto}
+.gaugeWrap svg{transform:rotate(-90deg)}
+.gaugeCenter{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.gaugeCenter .g-num{font-family:var(--fun);font-size:56px;line-height:1;color:var(--ink)}
+.gaugeCenter .g-lab{font-size:12px;color:var(--ink2);font-weight:900;margin-top:4px}
+.gaugeSub{color:var(--ink2);font-size:13.5px;font-weight:900;margin:10px 0 8px;min-height:22px}
+.gaugeSub.ok{color:var(--green-d)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:6px 16px 4px}
+.tile{padding:12px 14px;border:3px solid var(--line);border-radius:var(--r-md);background:var(--card-soft)}
+.tile.hero-tile{grid-column:1/-1;background:#FFE3D9}
+.tile.hero-tile.blue{background:var(--blue-soft)}
+.tile label{font-size:12px;font-weight:900;color:var(--ink2);display:block}
+.tile strong{font-family:var(--fun);font-weight:400;font-size:36px;display:block;line-height:1.1;margin-top:2px}
+.tile strong em{font-style:normal;font-size:16px;color:var(--ink2);font-family:var(--font);font-weight:700}
+.tile small{color:var(--ink2);font-weight:500;font-size:11.5px}
+.sliderBox{padding:12px 16px 4px}
+.sliderBox label{font-weight:900;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sliderBox label output{color:var(--red-d);font-size:17px;font-family:var(--fun)}
+input[type=range]{width:100%;height:44px;accent-color:var(--red)}
+.scale{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700;gap:6px;flex-wrap:wrap}
+.controls{display:flex;flex-direction:column;gap:10px;padding:14px 16px 6px}
+.btn{border:3px solid var(--line);border-radius:999px;padding:14px 18px;font-size:16.5px;font-weight:900;letter-spacing:.02em;width:100%;text-align:center;background:var(--card);color:var(--ink);box-shadow:0 4px 0 rgba(58,50,48,.9);transition:transform .08s,box-shadow .08s;min-height:54px}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(58,50,48,.9)}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:disabled{background:#D8CFC4;color:#9A8F83;cursor:not-allowed;box-shadow:0 4px 0 rgba(58,50,48,.35)}
+.btn-stop{background:var(--ink);color:#FFF6DE}
+.btn-stop:disabled{background:#CFC6BA;color:#8A7F72;cursor:not-allowed}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}
+.btn:disabled{cursor:not-allowed}
+.privacy{margin:10px 16px 16px;padding:12px 14px;font-size:12.5px;color:var(--ink2);line-height:1.7;background:var(--green-soft);border:2.5px dashed var(--green-d);border-radius:var(--r-md);font-weight:500}
+.privacy b{color:var(--green-d)}
+.chal-banner{display:none;margin:0 16px 12px;padding:11px 14px;border-radius:var(--r-md);border:3px solid var(--line);background:var(--yellow);font-weight:900;font-size:15px;text-align:center}
+.chal-banner.show{display:block}
+/* Rules */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.rule{padding:18px 20px}
+.rule h3{font-family:var(--fun);font-weight:400;margin:0 0 6px;font-size:19px;display:flex;align-items:center;gap:9px}
+.rule h3 .r-ico{width:32px;height:32px;border-radius:10px;border:2.5px solid var(--line);display:grid;place-items:center;background:var(--yellow-soft);flex-shrink:0}
+.rule h3 .r-ico svg{width:18px;height:18px}
+.rule ul{margin:6px 0 0;padding:0;list-style:none}
+.rule li{padding:8px 0;border-top:2px dashed #EADFC8;color:var(--ink2);font-size:13.5px;font-weight:500;display:flex;gap:10px;line-height:1.6}
+.rule li b{color:var(--ink);flex-shrink:0}
+.summaryBox{display:none;margin-top:16px;background:var(--green-soft);border:3px solid var(--green-d);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-soft)}
+.summaryBox.show{display:block}
+.summaryBox h3{font-family:var(--fun);font-weight:400;margin:0;color:var(--green-d);font-size:21px}
+.summaryBox p{margin:8px 0 0;line-height:1.85;color:var(--ink);font-size:14.5px}
+.summaryBox .earned{font-weight:900;color:#B97E06}
+/* ===== Demo ===== */
+.progress-strip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:3px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-soft);padding:14px 18px;margin-bottom:16px}
+.progress-strip .p-lab{font-weight:900;font-size:15px}
+.progress-track{flex:1;min-width:150px;height:20px;border:3px solid var(--line);border-radius:999px;background:#fff;overflow:hidden}
+.progress-fill{height:100%;background:repeating-linear-gradient(45deg,var(--green) 0 14px,#4BD184 14px 28px);border-radius:999px;transition:width .4s}
+.course{margin-bottom:18px;overflow:hidden}
+.course-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px 0}
+.course-no{font-family:var(--fun);font-size:15px;background:var(--ink);color:#FFF6DE;border-radius:999px;padding:4px 13px;flex-shrink:0}
+.course-top h3{font-family:var(--fun);font-weight:400;margin:0;font-size:clamp(20px,3.4vw,25px);line-height:1.25}
+.course-top h3 span{color:var(--muted);font-size:14px;font-family:var(--font);font-weight:700;margin-left:6px}
+.course-state{margin-left:auto;font-size:12.5px;font-weight:900;border-radius:999px;padding:5px 12px;border:2.5px solid var(--line);flex-shrink:0}
+.course-state.ok{background:var(--green-soft);color:var(--green-d)}
+.course-state.learned{background:var(--yellow-soft);color:#8F6400}
+.course-state.wait{background:#F1EAE0;color:var(--muted)}
+.courseGrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0}
+.player{position:relative;aspect-ratio:16/9;background:#20303C;margin:14px 0 14px 18px;border-radius:var(--r-md);overflow:hidden;border:3px solid var(--line)}
+.player video{position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
+.player .live-tag{position:absolute;top:10px;left:10px;z-index:2;background:var(--red);color:#fff;font-size:12px;font-weight:900;padding:5px 11px;border-radius:999px;border:2.5px solid var(--line);pointer-events:none}
+.playerPending{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:22px;background:linear-gradient(150deg,#FFF1CF,#FFE0D1)}
+.playerPending .pp-ico{font-size:40px;line-height:1}
+.playerPending strong{display:block;font-family:var(--fun);font-weight:400;font-size:21px;margin:8px 0 5px;color:var(--ink)}
+.playerPending p{color:var(--ink2);font-size:13px;max-width:360px;margin:0 auto;line-height:1.7;font-weight:500}
+.courseInfo{padding:14px 18px 16px 20px}
+.courseInfo .spec{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
+.courseInfo .spec span{font-size:12px;font-weight:900;border:2.5px solid var(--line);background:var(--blue-soft);color:var(--ink);padding:4px 10px;border-radius:999px}
+.courseInfo h4{margin:12px 0 4px;font-size:14.5px;font-weight:900;color:var(--red-d)}
+.courseInfo h4.blue{color:var(--blue-d)}
+.courseInfo ol,.courseInfo ul{margin:4px 0 0;padding:0;list-style:none}
+.courseInfo ol li{padding:6px 0;border-top:2px dashed #EADFC8;font-size:13.5px;color:var(--ink2);display:flex;gap:10px;line-height:1.6;font-weight:500}
+.courseInfo ol li .n{font-family:var(--fun);color:#fff;background:var(--orange);border:2px solid var(--line);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;flex-shrink:0;margin-top:1px}
+.courseInfo ol li b,.courseInfo ul li b{color:var(--ink)}
+.courseInfo ul li{padding:5px 0;font-size:13.5px;color:var(--ink2);display:flex;gap:9px;line-height:1.6;font-weight:500;border-top:2px dashed #EADFC8}
+.courseInfo ul li::before{content:"✕";color:var(--red-d);font-weight:900;flex-shrink:0}
+.learnRow{padding:0 18px 18px}
+.learnBtn{width:auto;padding:12px 26px;font-size:15.5px}
+.learnBtn.done{background:var(--yellow);color:var(--ink)}
+.src-note{font-size:12px;color:var(--muted);padding:11px 18px;border-top:2px dashed #EADFC8;line-height:1.7;font-weight:500}
+/* ===== Challenge ===== */
+.chalGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chalCard{padding:20px;position:relative;overflow:hidden}
+.chalCard .c-ico{width:60px;height:60px;border-radius:18px;border:3px solid var(--line);display:grid;place-items:center;margin-bottom:10px}
+.chalCard .c-ico svg{width:34px;height:34px}
+.chalCard h3{font-family:var(--fun);font-weight:400;margin:0;font-size:23px;line-height:1.25}
+.chalCard p{color:var(--ink2);font-size:14px;margin:8px 0 0;line-height:1.7;font-weight:500}
+.chalCard .best{margin:14px 0;padding:11px 14px;border-radius:var(--r-md);border:2.5px dashed var(--line);background:var(--card-soft);font-weight:900;font-size:14.5px}
+.chalCard .best b{font-family:var(--fun);font-weight:400;font-size:21px;color:var(--red-d)}
+.chalCard .btn{width:auto;padding:13px 28px}
+/* ===== Growth ===== */
+.growthGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.gcard{padding:18px 20px;margin-bottom:16px}
+.gcard h3{font-family:var(--fun);font-weight:400;margin:0 0 4px;font-size:21px;display:flex;align-items:center;gap:9px}
+.gcard h3 svg{width:24px;height:24px}
+.gcard .g-sub{color:var(--ink2);font-size:13px;font-weight:500;margin:0 0 10px}
+.task{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:2px dashed #EADFC8}
+.task:first-of-type{border-top:0}
+.task .t-check{width:32px;height:32px;border-radius:50%;border:3px solid var(--line);background:#fff;display:grid;place-items:center;flex-shrink:0;font-weight:900;color:#fff;font-size:16px}
+.task.done .t-check{background:var(--green)}
+.task .t-main{flex:1;min-width:0}
+.task .t-main b{font-size:15px;display:block}
+.task .t-main small{color:var(--muted);font-weight:700;font-size:12px}
+.task .t-prog{font-family:var(--fun);font-size:17px;color:var(--ink2);flex-shrink:0}
+.task.done .t-main b{color:var(--green-d)}
+.levelRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 4px}
+.levelName{font-family:var(--fun);font-size:26px;color:#B97E06}
+.levelTrack{height:24px;border:3px solid var(--line);border-radius:999px;background:#fff;overflow:hidden;margin:10px 0 6px}
+.levelFill{height:100%;background:repeating-linear-gradient(45deg,var(--yellow) 0 14px,#FFD968 14px 28px);transition:width .4s}
+.levelNext{font-size:13px;color:var(--ink2);font-weight:700}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.badge{border:3px solid var(--line);border-radius:var(--r-md);padding:14px 10px 12px;text-align:center;background:var(--card-soft)}
+.badge .b-medal{width:56px;height:56px;margin:0 auto 8px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;background:var(--yellow-soft)}
+.badge .b-medal svg{width:30px;height:30px}
+.badge.locked{opacity:.62;background:#F4EFE7}
+.badge.locked .b-medal{background:#E7E0D4;filter:grayscale(1)}
+.badge b{font-size:14.5px;display:block;line-height:1.35}
+.badge small{color:var(--muted);font-size:11.5px;font-weight:700;display:block;margin-top:3px;line-height:1.5}
+.badge .b-state{font-size:11px;font-weight:900;margin-top:6px;display:inline-block;border-radius:999px;padding:2px 9px;border:2px solid var(--line)}
+.badge .b-state.got{background:var(--green-soft);color:var(--green-d)}
+.badge .b-state.no{background:#fff;color:var(--muted)}
+.statTiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.statTile{border:3px solid var(--line);border-radius:var(--r-md);background:var(--card-soft);padding:10px 8px;text-align:center}
+.statTile b{font-family:var(--fun);font-weight:400;font-size:26px;display:block;line-height:1.15}
+.statTile small{font-size:11.5px;font-weight:900;color:var(--ink2)}
+.chart{display:flex;align-items:flex-end;gap:8px;height:170px;padding:14px 6px 0;border-top:2px dashed #EADFC8}
+.chartCol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.chartBar{width:100%;max-width:44px;border:3px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;background:repeating-linear-gradient(45deg,var(--blue) 0 10px,#63CCF2 10px 20px);min-height:6px;position:relative}
+.chartVal{font-family:var(--fun);font-size:14.5px}
+.chartLab{font-size:10.5px;color:var(--muted);font-weight:700;text-align:center;line-height:1.4;word-break:break-all}
+.chartEmpty{color:var(--muted);font-size:13.5px;font-weight:700;padding:16px 0 4px;border-top:2px dashed #EADFC8}
+/* ===== History ===== */
+.historyItem{display:flex;justify-content:space-between;gap:14px;padding:15px 18px;border:3px solid var(--line);border-radius:var(--r-lg);background:var(--card);margin-top:12px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow-soft)}
+.historyItem .h-date{font-weight:900;font-size:15.5px}
+.historyItem .h-mode{color:var(--red-d);font-size:12.5px;font-weight:900;margin-top:2px}
+.historyItem .h-mode.horse{color:var(--blue-d)}
+.historyItem .h-nums{font-family:var(--fun);font-size:19px;text-align:right;line-height:1.4}
+.historyItem .h-nums small{display:block;font-family:var(--font);font-size:11.5px;color:var(--muted);font-weight:700}
+.emptyBox{border:3px dashed #CBBFA8;color:var(--ink2);border-radius:var(--r-lg);padding:24px;text-align:center;margin-top:14px;font-size:14.5px;line-height:1.85;background:rgba(255,255,255,.55);font-weight:500}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:28px 8px 0;line-height:1.85;font-weight:500}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(64,42,20,.55);display:none;place-items:center;z-index:80;padding:16px}
+.modal.show{display:grid}
+.modalCard{background:var(--card);border:3px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:24px;max-width:520px;width:100%}
+.modalCard h3{font-family:var(--fun);font-weight:400;margin:0;font-size:23px}
+.modalCard p{color:var(--ink2);font-size:14px;line-height:1.75;font-weight:500}
+.check{display:flex;gap:11px;align-items:flex-start;background:var(--card-soft);border:2.5px solid var(--line);border-radius:var(--r-md);padding:13px;margin:14px 0;cursor:pointer;font-size:14px;font-weight:500}
+.check input{width:24px;height:24px;margin-top:2px;flex-shrink:0;accent-color:var(--red)}
+.modalBtns{display:flex;gap:10px;flex-wrap:wrap}
+.modalBtns .btn{flex:1;width:auto;min-width:140px}
+/* ===== Demo embeds ===== */
+.src-banner{background:#FFF8E1;border:3px solid var(--orange);border-radius:var(--r-lg);padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow-soft)}
+.src-banner b{font-size:15.5px}
+.src-banner p{margin:6px 0 0;font-size:13.5px;color:var(--ink2);line-height:1.75;font-weight:500}
+.bili-wrap{position:relative;aspect-ratio:16/9;background:#20303C;margin:14px 18px 0;border-radius:var(--r-md);overflow:hidden;border:3px solid var(--line)}
+.bili-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ep-desc{font-size:14px;color:var(--ink2);line-height:1.75;margin:8px 0 0;font-weight:500}
+.src-bar{font-size:12px;color:var(--ink2);padding:11px 18px;border-top:2px dashed #EADFC8;line-height:1.75;font-weight:500;background:var(--card-soft);border-radius:0 0 22px 22px}
+.src-bar a{color:var(--blue-d);font-weight:900;text-decoration:none}
+.src-bar a:hover{text-decoration:underline}
+.cctv-card{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:18px 20px;margin-bottom:18px;background:linear-gradient(120deg,#FFF3D6,#FFE9EC)}
+.cctv-ico{font-size:44px;line-height:1;flex-shrink:0}
+.cctv-main{flex:1;min-width:220px}
+.cctv-main h3{font-family:var(--fun);font-weight:400;margin:0;font-size:22px}
+.cctv-main p{margin:6px 0 0;font-size:13.5px;color:var(--ink2);line-height:1.7;font-weight:500}
+.cctv-main .cctv-src{font-size:12px;color:var(--muted);font-weight:700}
+.cctv-btn{width:auto;text-decoration:none;display:inline-block;flex-shrink:0}
+.ai-title{font-family:var(--fun);font-weight:400;font-size:22px;margin:22px 0 2px}
+.ai-shorts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ai-card{padding:14px}
+.ai-card b{display:block;margin-top:10px;font-size:15.5px}
+.ai-card small{color:var(--ink2);font-weight:500;font-size:12.5px;line-height:1.6;display:block;margin-top:2px}
+/* ===== Video library ===== */
+.playerCard{margin-bottom:20px;overflow:hidden;padding-bottom:0}
+.linkPanel{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:22px;background:linear-gradient(150deg,#FFF1CF,#FFE0D1)}
+.linkPanel[hidden]{display:none!important}
+.bili-wrap.link-mode{aspect-ratio:auto}
+.bili-wrap.link-mode .linkPanel{position:relative;inset:auto;padding:30px 22px 34px}
+.linkPanel .pp-ico{font-size:40px;line-height:1}
+.linkPanel strong{display:block;font-family:var(--fun);font-weight:400;font-size:21px;margin:8px 0 5px}
+.linkPanel p{color:var(--ink2);font-size:13px;max-width:380px;margin:0 auto;line-height:1.7;font-weight:500}
+.lib-group{margin-bottom:20px}
+.lib-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lib-badge{font-size:12.5px;font-weight:900;border:2.5px solid var(--line);border-radius:999px;padding:4px 12px;flex-shrink:0}
+.lib-head h3{font-family:var(--fun);font-weight:400;margin:0;font-size:clamp(19px,3.4vw,23px);line-height:1.3}
+.lib-sub{color:var(--ink2);font-size:13px;margin:5px 0 10px;font-weight:500;line-height:1.65}
+.lib-list{display:flex;flex-direction:column;gap:9px}
+.lib-item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--card);border:3px solid var(--line);border-radius:var(--r-md);padding:12px 14px;box-shadow:var(--shadow-soft);min-height:58px}
+.lib-item:active{transform:translateY(2px)}
+.lib-item.active{background:#FFE9EC;border-color:var(--red-d);box-shadow:0 4px 0 var(--red-d)}
+.lib-no{font-family:var(--fun);font-size:15px;background:var(--ink);color:#FFF6DE;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;flex-shrink:0}
+.lib-item.active .lib-no{background:var(--red)}
+.lib-main{flex:1;min-width:0}
+.lib-main b{font-size:15.5px;display:block;line-height:1.4;overflow-wrap:break-word}
+.lib-main small{color:var(--muted);font-weight:700;font-size:11.5px;display:block;margin-top:2px;line-height:1.5}
+.lib-check{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:2.5px dashed #CBBFA8;display:grid;place-items:center;color:#fff;font-size:15px;font-weight:900}
+.lib-check.got{background:var(--green);border:2.5px solid var(--line)}
+.lib-check.got::after{content:"✓"}
+/* ===== Mobile ===== */
+@media(max-width:920px){
+  .console{grid-template-columns:1fr}
+  .courseGrid{grid-template-columns:1fr}
+  .player{margin:14px 18px 0}
+  .courseInfo{padding:12px 18px 16px}
+  .chalGrid,.growthGrid,.rules{grid-template-columns:1fr}
+  .ai-shorts{grid-template-columns:1fr}
+  .bili-wrap{margin:12px 14px 0}
+}
+@media(max-width:640px){
+  .wrap{padding:10px 10px 44px}
+  .topbar{padding:10px 12px;gap:10px;border-radius:22px}
+  .mascot{width:58px;height:58px}
+  .top-right{margin-left:0;width:100%}
+  .star-pill,.level-pill{font-size:13.5px;padding:6px 12px}
+  .tabs{gap:7px}
+  .tabs button{font-size:14px;padding:10px 2px;min-height:48px;border-width:2.5px}
+  .tabs button svg{width:17px;height:17px}
+  .modeRow{grid-template-columns:1fr 1fr;gap:9px;padding:12px 12px 2px}
+  .modeCard{padding:11px}
+  .modeCard b{font-size:17.5px}
+  .stageBox{padding:12px}
+  .feedback{margin:0 12px 12px;font-size:16px;padding:13px 14px}
+  .error{margin:0 12px 12px}
+  .tiles{padding:6px 12px 4px;gap:9px}
+  .tile strong{font-size:30px}
+  .sliderBox,.controls{padding-left:12px;padding-right:12px}
+  .privacy{margin:10px 12px 14px}
+  .chal-banner{margin:0 12px 10px}
+  .card-head{padding:12px 14px 0}
+  .course-top{padding:12px 14px 0}
+  .course-state{margin-left:0}
+  .player{margin:12px 14px 0}
+  .courseInfo{padding:10px 14px 14px}
+  .learnRow{padding:0 14px 16px}
+  .badges{grid-template-columns:repeat(2,1fr)}
+  .statTiles{grid-template-columns:repeat(2,1fr)}
+  .gcard{padding:16px 14px}
+  .chalCard{padding:16px 14px}
+  .chart{gap:5px}
+  .gaugeWrap{width:168px;height:168px}
+  .gaugeCenter .g-num{font-size:48px}
+  .historyItem .h-nums{text-align:left}
+}
+</style>
+  <style data-hatch-cvm-bundle></style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <svg class="mascot" viewBox="0 0 120 120" role="img" aria-label="花山拳小狮子吉祥物阿山">
+      <circle cx="22" cy="26" r="13" fill="#FF9F1C" stroke="#3A3230" stroke-width="3.5"/>
+      <circle cx="98" cy="26" r="13" fill="#FF9F1C" stroke="#3A3230" stroke-width="3.5"/>
+      <circle cx="60" cy="60" r="44" fill="#FF9F1C" stroke="#3A3230" stroke-width="3.5"/>
+      <circle cx="60" cy="62" r="33" fill="#FFF3D6" stroke="#3A3230" stroke-width="3"/>
+      <circle cx="48" cy="56" r="4" fill="#3A3230"/><circle cx="72" cy="56" r="4" fill="#3A3230"/>
+      <circle cx="49.5" cy="54.5" r="1.4" fill="#fff"/><circle cx="73.5" cy="54.5" r="1.4" fill="#fff"/>
+      <ellipse cx="60" cy="66" rx="5" ry="3.6" fill="#FF5A3C" stroke="#3A3230" stroke-width="2.4"/>
+      <path d="M48 76 Q60 85 72 76" fill="none" stroke="#3A3230" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="36" cy="68" r="5.5" fill="#FFB3C2"/><circle cx="84" cy="68" r="5.5" fill="#FFB3C2"/>
+      <path d="M38 22 Q60 6 82 22" fill="none" stroke="#E63E22" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="60" cy="12" r="5" fill="#FF5A3C" stroke="#3A3230" stroke-width="2.6"/>
+      <circle cx="97" cy="92" r="14" fill="#FF5A3C" stroke="#3A3230" stroke-width="3.5"/>
+      <path d="M89 88 h7 M89 94 h9 M90 100 h7" stroke="#FFF3D6" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <h1>花山拳<span class="hl">小勇士</span>训练乐园</h1>
+      <p class="sub">AI 动作教练陪你练 · 冲拳计数、马步计时，全是真的！</p>
+    </div>
+    <div class="top-right">
+      <div class="star-pill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="#FFC93C" stroke="#3A3230" stroke-width="1.8" stroke-linejoin="round"/></svg><span id="headStars">0 颗星星</span></div>
+      <div class="level-pill">等级：<b id="headLevel">小拳手</b></div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="主导航">
+    <button class="active" data-tab="train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none"/></svg>训练</button>
+    <button data-tab="demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3.5"/><path d="M10.5 9.2v5.6l4.8-2.8z" fill="currentColor" stroke="none"/></svg>示范</button>
+    <button data-tab="challenge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 14v3M8.5 20.5h7M12 17l-1 3.5h2z"/></svg>挑战</button>
+    <button data-tab="growth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.5 6 .8-4.4 4.2 1.1 6L12 16.7 6.6 19.5l1.1-6L3.3 9.3l6-.8z"/></svg>成长</button>
+    <button data-tab="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 4.5h14v15H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4.5"/></svg>记录</button>
+  </nav>
+
+  <!-- TRAIN -->
+  <section id="view-train" class="view active">
+    <div class="console">
+      <div class="card">
+        <div class="card-head"><b>📷 摄像头练功房</b><span class="tag">站远一点 · 全身都要进画面</span></div>
+        <div class="modeRow" role="group" aria-label="选择训练模式">
+          <button class="modeCard active" id="modePunch"><span class="m-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="#E63E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h9M13 7.5c2.8-1.6 6 .4 6 3.4 0 2.4-2 4.1-4.4 4.1H8a4 4 0 0 1-4-3z"/></svg></span><b>冲拳训练</b><small>手臂伸直再收回来，算 1 拳！</small></button>
+          <button class="modeCard" id="modeHorse"><span class="m-emoji"><svg viewBox="0 0 24 24" fill="none" stroke="#1B93C9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v5M12 9l-6 8M12 9l6 8M6 17l-1.5 3M18 17l1.5 3M8.5 6.5L12 9l3.5-2.5"/></svg></span><b>马步训练</b><small>双脚站开、蹲稳，保持住计时！</small></button>
+        </div>
+        <div class="stageBox">
+          <div class="stage" id="stage">
+            <video id="video" playsinline muted></video>
+            <canvas id="canvas" width="1280" height="720"></canvas>
+            <div class="stagePlaceholder" id="placeholder">
+              <div>
+                <svg class="mascot-sm" viewBox="0 0 120 120" aria-hidden="true"><circle cx="22" cy="26" r="13" fill="#FF9F1C" stroke="#FFF3D6" stroke-width="3"/><circle cx="98" cy="26" r="13" fill="#FF9F1C" stroke="#FFF3D6" stroke-width="3"/><circle cx="60" cy="60" r="44" fill="#FF9F1C" stroke="#FFF3D6" stroke-width="3"/><circle cx="60" cy="62" r="33" fill="#FFF3D6"/><circle cx="48" cy="56" r="4" fill="#3A3230"/><circle cx="72" cy="56" r="4" fill="#3A3230"/><ellipse cx="60" cy="66" rx="5" ry="3.6" fill="#FF5A3C"/><path d="M48 76 Q60 85 72 76" fill="none" stroke="#3A3230" stroke-width="3" stroke-linecap="round"/><path d="M38 22 Q60 6 82 22" fill="none" stroke="#E63E22" stroke-width="6" stroke-linecap="round"/></svg>
+                <strong>站到镜头前 2–3 米</strong>
+                <p>让全身都出现在画面里，光线亮一点，衣服颜色和墙不一样，AI 才看得清。点右边的大按钮开始，浏览器会问你能不能用摄像头，点「允许」就好啦。</p>
+              </div>
+            </div>
+            <div class="hud"><div class="live-dot">状态：<span id="hudState">还没开始</span></div><div id="hudAngle">肘角 —°</div><div id="hudTime">00:00</div></div>
+          </div>
+        </div>
+        <div class="chal-banner" id="chalBanner"></div>
+        <div class="feedback" id="feedback"><span class="fb-ico" id="fbIco">👋</span><span id="fbText">准备好了吗？选好练法，点「开始练功」！</span></div>
+        <div class="error" id="errorBox" role="alert"></div>
+      </div>
+
+      <aside class="card" aria-label="实时数据面板">
+        <div class="card-head"><b>📊 我的成绩单</b><span class="tag">数字会跟着你动</span></div>
+        <div class="gaugeBox">
+          <div class="gaugeWrap">
+            <svg width="188" height="188" viewBox="0 0 188 188" aria-hidden="true">
+              <circle cx="94" cy="94" r="80" fill="none" stroke="#F1E7D2" stroke-width="15"/>
+              <circle id="ringFg" cx="94" cy="94" r="80" fill="none" stroke="#FF5A3C" stroke-width="15" stroke-linecap="round" stroke-dasharray="502.65" stroke-dashoffset="502.65"/>
+            </svg>
+            <div class="gaugeCenter"><div class="g-num" id="gaugeVal">—°</div><div class="g-lab" id="gaugeLab">肘角 · 手臂弯不弯</div></div>
+          </div>
+          <div class="gaugeSub" id="mAngleSub">等你站到镜头前哦…</div>
+        </div>
+        <div class="tiles">
+          <div class="tile hero-tile" id="heroTile"><label id="countLabel">有效冲拳</label><strong id="mCount">0 次</strong><small>伸直 + 收回，才算一拳</small></div>
+          <div class="tile"><label>马步保持</label><strong id="mHorse">0.0<em> 秒</em></strong><small>姿势一歪就暂停</small></div>
+          <div class="tile"><label>本次用时</label><strong id="mTime">00:00</strong><small>结束会出小结</small></div>
+          <div class="tile" style="grid-column:1/-1"><label id="angleLabel">当前肘角</label><strong id="mAngle">—°</strong><small>数字会随你的动作跳动</small></div>
+        </div>
+        <div class="sliderBox" id="sliderBox">
+          <label><span>冲拳难度 · 伸到多少度算数</span><output><span id="thVal">142</span>°</output></label>
+          <input type="range" id="threshold" min="90" max="180" value="142" step="1" aria-label="冲拳判定阈值"/>
+          <div class="scale"><span>90° 简单</span><span>142° 标准</span><span>180° 超难</span></div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" id="btnStart">▶ 开始练功 · 打开摄像头</button>
+          <button class="btn btn-stop" id="btnStop" disabled>结束 · 看小结</button>
+          <button class="btn" id="btnReset">重新计数</button>
+        </div>
+        <div class="privacy">🔒 <b>放心练：</b>摄像头画面只在你自己的设备上算，不上传、不录像、不保存。请让爸爸妈妈或教练陪着一起用，练完点「结束」摄像头就关啦。</div>
+      </aside>
+    </div>
+
+    <div class="summaryBox" id="summaryBox"><h3>🎉 本次训练小结</h3><p id="summaryText"></p><p>已经存进「记录」里啦，刷新页面也不会丢。</p></div>
+
+    <div class="rules">
+      <div class="card rule"><h3><span class="r-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E63E22" stroke-width="2.4" stroke-linecap="round"><path d="M4 12h9M13 7.5c2.8-1.6 6 .4 6 3.4 0 2.4-2 4.1-4.4 4.1H8a4 4 0 0 1-4-3z"/></svg></span>冲拳怎么算数？</h3><ul>
+        <li><b>第 1 步</b>AI 找到你的肩膀、胳膊肘和手腕，量出手臂的角度</li>
+        <li><b>第 2 步</b>出拳伸直到 142° 以上（难度可以调）</li>
+        <li><b>第 3 步</b>再收回到 115° 以内，完整一次，计数 +1</li>
+        <li><b>不算数</b>只伸不收、随便晃晃手臂，都不会计数</li>
+      </ul></div>
+      <div class="card rule"><h3><span class="r-ico"><svg viewBox="0 0 24 24" fill="none" stroke="#1B93C9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v5M12 9l-6 8M12 9l6 8M6 17l-1.5 3M18 17l1.5 3"/></svg></span>马步怎么计时？</h3><ul>
+        <li><b>条件 1</b>两条腿的膝盖角度在 75°–135° 之间，蹲到位</li>
+        <li><b>条件 2</b>双脚距离 ≥ 肩宽的 1.35 倍，站得够开</li>
+        <li><b>计时</b>两个条件都做到才开始计时，歪了立刻暂停</li>
+        <li><b>小提示</b>上面的大字会告诉你差在哪：腿再弯一点？还是脚再开一点？</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="view-demo" class="view">
+    <h2 class="sec-title">🎬 视频图书馆</h2>
+    <p class="sec-sub">16 节课随便挑：点下面的课程，就会跑到上面的大播放器里播放。看完一节点「我学会了」打卡，进度按 16 节课计算。</p>
+
+    <div class="src-banner">
+      <b>📺 视频来源说明</b>
+      <p>本页课程来自<b>哔哩哔哩</b> UP主 <b>聪at（武术+）</b> 的《云上武术课》系列与 UP主 <b>师兄联盟</b> 的马步教程，通过 B 站官方播放器嵌入播放；文化节目来自<b>央视网</b>。全部视频版权归原作者所有，本页仅作嵌入播放 / 链接跳转；如涉及侵权请联系删除。这些是少儿武术<b>基本功与跟练教学视频</b>，对应本应用训练的抱拳、马步、弓步、冲拳，不是广西花山拳专属套路视频。</p>
+    </div>
+
+    <div class="progress-strip">
+      <span class="p-lab">我的学习进度</span>
+      <div class="progress-track"><div class="progress-fill" id="learnFill" style="width:0%"></div></div>
+      <span class="p-lab" id="learnText">已学会 0 / 16 节</span>
+    </div>
+
+    <div class="card playerCard">
+      <div class="course-top" style="padding-bottom:2px"><span class="course-no" id="nowNo">第 1 节</span><h3 id="nowTitle">第一期 基本功：拳法和掌法</h3><span class="course-state ok" id="nowState">正在播放</span></div>
+      <div class="bili-wrap" id="mainPlayerWrap">
+        <iframe id="mainPlayer" src="https://player.bilibili.com/player.html?bvid=BV1jy4y1L7Wt&page=1&danmaku=0" scrolling="no" frameborder="0" allowfullscreen title="课程主播放器"></iframe>
+        <div class="linkPanel" id="linkPanel" hidden>
+          <div>
+            <div class="pp-ico">🏯</div>
+            <strong>这一节在央视网播放</strong>
+            <p>央视节目没法在小窗口里嵌进来，点下面的按钮去央视网看完整节目，看完回来打卡就行。</p>
+            <a class="btn btn-orange" id="linkPanelBtn" href="http://tv.cctv.com/2017/05/29/VIDENRf7wtVZHOa13rJhqJmz170529.shtml" target="_blank" rel="noopener" style="width:auto;display:inline-block;text-decoration:none;margin-top:10px">去央视网观看 →</a>
+          </div>
+        </div>
+      </div>
+      <p class="ep-desc" id="nowDesc" style="padding:12px 18px 0">拳头怎么握、冲拳怎么发力、掌怎么推出去——去训练页打冲拳之前，先把这一节看一遍。</p>
+      <div class="learnRow" style="padding-top:12px"><button class="btn btn-green learnBtn" id="btnLearnNow">我学会了 ✓ 打卡</button></div>
+      <div class="src-bar" id="nowSrc">来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第一期》 · <a href="https://www.bilibili.com/video/BV1jy4y1L7Wt" target="_blank" rel="noopener">打开原视频 ↗</a><br/>版权归原作者所有，本页仅作嵌入播放；如涉及侵权请联系删除。</div>
+    </div>
+
+    <div class="lib-group">
+      <div class="lib-head"><span class="lib-badge" style="background:#FFE3D9">分类一</span><h3>基本功教学 · 五步拳系列</h3></div>
+      <p class="lib-sub">从拳法掌法到步型组合，一共 6 期，把抱拳、马步、弓步、冲拳的基本功一步步打扎实。UP主：聪at（武术+）· 哔哩哔哩</p>
+      <div class="lib-list">
+        <button class="lib-item active" data-course="c1"><span class="lib-no">1</span><span class="lib-main"><b>第一期 基本功：拳法和掌法</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c1"></span></button>
+        <button class="lib-item" data-course="c2"><span class="lib-no">2</span><span class="lib-main"><b>第二期 基本功：马步和弓步</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c2"></span></button>
+        <button class="lib-item" data-course="c3"><span class="lib-no">3</span><span class="lib-main"><b>第三期 并步抱拳和弓步冲拳</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c3"></span></button>
+        <button class="lib-item" data-course="c4"><span class="lib-no">4</span><span class="lib-main"><b>第四期 马步架打和弹踢冲拳</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c4"></span></button>
+        <button class="lib-item" data-course="c5"><span class="lib-no">5</span><span class="lib-main"><b>第五期 歇步盖冲拳、提膝仆步穿掌</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c5"></span></button>
+        <button class="lib-item" data-course="c6"><span class="lib-no">6</span><span class="lib-main"><b>第六期 收势虚步挑掌</b><small>分类：基本功 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c6"></span></button>
+      </div>
+    </div>
+
+    <div class="lib-group">
+      <div class="lib-head"><span class="lib-badge" style="background:#D8F1FD">分类二</span><h3>武术操跟练 · 旭日东升</h3></div>
+      <p class="lib-sub">一套完整的武术操，一节一节拆开教，最后有完整版可以跟着从头跳到尾。适合热身和课间锻炼。UP主：聪at（武术+）· 哔哩哔哩</p>
+      <div class="lib-list">
+        <button class="lib-item" data-course="c7"><span class="lib-no">7</span><span class="lib-main"><b>起势</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c7"></span></button>
+        <button class="lib-item" data-course="c8"><span class="lib-no">8</span><span class="lib-main"><b>第二节 伸拉运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c8"></span></button>
+        <button class="lib-item" data-course="c9"><span class="lib-no">9</span><span class="lib-main"><b>第三节 开合运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c9"></span></button>
+        <button class="lib-item" data-course="c10"><span class="lib-no">10</span><span class="lib-main"><b>第四节 踢腿运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c10"></span></button>
+        <button class="lib-item" data-course="c11"><span class="lib-no">11</span><span class="lib-main"><b>第五节 伸拉展运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c11"></span></button>
+        <button class="lib-item" data-course="c12"><span class="lib-no">12</span><span class="lib-main"><b>第六节 拧转运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c12"></span></button>
+        <button class="lib-item" data-course="c13"><span class="lib-no">13</span><span class="lib-main"><b>第七节 俯仰运动</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c13"></span></button>
+        <button class="lib-item" data-course="c14"><span class="lib-no">14</span><span class="lib-main"><b>完整版跟练</b><small>分类：武术操 · 来源：哔哩哔哩 · UP主 聪at（武术+）</small></span><span class="lib-check" data-check="c14"></span></button>
+      </div>
+    </div>
+
+    <div class="lib-group">
+      <div class="lib-head"><span class="lib-badge" style="background:#D9F7E6">分类三</span><h3>专项精讲</h3></div>
+      <p class="lib-sub">只盯一个动作往深里讲。马步老站不标准、膝盖脚尖总出错的，专门看这一节。UP主：师兄联盟 · 哔哩哔哩</p>
+      <div class="lib-list">
+        <button class="lib-item" data-course="c15"><span class="lib-no">15</span><span class="lib-main"><b>马步详细教程：膝盖、脚尖、胯的问题都在这了</b><small>分类：专项精讲 · 来源：哔哩哔哩 · UP主 师兄联盟</small></span><span class="lib-check" data-check="c15"></span></button>
+      </div>
+    </div>
+
+    <div class="lib-group">
+      <div class="lib-head"><span class="lib-badge" style="background:#FFE9A8">分类四</span><h3>认识花山拳 · 文化</h3></div>
+      <p class="lib-sub">练拳也要知道拳从哪里来。这一节讲广西宁明花山拳和花山岩画的故事，在央视网播放，点开会跳到央视网观看。</p>
+      <div class="lib-list">
+        <button class="lib-item" data-course="c16"><span class="lib-no">16</span><span class="lib-main"><b>《中国影像方志》广西宁明 · 传承记</b><small>分类：文化 · 来源：央视网 CCTV-10（2017）· 外链观看</small></span><span class="lib-check" data-check="c16"></span></button>
+      </div>
+    </div>
+
+    <h3 class="ai-title">🥋 示范跟练（每段 1 分 30 秒）</h3>
+    <p class="sec-sub" style="margin-bottom:12px">两段跟练示范，每段 1 分 30 秒，动作会完整重复演示，跟着一遍遍练正好。想系统学动作，还是以上面的教练课程为准哦。</p>
+    <div class="ai-shorts">
+      <div class="card ai-card">
+        <div class="player" style="margin:0">
+          <span class="live-tag" style="background:var(--purple)">跟练 · 1分30秒</span>
+          <video controls playsinline preload="metadata" data-hatch-poster="assets/baoquan-poster.jpg" data-hatch-src="assets/baoquan-demo.mp4" aria-label="抱拳礼示范跟练"></video>
+        </div>
+        <b>抱拳礼 · 起势跟练</b>
+        <small>左掌右拳抱于胸前，行礼起势。时长 1 分 30 秒，循环示范，跟着练。</small>
+      </div>
+      <div class="card ai-card">
+        <div class="player" style="margin:0">
+          <span class="live-tag" style="background:var(--purple)">跟练 · 1分30秒</span>
+          <video controls playsinline preload="metadata" data-hatch-poster="assets/mabu-poster.jpg" data-hatch-src="assets/mabu-demo.mp4" aria-label="马步示范跟练"></video>
+        </div>
+        <b>马步 · 蹲稳跟练</b>
+        <small>双脚站开、屈膝下沉、挺胸直腰。时长 1 分 30 秒，循环示范，跟着练。</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHALLENGE -->
+  <section id="view-challenge" class="view">
+    <h2 class="sec-title">🏆 挑战擂台</h2>
+    <p class="sec-sub">敢不敢来挑战？用的是和训练一样的真 AI 判定，成绩会计入你的最佳纪录。打破自己的纪录，还能解锁专属徽章！</p>
+    <div class="chalGrid">
+      <div class="card chalCard">
+        <div class="c-ico" style="background:#FFE3D9"><svg viewBox="0 0 24 24" fill="none" stroke="#E63E22" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l3 2M9.5 2.8h5"/></svg></div>
+        <h3>30 秒冲拳挑战</h3>
+        <p>点开始后跳到训练页打开摄像头，30 秒里拼命打出有效的冲拳——伸直 + 收回才算！时间一到自动结束出成绩。注意别光图快，动作不到位可不计数哦。</p>
+        <div class="best">我的最佳成绩：<b id="bestPunch">还没有挑战过</b></div>
+        <button class="btn btn-primary" id="btnChalPunch" style="width:auto">开始挑战 →</button>
+      </div>
+      <div class="card chalCard">
+        <div class="c-ico" style="background:#D8F1FD"><svg viewBox="0 0 24 24" fill="none" stroke="#1B93C9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M12 9l-6 8M12 9l6 8M6 17l-1.5 3.5M18 17l1.5 3.5M7 5.5L12 9l5-3.5"/></svg></div>
+        <h3>马步坚持挑战</h3>
+        <p>点开始后跳到训练页，摆好标准马步开始坚持——记的是你<b>一次不间断</b>保持的最长时长，姿势一破这次就结束。看看你能稳如泰山多久！</p>
+        <div class="best">我的最长坚持：<b id="bestHorse">还没有挑战过</b></div>
+        <button class="btn btn-blue" id="btnChalHorse" style="width:auto">开始挑战 →</button>
+      </div>
+    </div>
+    <div class="emptyBox" style="margin-top:16px">💡 小提示：挑战和平时训练用同一套判定标准。先去「示范」把动作看标准，再来挑战，成绩会好很多！</div>
+  </section>
+
+  <!-- GROWTH -->
+  <section id="view-growth" class="view">
+    <h2 class="sec-title">⭐ 我的成长乐园</h2>
+    <p class="sec-sub">每天完成小任务、认真训练，就能攒星星、升等级、点亮徽章。全部成绩都来自你真实的训练记录，一颗星都不会凭空送哦。</p>
+    <div class="growthGrid">
+      <div>
+        <div class="card gcard">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="#1E9E57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>今日任务</h3>
+          <p class="g-sub">每天刷新，全部完成超厉害！进度会自动更新。</p>
+          <div id="taskList"></div>
+        </div>
+        <div class="card gcard">
+          <h3><svg viewBox="0 0 24 24" fill="#FFC93C" stroke="#3A3230" stroke-width="1.6" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>星星与等级</h3>
+          <p class="g-sub" id="starRule">星星这样攒：每打出 1 次有效冲拳 +1 颗 · 马步每保持 5 秒 +1 颗 · 每完成 1 次训练 +3 颗。</p>
+          <div class="levelRow"><span class="levelName" id="levelName">小拳手</span><span class="tag" id="levelStars" style="font-weight:900;border:2.5px solid var(--line);border-radius:999px;padding:3px 11px;background:var(--yellow-soft)">共 0 颗星</span></div>
+          <div class="levelTrack"><div class="levelFill" id="levelFill" style="width:0%"></div></div>
+          <div class="levelNext" id="levelNext">距离下一等级还差 50 颗星</div>
+        </div>
+        <div class="card gcard">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="M8.8 13.5L7 21l5-2.6L17 21l-1.8-7.5"/></svg>成就徽章墙</h3>
+          <p class="g-sub">点亮全部 6 枚徽章，你就是真正的花山拳小达人！</p>
+          <div class="badges" id="badgeWall"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card gcard">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="#1B93C9" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M9.5 20V4M15 20v-8M20 20V7"/></svg>训练统计</h3>
+          <p class="g-sub">你的全部努力，都在这里看得见。</p>
+          <div class="statTiles">
+            <div class="statTile"><b id="statSessions">0</b><small>训练次数</small></div>
+            <div class="statTile"><b id="statDays">0</b><small>训练天数</small></div>
+            <div class="statTile"><b id="statPunch">0</b><small>总冲拳（次）</small></div>
+            <div class="statTile"><b id="statHorse">0</b><small>马步总时长（秒）</small></div>
+          </div>
+          <p class="g-sub" style="margin:0">近 7 次训练 · 每次冲拳次数</p>
+          <div id="chartWrap"></div>
+        </div>
+        <div class="card gcard">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="#E63E22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 14v3M8.5 20.5h7"/></svg>我的最佳纪录</h3>
+          <div class="task"><div class="t-main"><b>30 秒冲拳挑战</b><small>伸直 + 收回才计数</small></div><div class="t-prog" id="recPunch">—</div></div>
+          <div class="task"><div class="t-main"><b>马步最长一次坚持</b><small>不间断保持的最长时长</small></div><div class="t-prog" id="recHorse">—</div></div>
+          <div class="task"><div class="t-main"><b>单次训练最多冲拳</b><small>任意一次训练里打出的</small></div><div class="t-prog" id="recMaxPunch">—</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="view-history" class="view">
+    <h2 class="sec-title">📒 我的训练记录</h2>
+    <p class="sec-sub">每次点「结束 · 看小结」就会存一条。记录只存在这台设备的浏览器里，不上传，最多保留最近 50 条。</p>
+    <div id="historyList"></div>
+    <div id="histEmpty" class="emptyBox">还没有记录哦。<br/>去「训练」练一次，回来这里就能看到你的冲拳次数、马步时长啦。</div>
+    <div style="margin-top:16px"><button class="btn" id="btnClearHist" style="width:auto;padding:12px 24px">清空全部记录</button></div>
+  </section>
+
+  <footer>花山拳小勇士训练乐园 · 摄像头只在自己的设备上运行，不上传画面 · 建议用最新版 Chrome / Edge · 距镜头 2–3 米、全身入画，识别最准</footer>
+</div>
+
+<!-- Guardian modal -->
+<div class="modal" id="guardianModal" role="dialog" aria-modal="true">
+  <div class="modalCard">
+    <h3>🧑‍🏫 开始前，请爸爸妈妈或教练看一下</h3>
+    <p>接下来会打开摄像头做动作识别。画面只在这台设备本地计算，不上传、不录像、不保存。请确认有大人在旁边陪同再开始。</p>
+    <label class="check"><input type="checkbox" id="guardianCheck"/><span><strong>我是家长或教练，已知晓并同意打开摄像头</strong><br/><small style="color:var(--muted)">勾选后才能开始；不勾选不会打开摄像头。</small></span></label>
+    <div class="modalBtns"><button class="btn btn-primary" id="btnGuardianOk" disabled>同意 · 开始练功</button><button class="btn" id="btnGuardianCancel">先不练</button></div>
+  </div>
+</div>
+
+
+<script data-hatch-cvm-bundle>(() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  function __accessProp(key) {
+    return this[key];
+  }
+  var __toCommonJS = (from) => {
+    var entry = (__moduleCache ??= new WeakMap).get(from), desc;
+    if (entry)
+      return entry;
+    entry = __defProp({}, "__esModule", { value: true });
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (var key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(entry, key))
+          __defProp(entry, key, {
+            get: __accessProp.bind(from, key),
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+          });
+    }
+    __moduleCache.set(from, entry);
+    return entry;
+  };
+  var __moduleCache;
+
+  // src/prelude.ts
+  var exports_prelude = {};
+
+  // src/tunnel-url.ts
+  var B64_CHUNK = 32768;
+  function computeSelfBaseDir(selfHref) {
+    if (!selfHref)
+      return "";
+    let h = selfHref;
+    const hash = h.indexOf("#");
+    if (hash >= 0)
+      h = h.slice(0, hash);
+    const q = h.indexOf("?");
+    if (q >= 0)
+      h = h.slice(0, q);
+    const slash = h.lastIndexOf("/");
+    return slash >= 0 ? h.slice(0, slash + 1) : "";
+  }
+  function isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!selfBaseDir || !u.startsWith(selfBaseDir))
+      return false;
+    if (u === selfHref)
+      return false;
+    return !objectUrls.has(u);
+  }
+  function isExternalUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!u)
+      return false;
+    if (u.startsWith("#"))
+      return true;
+    if (isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls))
+      return false;
+    if (u.startsWith("data:") || u.startsWith("blob:"))
+      return true;
+    if (u.startsWith("about:") || u.startsWith("javascript:"))
+      return true;
+    if (u.startsWith("//"))
+      return true;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) {
+      return true;
+    }
+    return false;
+  }
+  function ownObjectUrl(scriptUrl, objectUrls) {
+    const href = typeof scriptUrl === "string" ? scriptUrl : scriptUrl instanceof URL ? scriptUrl.href : null;
+    return href !== null && href.startsWith("blob:") && objectUrls.has(href) ? href : null;
+  }
+  var WORKER_TUNNEL_SHIM = [
+    "self.__tunnel=self.__tunnel||{",
+    "fetch:function(){return self.fetch.apply(self,arguments)},",
+    "XHR:self.XMLHttpRequest,WebSocket:self.WebSocket,EventSource:self.EventSource,",
+    "Worker:self.Worker,import:function(s){return import(s)},",
+    "Image:function(w,h){return new Image(w,h)},",
+    "sendBeacon:function(){return false},",
+    "getStyle:function(x){if(x==null)return x;try{return x.style}catch(e){return undefined}},",
+    "setStyle:function(x,n,v){x.style[n]=v},",
+    "setUrlProp:function(x,n,v){x[n]=v;return v},",
+    "setAttr:function(x){return x.setAttribute.apply(x,[].slice.call(arguments,1))},",
+    "setAttrNS:function(x){return x.setAttributeNS.apply(x,[].slice.call(arguments,1))},",
+    "setInnerHTML:function(x,v,w){x[w||'innerHTML']=v},",
+    "setStyleText:function(x,v){x.textContent=v},",
+    "insertAdjacentHTML:function(x,p,v){return x.insertAdjacentHTML(p,v)},",
+    `_importMeta:{url:self.location.href}};
+`
+  ].join("");
+  function isWorkerScriptBlob(obj) {
+    return obj instanceof Blob && (obj.type === "" || /javascript|ecmascript/i.test(obj.type));
+  }
+  function workerScriptBlob(script) {
+    return new Blob([WORKER_TUNNEL_SHIM, script], { type: "text/javascript" });
+  }
+  function normalizeToRelPath(u, selfBaseDir) {
+    let s = u;
+    if (selfBaseDir && s.startsWith(selfBaseDir)) {
+      s = s.slice(selfBaseDir.length);
+    }
+    s = s.replace(/^\.\//, "");
+    s = s.replace(/^\/+/, "");
+    return s;
+  }
+  function blobRequestPath(cacheKey) {
+    if (!cacheKey.startsWith("blobs/"))
+      return cacheKey;
+    const query = cacheKey.indexOf("?");
+    return query < 0 ? cacheKey : cacheKey.slice(0, query);
+  }
+  function blobInner(base, NativeURL) {
+    if (base == null)
+      return null;
+    const s = typeof base === "string" ? base : base instanceof NativeURL ? base.href : String(base);
+    return s.startsWith("blob:") ? s.slice("blob:".length) : null;
+  }
+  var OPAQUE_BLOB_ORIGIN = "https://hatch-cvm-opaque.invalid";
+  function isAbsoluteUrlString(s, NativeURL) {
+    try {
+      new NativeURL(s);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function resolveAgainstBlobBase(u, base, NativeURL) {
+    const inner = blobInner(base, NativeURL);
+    if (inner === null)
+      return null;
+    if (isAbsoluteUrlString(inner, NativeURL)) {
+      return new NativeURL("blob:" + new NativeURL(u, inner).href);
+    }
+    const slash = inner.indexOf("/");
+    const token = slash >= 0 ? inner.slice(0, slash) : inner;
+    const path = slash >= 0 ? inner.slice(slash) : "/";
+    const resolved = new NativeURL(u, OPAQUE_BLOB_ORIGIN + path);
+    return new NativeURL("blob:" + token + resolved.pathname + resolved.search + resolved.hash);
+  }
+  function resolveTunnelUrl(url, base, selfHref, NativeURL) {
+    const u = url == null ? "" : typeof url === "string" ? url : url instanceof NativeURL ? url.href : String(url);
+    const uAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith("//");
+    if (base !== undefined && base !== null && !uAbsolute) {
+      const viaBlob = resolveAgainstBlobBase(u, base, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+      return new NativeURL(u, base);
+    }
+    if (!uAbsolute && selfHref) {
+      const viaBlob = resolveAgainstBlobBase(u, selfHref, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+    }
+    return base === undefined ? new NativeURL(u) : new NativeURL(u, base);
+  }
+  function bytesToBase64(bytes) {
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    let s = "";
+    for (let i = 0;i < u8.length; i += B64_CHUNK) {
+      s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + B64_CHUNK)));
+    }
+    return btoa(s);
+  }
+  function base64ToBytes(b64) {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0;i < bin.length; i++)
+      out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function importMetaUrl(selfHref, selfBaseDir) {
+    return selfBaseDir ? `${selfBaseDir}assets/cvm-bundle.js` : selfHref;
+  }
+
+  // src/download-links.ts
+  function installDownloadLinks(fetchAsset, isExternalUrl, revokeDelayMs) {
+    document.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor?.hasAttribute("download"))
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href || isExternalUrl(href))
+        return;
+      event.preventDefault();
+      const filename = anchor.download || resourceFilename(href);
+      (async () => {
+        const response = await fetchAsset(href);
+        if (!response.ok) {
+          throw new Error(`Artifact download failed: HTTP ${response.status}`);
+        }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
+        }
+      })().catch((error) => reportError(error));
+    });
+  }
+  function resourceFilename(href) {
+    const path = new URL(href, document.baseURI).pathname;
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    try {
+      return decodeURIComponent(name);
+    } catch {
+      return name;
+    }
+  }
+
+  // src/fragment-links.ts
+  function installFragmentLinks() {
+    if (!location.href.startsWith("blob:null/"))
+      return;
+    const NativeURL = URL;
+    const pushState = history.pushState.bind(history);
+    const replaceState = history.replaceState.bind(history);
+    window.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor || anchor.hasAttribute("download"))
+        return;
+      const targetName = anchor.getAttribute("target") ?? document.querySelector("base[target]")?.getAttribute("target") ?? "";
+      if (targetName !== "" && targetName.toLowerCase() !== "_self")
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href?.startsWith("#"))
+        return;
+      const oldURL = location.href;
+      const nextURL = new NativeURL(href, oldURL);
+      event.preventDefault();
+      const changed = nextURL.href !== oldURL;
+      if (changed) {
+        pushState(null, "", nextURL.href);
+      } else {
+        replaceState(null, "", nextURL.href);
+      }
+      window.dispatchEvent(new PopStateEvent("popstate", { state: null }));
+      const target = fragmentTarget(nextURL.hash);
+      if (target) {
+        target.scrollIntoView();
+        if (target !== document.documentElement && (target instanceof HTMLElement || target instanceof SVGElement)) {
+          const hadTabIndex = target.hasAttribute("tabindex");
+          if (!hadTabIndex)
+            target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+          if (!hadTabIndex)
+            target.removeAttribute("tabindex");
+        }
+      }
+      if (changed) {
+        queueMicrotask(() => window.dispatchEvent(new HashChangeEvent("hashchange", {
+          oldURL,
+          newURL: nextURL.href
+        })));
+      }
+    });
+  }
+  function fragmentTarget(hash) {
+    const bytes = hash.slice(1).replace(/%([0-9a-f]{2})/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+    const fragment = new TextDecoder().decode(Uint8Array.from(bytes, (byte) => byte.charCodeAt(0)));
+    if (fragment === "")
+      return document.documentElement;
+    const idTarget = document.getElementById(fragment);
+    if (idTarget)
+      return idTarget;
+    const namedTarget = Array.from(document.getElementsByName(fragment)).find((node) => node instanceof HTMLAnchorElement);
+    return namedTarget ?? (fragment.toLowerCase() === "top" ? document.documentElement : null);
+  }
+
+  // src/prelude.ts
+  (function installTunnel() {
+    installFragmentLinks();
+    let port = null;
+    let portReadyResolve = null;
+    const portReady = new Promise((res) => {
+      portReadyResolve = res;
+    });
+    const pending = new Map;
+    const openWs = new Map;
+    function newId() {
+      return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    }
+    function bytesToB64(bytes) {
+      return bytesToBase64(bytes);
+    }
+    function b64ToBytes(b64) {
+      return base64ToBytes(b64);
+    }
+    async function httpReq(method, path, body, headers) {
+      const p = port ?? await portReady;
+      const id = newId();
+      const headerArr = [];
+      if (headers) {
+        const h = new Headers(headers);
+        h.forEach((v, k) => headerArr.push([k, v]));
+      }
+      let bodyB64 = "";
+      if (body != null && body !== "") {
+        let bytes;
+        if (typeof body === "string") {
+          bytes = new TextEncoder().encode(body);
+        } else if (body instanceof ArrayBuffer) {
+          bytes = new Uint8Array(body);
+        } else if (body instanceof Uint8Array) {
+          bytes = body;
+        } else if (body instanceof Blob) {
+          bytes = new Uint8Array(await body.arrayBuffer());
+        } else if (body instanceof FormData) {
+          const boundary = "----HatchBoundary" + Math.random().toString(36).slice(2);
+          let s = "";
+          for (const [k, v] of body.entries()) {
+            s += `--${boundary}\r
+Content-Disposition: form-data; name="${k}"`;
+            if (v instanceof File) {
+              s += `; filename="${v.name}"\r
+Content-Type: ${v.type || "application/octet-stream"}\r
+\r
+`;
+              const fb = new Uint8Array(await v.arrayBuffer());
+              s += new TextDecoder("latin1").decode(fb);
+            } else {
+              s += `\r
+\r
+${v}`;
+            }
+            s += `\r
+`;
+          }
+          s += `--${boundary}--\r
+`;
+          bytes = new TextEncoder().encode(s);
+          headerArr.push([
+            "content-type",
+            `multipart/form-data; boundary=${boundary}`
+          ]);
+        } else {
+          bytes = new TextEncoder().encode(String(body));
+        }
+        bodyB64 = bytesToB64(bytes);
+      }
+      return new Promise((resolve, reject) => {
+        pending.set(id, {
+          resolve: (msg) => {
+            if (msg.error) {
+              reject(new Error(msg.error.message ?? "tunnel error"));
+              return;
+            }
+            resolve({
+              status: msg.status,
+              headers: msg.headers,
+              bytes: msg.bodyB64 ? b64ToBytes(msg.bodyB64) : new Uint8Array(0)
+            });
+          },
+          reject
+        });
+        p.postMessage({
+          type: "http.req",
+          id,
+          method,
+          path,
+          headers: headerArr,
+          bodyB64
+        });
+      });
+    }
+    async function tunnelFetch(input, init) {
+      let urlStr;
+      let method = init?.method ?? "GET";
+      let headers = init?.headers;
+      let body = init?.body;
+      if (input instanceof Request) {
+        urlStr = input.url;
+        method = init?.method ?? input.method;
+        headers = init?.headers ?? input.headers;
+        if (body == null && input.body) {
+          body = await input.arrayBuffer();
+        }
+      } else {
+        urlStr = String(input);
+      }
+      if (isExternalUrl2(urlStr)) {
+        return originalFetch(input, init);
+      }
+      const relPath = normalizeToRelPath2(urlStr);
+      const r = await httpReq(method, relPath, body ?? null, headers);
+      const respHeaders = new Headers;
+      for (const [k, v] of r.headers ?? [])
+        respHeaders.set(k, v);
+      return new Response(r.bytes, {
+        status: r.status,
+        headers: respHeaders
+      });
+    }
+
+    class TunnelWebSocket extends EventTarget {
+      readyState = 0;
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSING = 2;
+      static CLOSED = 3;
+      CONNECTING = 0;
+      OPEN = 1;
+      CLOSING = 2;
+      CLOSED = 3;
+      url;
+      binaryType = "blob";
+      bufferedAmount = 0;
+      protocol = "";
+      extensions = "";
+      onopen = null;
+      onmessage = null;
+      onclose = null;
+      onerror = null;
+      _id;
+      constructor(urlIn, _protocols) {
+        super();
+        const urlStr = String(urlIn);
+        this.url = urlStr;
+        this._id = newId();
+        openWs.set(this._id, this);
+        const path = normalizeToRelPath2(urlStr);
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.open", id: this._id, path });
+        })();
+      }
+      _handle(msg) {
+        if (msg.type === "ws.opened") {
+          this.readyState = 1;
+          const ev = new Event("open");
+          this.onopen?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.message") {
+          const bytes = msg.dataB64 ? b64ToBytes(msg.dataB64) : new Uint8Array(0);
+          let data;
+          if (msg.binary) {
+            data = this.binaryType === "arraybuffer" ? bytes.buffer : new Blob([bytes]);
+          } else {
+            data = new TextDecoder().decode(bytes);
+          }
+          const ev = new MessageEvent("message", { data });
+          this.onmessage?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.closed") {
+          this.readyState = 3;
+          const ev = new CloseEvent("close", {
+            code: msg.code ?? 1000,
+            reason: msg.reason ?? ""
+          });
+          this.onclose?.(ev);
+          this.dispatchEvent(ev);
+          openWs.delete(this._id);
+        } else if (msg.type === "ws.error") {
+          const ev = new Event("error");
+          this.onerror?.(ev);
+          this.dispatchEvent(ev);
+        }
+      }
+      send(data) {
+        (async () => {
+          const p = port ?? await portReady;
+          let bytes;
+          let binary = false;
+          if (typeof data === "string") {
+            bytes = new TextEncoder().encode(data);
+          } else if (data instanceof Blob) {
+            bytes = new Uint8Array(await data.arrayBuffer());
+            binary = true;
+          } else if (data instanceof ArrayBuffer) {
+            bytes = new Uint8Array(data);
+            binary = true;
+          } else if (ArrayBuffer.isView(data)) {
+            bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+            binary = true;
+          } else {
+            bytes = new TextEncoder().encode(String(data));
+          }
+          p.postMessage({
+            type: "ws.send",
+            id: this._id,
+            dataB64: bytesToB64(bytes),
+            binary
+          });
+        })();
+      }
+      close(code, reason) {
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.close", id: this._id, code, reason });
+        })();
+      }
+      addEventListener(type, listener, options) {
+        super.addEventListener(type, listener, options);
+      }
+    }
+
+    class TunnelXHR extends EventTarget {
+      static UNSENT = 0;
+      static OPENED = 1;
+      static HEADERS_RECEIVED = 2;
+      static LOADING = 3;
+      static DONE = 4;
+      UNSENT = 0;
+      OPENED = 1;
+      HEADERS_RECEIVED = 2;
+      LOADING = 3;
+      DONE = 4;
+      readyState = 0;
+      status = 0;
+      statusText = "";
+      responseText = "";
+      response = null;
+      responseType = "";
+      responseURL = "";
+      withCredentials = false;
+      timeout = 0;
+      upload = new EventTarget;
+      onreadystatechange = null;
+      onload = null;
+      onerror = null;
+      onloadend = null;
+      onabort = null;
+      onprogress = null;
+      ontimeout = null;
+      _method = "GET";
+      _url = "";
+      _reqHeaders = [];
+      _respHeaders = [];
+      _aborted = false;
+      open(method, url) {
+        this._method = method;
+        this._url = url;
+        this.readyState = 1;
+        this.onreadystatechange?.();
+      }
+      setRequestHeader(name, value) {
+        this._reqHeaders.push([name, value]);
+      }
+      getAllResponseHeaders() {
+        return this._respHeaders.map(([k, v]) => `${k}: ${v}`).join(`\r
+`);
+      }
+      getResponseHeader(name) {
+        const lc = name.toLowerCase();
+        const hit = this._respHeaders.find(([k]) => k.toLowerCase() === lc);
+        return hit ? hit[1] : null;
+      }
+      abort() {
+        this._aborted = true;
+        this.readyState = 0;
+      }
+      send(body) {
+        if (isExternalUrl2(this._url)) {
+          const real = new originalXHR;
+          real.open(this._method, this._url);
+          for (const [k, v] of this._reqHeaders)
+            real.setRequestHeader(k, v);
+          real.onload = () => {
+            this.status = real.status;
+            this.responseText = real.responseText;
+            this.response = real.response;
+            this.readyState = 4;
+            this.onreadystatechange?.();
+            this.onload?.();
+            this.onloadend?.();
+            this.dispatchEvent(new Event("load"));
+          };
+          real.onerror = () => {
+            this.onerror?.();
+            this.dispatchEvent(new Event("error"));
+          };
+          real.send(body);
+          return;
+        }
+        const relPath = normalizeToRelPath2(this._url);
+        httpReq(this._method, relPath, body ?? null, this._reqHeaders).then((r) => {
+          if (this._aborted)
+            return;
+          this.status = r.status;
+          this._respHeaders = r.headers ?? [];
+          this.responseText = new TextDecoder().decode(r.bytes);
+          if (this.responseType === "arraybuffer") {
+            this.response = r.bytes.buffer;
+          } else if (this.responseType === "blob") {
+            this.response = new Blob([r.bytes]);
+          } else if (this.responseType === "json") {
+            try {
+              this.response = JSON.parse(this.responseText);
+            } catch {
+              this.response = null;
+            }
+          } else {
+            this.response = this.responseText;
+          }
+          this.readyState = 4;
+          this.onreadystatechange?.();
+          this.onload?.();
+          this.onloadend?.();
+          this.dispatchEvent(new Event("load"));
+        }, () => {
+          if (this._aborted)
+            return;
+          this.onerror?.();
+          this.dispatchEvent(new Event("error"));
+        });
+      }
+    }
+
+    class TunnelEventSource extends EventTarget {
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSED = 2;
+      readyState = 0;
+      url;
+      withCredentials = false;
+      onopen = null;
+      onmessage = null;
+      onerror = null;
+      constructor(url) {
+        super();
+        this.url = String(url);
+        (async () => {
+          try {
+            const relPath = normalizeToRelPath2(this.url);
+            const r = await httpReq("GET", relPath, null, [
+              ["accept", "text/event-stream"]
+            ]);
+            this.readyState = 1;
+            this.onopen?.(new Event("open"));
+            const text = new TextDecoder().decode(r.bytes);
+            for (const block of text.split(/\n\n/)) {
+              const data = block.split(`
+`).filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join(`
+`);
+              if (data) {
+                const ev = new MessageEvent("message", { data });
+                this.onmessage?.(ev);
+                this.dispatchEvent(ev);
+              }
+            }
+            this.readyState = 2;
+          } catch {
+            this.onerror?.(new Event("error"));
+          }
+        })();
+      }
+      close() {
+        this.readyState = 2;
+      }
+    }
+    const SELF_HREF = (() => {
+      try {
+        return globalThis.location?.href ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    const SELF_BASE_DIR = computeSelfBaseDir(SELF_HREF);
+    const objectUrls = new Set;
+    const objectUrlScripts = new Map;
+    function isSelfOriginUrl2(u) {
+      return isSelfOriginUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function isExternalUrl2(u) {
+      return isExternalUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function normalizeToRelPath2(u) {
+      return normalizeToRelPath(u, SELF_BASE_DIR);
+    }
+    const URL_ATTRS = new Set([
+      "src",
+      "srcset",
+      "href",
+      "poster",
+      "action",
+      "formaction",
+      "data",
+      "background",
+      "cite",
+      "longdesc",
+      "usemap",
+      "manifest"
+    ]);
+    const URL_STYLE_PROPS = new Set([
+      "background",
+      "backgroundImage",
+      "background-image",
+      "borderImage",
+      "border-image",
+      "borderImageSource",
+      "border-image-source",
+      "listStyle",
+      "list-style",
+      "listStyleImage",
+      "list-style-image",
+      "cursor",
+      "mask",
+      "maskImage",
+      "mask-image",
+      "webkitMask",
+      "-webkit-mask",
+      "webkitMaskImage",
+      "-webkit-mask-image",
+      "content",
+      "src"
+    ]);
+    const __BLOB_CACHE_MAX = 256;
+    const __BLOB_REVOKE_DELAY_MS = 30000;
+    const blobCache = new Map;
+    const blobStats = {
+      created: 0,
+      revoked: 0,
+      hits: 0,
+      misses: 0,
+      inFlightRevokes: 0
+    };
+    function __evictIfOverCap() {
+      while (blobCache.size > __BLOB_CACHE_MAX) {
+        const oldestKey = blobCache.keys().next().value;
+        if (oldestKey === undefined)
+          break;
+        const ent = blobCache.get(oldestKey);
+        blobCache.delete(oldestKey);
+        blobStats.inFlightRevokes++;
+        const t = setTimeout(() => {
+          ent.url.then((u) => {
+            if (typeof u === "string" && u.startsWith("blob:")) {
+              try {
+                URL.revokeObjectURL(u);
+                blobStats.revoked++;
+              } catch {}
+            }
+          }).catch(() => {}).finally(() => {
+            blobStats.inFlightRevokes--;
+          });
+        }, __BLOB_REVOKE_DELAY_MS);
+        ent.pendingRevoke = t;
+      }
+    }
+    function resolveToBlobUrl(rel) {
+      if (isExternalUrl2(rel))
+        return Promise.resolve(rel);
+      const hashIdx = rel.indexOf("#");
+      const pathPart = hashIdx >= 0 ? rel.slice(0, hashIdx) : rel;
+      const frag = hashIdx >= 0 ? rel.slice(hashIdx) : "";
+      const key = normalizeToRelPath2(pathPart);
+      let ent = blobCache.get(key);
+      if (ent) {
+        if (ent.pendingRevoke != null) {
+          clearTimeout(ent.pendingRevoke);
+          ent.pendingRevoke = undefined;
+          blobStats.inFlightRevokes--;
+        }
+        blobCache.delete(key);
+        blobCache.set(key, ent);
+        blobStats.hits++;
+      } else {
+        blobStats.misses++;
+        const url = httpReq("GET", blobRequestPath(key), null).then((r) => {
+          if (r.status < 200 || r.status >= 300) {
+            throw new Error(`Space resource returned HTTP ${r.status}`);
+          }
+          const ctHeader = r.headers.find(([k]) => k.toLowerCase() === "content-type");
+          const ct = ctHeader?.[1] ?? "application/octet-stream";
+          const blob = new Blob([r.bytes], { type: ct });
+          blobStats.created++;
+          return URL.createObjectURL(blob);
+        }).catch((error) => {
+          if (blobCache.get(key) === ent)
+            blobCache.delete(key);
+          throw error;
+        });
+        ent = { url };
+        blobCache.set(key, ent);
+        __evictIfOverCap();
+      }
+      return frag ? ent.url.then((b) => b + frag) : ent.url;
+    }
+    const HATCH_PIXEL_PREFIX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HATCH_FRAG = "#hatch=";
+    function isHatchPlaceholder(url) {
+      return url.indexOf(HATCH_PIXEL_PREFIX + HATCH_FRAG) === 0;
+    }
+    function unwrapHatchPlaceholder(url) {
+      if (!isHatchPlaceholder(url))
+        return null;
+      return decodeURIComponent(url.slice((HATCH_PIXEL_PREFIX + HATCH_FRAG).length));
+    }
+    async function rewriteCssTextAsync(text) {
+      const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+      const tasks = [];
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        tasks.push({ match: m[0], index: m.index, url: m[2].trim() });
+      }
+      if (tasks.length === 0)
+        return text;
+      const resolved = await Promise.all(tasks.map(async (t) => {
+        if (t.url.startsWith("blob:"))
+          return t.url;
+        const unwrapped = unwrapHatchPlaceholder(t.url);
+        if (unwrapped != null) {
+          try {
+            return await resolveToBlobUrl(unwrapped);
+          } catch {
+            return t.url;
+          }
+        }
+        if (isExternalUrl2(t.url))
+          return t.url;
+        try {
+          return await resolveToBlobUrl(t.url);
+        } catch {
+          return t.url;
+        }
+      }));
+      let out = "";
+      let last = 0;
+      tasks.forEach((t, i) => {
+        out += text.slice(last, t.index);
+        out += `url("${resolved[i]}")`;
+        last = t.index + t.match.length;
+      });
+      out += text.slice(last);
+      return out;
+    }
+    function rewriteCssText(text) {
+      return rewriteCssTextAsync(text);
+    }
+    const mediaSourceLoads = new WeakMap;
+    window.addEventListener("error", (event) => {
+      const source = event.target;
+      if (!event.isTrusted || !(source instanceof HTMLSourceElement) || !(source.parentElement instanceof HTMLMediaElement) || source.hasAttribute("src"))
+        return;
+      const state = mediaSourceLoads.get(source);
+      if (state === "pending" || state === undefined && source.hasAttribute("data-hatch-src")) {
+        event.stopImmediatePropagation();
+      }
+    }, true);
+    function isElement(el) {
+      if (el instanceof Element)
+        return true;
+      const ownerWindow = el?.ownerDocument?.defaultView;
+      return ownerWindow != null && el instanceof ownerWindow.Element;
+    }
+    function setAttr(el, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttribute(name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        if (name.toLowerCase() === "src" && el instanceof HTMLSourceElement) {
+          mediaSourceLoads.set(el, "settled");
+        }
+        try {
+          el.removeAttribute(name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.toLowerCase();
+      const tag = el.tagName?.toUpperCase();
+      if ((tag === "A" || tag === "BASE" || tag === "AREA") && lcName === "href") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (!URL_ATTRS.has(lcName) && lcName !== "style" && lcName !== "srcset") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (lcName === "srcset") {
+        const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+        Promise.all(parts.map(async (p) => {
+          const segs = p.split(/\s+/);
+          const url = segs[0];
+          const rest = segs.slice(1).join(" ");
+          if (isExternalUrl2(url))
+            return p;
+          const resolved = await resolveToBlobUrl(url);
+          return rest ? `${resolved} ${rest}` : resolved;
+        })).then((rebuilt) => {
+          try {
+            el.setAttribute("srcset", rebuilt.join(", "));
+          } catch {}
+        }, () => {
+          try {
+            el.dispatchEvent(new Event("error"));
+          } catch {}
+        });
+        return;
+      }
+      if (URL_ATTRS.has(lcName)) {
+        const isMediaSource = tag === "SOURCE" && lcName === "src";
+        if (isExternalUrl2(v)) {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          el.setAttribute(name, v);
+          return;
+        }
+        if (isMediaSource)
+          mediaSourceLoads.set(el, "pending");
+        if (tag === "IMG" || tag === "VIDEO" && lcName === "poster") {
+          el.setAttribute(name, TRANSPARENT_PIXEL);
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          try {
+            el.setAttribute(name, blobUrl);
+            if (isMediaSource) {
+              const media = el.parentElement;
+              if (media instanceof HTMLMediaElement && media.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+                const nextSibling = el.nextSibling;
+                el.remove();
+                media.insertBefore(el, nextSibling);
+              }
+            }
+          } catch {}
+        }, () => {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          if (isMediaSource || tag === "IMG") {
+            el.dispatchEvent(new Event("error"));
+          }
+        });
+        return;
+      }
+      if (lcName === "style") {
+        setStyleAttr(el, v);
+        return;
+      }
+      el.setAttribute(name, v);
+    }
+    function setAttrNS(el, ns, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttributeNS(ns, name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        try {
+          el.removeAttributeNS(ns ?? null, name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.split(":").pop().toLowerCase();
+      if (lcName === "href" && URL_ATTRS.has("href")) {
+        if (isExternalUrl2(v)) {
+          el.setAttributeNS(ns ?? null, name, v);
+          return;
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          try {
+            el.setAttributeNS(ns ?? null, name, blobUrl);
+          } catch {}
+        }, () => {});
+        return;
+      }
+      try {
+        el.setAttributeNS(ns ?? null, name, v);
+      } catch {}
+    }
+    function setUrlProp(el, name, value) {
+      if (isElement(el)) {
+        setAttr(el, name.toLowerCase(), value);
+      } else {
+        el[name] = value;
+      }
+      return value;
+    }
+    const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HTML_TAG_ATTRS = {
+      img: ["src", "srcset", "poster"],
+      image: ["href"],
+      video: ["src", "poster"],
+      audio: ["src"],
+      source: ["src", "srcset"],
+      script: ["src"],
+      link: ["href"],
+      iframe: ["src"],
+      embed: ["src"],
+      object: ["data"],
+      track: ["src"],
+      input: ["src"],
+      form: ["action"],
+      button: ["formaction"],
+      use: ["href"]
+    };
+    function rewriteHtmlString(html) {
+      return html.replace(/<([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/g, (m, tag, attrs) => {
+        const lc = String(tag).toLowerCase();
+        const candidates = HTML_TAG_ATTRS[lc];
+        if (!candidates)
+          return m;
+        let out = attrs;
+        for (const a of candidates) {
+          const re = new RegExp(`\\b${a}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, "i");
+          const matched = out.match(re);
+          if (!matched)
+            continue;
+          const value = matched[2] ?? matched[3] ?? matched[4] ?? "";
+          if (isExternalUrl2(value))
+            continue;
+          out = out.replace(re, `data-hatch-${a}="${value.replace(/"/g, "&quot;")}"`);
+        }
+        const styleRe = /\bstyle\s*=\s*("([^"]*)"|'([^']*)')/i;
+        const sm = out.match(styleRe);
+        if (sm) {
+          const value = sm[2] ?? sm[3] ?? "";
+          if (value.includes("url(")) {
+            out = out.replace(styleRe, `data-hatch-style="${value.replace(/"/g, "&quot;")}"`);
+          }
+        }
+        return `<${tag}${out}>`;
+      });
+    }
+    const HTML_URL_ATTRS_BY_TAG = {
+      IMG: ["src", "srcset", "poster"],
+      IMAGE: ["href"],
+      VIDEO: ["src", "poster"],
+      AUDIO: ["src"],
+      SOURCE: ["src", "srcset"],
+      SCRIPT: ["src"],
+      LINK: ["href"],
+      IFRAME: ["src"],
+      EMBED: ["src"],
+      OBJECT: ["data"],
+      TRACK: ["src"],
+      INPUT: ["src"],
+      FORM: ["action"],
+      BUTTON: ["formaction"],
+      USE: ["href", "xlink:href"]
+    };
+    function rewriteSubtreeForTunnel(root) {
+      if (!root)
+        return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+      let n = walker.currentNode;
+      if (root.nodeType === 1)
+        processOne(root);
+      while (n = walker.nextNode()) {
+        processOne(n);
+      }
+    }
+    function processOne(el) {
+      const tag = (el.tagName ?? "").toUpperCase();
+      const attrs = HTML_URL_ATTRS_BY_TAG[tag];
+      if (attrs) {
+        for (const a of attrs) {
+          const v = el.getAttribute(a);
+          if (v == null)
+            continue;
+          if (isExternalUrl2(v))
+            continue;
+          el.setAttribute("data-hatch-" + a, v);
+          el.removeAttribute(a);
+        }
+      }
+      const style = el.getAttribute("style");
+      if (style && style.includes("url(")) {
+        el.setAttribute("data-hatch-style", style);
+        el.removeAttribute("style");
+      }
+    }
+    function parseAndCleanHtml(html) {
+      const tpl = document.createElement("template");
+      tpl.innerHTML = html;
+      rewriteSubtreeForTunnel(tpl.content);
+      return tpl.content;
+    }
+    function setInnerHTML(el, html, which = "innerHTML") {
+      const s = html == null ? "" : String(html);
+      if (which === "innerHTML" && typeof el.tagName === "string" && el.tagName.toUpperCase() === "TEMPLATE") {
+        try {
+          el.innerHTML = s;
+        } catch {}
+        return;
+      }
+      if (which === "outerHTML") {
+        const frag = parseAndCleanHtml(s);
+        const wrap = document.createElement("div");
+        wrap.appendChild(frag);
+        try {
+          el.outerHTML = wrap.innerHTML;
+        } catch {}
+        queueMicrotask(() => processDataHatchAttrs(document.body));
+        return;
+      }
+      const frag = parseAndCleanHtml(s);
+      try {
+        while (el.firstChild)
+          el.removeChild(el.firstChild);
+        el.appendChild(frag);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(el));
+    }
+    function insertAdjacentHTMLT(el, position, html) {
+      const s = html == null ? "" : String(html);
+      const frag = parseAndCleanHtml(s);
+      const wrap = document.createElement("template");
+      wrap.content.appendChild(frag);
+      try {
+        el.insertAdjacentHTML(position, wrap.innerHTML);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(document.body));
+    }
+    function processDataHatchAttrs(root) {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset], [data-hatch-poster], [data-hatch-action], [data-hatch-data], [data-hatch-style]";
+      root.querySelectorAll(SELECTORS).forEach((el) => {
+        const attrs = el.getAttributeNames();
+        for (const a of attrs) {
+          if (!a.startsWith("data-hatch-"))
+            continue;
+          const real = a.slice("data-hatch-".length);
+          const value = el.getAttribute(a) ?? "";
+          el.removeAttribute(a);
+          if (real === "style")
+            setStyleAttr(el, value);
+          else
+            setAttr(el, real, value);
+        }
+      });
+    }
+    const styleProxyCache = new WeakMap;
+    function getStyle(el) {
+      if (el == null)
+        return el;
+      let real;
+      try {
+        real = el.style;
+      } catch {
+        return;
+      }
+      if (real == null || typeof real !== "object" && typeof real !== "function") {
+        return real;
+      }
+      let proxy = styleProxyCache.get(real);
+      if (proxy)
+        return proxy;
+      proxy = new Proxy(real, {
+        get(target, prop, _receiver) {
+          const v = Reflect.get(target, prop, target);
+          if (typeof v === "function")
+            return v.bind(target);
+          return v;
+        },
+        set(target, prop, value) {
+          if (typeof prop === "string") {
+            setStyle(el, prop, value);
+            return true;
+          }
+          return Reflect.set(target, prop, value, target);
+        }
+      });
+      styleProxyCache.set(real, proxy);
+      return proxy;
+    }
+    function setStyle(el, propName, value) {
+      const v = value == null ? "" : String(value);
+      if (propName.startsWith("--")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style.setProperty(propName, rewritten);
+          } catch {}
+        });
+        return;
+      }
+      if (URL_STYLE_PROPS.has(propName) && v.includes("url(")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style[propName] = rewritten;
+          } catch {}
+        });
+        return;
+      }
+      try {
+        el.style[propName] = v;
+      } catch {}
+    }
+    function setStyleAttr(el, attrValue) {
+      if (!attrValue.includes("url(")) {
+        el.setAttribute("style", attrValue);
+        return;
+      }
+      rewriteCssText(attrValue).then((rewritten) => {
+        try {
+          el.setAttribute("style", rewritten);
+        } catch {}
+      });
+    }
+    function setStyleText(styleEl, text) {
+      if (!(styleEl instanceof HTMLStyleElement)) {
+        try {
+          styleEl.textContent = text;
+        } catch {}
+        return;
+      }
+      if (!text.includes("url(")) {
+        styleEl.textContent = text;
+        return;
+      }
+      rewriteCssText(text).then((rewritten) => {
+        try {
+          styleEl.textContent = rewritten;
+        } catch {}
+      });
+    }
+    function tunnelImage(_w, _h) {
+      const img = new originalImage;
+      const desc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+      if (desc?.set) {
+        const origSet = desc.set;
+        const origGet = desc.get;
+        Object.defineProperty(img, "src", {
+          configurable: true,
+          get() {
+            return origGet.call(img);
+          },
+          set(v) {
+            if (v == null)
+              return origSet.call(img, "");
+            const s = String(v);
+            if (isExternalUrl2(s))
+              return origSet.call(img, s);
+            resolveToBlobUrl(s).then((b) => origSet.call(img, b), () => origSet.call(img, s));
+          }
+        });
+      }
+      return img;
+    }
+    function tunnelSendBeacon(url, data) {
+      tunnelFetch(url, { method: "POST", body: data, keepalive: true }).catch(() => {});
+      return true;
+    }
+    function tunnelWorker(url, options) {
+      const own = ownObjectUrl(url, objectUrls);
+      if (own === null || typeof originalWorker !== "function") {
+        throw new Error("[__tunnel] new Worker() is not supported in Muse Spaces.");
+      }
+      const script = objectUrlScripts.get(own);
+      return new originalWorker(script === undefined ? own : originalCreateObjectURL(workerScriptBlob(script)), options);
+    }
+    function tunnelImport(spec) {
+      throw new Error("[__tunnel] dynamic import() of '" + String(spec) + "' is not supported in Muse Spaces.");
+    }
+    function installCssObserver() {
+      try {
+        const proto = window.CSSStyleSheet?.prototype;
+        if (proto) {
+          const origInsertRule = proto.insertRule;
+          proto.insertRule = function(rule, index) {
+            if (typeof rule === "string" && rule.includes("url(")) {
+              const idx = origInsertRule.call(this, rule, index);
+              rewriteCssText(rule).then((rewritten) => {
+                if (rewritten !== rule) {
+                  try {
+                    this.deleteRule(idx);
+                    origInsertRule.call(this, rewritten, idx);
+                  } catch {}
+                }
+              });
+              return idx;
+            }
+            return origInsertRule.call(this, rule, index);
+          };
+          const origReplace = proto.replace;
+          if (origReplace) {
+            proto.replace = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                return rewriteCssText(text).then((rewritten) => origReplace.call(this, rewritten));
+              }
+              return origReplace.call(this, text);
+            };
+          }
+          const origReplaceSync = proto.replaceSync;
+          if (origReplaceSync) {
+            proto.replaceSync = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                const ret = origReplaceSync.call(this, text);
+                rewriteCssText(text).then((rewritten) => {
+                  try {
+                    origReplaceSync.call(this, rewritten);
+                  } catch {}
+                });
+                return ret;
+              }
+              return origReplaceSync.call(this, text);
+            };
+          }
+        }
+      } catch (e) {}
+      function sweepSheet(sheet) {
+        try {
+          const rules = sheet.cssRules;
+          for (let i = 0;i < rules.length; i++) {
+            const rule = rules[i];
+            const txt = rule.cssText;
+            if (txt && (txt.includes(HATCH_FRAG) || txt.includes("url(") && !/url\(\s*["']?(blob:|https?:|data:image\/gif;base64,R0)/.test(txt))) {
+              rewriteCssText(txt).then((rewritten) => {
+                if (rewritten !== txt) {
+                  try {
+                    sheet.deleteRule(i);
+                    sheet.insertRule(rewritten, i);
+                  } catch {}
+                }
+              });
+            }
+          }
+        } catch {}
+      }
+      function sweepAll() {
+        for (const sheet of Array.from(document.styleSheets)) {
+          sweepSheet(sheet);
+        }
+      }
+      const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          for (const node of Array.from(m.addedNodes)) {
+            if (node instanceof HTMLStyleElement) {
+              const txt = node.textContent ?? "";
+              if (txt.includes("url(")) {
+                rewriteCssText(txt).then((rewritten) => {
+                  if (rewritten !== txt) {
+                    try {
+                      node.textContent = rewritten;
+                    } catch {}
+                  }
+                });
+              }
+            } else if (node instanceof HTMLLinkElement && node.rel === "stylesheet") {
+              node.addEventListener("load", () => sweepSheet(node.sheet), { once: true });
+            }
+          }
+        }
+      });
+      mo.observe(document, { subtree: true, childList: true });
+      Promise.resolve().then(sweepAll);
+      setTimeout(sweepAll, 0);
+      setTimeout(sweepAll, 50);
+      setTimeout(sweepAll, 250);
+    }
+    function rewriteAuthoredHtml() {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset]";
+      document.querySelectorAll(SELECTORS).forEach((el) => {
+        const src = el.getAttribute("data-hatch-src");
+        const href = el.getAttribute("data-hatch-href");
+        const srcset = el.getAttribute("data-hatch-srcset");
+        if (src)
+          setAttr(el, "src", src);
+        if (href)
+          setAttr(el, "href", href);
+        if (srcset)
+          setAttr(el, "srcset", srcset);
+      });
+    }
+    let historyUrlWarned = false;
+    function warnHistoryUrlDropped(method, url) {
+      if (url === undefined || url === null)
+        return;
+      if (historyUrlWarned)
+        return;
+      historyUrlWarned = true;
+      try {
+        console.warn("[__tunnel] history." + method + "() was called with a URL; the URL was ignored. A Muse web artifact " + "renders in an opaque origin with no navigable URL of its own, so " + "the browser rejects any URL change. State kept in the URL will not " + "persist or survive a reload — keep it in component state, or in " + "the artifact's database through a server action.");
+      } catch {}
+    }
+    const originalFetch = globalThis.fetch?.bind(globalThis) ?? (() => {
+      throw new Error("no native fetch");
+    });
+    const originalXHR = globalThis.XMLHttpRequest;
+    const originalWorker = globalThis.Worker;
+    const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+    const originalImage = globalThis.Image;
+    const tunnel = {
+      fetch: tunnelFetch,
+      XHR: TunnelXHR,
+      WebSocket: TunnelWebSocket,
+      EventSource: TunnelEventSource,
+      Image: tunnelImage,
+      Worker: tunnelWorker,
+      import: tunnelImport,
+      sendBeacon: tunnelSendBeacon,
+      setAttr,
+      setAttrNS,
+      setUrlProp,
+      setStyle,
+      getStyle,
+      setStyleAttr,
+      setStyleText,
+      setInnerHTML,
+      insertAdjacentHTML: insertAdjacentHTMLT,
+      rewriteCssText,
+      resolveToBlobUrl,
+      processDataHatchAttrs,
+      rewriteHtmlString,
+      _resolveUrlString: (v) => v,
+      _resolveCssValue: (v) => v,
+      _resolveCssText: (v) => v,
+      _resolveStyleProp: (v) => v,
+      _importMeta: {
+        get url() {
+          return importMetaUrl(SELF_HREF, SELF_BASE_DIR);
+        }
+      },
+      _state: {
+        get port() {
+          return port;
+        },
+        get inFlight() {
+          return pending.size;
+        },
+        get blobCacheSize() {
+          return blobCache.size;
+        },
+        get blobStats() {
+          return { ...blobStats };
+        }
+      }
+    };
+    globalThis.__tunnel = tunnel;
+    window.__tunnel = tunnel;
+    try {
+      globalThis.fetch = tunnelFetch;
+      window.fetch = tunnelFetch;
+      globalThis.XMLHttpRequest = TunnelXHR;
+      window.XMLHttpRequest = TunnelXHR;
+      globalThis.WebSocket = TunnelWebSocket;
+      window.WebSocket = TunnelWebSocket;
+      globalThis.EventSource = TunnelEventSource;
+      window.EventSource = TunnelEventSource;
+      const nav = globalThis.navigator;
+      if (nav && typeof nav.sendBeacon === "function") {
+        nav.sendBeacon = (url, data) => tunnelSendBeacon(url, data);
+      }
+      const NativeURL = globalThis.URL;
+      const TunnelURL = function(url, base) {
+        return resolveTunnelUrl(url, base, SELF_HREF, NativeURL);
+      };
+      TunnelURL.prototype = NativeURL.prototype;
+      for (const k of Object.getOwnPropertyNames(NativeURL)) {
+        if (k === "prototype" || k === "length" || k === "name")
+          continue;
+        try {
+          TunnelURL[k] = NativeURL[k];
+        } catch {}
+      }
+      globalThis.URL = TunnelURL;
+      window.URL = TunnelURL;
+    } catch {}
+    try {
+      const hist = globalThis.history;
+      if (hist && typeof hist.pushState === "function" && typeof hist.replaceState === "function") {
+        const nativePushState = hist.pushState.bind(hist);
+        const nativeReplaceState = hist.replaceState.bind(hist);
+        hist.pushState = function(state, title, url) {
+          warnHistoryUrlDropped("pushState", url);
+          return nativePushState(state, title ?? "");
+        };
+        hist.replaceState = function(state, title, url) {
+          warnHistoryUrlDropped("replaceState", url);
+          return nativeReplaceState(state, title ?? "");
+        };
+      }
+    } catch {}
+    try {
+      const nativeCreateObjectURL = URL.createObjectURL.bind(URL);
+      const nativeRevokeObjectURL = URL.revokeObjectURL.bind(URL);
+      URL.createObjectURL = function(obj) {
+        const created = nativeCreateObjectURL(obj);
+        try {
+          objectUrls.add(created);
+          if (isWorkerScriptBlob(obj))
+            objectUrlScripts.set(created, obj);
+        } catch {}
+        return created;
+      };
+      URL.revokeObjectURL = function(objectUrl) {
+        try {
+          objectUrls.delete(objectUrl);
+          objectUrlScripts.delete(objectUrl);
+        } catch {}
+        nativeRevokeObjectURL(objectUrl);
+      };
+    } catch {}
+    const announceEpoch = Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    let announceTimer = null;
+    function announce() {
+      try {
+        window.parent.postMessage({ type: "bundle:ready", epoch: announceEpoch }, "*");
+      } catch {}
+    }
+    function startAnnouncing() {
+      announce();
+      announceTimer = setInterval(() => {
+        if (port != null) {
+          if (announceTimer != null)
+            clearInterval(announceTimer);
+          announceTimer = null;
+          return;
+        }
+        announce();
+      }, 120);
+    }
+    function onParentMessage(ev) {
+      const data = ev.data;
+      if (!data || typeof data !== "object")
+        return;
+      if (data.type === "bundle:init-port" && ev.ports && ev.ports[0]) {
+        if (port != null)
+          return;
+        if (announceTimer != null) {
+          clearInterval(announceTimer);
+          announceTimer = null;
+        }
+        port = ev.ports[0];
+        port.onmessage = (pe) => {
+          const msg = pe.data;
+          if (!msg || typeof msg !== "object")
+            return;
+          if (msg.type === "http.res") {
+            const ent = pending.get(msg.id);
+            if (ent) {
+              pending.delete(msg.id);
+              ent.resolve(msg);
+            }
+          } else if (msg.type === "ws.opened" || msg.type === "ws.message" || msg.type === "ws.closed" || msg.type === "ws.error") {
+            openWs.get(msg.id)?._handle(msg);
+          }
+        };
+        port.start?.();
+        portReadyResolve?.(port);
+        installCssObserver();
+        rewriteAuthoredHtml();
+        try {
+          window.parent.postMessage({ type: "bundle:port-attached" }, "*");
+        } catch {}
+      }
+    }
+    window.addEventListener("message", onParentMessage);
+    installDownloadLinks(tunnelFetch, isExternalUrl2, __BLOB_REVOKE_DELAY_MS);
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      startAnnouncing();
+    } else {
+      document.addEventListener("DOMContentLoaded", startAnnouncing);
+    }
+  })();
+})();
+
+;
+(function () {
+  var $ = function (id) {
+    return document.getElementById(id);
+  };
+  function loadJSON(k, d) {
+    try {
+      var v = localStorage.getItem(k);
+      return v ? JSON.parse(v) : d;
+    } catch (e) {
+      return d;
+    }
+  }
+  function saveJSON(k, v) {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch (e) {}
+  }
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    var m = Math.floor(s / 60),
+      ss = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+  function dayKey(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  var COURSES = {
+    c1: {
+      no: 1,
+      title: '第一期 基本功：拳法和掌法',
+      bv: 'BV1jy4y1L7Wt',
+      desc: '拳头怎么握、冲拳怎么发力、掌怎么推出去——去训练页打冲拳之前，先把这一节看一遍。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第一期》'
+    },
+    c2: {
+      no: 2,
+      title: '第二期 基本功：马步和弓步',
+      bv: 'BV1nq4y1Q7Dv',
+      desc: '马步的步宽、蹲的深度、膝盖方向，看教练怎么摆——和训练页 AI 计时的判定标准是同一套要求。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第二期》'
+    },
+    c3: {
+      no: 3,
+      title: '第三期 并步抱拳和弓步冲拳',
+      bv: 'BV1ML411J7oy',
+      desc: '先并步抱拳行礼，再迈成弓步打出冲拳。抱拳的左右手、步到拳到，都是要盯紧的细节。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第三期》'
+    },
+    c4: {
+      no: 4,
+      title: '第四期 马步架打和弹踢冲拳',
+      bv: 'BV15v411T7Fy',
+      desc: '一边稳住马步一边架打，还要加上弹踢再接冲拳。先把马步站稳，再跟着练。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第四期》'
+    },
+    c5: {
+      no: 5,
+      title: '第五期 歇步盖冲拳、提膝仆步穿掌',
+      bv: 'BV1qf4y137Ps',
+      desc: '歇步、提膝、仆步轮流上场，动作不求快，先一个一个摆标准，再连起来。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第五期》'
+    },
+    c6: {
+      no: 6,
+      title: '第六期 收势虚步挑掌',
+      bv: 'BV1Rf4y1V7td',
+      desc: '虚步挑掌之后稳稳收回、抱拳行礼，五步拳就完整啦。学完把六期连起来打一遍！',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课之青少儿武术入门“五步拳”第六期》'
+    },
+    c7: {
+      no: 7,
+      title: '武术操 · 起势',
+      bv: 'BV1Uq4y1v7EN',
+      desc: '武术操《旭日东升》的开头：站好、抱拳、准备开始。跟练之前先把起势做标准。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”起势》'
+    },
+    c8: {
+      no: 8,
+      title: '第二节 伸拉运动',
+      bv: 'BV1fu411q7aZ',
+      desc: '把胳膊、肩膀和腰都拉开，身体热起来，后面的动作才做得开。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第二节 伸拉运动》'
+    },
+    c9: {
+      no: 9,
+      title: '第三节 开合运动',
+      bv: 'BV1Q94y1Z7vJ',
+      desc: '手脚一起开合，练配合和节奏，跟着教练的口令一起动。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第三节 开合运动》'
+    },
+    c10: {
+      no: 10,
+      title: '第四节 踢腿运动',
+      bv: 'BV1mL411w7jZ',
+      desc: '轮流踢腿，腿要直、站要稳。踢之前先活动脚腕，别猛踢。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第四节 踢腿运动》'
+    },
+    c11: {
+      no: 11,
+      title: '第五节 伸拉展运动',
+      bv: 'BV18i4y1k7fF',
+      desc: '全身伸展开，像小树一样往上长，练身体的舒展和平衡。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第五节 伸拉展运动》'
+    },
+    c12: {
+      no: 12,
+      title: '第六节 拧转运动',
+      bv: 'BV1Fu411B7YF',
+      desc: '腰带着身体转，练腰腹力量和灵活性，转的时候脚下别乱动。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第六节 拧转运动》'
+    },
+    c13: {
+      no: 13,
+      title: '第七节 俯仰运动',
+      bv: 'BV1cU4y1o7kU',
+      desc: '身体向前俯、向后仰，练背部和腰的柔韧，幅度慢慢加，别一下到位。',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”第七节 俯仰运动》'
+    },
+    c14: {
+      no: 14,
+      title: '完整版跟练',
+      bv: 'BV1Qf4y177V1',
+      desc: '前面七节都学会了？来挑战完整版：从头跟到尾，一口气跳完整套武术操！',
+      src: '来源：哔哩哔哩 · UP主 聪at（武术+）《云上武术课 · 武术操“旭日东升”完整版跟练》'
+    },
+    c15: {
+      no: 15,
+      title: '马步详细教程：膝盖、脚尖、胯的问题都在这了',
+      bv: 'BV1ofLb6JEBT',
+      desc: '马步老站不标准？这一节专门讲膝盖对脚尖、胯怎么沉，讲得最细，马步计时总不过关的重点看。',
+      src: '来源：哔哩哔哩 · UP主 师兄联盟《马步详细教程：膝盖、脚尖、胯的问题都在这了》'
+    },
+    c16: {
+      no: 16,
+      title: '《中国影像方志》广西宁明 · 传承记',
+      link: 'http://tv.cctv.com/2017/05/29/VIDENRf7wtVZHOa13rJhqJmz170529.shtml',
+      desc: '花山拳来自广西宁明，和有名的花山岩画是老乡。这一期央视节目讲宁明花山拳传承的故事，去央视网看完整节目。',
+      src: '来源：央视网 CCTV-10《中国影像方志》广西宁明 · 传承记（2017-05-29）· 在央视网播放，本页不内嵌'
+    }
+  };
+  var currentCourse = 'c1';
+  var learned = loadJSON('huashan_learned_v2', []);
+  function isLearned(id) {
+    return learned.indexOf(id) >= 0;
+  }
+  function selectCourse(id, scroll) {
+    var c = COURSES[id];
+    if (!c) return;
+    currentCourse = id;
+    document.querySelectorAll('.lib-item').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.course === id);
+    });
+    $('nowNo').textContent = '第 ' + c.no + ' 节';
+    $('nowTitle').textContent = c.title;
+    $('nowDesc').textContent = c.desc;
+    var frame = $('mainPlayer'),
+      panel = $('linkPanel'),
+      wrap = $('mainPlayerWrap');
+    if (c.link) {
+      frame.removeAttribute('src');
+      __tunnel.setStyle(frame, "display", 'none');
+      panel.hidden = false;
+      wrap.classList.add('link-mode');
+      __tunnel.setUrlProp($('linkPanelBtn'), "href", c.link);
+      $('nowState').textContent = '外链观看';
+    } else {
+      panel.hidden = true;
+      wrap.classList.remove('link-mode');
+      __tunnel.setStyle(frame, "display", 'block');
+      __tunnel.setUrlProp(frame, "src", 'https://player.bilibili.com/player.html?bvid=' + c.bv + '&page=1&danmaku=0');
+      $('nowState').textContent = '正在播放';
+    }
+    var srcHtml = c.src;
+    if (c.bv) {
+      srcHtml += ' · <a href="https://www.bilibili.com/video/' + c.bv + '" target="_blank" rel="noopener">打开原视频 ↗</a>';
+    }
+    srcHtml += '<br/>版权归原作者所有，本页仅作嵌入播放；如涉及侵权请联系删除。';
+    __tunnel.setInnerHTML($('nowSrc'), srcHtml, "innerHTML");
+    renderLearnBtn();
+    if (scroll) {
+      $('mainPlayerWrap').scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  }
+  function renderLearnBtn() {
+    var b = $('btnLearnNow'),
+      done = isLearned(currentCourse);
+    b.textContent = done ? '已打卡 ✓ 再点取消' : '我学会了 ✓ 打卡';
+    b.className = 'btn learnBtn ' + (done ? 'done' : 'btn-green');
+  }
+  function renderLearn() {
+    var n = learned.length;
+    __tunnel.setStyle($('learnFill'), "width", n / 16 * 100 + '%');
+    $('learnText').textContent = '已学会 ' + n + ' / 16 节';
+    document.querySelectorAll('[data-check]').forEach(function (el) {
+      el.classList.toggle('got', isLearned(el.dataset.check));
+    });
+    renderLearnBtn();
+  }
+  document.querySelectorAll('.lib-item').forEach(function (b) {
+    b.addEventListener('click', function () {
+      selectCourse(b.dataset.course, true);
+    });
+  });
+  $('btnLearnNow').addEventListener('click', function () {
+    var i = learned.indexOf(currentCourse);
+    if (i >= 0) learned.splice(i, 1);else learned.push(currentCourse);
+    saveJSON('huashan_learned_v2', learned);
+    renderLearn();
+  });
+  function goTab(name) {
+    document.querySelectorAll('.tabs button').forEach(function (x) {
+      x.classList.toggle('active', x.dataset.tab === name);
+    });
+    document.querySelectorAll('.view').forEach(function (v) {
+      v.classList.remove('active');
+    });
+    $('view-' + name).classList.add('active');
+    if (name === 'history') renderHistory();
+    if (name === 'growth') renderGrowth();
+    if (name !== 'demo') {
+      document.querySelectorAll('#view-demo video').forEach(function (v) {
+        try {
+          v.pause();
+        } catch (e) {}
+      });
+      var f = $('mainPlayer');
+      if (f && currentCourse && COURSES[currentCourse].bv) {}
+    }
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      goTab(b.dataset.tab);
+    });
+  });
+  var video = $('video'),
+    canvas = $('canvas'),
+    ctx = canvas.getContext('2d');
+  var mode = 'punch',
+    threshold = 142,
+    running = false,
+    pose = null,
+    camera = null;
+  var punchCount = 0,
+    punchState = 'retracted',
+    lastAngle = null,
+    lastKnee = null;
+  var horseHoldMs = 0,
+    horseStreakMs = 0,
+    horseBestMs = 0,
+    horseInPose = false,
+    horseLastTs = null;
+  var sessionStart = null,
+    sessionTimer = null,
+    elapsedSec = 0;
+  var guardianOk = false,
+    challenge = null;
+  var RING_C = 502.65;
+  function setGauge(deg, state) {
+    var ring = $('ringFg'),
+      val = $('gaugeVal');
+    if (deg == null || isNaN(deg)) {
+      val.textContent = '—°';
+      __tunnel.setStyle(ring, "strokeDashoffset", RING_C);
+      __tunnel.setStyle(ring, "stroke", '#FF5A3C');
+      return;
+    }
+    val.textContent = Math.round(deg) + '°';
+    var pct = Math.max(0, Math.min(1, deg / 180));
+    __tunnel.setStyle(ring, "strokeDashoffset", (RING_C * (1 - pct)).toFixed(1));
+    __tunnel.setStyle(ring, "stroke", state === 'good' ? '#2FBF71' : state === 'warn' ? '#FF9F1C' : '#FF5A3C');
+  }
+  function setFeedback(text, cls, ico) {
+    var f = $('feedback');
+    $('fbText').textContent = text;
+    if (ico) $('fbIco').textContent = ico;
+    f.className = 'feedback ' + (cls || '');
+  }
+  function showError(msg) {
+    var e = $('errorBox');
+    e.textContent = msg;
+    e.classList.add('show');
+  }
+  function clearError() {
+    $('errorBox').classList.remove('show');
+  }
+  function angle(a, b, c) {
+    var v1 = {
+        x: a.x - b.x,
+        y: a.y - b.y
+      },
+      v2 = {
+        x: c.x - b.x,
+        y: c.y - b.y
+      };
+    var d1 = Math.hypot(v1.x, v1.y),
+      d2 = Math.hypot(v2.x, v2.y);
+    if (!d1 || !d2) return null;
+    var cos = (v1.x * v2.x + v1.y * v2.y) / (d1 * d2);
+    cos = Math.max(-1, Math.min(1, cos));
+    return Math.acos(cos) * 180 / Math.PI;
+  }
+  function dist(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+  function setMode(m) {
+    mode = m;
+    $('modePunch').classList.toggle('active', m === 'punch');
+    var hc = $('modeHorse');
+    hc.classList.toggle('active', m === 'horse');
+    hc.classList.toggle('horse', m === 'horse');
+    $('angleLabel').textContent = m === 'punch' ? '当前肘角' : '当前膝角';
+    $('countLabel').textContent = m === 'punch' ? '有效冲拳' : '马步状态';
+    $('gaugeLab').textContent = m === 'punch' ? '肘角 · 手臂弯不弯' : '膝角 · 腿弯得够不够';
+    $('heroTile').classList.toggle('blue', m === 'horse');
+    __tunnel.setStyle($('sliderBox'), "opacity", m === 'punch' ? '1' : '.45');
+    setGauge(null, 'idle');
+    if (!running) setFeedback(m === 'punch' ? '冲拳模式：伸直超过 ' + threshold + '° 再收回来，算 1 拳！' : '马步模式：双脚站开、蹲到位，保持住，计时就开始啦！', '', m === 'punch' ? '🥊' : '🐴');
+  }
+  $('modePunch').addEventListener('click', function () {
+    setMode('punch');
+  });
+  $('modeHorse').addEventListener('click', function () {
+    setMode('horse');
+  });
+  $('threshold').addEventListener('input', function (e) {
+    threshold = +e.target.value;
+    $('thVal').textContent = threshold;
+  });
+  function onResults(res) {
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (res.image) {
+      ctx.drawImage(res.image, 0, 0, canvas.width, canvas.height);
+    }
+    if (!res.poseLandmarks) {
+      setFeedback('没有看到你哦——全身站进画面，离镜头 2–3 米', 'warn', '🔍');
+      $('hudState').textContent = '没找到人';
+      setGauge(null, 'idle');
+      ctx.restore();
+      return;
+    }
+    var lm = res.poseLandmarks;
+    try {
+      if (window.drawConnectors && window.POSE_CONNECTIONS) {
+        drawConnectors(ctx, lm, POSE_CONNECTIONS, {
+          color: '#7CFC00',
+          lineWidth: 5
+        });
+      }
+      if (window.drawLandmarks) {
+        drawLandmarks(ctx, lm, {
+          color: '#FF5A3C',
+          fillColor: '#FFFFFF',
+          lineWidth: 2,
+          radius: 6
+        });
+      }
+    } catch (e) {
+      ctx.fillStyle = '#7CFC00';
+      lm.forEach(function (p) {
+        ctx.beginPath();
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 5, 0, 7);
+        ctx.fill();
+      });
+    }
+    ctx.restore();
+    $('hudState').textContent = '识别中';
+    var la = angle(lm[11], lm[13], lm[15]),
+      ra = angle(lm[12], lm[14], lm[16]);
+    var elbow = Math.max(la || 0, ra || 0);
+    lastAngle = elbow;
+    var lk = angle(lm[23], lm[25], lm[27]),
+      rk = angle(lm[24], lm[26], lm[28]);
+    var knee = lk && rk ? (lk + rk) / 2 : lk || rk;
+    lastKnee = knee;
+    var shoulderW = dist(lm[11], lm[12]),
+      footW = dist(lm[27], lm[28]),
+      ratio = shoulderW > 0.01 ? footW / shoulderW : 0;
+    if (mode === 'punch') {
+      $('hudAngle').textContent = '肘角 ' + Math.round(elbow) + '°';
+      $('mAngle').textContent = Math.round(elbow) + '°';
+      var sub = $('mAngleSub');
+      sub.textContent = elbow >= threshold ? '伸直达标啦！' : elbow > threshold - 25 ? '就差一点，再伸直！' : '还没伸直 · 目标 ' + threshold + '°';
+      sub.className = 'gaugeSub' + (elbow >= threshold ? ' ok' : '');
+      setGauge(elbow, elbow >= threshold ? 'good' : elbow > threshold - 25 ? 'warn' : 'idle');
+      if (punchState === 'retracted' && elbow >= threshold) {
+        punchState = 'extended';
+        setFeedback('好！拳伸直了——现在收回胸前', 'good', '💪');
+      } else if (punchState === 'extended' && elbow <= 115) {
+        punchState = 'retracted';
+        punchCount++;
+        $('mCount').textContent = punchCount + ' 次';
+        setFeedback('有效冲拳 +1！已经 ' + punchCount + ' 拳啦，再来！', 'good', '🎉');
+        if (navigator.vibrate) navigator.vibrate(40);
+      } else if (punchState === 'retracted') {
+        setFeedback(elbow > threshold - 25 ? '就差一点点——手臂再伸直一点（还差 ' + Math.round(threshold - elbow) + '°）' : '出拳！把手臂伸直，超过 ' + threshold + '°', elbow > threshold - 25 ? 'warn' : '', '🥊');
+      } else {
+        setFeedback('保持伸直，然后收拳到胸前（肘角 ≤115°）', '', '↩️');
+      }
+    } else {
+      $('hudAngle').textContent = '膝角 ' + (knee ? Math.round(knee) : '—') + '° · 步宽 ' + (ratio ? ratio.toFixed(2) : '—') + ' 倍';
+      $('mAngle').textContent = knee ? Math.round(knee) + '°' : '—°';
+      var kneeOk = knee && knee >= 75 && knee <= 135,
+        footOk = ratio >= 1.35,
+        inPose = kneeOk && footOk;
+      var sub2 = $('mAngleSub');
+      sub2.textContent = inPose ? '姿势达标，保持中！' : !kneeOk ? '膝角要在 75°–135° 之间' : '步宽不够 · 要 ≥1.35 倍肩宽';
+      sub2.className = 'gaugeSub' + (inPose ? ' ok' : '');
+      setGauge(knee, inPose ? 'good' : 'warn');
+      $('mCount').textContent = inPose ? '保持中 ✓' : '还没达标';
+      var now = performance.now();
+      if (inPose) {
+        if (horseInPose && horseLastTs) {
+          var d = now - horseLastTs;
+          horseHoldMs += d;
+          horseStreakMs += d;
+          if (horseStreakMs > horseBestMs) horseBestMs = horseStreakMs;
+        }
+        horseInPose = true;
+        setFeedback('好，保持住！马步计时中——' + (horseHoldMs / 1000).toFixed(1) + ' 秒', 'good', '🐴');
+      } else {
+        horseInPose = false;
+        horseStreakMs = 0;
+        if (!kneeOk && knee > 135) setFeedback('腿再弯一点——蹲下去，膝角要 ≤135°（现在 ' + Math.round(knee || 0) + '°）', 'warn', '⬇️');else if (!kneeOk && knee < 75) setFeedback('蹲太深啦——起来一点点，膝角要 ≥75°', 'warn', '⬆️');else if (!footOk) setFeedback('双脚再站开一点——步宽要到肩宽的 1.35 倍（现在 ' + ratio.toFixed(2) + ' 倍）', 'warn', '↔️');else setFeedback('调整一下：双脚站开 + 膝盖弯到位', 'warn', '🐴');
+      }
+      horseLastTs = now;
+      __tunnel.setInnerHTML($('mHorse'), (horseHoldMs / 1000).toFixed(1) + '<em> 秒</em>', "innerHTML");
+    }
+  }
+  function startSessionTimer() {
+    sessionStart = Date.now();
+    sessionTimer = setInterval(function () {
+      elapsedSec = (Date.now() - sessionStart) / 1000;
+      $('mTime').textContent = fmt(elapsedSec);
+      if (challenge === 'punch30') {
+        var left = Math.max(0, 30 - elapsedSec);
+        $('hudTime').textContent = '⏱ 剩 ' + fmt(left);
+        $('chalBanner').textContent = '🏆 30 秒冲拳挑战中！已打 ' + punchCount + ' 拳，还剩 ' + Math.ceil(left) + ' 秒，冲呀！';
+        if (elapsedSec >= 30 && running) {
+          stopDetection();
+        }
+      } else {
+        $('hudTime').textContent = fmt(elapsedSec);
+      }
+    }, 250);
+  }
+  function stopSessionTimer() {
+    if (sessionTimer) clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  async function startDetection() {
+    clearError();
+    if (typeof Pose === 'undefined') {
+      showError('姿态识别模型没加载成功：请检查网络后刷新页面（要从网上加载 AI 模型）。加载不了就不会假装在识别哦。');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showError('这个浏览器用不了摄像头。请换最新版 Chrome / Edge，并用 HTTPS 打开本页。');
+      return;
+    }
+    setFeedback('正在请 AI 教练上线、打开摄像头，稍等一下…（第一次约 5–15 秒）', '', '⏳');
+    $('btnStart').disabled = true;
+    $('btnStart').textContent = 'AI 教练赶来中…';
+    try {
+      if (!pose) {
+        pose = new Pose({
+          locateFile: function (f) {
+            return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + f;
+          }
+        });
+        pose.setOptions({
+          modelComplexity: 1,
+          smoothLandmarks: true,
+          enableSegmentation: false,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        pose.onResults(onResults);
+      }
+      var stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: {
+            ideal: 1280
+          },
+          height: {
+            ideal: 720
+          }
+        },
+        audio: false
+      });
+      stream.getTracks().forEach(function (t) {
+        t.stop();
+      });
+      if (typeof Camera === 'undefined') {
+        showError('摄像头工具没加载成功，请刷新页面再试一次。');
+        $('btnStart').disabled = false;
+        $('btnStart').textContent = '▶ 开始练功 · 打开摄像头';
+        return;
+      }
+      camera = new Camera(video, {
+        onFrame: async function () {
+          await pose.send({
+            image: video
+          });
+        },
+        width: 1280,
+        height: 720
+      });
+      await camera.start();
+      running = true;
+      __tunnel.setStyle($('placeholder'), "display", 'none');
+      $('btnStart').textContent = '练功中 · 进行时';
+      $('btnStop').disabled = false;
+      punchCount = 0;
+      horseHoldMs = 0;
+      horseStreakMs = 0;
+      horseBestMs = 0;
+      horseInPose = false;
+      punchState = 'retracted';
+      $('mCount').textContent = mode === 'punch' ? '0 次' : '还没达标';
+      __tunnel.setInnerHTML($('mHorse'), '0.0<em> 秒</em>', "innerHTML");
+      if (challenge === 'punch30') {
+        $('chalBanner').classList.add('show');
+        $('chalBanner').textContent = '🏆 30 秒冲拳挑战开始！伸直 + 收回才算数，冲呀！';
+      }
+      if (challenge === 'horse') {
+        $('chalBanner').classList.add('show');
+        $('chalBanner').textContent = '🏆 马步坚持挑战中！记的是你一次不间断的最长时长，稳住！';
+      }
+      startSessionTimer();
+      setFeedback(mode === 'punch' ? '开始！出拳伸直超过 ' + threshold + '°，再收回来，算 1 拳' : '开始！双脚站开、蹲到位，保持住就开始计时', 'good', '🚀');
+    } catch (err) {
+      console.error(err);
+      var msg = '摄像头打开失败。';
+      if (err && err.name === 'NotAllowedError') msg = '摄像头被拒绝啦：请点浏览器地址栏旁边的摄像头图标，选「允许」，再刷新页面试一次。';else if (err && err.name === 'NotFoundError') msg = '没有找到摄像头：确认设备有摄像头，而且没有被别的软件占用。';else if (err && err.name === 'NotReadableError') msg = '摄像头被别的软件占用啦：先关掉它，再回来试。';else msg = '打开失败：' + (err && err.message ? err.message : err) + '。请用最新版 Chrome/Edge、HTTPS 打开再试。';
+      showError(msg);
+      setFeedback('没打开成功——看下面的红色提示处理好，再点开始', 'warn', '😢');
+      $('btnStart').disabled = false;
+      $('btnStart').textContent = '▶ 开始练功 · 打开摄像头';
+      challenge = null;
+      $('chalBanner').classList.remove('show');
+    }
+  }
+  function stopDetection() {
+    if (!running && !sessionStart && challenge === null && punchCount === 0 && horseHoldMs === 0) {
+      return;
+    }
+    if (camera) {
+      try {
+        camera.stop();
+      } catch (e) {}
+      camera = null;
+    }
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(function (t) {
+        t.stop();
+      });
+      video.srcObject = null;
+    }
+    running = false;
+    stopSessionTimer();
+    $('btnStart').disabled = false;
+    $('btnStart').textContent = '▶ 开始练功 · 打开摄像头';
+    $('btnStop').disabled = true;
+    __tunnel.setStyle($('placeholder'), "display", 'grid');
+    $('hudState').textContent = '已结束';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var horseSec = Math.round(horseHoldMs / 1000 * 10) / 10;
+    var horseBestSec = Math.round(horseBestMs / 1000 * 10) / 10;
+    var dur = Math.round(elapsedSec);
+    var rec = {
+      ts: Date.now(),
+      date: new Date().toLocaleString('zh-CN'),
+      mode: mode === 'punch' ? '冲拳' : '马步',
+      punch: punchCount,
+      horse: horseSec,
+      horseBest: horseBestSec,
+      duration: dur
+    };
+    var arr = loadJSON('huashan_history_v1', []);
+    arr.unshift(rec);
+    saveJSON('huashan_history_v1', arr.slice(0, 50));
+    var chalText = '';
+    if (challenge) {
+      var chal = loadJSON('huashan_chal_v1', {
+        punch: null,
+        horse: null,
+        broke: false
+      });
+      if (challenge === 'punch30') {
+        if (chal.punch === null) {
+          chal.punch = punchCount;
+          chalText = '<br/>🏆 挑战成绩：30 秒打出 <strong>' + punchCount + ' 拳</strong>，这是你的第一个纪录！';
+        } else if (punchCount > chal.punch) {
+          chal.punch = punchCount;
+          chal.broke = true;
+          chalText = '<br/>🏆🎉 新纪录！30 秒 <strong>' + punchCount + ' 拳</strong>，打破了自己的最佳成绩，「挑战之星」徽章点亮！';
+        } else {
+          chalText = '<br/>🏆 挑战成绩：30 秒 <strong>' + punchCount + ' 拳</strong>（最佳 ' + chal.punch + ' 拳），再接再厉！';
+        }
+      } else if (challenge === 'horse') {
+        if (chal.horse === null) {
+          chal.horse = horseBestSec;
+          chalText = '<br/>🏆 挑战成绩：马步最长一次坚持 <strong>' + horseBestSec + ' 秒</strong>，这是你的第一个纪录！';
+        } else if (horseBestSec > chal.horse) {
+          chal.horse = horseBestSec;
+          chal.broke = true;
+          chalText = '<br/>🏆🎉 新纪录！马步一次坚持 <strong>' + horseBestSec + ' 秒</strong>，打破了自己的最佳成绩，「挑战之星」徽章点亮！';
+        } else {
+          chalText = '<br/>🏆 挑战成绩：马步最长一次坚持 <strong>' + horseBestSec + ' 秒</strong>（最佳 ' + chal.horse + ' 秒），下次更稳！';
+        }
+      }
+      saveJSON('huashan_chal_v1', chal);
+      challenge = null;
+      $('chalBanner').classList.remove('show');
+      renderChallenge();
+    }
+    var earned = punchCount + Math.floor(horseSec / 5) + 3;
+    __tunnel.setInnerHTML($('summaryText'), '模式：<strong>' + rec.mode + '</strong> · 有效冲拳 <strong>' + punchCount + ' 次</strong> · 马步保持 <strong>' + horseSec + ' 秒</strong>（最长一次 ' + horseBestSec + ' 秒）· 用时 <strong>' + fmt(dur) + '</strong><br/><span class="earned">⭐ 本次获得星星 +' + earned + ' 颗</span>（冲拳 1 次 1 颗 · 马步每 5 秒 1 颗 · 完成训练 3 颗）' + chalText + '<br/>' + (punchCount >= 20 ? '冲拳数量很棒！注意收拳回位别变形。' : punchCount > 0 ? '打得不错，下一组把收拳做得更干脆。' : mode === 'punch' ? '这次还没数到有效冲拳：多半是没伸过标准线，或者没收回到位，对着大数字再试一次。' : '马步再稳一点：先把脚站开，再慢慢蹲下去。'), "innerHTML");
+    $('summaryBox').classList.add('show');
+    setFeedback('训练结束！小结已经生成，也存进「记录」啦', 'good', '🎉');
+    renderGrowth();
+    renderHistory();
+  }
+  $('btnStart').addEventListener('click', function () {
+    if (running) return;
+    if (!guardianOk) {
+      $('guardianModal').classList.add('show');
+    } else {
+      startDetection();
+    }
+  });
+  $('guardianCheck').addEventListener('change', function (e) {
+    $('btnGuardianOk').disabled = !e.target.checked;
+  });
+  $('btnGuardianCancel').addEventListener('click', function () {
+    $('guardianModal').classList.remove('show');
+  });
+  $('btnGuardianOk').addEventListener('click', function () {
+    guardianOk = true;
+    $('guardianModal').classList.remove('show');
+    startDetection();
+  });
+  $('btnStop').addEventListener('click', stopDetection);
+  $('btnReset').addEventListener('click', function () {
+    punchCount = 0;
+    horseHoldMs = 0;
+    horseStreakMs = 0;
+    horseBestMs = 0;
+    elapsedSec = 0;
+    punchState = 'retracted';
+    $('mCount').textContent = mode === 'punch' ? '0 次' : '还没达标';
+    __tunnel.setInnerHTML($('mHorse'), '0.0<em> 秒</em>', "innerHTML");
+    $('mTime').textContent = '00:00';
+    setGauge(null, 'idle');
+    if (running) {
+      sessionStart = Date.now();
+    }
+    setFeedback('已经清零，重新开始！', '', '🔄');
+  });
+  function renderChallenge() {
+    var chal = loadJSON('huashan_chal_v1', {
+      punch: null,
+      horse: null,
+      broke: false
+    });
+    $('bestPunch').textContent = chal.punch === null || chal.punch === undefined ? '还没有挑战过' : chal.punch + ' 拳';
+    $('bestHorse').textContent = chal.horse === null || chal.horse === undefined ? '还没有挑战过' : chal.horse + ' 秒';
+  }
+  function startChallenge(type) {
+    challenge = type;
+    setMode(type === 'punch30' ? 'punch' : 'horse');
+    goTab('train');
+    $('chalBanner').classList.add('show');
+    $('chalBanner').textContent = type === 'punch30' ? '🏆 30 秒冲拳挑战已就位！点下面红色大按钮打开摄像头，计时自动开始' : '🏆 马步坚持挑战已就位！点下面红色大按钮打开摄像头，摆好马步就开始';
+    setFeedback('挑战模式准备好啦，点「开始练功」正式开始！', '', '🏆');
+    $('summaryBox').classList.remove('show');
+  }
+  $('btnChalPunch').addEventListener('click', function () {
+    startChallenge('punch30');
+  });
+  $('btnChalHorse').addEventListener('click', function () {
+    startChallenge('horse');
+  });
+  var LEVELS = [{
+    name: '小拳手',
+    need: 0
+  }, {
+    name: '拳法新星',
+    need: 50
+  }, {
+    name: '功夫小将',
+    need: 150
+  }, {
+    name: '拳术高手',
+    need: 300
+  }, {
+    name: '拳法达人',
+    need: 600
+  }];
+  var MEDALS = {
+    star: '<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.5 6 .8-4.4 4.2 1.1 6L12 16.7 6.6 19.5l1.1-6L3.3 9.3l6-.8z" fill="#B97E06"/></svg>',
+    wind: '<svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.4" stroke-linecap="round"><path d="M3 8h9a3 3 0 1 0-3-3M2 12h13a3 3 0 1 1-3 3M4 16h6"/></svg>',
+    mountain: '<svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.4" stroke-linejoin="round"><path d="M3 19l6-11 4 6 3-4 5 9z"/></svg>',
+    cal: '<svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3M9 16l2 2 4-4.5"/></svg>',
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4a3 3 0 0 0 3 4M17 5h3a3 3 0 0 1-3 4M12 14v3M8.5 20.5h7"/></svg>',
+    sun: '<svg viewBox="0 0 24 24" fill="none" stroke="#B97E06" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8"/></svg>'
+  };
+  function computeStats() {
+    var arr = loadJSON('huashan_history_v1', []);
+    var totalPunch = 0,
+      totalHorse = 0,
+      maxPunch = 0,
+      maxHorseBest = 0,
+      days = {};
+    arr.forEach(function (r) {
+      totalPunch += r.punch || 0;
+      totalHorse += r.horse || 0;
+      if ((r.punch || 0) > maxPunch) maxPunch = r.punch;
+      if ((r.horseBest || 0) > maxHorseBest) maxHorseBest = r.horseBest;
+      days[dayKey(r.ts)] = 1;
+    });
+    var stars = totalPunch + Math.floor(totalHorse / 5) + arr.length * 3;
+    var today = dayKey(Date.now()),
+      tSess = 0,
+      tPunch = 0,
+      tHorse = 0;
+    arr.forEach(function (r) {
+      if (dayKey(r.ts) === today) {
+        tSess++;
+        tPunch += r.punch || 0;
+        tHorse += r.horse || 0;
+      }
+    });
+    return {
+      arr: arr,
+      sessions: arr.length,
+      totalPunch: totalPunch,
+      totalHorse: Math.round(totalHorse * 10) / 10,
+      maxPunch: maxPunch,
+      maxHorseBest: maxHorseBest,
+      days: Object.keys(days).length,
+      stars: stars,
+      today: {
+        sess: tSess,
+        punch: tPunch,
+        horse: Math.round(tHorse * 10) / 10
+      }
+    };
+  }
+  function taskStreak() {
+    var days = loadJSON('huashan_taskdays_v1', []);
+    var set = {};
+    days.forEach(function (d) {
+      set[d] = 1;
+    });
+    var streak = 0,
+      cursor = new Date();
+    if (!set[dayKey(cursor.getTime())]) {
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    while (set[dayKey(cursor.getTime())]) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+  function renderGrowth() {
+    var st = computeStats();
+    var lv = LEVELS[0],
+      next = null;
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (st.stars >= LEVELS[i].need) {
+        lv = LEVELS[i];
+        next = LEVELS[i + 1] || null;
+      }
+    }
+    $('headStars').textContent = st.stars + ' 颗星星';
+    $('headLevel').textContent = lv.name;
+    $('levelName').textContent = lv.name;
+    $('levelStars').textContent = '共 ' + st.stars + ' 颗星';
+    if (next) {
+      var span = next.need - lv.need,
+        got = st.stars - lv.need;
+      __tunnel.setStyle($('levelFill'), "width", Math.min(100, got / span * 100) + '%');
+      $('levelNext').textContent = '距离下一等级「' + next.name + '」还差 ' + (next.need - st.stars) + ' 颗星，加油！';
+    } else {
+      __tunnel.setStyle($('levelFill'), "width", '100%');
+      $('levelNext').textContent = '已经是最高等级啦，你就是拳法达人！';
+    }
+    var tasks = [{
+      name: '完成 1 次训练',
+      sub: '去训练页练一次就算',
+      cur: st.today.sess,
+      goal: 1,
+      unit: '次'
+    }, {
+      name: '今日冲拳打满 20 次',
+      sub: '几次训练加起来算',
+      cur: st.today.punch,
+      goal: 20,
+      unit: '次'
+    }, {
+      name: '今日马步累计 30 秒',
+      sub: '几次训练加起来算',
+      cur: st.today.horse,
+      goal: 30,
+      unit: '秒'
+    }];
+    __tunnel.setInnerHTML($('taskList'), tasks.map(function (t) {
+      var done = t.cur >= t.goal;
+      return '<div class="task' + (done ? ' done' : '') + '"><div class="t-check">' + (done ? '✓' : '') + '</div><div class="t-main"><b>' + t.name + '</b><small>' + t.sub + '</small></div><div class="t-prog">' + Math.min(t.cur, t.goal) + ' / ' + t.goal + ' ' + t.unit + '</div></div>';
+    }).join(''), "innerHTML");
+    if (tasks.every(function (t) {
+      return t.cur >= t.goal;
+    })) {
+      var days = loadJSON('huashan_taskdays_v1', []),
+        tk = dayKey(Date.now());
+      if (days.indexOf(tk) < 0) {
+        days.push(tk);
+        saveJSON('huashan_taskdays_v1', days);
+      }
+    }
+    var chal = loadJSON('huashan_chal_v1', {
+      punch: null,
+      horse: null,
+      broke: false
+    });
+    var streak = taskStreak();
+    var badges = [{
+      icon: 'star',
+      name: '初露锋芒',
+      cond: '完成第 1 次训练',
+      got: st.sessions >= 1
+    }, {
+      icon: 'wind',
+      name: '拳速如风',
+      cond: '单次训练冲拳 ≥ 50 次',
+      got: st.maxPunch >= 50
+    }, {
+      icon: 'mountain',
+      name: '稳如泰山',
+      cond: '马步一次坚持 ≥ 60 秒',
+      got: st.maxHorseBest >= 60
+    }, {
+      icon: 'cal',
+      name: '坚持小达人',
+      cond: '累计完成 5 次训练',
+      got: st.sessions >= 5
+    }, {
+      icon: 'trophy',
+      name: '挑战之星',
+      cond: '在挑战里打破自己的纪录',
+      got: !!chal.broke
+    }, {
+      icon: 'sun',
+      name: '每日全勤',
+      cond: '连续 2 天完成全部今日任务',
+      got: streak >= 2
+    }];
+    __tunnel.setInnerHTML($('badgeWall'), badges.map(function (b) {
+      return '<div class="badge' + (b.got ? '' : ' locked') + '"><div class="b-medal">' + MEDALS[b.icon] + '</div><b>' + b.name + '</b><small>' + b.cond + '</small><br/><span class="b-state ' + (b.got ? 'got' : 'no') + '">' + (b.got ? '已点亮' : '还没解锁') + '</span></div>';
+    }).join(''), "innerHTML");
+    $('statSessions').textContent = st.sessions;
+    $('statDays').textContent = st.days;
+    $('statPunch').textContent = st.totalPunch;
+    $('statHorse').textContent = st.totalHorse;
+    var last7 = st.arr.slice(0, 7).reverse();
+    if (!last7.length) {
+      __tunnel.setInnerHTML($('chartWrap'), '<div class="chartEmpty">还没有训练数据，练一次这里就会长出小柱子啦。</div>', "innerHTML");
+    } else {
+      var maxV = Math.max.apply(null, last7.map(function (r) {
+        return r.punch || 0;
+      }).concat([1]));
+      __tunnel.setInnerHTML($('chartWrap'), '<div class="chart">' + last7.map(function (r) {
+        var h = Math.max(6, Math.round((r.punch || 0) / maxV * 110));
+        var d = new Date(r.ts),
+          lab = d.getMonth() + 1 + '/' + d.getDate();
+        return '<div class="chartCol"><span class="chartVal">' + (r.punch || 0) + '</span><div class="chartBar" style="height:' + h + 'px"></div><span class="chartLab">' + lab + '<br/>' + r.mode + (r.mode === '马步' ? '<br/>' + r.horse + '秒' : '') + '</span></div>';
+      }).join('') + '</div>', "innerHTML");
+    }
+    $('recPunch').textContent = chal.punch === null || chal.punch === undefined ? '—' : chal.punch + ' 次';
+    var hb = Math.max(st.maxHorseBest, chal.horse || 0);
+    $('recHorse').textContent = hb > 0 ? hb + ' 秒' : '—';
+    $('recMaxPunch').textContent = st.maxPunch > 0 ? st.maxPunch + ' 次' : '—';
+  }
+  function renderHistory() {
+    var arr = loadJSON('huashan_history_v1', []);
+    __tunnel.setStyle($('histEmpty'), "display", arr.length ? 'none' : 'block');
+    __tunnel.setInnerHTML($('historyList'), arr.map(function (r) {
+      return '<div class="historyItem"><div><div class="h-date">' + r.date + '</div><div class="h-mode' + (r.mode === '马步' ? ' horse' : '') + '">' + r.mode + '训练</div></div><div class="h-nums">冲拳 ' + r.punch + ' 次 · 马步 ' + r.horse + ' 秒<small>最长一次坚持 ' + (r.horseBest || 0) + ' 秒 · 用时 ' + fmt(r.duration) + '</small></div></div>';
+    }).join(''), "innerHTML");
+  }
+  $('btnClearHist').addEventListener('click', function () {
+    localStorage.removeItem('huashan_history_v1');
+    renderHistory();
+    renderGrowth();
+  });
+  selectCourse('c1', false);
+  renderLearn();
+  renderChallenge();
+  renderGrowth();
+  renderHistory();
+})();</script>
+</body>
+</html>
