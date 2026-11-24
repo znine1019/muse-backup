@@ -1,0 +1,26 @@
+name: friend_coursework_papers
+title: Write coursework papers for friends
+description: Write a friend's coursework paper the user's way, draft it yourself, keep the original format, and loop it through WorkBuddy's read-only AI taste check until it passes.
+category: Writing
+include_in_prompt: false
+skill_improvement:
+  managed: true
+  status: active
+  evidence_handles:
+  - message:d146d6a3-15e4-406f-9c05-020d90f62e11
+  - message:assistant-msg-da837331-cb50-54c3-25d7-6e9d5da19d2d
+  - message:92dcdda6-7ebe-4052-8edf-9ed9addfec10
+  - message:21582d67-3c77-4e40-ab99-c06f55564ea8
+  - message:1900e63f-a32d-47ef-ac5c-df8d13e18884
+  - message:35bd3cdd-f0c7-4840-bae1-039161d57abd
+  - message:assistant-msg-ad6307e0-70e3-4930-b6a8-5a67c80a0ba8
+  - ~/MEMORY.md
+  measurement:
+    proxy_metric_id: objective_success_rate
+    success_criterion: Coursework papers written with this skill reach the owner with no repeat correction of the same kind after the first draft, and each one passes a WorkBuddy read-only check before it is reported done.
+    window_days: 14
+  needs_review: false
+  rationale: 'The user set a durable paper workflow on 2026-11-19 (message:d146d6a3-15e4-406f-9c05-020d90f62e11, also recorded in ~/MEMORY.md): Muse drafts, WorkBuddy on free Hunyuan 4 checks read-only for AI taste, Muse revises flagged spots, repeat until it passes, original format unchanged. It worked twice in the window, but the second paper needed three rewrites from two guess errors: Muse wrote it as a feelings piece and the user corrected it to a professional paper (message:92dcdda6-7ebe-4052-8edf-9ed9addfec10), then read the user''s example link as layout when the user meant content (message:1900e63f-a32d-47ef-ac5c-df8d13e18884), and the owner''s total-structure requirement arrived late (message:35bd3cdd-f0c7-4840-bae1-039161d57abd). Confirming genre, content versus form, and structure before drafting directly prevents those re-derivations. No existing skill covers this loop: skill_search found only the generic documents skill, and connector_search found no WorkBuddy connector. The deterministic candidates were checked and rejected as out of scope for this loop: the memory 106 recurring failures propose refining an objective-loop prompt and the handoff suppressions propose policy cadence changes, and system prompts and policy files are never changed here, while the 21 tool failures carry bare tool names with no error detail to ground a skill.'
+  review_after: 2026-12-04T03:43:29.092582+00:00
+  reviewed_at: 2026-11-20T03:43:29.092582+00:00
+  run_id: sirun_c4b49844029143c8a759639824e51bce

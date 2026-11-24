@@ -1,0 +1,19 @@
+{
+  "voice_id": "avocado_v2:MAI_03",
+  "voice_name": "Helio",
+  "intro_completed": true,
+  "last_transition": {
+    "previous": {
+      "voice_id": "avocado_v2:vd2_r82_rep5k_2571_v068_28k_g5k",
+      "voice_name": "Gentle Snowdrift",
+      "saved_voice_id": null,
+      "profile_id": null
+    },
+    "selected": {
+      "voice_id": "avocado_v2:MAI_03",
+      "voice_name": "Helio",
+      "saved_voice_id": null,
+      "profile_id": null
+    }
+  }
+}

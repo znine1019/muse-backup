@@ -1,0 +1,25 @@
+{
+  "voices": [
+    {
+      "voice_id": "avocado_v2:vd2_r82_rep5k_2571_v068_28k_g5k",
+      "voice_name": "Gentle Snowdrift"
+    },
+    {
+      "voice_id": "avocado_v2:vd2_r82_rep5k_0103_v068_28k_g5k",
+      "voice_name": "Upbeat Trophy"
+    },
+    {
+      "voice_id": "avocado_v2:vdc_2561",
+      "voice_name": "Tender Cushion"
+    },
+    {
+      "voice_id": "avocado_v2:vdc_NOID87",
+      "voice_name": "Composed Pendulum"
+    },
+    {
+      "voice_id": "avocado_v2:MAI_01",
+      "voice_name": "Aria"
+    }
+  ],
+  "sample_line": "Hi, I'm Muse. This is a quick preview of how I sound."
+}
