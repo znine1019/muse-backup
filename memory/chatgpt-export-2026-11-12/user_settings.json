@@ -1,0 +1,115 @@
+[
+  {
+    "announcements": {
+      "oai/apps/hasDismissedTaskBrief/first_served": "2026-10-20T11:30:33.561435+00:00",
+      "oai/apps/hasDismissedTaskMonitor/first_served": "2026-10-20T11:30:33.561435+00:00",
+      "oai/apps/hasSeenAdvancedVoice/2024-09-24": "2026-05-23T12:06:40.589569+00:00",
+      "oai/apps/hasSeenArtifactsLearnMoreModal": "2026-06-27T18:57:26.816601+00:00",
+      "oai/apps/hasSeenAutoSwitchNux": 2,
+      "oai/apps/hasSeenBidiNux": 1,
+      "oai/apps/hasSeenBigPasteCoachmark": "2026-10-14T17:12:26.537517+00:00",
+      "oai/apps/hasSeenDalleEditingOnboarding": "2026-06-04T23:51:22.723307+00:00",
+      "oai/apps/hasSeenMoonshineNuxV2": "2026-05-24T19:35:09.707234+00:00",
+      "oai/apps/hasSeenOnboarding": "2026-05-23T11:08:24.874947+00:00",
+      "oai/apps/hasSeenSharedContentDisclosure": "2026-10-20T14:43:21.999575+00:00",
+      "oai/apps/hasSeenSitesPublicationTermsDisclosure": "2026-10-11T14:51:05.342134+00:00",
+      "oai/apps/hasSeenSunspotNux": "2026-10-20T11:31:24.103729+00:00",
+      "oai/apps/hasSeenTaskSuggestionConnectorFillers": "2026-10-26T23:37:48.070451+00:00",
+      "oai/apps/hasSeenTatertotNux": "2026-06-21T11:54:34.202884+00:00",
+      "oai/apps/hasSeenTemporaryChatOnboarding": "2026-05-28T17:24:12.210491+00:00",
+      "oai/apps/hasSeenUnifiedDictationTooltip": "2026-10-20T11:26:42.160983+00:00",
+      "oai/apps/hasSeenWhamCodexAppFirstHero": 1,
+      "oai/apps/hasSeenWindowsAppOnboarding": "2026-07-01T08:14:25.407194+00:00",
+      "oai/apps/hasSeenn7jupdNux": "2026-07-01T07:06:29.570496+00:00",
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/github": 5,
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/gmail": 5,
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/google_calendar": 5,
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/google_drive": 5,
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/linear": 5,
+      "oai/apps/taskSuggestionConnectorFallbackImpressions/notion": 5,
+      "paid-sticker-homepage-promotion": "2026-10-11T14:47:18.085118+00:00",
+      "paid-sticker-homepage-promotion-impressions": 3,
+      "voice-homepage-starter-prompt-first-served": "2026-09-09T00:58:04.878449+00:00"
+    },
+    "announcements_loaded": true,
+    "beta_settings": {},
+    "settings": {
+      "a8voRl0kxc_enabled": true,
+      "apps_privacy_control": "ask_before_writes",
+      "bH2sVuQ5TJ_enabled": true,
+      "can_consume_personal_credits_chatgpt": false,
+      "chat_theme": "default",
+      "codex_training_allowed": false,
+      "codex_training_allowed_v2": false,
+      "connector_search_enabled": false,
+      "enable_device_code_auth": false,
+      "first_party_project_pins_unmigrated": true,
+      "golden_hour": true,
+      "gxM2LY8iJn_enabled": false,
+      "h17180r_gmail": true,
+      "h17180r_google_calendar": true,
+      "h17180r_google_contacts": false,
+      "hive_referenced_in_internal_knowledge": true,
+      "instant_answers_enabled": false,
+      "last_used_model_config": {
+        "juices": {
+          "default": {
+            "gpt-5-5-thinking": "extended",
+            "gpt-5-6-thinking": "extended",
+            "gpt-6-thinking": "extended"
+          },
+          "ios_app": {
+            "gpt-5-5-thinking": "extended",
+            "gpt-5-6-thinking": "extended",
+            "gpt-6-thinking": "extended"
+          }
+        },
+        "slugs": {
+          "default": "gpt-6-thinking",
+          "ios_app": "gpt-6-thinking"
+        }
+      },
+      "lockdown_mode_enabled": false,
+      "model_picker_reasoning_effort_visibility": {
+        "source": "user",
+        "visibility_by_effort": {
+          "high": true,
+          "low": true,
+          "max": true,
+          "medium": true,
+          "ultra": true,
+          "xhigh": true
+        }
+      },
+      "model_sticky_for_new_chats": false,
+      "moonshine": true,
+      "potion_enabled": true,
+      "precise_location_allowed": true,
+      "precise_location_device_settings": {
+        "devices": {}
+      },
+      "precise_location_eligible": false,
+      "precise_location_enabled_for_device": false,
+      "project_pins_backfilled": true,
+      "rKAMeJfyrM_settings": {
+        "enabled": false,
+        "end_time": null,
+        "start_time": null
+      },
+      "record_meeting_on_calendar": false,
+      "record_slack_notifications_enabled": true,
+      "show_expanded_code_view": false,
+      "study_mode_project_pins_unmigrated": true,
+      "sunshine": true,
+      "training_allowed": true,
+      "video_training_allowed": true,
+      "voice_mode": "wingman",
+      "voice_mode_rollout_version": 2,
+      "voice_name": "glimmer",
+      "voice_training_allowed": true,
+      "wF9qLt3XpB_enabled": true,
+      "wingman_thinking_effort": "high"
+    },
+    "user_id": "user-2xCCxE1HzdEaRiDifQl3tX0I"
+  }
+]
