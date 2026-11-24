@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" href="data:,"/>
+<title>花山拳AI训练 · 真检测版</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<style>
+:root{
+  --bg:#FFF6E0; --bg2:#FFEDC2; --card:#FFFDF6; --ink:#1E1A16; --muted:#6B5E52;
+  --red:#E8321E; --orange:#FF6B1A; --orange2:#FF8A00; --green:#0E9F4E; --green-bg:#E6F9EC;
+  --line:#F0D9A8; --shadow:0 10px 30px rgba(120,50,0,.12);
+  --radius:20px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1A120B; --bg2:#2A1A0E; --card:#241A12; --ink:#FFF3D6; --muted:#C9B8A3; --line:#4A3520; --shadow:0 10px 30px rgba(0,0,0,.4); --green-bg:#0F2E1A; }
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--ink);line-height:1.5}
+a{color:var(--red)}
+button{min-height:48px}
+.wrap{max-width:1080px;margin:0 auto;padding:16px 16px 40px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 6px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{width:52px;height:52px;border-radius:14px;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px;letter-spacing:-.02em;box-shadow:var(--shadow)}
+.brand h1{margin:0;font-size:26px;line-height:1.1;letter-spacing:-.02em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px;font-weight:600}
+.pill{font-size:12px;font-weight:800;background:#fff;border:1.5px solid var(--line);padding:7px 10px;border-radius:999px}
+@media(prefers-color-scheme:dark){.pill{background:#2E2013}}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:var(--card);border:1.5px solid var(--line);padding:6px;border-radius:999px;margin:12px 0 16px;position:sticky;top:10px;z-index:20;box-shadow:var(--shadow)}
+.tabs button{border:0;border-radius:999px;background:transparent;font-weight:800;font-size:15px;cursor:pointer;padding:10px}
+.tabs button.active{background:var(--red);color:#fff}
+.hero{background:var(--card);border:1.5px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
+.hero h2{margin:0;font-size:28px;line-height:1.15;letter-spacing:-.03em}
+.hero h2 em{font-style:normal;color:var(--red)}
+.hero p{color:var(--muted);margin:8px 0 0;font-size:15px}
+.trust{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.trust span{font-size:13px;font-weight:700;background:var(--green-bg);border:1px solid #BFE8CC;color:#0B6B34;padding:7px 10px;border-radius:999px}
+@media(prefers-color-scheme:dark){.trust span{color:#7DE8A0;border-color:#1E4A2A}}
+.modeRow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:640px){.modeRow{grid-template-columns:1fr}}
+.modeCard{border:2px solid var(--line);background:var(--card);border-radius:18px;padding:16px;text-align:left;cursor:pointer;width:100%}
+.modeCard.active{border-color:var(--red);background:#FFF1E8}
+@media(prefers-color-scheme:dark){.modeCard.active{background:#331A0E}}
+.modeCard b{font-size:18px;display:block}
+.modeCard small{color:var(--muted);font-weight:600}
+.stage{margin-top:16px;background:#111;border-radius:20px;overflow:hidden;position:relative;aspect-ratio:4/3}
+@media(min-width:700px){.stage{aspect-ratio:16/9}}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.stage canvas{transform:scaleX(-1)}
+.stagePlaceholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#FFE9C2;padding:24px;background:radial-gradient(600px 300px at 50% 20%,#3A2410,#110B06)}
+.stagePlaceholder strong{font-size:22px;display:block;color:#fff}
+.stagePlaceholder p{opacity:.85;font-size:14px;max-width:420px}
+.hud{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.hud div{background:rgba(0,0,0,.72);color:#fff;border-radius:12px;padding:8px 10px;font-weight:800;font-size:13px;backdrop-filter:blur(4px)}
+.hud .live{color:#FFD166}
+.feedback{margin-top:14px;border-radius:16px;padding:16px 18px;font-size:22px;font-weight:900;line-height:1.25;border:2px solid var(--line);background:var(--card);text-align:center}
+.feedback.good{border-color:var(--green);background:var(--green-bg);color:#0A6B32}
+@media(prefers-color-scheme:dark){.feedback.good{color:#7DE8A0}}
+.feedback.warn{border-color:#FFB020;background:#FFF4D6;color:#7A4A00}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+@media(max-width:700px){.metrics{grid-template-columns:1fr 1fr}}
+.metric{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px}
+.metric label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.metric strong{font-size:32px;display:block;line-height:1;margin-top:4px}
+.metric small{color:var(--muted);font-weight:600}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{flex:1;min-width:150px;border:0;border-radius:14px;padding:14px 16px;font-size:17px;font-weight:900;cursor:pointer}
+.btn-primary{background:var(--red);color:#fff;box-shadow:0 8px 20px rgba(232,50,30,.3)}
+.btn-secondary{background:var(--ink);color:var(--bg)}
+.btn-ghost{background:var(--card);border:1.5px solid var(--line);color:var(--ink)}
+.sliderBox{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;margin-top:12px}
+.sliderBox label{font-weight:800;display:flex;justify-content:space-between}
+input[type=range]{width:100%;height:44px;accent-color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px}
+.card h3{margin:0 0 8px;font-size:18px}
+.card ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-weight:600;font-size:14px}
+.notice{font-size:13px;color:var(--muted);background:var(--card);border:1px dashed var(--orange);border-radius:12px;padding:12px 14px;margin-top:14px;line-height:1.6}
+.error{display:none;background:#FFE8E5;border:1.5px solid #FF9A8A;color:#7A1308;border-radius:14px;padding:14px 16px;margin-top:12px;font-weight:700}
+.error.show{display:block}
+.view{display:none}.view.active{display:block}
+/* Demo SVG */
+.demoFigure{background:linear-gradient(180deg,#FFF8E6,#FFE9B8);border-radius:16px;padding:10px;display:grid;place-items:center}
+@media(prefers-color-scheme:dark){.demoFigure{background:#2A1E10}}
+.punchArm{transform-origin:110px 92px;animation:punch 1.6s ease-in-out infinite}
+@keyframes punch{0%,100%{transform:rotate(18deg)}45%{transform:rotate(-68deg)}60%{transform:rotate(-68deg)}}
+.horseLeg{animation:horse 2.4s ease-in-out infinite;transform-origin:100px 110px}
+@keyframes horse{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@media(prefers-reduced-motion:reduce){.punchArm,.horseLeg{animation:none}}
+.historyItem{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.historyItem:last-child{border:0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:50;padding:16px}
+.modal.show{display:grid}
+.modalCard{background:var(--card);border-radius:20px;padding:22px;max-width:520px;width:100%;box-shadow:var(--shadow)}
+.modalCard h3{margin:0;font-size:20px}
+.check{display:flex;gap:10px;align-items:flex-start;background:var(--bg);padding:12px;border-radius:12px;margin-top:12px;cursor:pointer}
+.check input{width:22px;height:22px;margin-top:2px;flex-shrink:0}
+.summaryBox{display:none;margin-top:14px;background:#111;color:#fff;border-radius:16px;padding:18px}
+.summaryBox.show{display:block}
+.summaryBox h3{margin:0}
+.kbd{font-size:12px;opacity:.7}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:20px 0 0;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><div class="badge">拳</div><div><h1>花山拳 AI 训练</h1><p>6–12 岁少年 · 真摄像头 · 真判定 · 不糊弄</p></div></div>
+    <span class="pill">🔴 本地识别 · 不上传画面</span>
+  </div>
+
+  <nav class="tabs" aria-label="主导航">
+    <button class="active" data-tab="train">🥊 开始训练</button>
+    <button data-tab="demo">👀 动作示范</button>
+    <button data-tab="history">📋 训练记录</button>
+  </nav>
+
+  <!-- TRAIN -->
+  <section id="view-train" class="view active">
+    <div class="hero">
+      <h2>原版测不出动作，<em>这一版当场算给你看。</em></h2>
+      <p>打开摄像头后，骨骼线、肘角、膝角全部实时计算。伸直才计数，蹲到位才计时——数字跟着你的身体动，做不到就不会涨。</p>
+      <div class="trust"><span>✓ MediaPipe 33 点姿态识别</span><span>✓ 冲拳肘角实时显示</span><span>✓ 马步膝角 + 步宽双判定</span><span>✓ 练完自动存记录</span></div>
+
+      <div class="modeRow" role="group" aria-label="选择训练模式">
+        <button class="modeCard active" id="modePunch"><b>👊 冲拳训练</b><small>肩–肘–腕算肘角 · 伸直 + 收回 = 1 次有效冲拳</small></button>
+        <button class="modeCard" id="modeHorse"><b>🐴 马步训练</b><small>髋–膝–踝算膝角 · 双脚够宽 + 膝盖弯到位才计时</small></button>
+      </div>
+
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted></video>
+        <canvas id="canvas" width="1280" height="720"></canvas>
+        <div class="stagePlaceholder" id="placeholder">
+          <div><strong>站到镜头前 2–3 米</strong><p>全身入画、光线充足、穿与背景颜色不同的衣服，识别更准。点下方红色按钮开始，浏览器会弹出摄像头授权。</p></div>
+        </div>
+        <div class="hud"><div>状态：<span id="hudState">未开始</span></div><div class="live" id="hudAngle">肘角 —°</div><div id="hudTime">00:00</div></div>
+      </div>
+
+      <div class="feedback" id="feedback">准备好了吗？选好模式，点「开始检测」</div>
+      <div class="error" id="errorBox" role="alert"></div>
+
+      <div class="metrics">
+        <div class="metric"><label id="angleLabel">当前肘角</label><strong id="mAngle">—°</strong><small id="mAngleSub">等待识别人体…</small></div>
+        <div class="metric"><label id="countLabel">有效冲拳</label><strong id="mCount">0 次</strong><small>伸直达标 + 收回才算</small></div>
+        <div class="metric"><label>马步保持</label><strong id="mHorse">0.0 秒</strong><small>姿势破掉自动暂停</small></div>
+        <div class="metric"><label>本次用时</label><strong id="mTime">00:00</strong><small>结束后生成小结</small></div>
+      </div>
+
+      <div class="sliderBox" id="sliderBox">
+        <label><span>冲拳判定：肘角 ≥ <span id="thVal">142</span>° 算伸直</span><span style="color:var(--muted);font-size:13px">90°–180° 可调</span></label>
+        <input type="range" id="threshold" min="90" max="180" value="142" step="1"/>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700"><span>90° 更容易</span><span>142° 标准（默认）</span><span>180° 完全伸直</span></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="btnStart">📷 开始检测</button>
+        <button class="btn btn-secondary" id="btnStop" disabled>⏹ 结束并生成小结</button>
+        <button class="btn btn-ghost" id="btnReset">↺ 重新计数</button>
+      </div>
+
+      <div class="summaryBox" id="summaryBox"><h3>✅ 本次训练小结</h3><p id="summaryText" style="margin:8px 0;line-height:1.7"></p><p class="kbd">已自动保存到「训练记录」，刷新页面也不会丢。</p></div>
+
+      <div class="notice"><strong>隐私与未成年人提示：</strong>本页所有识别都在你这台设备的浏览器本地完成，<strong>视频画面不上传、不保存、不经过任何服务器</strong>。请在家长或教练陪同下使用；不要在画面中出现其他小朋友的正脸特写；用完点「结束」即关闭摄像头。</div>
+    </div>
+
+    <div class="grid2">
+      <div class="card"><h3>冲拳怎么判？（透明规则）</h3><ul><li>取肩、肘、腕三点连线，实时算肘关节夹角</li><li>角度冲过阈值（默认 142°）= 出拳伸直</li><li>再收回到 115° 以内 = 完成一次，计数 +1</li><li>只伸不收、只晃手臂，都不计数</li></ul></div>
+      <div class="card"><h3>马步怎么判？（透明规则）</h3><ul><li>双腿膝角都要进入 75°–135°（蹲到位）</li><li>双脚间距 ≥ 肩宽 × 1.35（站得够开）</li><li>两个条件同时满足才计时，任一破掉立刻暂停</li><li>反馈会直说差在哪：腿再弯 / 脚再开一点</li></ul></div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="view-demo" class="view">
+    <div class="hero"><h2>只示范 <em>能检测的两个动作</em></h2><p>不编 56 式、不放播不了的假视频。下面是本地 SVG 动画，离线也能看；要点全部对应上面的真实判定规则。</p></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>👊 冲拳 · 出拳与收拳</h3>
+        <div class="demoFigure">
+          <svg width="220" height="200" viewBox="0 0 220 200" aria-label="冲拳动画示范"><circle cx="110" cy="38" r="16" fill="#FFD9A0" stroke="#1E1A16" stroke-width="3"/><line x1="110" y1="54" x2="110" y2="110" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><g class="punchArm"><line x1="110" y1="68" x2="110" y2="92" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/><line x1="110" y1="92" x2="148" y2="92" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/><circle cx="152" cy="92" r="8" fill="#E8321E"/></g><line x1="110" y1="68" x2="88" y2="92" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><line x1="110" y1="110" x2="88" y2="160" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><line x1="110" y1="110" x2="132" y2="160" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/></svg>
+        </div>
+        <ul><li><strong>起势：</strong>双拳收于腰际/胸前，肘贴身</li><li><strong>出拳：</strong>拳走直线，肘完全伸直（≥142°），拳眼向上</li><li><strong>收拳：</strong>原路收回胸前（≤115°）才算完成 1 次</li><li><strong>眼神呼吸：</strong>目视拳尖，出拳呼气、收拳吸气</li></ul>
+      </div>
+      <div class="card">
+        <h3>🐴 马步 · 蹲稳与保持</h3>
+        <div class="demoFigure">
+          <svg width="220" height="200" viewBox="0 0 220 200" aria-label="马步动画示范"><g class="horseLeg"><circle cx="110" cy="30" r="16" fill="#FFD9A0" stroke="#1E1A16" stroke-width="3"/><line x1="110" y1="46" x2="110" y2="96" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><line x1="110" y1="60" x2="76" y2="78" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><line x1="110" y1="60" x2="144" y2="78" stroke="#1E1A16" stroke-width="6" stroke-linecap="round"/><line x1="110" y1="96" x2="72" y2="118" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/><line x1="72" y1="118" x2="66" y2="158" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/><line x1="110" y1="96" x2="148" y2="118" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/><line x1="148" y1="118" x2="154" y2="158" stroke="#E8321E" stroke-width="7" stroke-linecap="round"/></g></svg>
+        </div>
+        <ul><li><strong>步宽：</strong>双脚分开约为肩宽 1.5 倍（系统要求 ≥1.35）</li><li><strong>下蹲：</strong>大腿尽量平行地面，膝角约 90°–120°</li><li><strong>上身：</strong>挺胸直腰、目视前方，不前倾</li><li><strong>保持：</strong>呼吸均匀，姿势一破计时就停，很严格</li></ul>
+      </div>
+    </div>
+    <div class="notice">说明：花山拳完整套路需以真实传承资料核对后再上架，本页不编造招式清单、不凑数、不重复命名。后续拿到核对过的套路表，再逐段补示范。</div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="view-history" class="view">
+    <div class="hero"><h2>训练记录</h2><p>每次点「结束并生成小结」都会存一条，只存在这台设备的浏览器里（localStorage），不上传。</p>
+      <div id="historyList" style="margin-top:10px"></div>
+      <div class="controls"><button class="btn btn-ghost" id="btnClearHist">清空全部记录</button></div>
+      <div id="histEmpty" class="notice">还没有记录。去「开始训练」练一次，回来这里就能看到冲拳次数、马步时长和用时。</div>
+    </div>
+  </section>
+
+  <footer>花山拳 AI 训练 · 真检测版 — 摄像头只在本地运行 · 建议 Chrome / Edge 最新版 · 距镜头 2–3 米、全身入画效果最好</footer>
+</div>
+
+<!-- Guardian modal -->
+<div class="modal" id="guardianModal" role="dialog" aria-modal="true">
+  <div class="modalCard">
+    <h3>开始前，请家长 / 教练确认</h3>
+    <p style="color:var(--muted)">本功能会打开摄像头做动作识别。画面只在本机浏览器本地处理，不上传、不录制、不保存。孩子请在成人陪同下使用。</p>
+    <label class="check"><input type="checkbox" id="guardianCheck"/><span><strong>我是家长或教练，已知晓并同意打开摄像头</strong><br/><small style="color:var(--muted)">勾选后才能开始；不勾选不会打开摄像头。</small></span></label>
+    <div class="controls"><button class="btn btn-primary" id="btnGuardianOk" disabled>同意并打开摄像头</button><button class="btn btn-ghost" id="btnGuardianCancel">先不练</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var video=$('video'), canvas=$('canvas'), ctx=canvas.getContext('2d');
+  var mode='punch', threshold=142, running=false, pose=null, camera=null;
+  var punchCount=0, punchState='retracted', lastAngle=null, lastKnee=null, horseHoldMs=0, horseInPose=false, horseLastTs=null;
+  var sessionStart=null, sessionTimer=null, elapsedSec=0;
+  var guardianOk=false;
+
+  // Tabs
+  document.querySelectorAll('.tabs button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.tabs button').forEach(function(x){x.classList.remove('active')});
+      b.classList.add('active');
+      document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});
+      $('view-'+b.dataset.tab).classList.add('active');
+      if(b.dataset.tab==='history') renderHistory();
+    });
+  });
+  // Mode
+  function setMode(m){ mode=m; $('modePunch').classList.toggle('active',m==='punch'); $('modeHorse').classList.toggle('active',m==='horse');
+    $('angleLabel').textContent = m==='punch'?'当前肘角':'当前膝角（平均）';
+    $('countLabel').textContent = m==='punch'?'有效冲拳':'马步状态';
+    $('sliderBox').style.opacity = m==='punch'?'1':'.45';
+    setFeedback(m==='punch'?'冲拳模式：伸直超过 '+threshold+'° 再收回，计 1 次':'马步模式：双脚站开、膝盖弯到位，保持住别动','');
+  }
+  $('modePunch').addEventListener('click',function(){setMode('punch')});
+  $('modeHorse').addEventListener('click',function(){setMode('horse')});
+  $('threshold').addEventListener('input',function(e){ threshold=+e.target.value; $('thVal').textContent=threshold; });
+
+  function setFeedback(text,cls){ var f=$('feedback'); f.textContent=text; f.className='feedback '+(cls||''); }
+  function showError(msg){ var e=$('errorBox'); e.textContent=msg; e.classList.add('show'); }
+  function clearError(){ $('errorBox').classList.remove('show'); }
+  function fmt(s){ var m=Math.floor(s/60), ss=Math.floor(s%60); return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
+  function angle(a,b,c){ // angle at b
+    var v1={x:a.x-b.x,y:a.y-b.y}, v2={x:c.x-b.x,y:c.y-b.y};
+    var d1=Math.hypot(v1.x,v1.y), d2=Math.hypot(v2.x,v2.y); if(!d1||!d2) return null;
+    var cos=(v1.x*v2.x+v1.y*v2.y)/(d1*d2); cos=Math.max(-1,Math.min(1,cos)); return Math.acos(cos)*180/Math.PI;
+  }
+  function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y); }
+
+  function onResults(res){
+    ctx.save(); ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(res.image){ ctx.drawImage(res.image,0,0,canvas.width,canvas.height); }
+    if(!res.poseLandmarks){ setFeedback('没有看到人——请全身站进画面，距镜头 2–3 米','warn'); $('hudState').textContent='未检测到人体'; ctx.restore(); return; }
+    var lm=res.poseLandmarks;
+    // Draw skeleton using MediaPipe drawing utils if available, else manual
+    try{
+      if(window.drawConnectors && window.POSE_CONNECTIONS){ drawConnectors(ctx,lm,POSE_CONNECTIONS,{color:'#FFD166',lineWidth:4}); }
+      if(window.drawLandmarks){ drawLandmarks(ctx,lm,{color:'#E8321E',fillColor:'#FFFFFF',lineWidth:2,radius:5}); }
+    }catch(e){ /* fallback: points only */
+      ctx.fillStyle='#FFD166'; lm.forEach(function(p){ ctx.beginPath(); ctx.arc(p.x*canvas.width,p.y*canvas.height,4,0,7); ctx.fill(); });
+    }
+    ctx.restore();
+    $('hudState').textContent='识别中 ●';
+    // --- Punch: both arms, take max elbow angle ---
+    var la=angle(lm[11],lm[13],lm[15]), ra=angle(lm[12],lm[14],lm[16]);
+    var elbow=Math.max(la||0, ra||0); lastAngle=elbow;
+    // --- Horse: knees + foot ratio ---
+    var lk=angle(lm[23],lm[25],lm[27]), rk=angle(lm[24],lm[26],lm[28]);
+    var knee=(lk&&rk)?(lk+rk)/2:(lk||rk); lastKnee=knee;
+    var shoulderW=dist(lm[11],lm[12]), footW=dist(lm[27],lm[28]), ratio=shoulderW>0.01?footW/shoulderW:0;
+
+    if(mode==='punch'){
+      $('hudAngle').textContent='肘角 '+Math.round(elbow)+'°';
+      $('mAngle').textContent=Math.round(elbow)+'°';
+      $('mAngleSub').textContent= elbow>=threshold?'已伸直达标 ✓':(elbow>threshold-25?'差一点，再伸直！':'还没伸直');
+      if(punchState==='retracted' && elbow>=threshold){ punchState='extended'; setFeedback('好！拳伸直了 — 现在收回胸前','good'); }
+      else if(punchState==='extended' && elbow<=115){ punchState='retracted'; punchCount++; $('mCount').textContent=punchCount+' 次'; setFeedback('✅ 有效冲拳 +1 ！已完成 '+punchCount+' 次，再来！','good'); if(navigator.vibrate) navigator.vibrate(40); }
+      else if(punchState==='retracted'){ setFeedback(elbow>threshold-25?'就差一点 — 手臂再伸直一点（还差 '+Math.round(threshold-elbow)+'°）':'出拳！把手臂伸直，超过 '+threshold+'°', elbow>threshold-25?'warn':''); }
+      else { setFeedback('保持伸直，然后收拳到胸前（肘角 ≤115°）',''); }
+    } else {
+      $('hudAngle').textContent='膝角 '+(knee?Math.round(knee):'—')+'° · 步宽比 '+(ratio?ratio.toFixed(2):'—');
+      $('mAngle').textContent=knee?Math.round(knee)+'°':'—°';
+      var kneeOk=knee && knee>=75 && knee<=135, footOk=ratio>=1.35, inPose=kneeOk&&footOk;
+      $('mAngleSub').textContent=inPose?'姿势达标，保持中 ✓':(!kneeOk?'膝角需在 75°–135°':'步宽不够');
+      $('mCount').textContent=inPose?'保持中 ✓':'未达标';
+      var now=performance.now();
+      if(inPose){ if(horseInPose && horseLastTs) horseHoldMs+=now-horseLastTs; horseInPose=true; setFeedback('好，保持住！马步计时中 — '+ (horseHoldMs/1000).toFixed(1)+' 秒','good'); }
+      else { horseInPose=false; if(!kneeOk && knee>135) setFeedback('腿再弯一点 — 蹲下去，膝角要 ≤135°（现在 '+Math.round(knee||0)+'°）','warn'); else if(!kneeOk && knee<75) setFeedback('蹲太深了 — 稍微起来一点，膝角要 ≥75°','warn'); else if(!footOk) setFeedback('双脚再站开一点 — 步宽要达到肩宽的 1.35 倍（现在 '+ratio.toFixed(2)+' 倍）','warn'); else setFeedback('调整姿势：双脚站开 + 膝盖弯到位','warn'); }
+      horseLastTs=now;
+      $('mHorse').textContent=(horseHoldMs/1000).toFixed(1)+' 秒';
+    }
+    if(mode==='punch'){ // still track horse passively? keep display fresh only in horse mode; update horse time anyway if in pose in punch mode skip
+    } else { $('mHorse').textContent=(horseHoldMs/1000).toFixed(1)+' 秒'; }
+  }
+
+  function startSessionTimer(){ sessionStart=Date.now(); sessionTimer=setInterval(function(){ elapsedSec=(Date.now()-sessionStart)/1000; $('mTime').textContent=fmt(elapsedSec); $('hudTime').textContent=fmt(elapsedSec); },500); }
+  function stopSessionTimer(){ if(sessionTimer) clearInterval(sessionTimer); sessionTimer=null; }
+
+  async function startDetection(){
+    clearError();
+    if(typeof Pose==='undefined'){ showError('姿态识别模型库加载失败：请检查网络后刷新页面（需要从 CDN 加载 MediaPipe）。断网或被拦截时无法识别，不会假装运行。'); return; }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showError('当前浏览器不支持摄像头调用（getUserMedia 不可用）。请用最新版 Chrome / Edge，并通过 HTTPS 打开本页。'); return; }
+    setFeedback('正在加载 AI 模型并打开摄像头，请稍候…（首次约需 5–15 秒）','');
+    $('btnStart').disabled=true; $('btnStart').textContent='加载模型中…';
+    try{
+      if(!pose){
+        pose=new Pose({locateFile:function(f){ return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/'+f; }});
+        pose.setOptions({modelComplexity:1,smoothLandmarks:true,enableSegmentation:false,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
+        pose.onResults(onResults);
+      }
+      // Warm up / verify camera permission first for clear error
+      var stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+      stream.getTracks().forEach(function(t){t.stop();}); // Camera util will reopen; this step surfaces permission errors clearly
+      if(typeof Camera==='undefined'){ showError('摄像头工具库加载失败，请刷新页面重试。'); $('btnStart').disabled=false; $('btnStart').textContent='📷 开始检测'; return; }
+      camera=new Camera(video,{onFrame:async function(){ await pose.send({image:video}); },width:1280,height:720});
+      await camera.start();
+      running=true; $('placeholder').style.display='none';
+      $('btnStart').textContent='● 检测中…'; $('btnStop').disabled=false;
+      punchCount=0; horseHoldMs=0; punchState='retracted'; $('mCount').textContent='0 次'; $('mHorse').textContent='0.0 秒';
+      startSessionTimer(); setFeedback(mode==='punch'?'开始！出拳伸直超过 '+threshold+'°，再收回，计 1 次':'开始！双脚站开、蹲到位，保持住开始计时','good');
+    }catch(err){
+      console.error(err);
+      var msg='摄像头打开失败。';
+      if(err && err.name==='NotAllowedError') msg='摄像头权限被拒绝：请点浏览器地址栏旁的摄像头图标，选「允许」，然后刷新页面再试。';
+      else if(err && err.name==='NotFoundError') msg='没有找到摄像头设备：请确认设备有摄像头且未被其他应用占用。';
+      else if(err && err.name==='NotReadableError') msg='摄像头被其他应用占用：关掉正在用摄像头的应用后重试。';
+      else msg='打开失败：'+(err&&err.message?err.message:err)+'。请用最新版 Chrome/Edge、HTTPS 环境重试。';
+      showError(msg); setFeedback('没打开成功 — 看下方红色提示处理，再点开始','warn');
+      $('btnStart').disabled=false; $('btnStart').textContent='📷 开始检测';
+    }
+  }
+
+  function stopDetection(){
+    if(camera){ try{camera.stop();}catch(e){} camera=null; }
+    if(video.srcObject){ video.srcObject.getTracks().forEach(function(t){t.stop();}); video.srcObject=null; }
+    running=false; stopSessionTimer();
+    $('btnStart').disabled=false; $('btnStart').textContent='📷 开始检测'; $('btnStop').disabled=true;
+    $('placeholder').style.display='grid'; $('hudState').textContent='已结束';
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    var horseSec=Math.round((horseHoldMs/1000)*10)/10;
+    var dur=Math.round(elapsedSec);
+    var rec={ts:Date.now(), date:new Date().toLocaleString('zh-CN'), mode:mode==='punch'?'冲拳':'马步', punch:punchCount, horse:horseSec, duration:dur};
+    try{ var arr=JSON.parse(localStorage.getItem('huashan_history_v1')||'[]'); arr.unshift(rec); localStorage.setItem('huashan_history_v1',JSON.stringify(arr.slice(0,50))); }catch(e){}
+    $('summaryText').innerHTML='模式：<strong>'+rec.mode+'</strong> · 有效冲拳 <strong>'+punchCount+' 次</strong> · 马步保持 <strong>'+horseSec+' 秒</strong> · 本次用时 <strong>'+fmt(dur)+'</strong><br/>'+(punchCount>=20?'冲拳量很棒，注意收拳回位别变形。':punchCount>0?'已完成真实计数，下一组把收拳做得更干脆。':mode==='punch'?'这次还没计到有效冲拳：多半是没伸过阈值或没收回到位，对照实时角度再试。':'');
+    $('summaryBox').classList.add('show'); setFeedback('训练结束，小结已生成并保存到「训练记录」','good');
+  }
+
+  $('btnStart').addEventListener('click',function(){ if(running) return; if(!guardianOk){ $('guardianModal').classList.add('show'); } else { startDetection(); } });
+  $('guardianCheck').addEventListener('change',function(e){ $('btnGuardianOk').disabled=!e.target.checked; });
+  $('btnGuardianCancel').addEventListener('click',function(){ $('guardianModal').classList.remove('show'); });
+  $('btnGuardianOk').addEventListener('click',function(){ guardianOk=true; $('guardianModal').classList.remove('show'); startDetection(); });
+  $('btnStop').addEventListener('click',stopDetection);
+  $('btnReset').addEventListener('click',function(){ punchCount=0; horseHoldMs=0; elapsedSec=0; punchState='retracted'; $('mCount').textContent='0 次'; $('mHorse').textContent='0.0 秒'; $('mTime').textContent='00:00'; if(running){ sessionStart=Date.now(); } setFeedback('已重新计数',''); });
+
+  function renderHistory(){
+    var arr=[]; try{ arr=JSON.parse(localStorage.getItem('huashan_history_v1')||'[]'); }catch(e){}
+    var box=$('historyList'); $('histEmpty').style.display=arr.length?'none':'block';
+    box.innerHTML=arr.map(function(r){ return '<div class="historyItem"><div><strong>'+r.date+'</strong><br/><small style="color:var(--muted)">'+r.mode+'训练</small></div><div style="text-align:right"><strong>冲拳 '+r.punch+' 次 · 马步 '+r.horse+' 秒</strong><br/><small style="color:var(--muted)">用时 '+fmt(r.duration)+'</small></div></div>'; }).join('');
+  }
+  $('btnClearHist').addEventListener('click',function(){ localStorage.removeItem('huashan_history_v1'); renderHistory(); });
+  renderHistory();
+})();
+</script>
+</body>
+</html>
