@@ -125,6 +125,12 @@
     s = s.replace(/^\/+/, "");
     return s;
   }
+  function blobRequestPath(cacheKey) {
+    if (!cacheKey.startsWith("blobs/"))
+      return cacheKey;
+    const query = cacheKey.indexOf("?");
+    return query < 0 ? cacheKey : cacheKey.slice(0, query);
+  }
   function blobInner(base, NativeURL) {
     if (base == null)
       return null;
@@ -755,7 +761,7 @@ ${v}`;
                 blobStats.revoked++;
               } catch {}
             }
-          }).finally(() => {
+          }).catch(() => {}).finally(() => {
             blobStats.inFlightRevokes--;
           });
         }, __BLOB_REVOKE_DELAY_MS);
@@ -781,12 +787,19 @@ ${v}`;
         blobStats.hits++;
       } else {
         blobStats.misses++;
-        const url = httpReq("GET", key, null).then((r) => {
+        const url = httpReq("GET", blobRequestPath(key), null).then((r) => {
+          if (r.status < 200 || r.status >= 300) {
+            throw new Error(`Space resource returned HTTP ${r.status}`);
+          }
           const ctHeader = r.headers.find(([k]) => k.toLowerCase() === "content-type");
           const ct = ctHeader?.[1] ?? "application/octet-stream";
           const blob = new Blob([r.bytes], { type: ct });
           blobStats.created++;
           return URL.createObjectURL(blob);
+        }).catch((error) => {
+          if (blobCache.get(key) === ent)
+            blobCache.delete(key);
+          throw error;
         });
         ent = { url };
         blobCache.set(key, ent);
@@ -900,6 +913,10 @@ ${v}`;
           try {
             el.setAttribute("srcset", rebuilt.join(", "));
           } catch {}
+        }, () => {
+          try {
+            el.dispatchEvent(new Event("error"));
+          } catch {}
         });
         return;
       }
@@ -931,8 +948,9 @@ ${v}`;
             }
           } catch {}
         }, () => {
-          if (isMediaSource) {
+          if (isMediaSource)
             mediaSourceLoads.set(el, "settled");
+          if (isMediaSource || tag === "IMG") {
             el.dispatchEvent(new Event("error"));
           }
         });

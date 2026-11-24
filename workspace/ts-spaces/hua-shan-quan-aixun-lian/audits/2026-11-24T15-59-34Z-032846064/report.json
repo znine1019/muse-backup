@@ -1,0 +1,174 @@
+{
+  "ok": true,
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-8cb490e5-f33c-403c-8089-52ac731a8662/",
+  "duration_ms": 9363.808688000001,
+  "output_dir": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T15-59-34Z-032846064",
+  "nav_status": 200,
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T15-59-34Z-032846064/screenshot.png",
+      "fullpage_screenshot_path": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T15-59-34Z-032846064/screenshot-full.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T15-59-34Z-032846064/screenshot-mobile.png"
+    }
+  },
+  "targets": null,
+  "mobile_layout": {
+    "viewport_width": 390,
+    "scroll_width": 390,
+    "overflow_px": 0,
+    "widest_selector": null,
+    "verdict": "pass"
+  },
+  "horizontal_scrollers": [],
+  "unreachable_controls": {
+    "desktop": [],
+    "mobile": []
+  },
+  "clipped": {
+    "desktop": [],
+    "mobile": []
+  },
+  "images": {
+    "total": 0,
+    "broken": [],
+    "duplicate": [],
+    "unstable": [],
+    "failed_requests": [],
+    "external_blocked": {
+      "count": 0,
+      "sample": []
+    },
+    "sample_urls": [],
+    "verdict": "pass"
+  },
+  "text_issues": [],
+  "console_errors": [],
+  "console_warnings": [],
+  "external_fetch_failures": 8,
+  "external_fetch_failure_samples": [
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js)",
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&display=swap)",
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js)",
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js)",
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&display=swap)"
+  ],
+  "blocked_requests": [],
+  "external_requests": [
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js",
+      "method": "GET",
+      "resource_type": "script"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700;900&display=swap",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    },
+    {
+      "url": "https://player.bilibili.com/player.html?bvid=BV1jy4y1L7Wt&page=1&danmaku=0",
+      "method": "GET",
+      "resource_type": "document"
+    }
+  ],
+  "external_requests_dropped": 0,
+  "external_requests_dropped_data_bearing": 0,
+  "transport_ledger_active": true,
+  "egress_lockdown": true,
+  "transport_connections": [
+    {
+      "host": "artifact-capture.invalid",
+      "port": 443,
+      "connects": 2,
+      "bytes_up": 3932,
+      "bytes_down": 2485
+    },
+    {
+      "host": "cdn.jsdelivr.net",
+      "port": 443,
+      "connects": 6,
+      "bytes_up": 0,
+      "bytes_down": 0,
+      "policy_denied": true
+    },
+    {
+      "host": "fonts.googleapis.com",
+      "port": 443,
+      "connects": 2,
+      "bytes_up": 0,
+      "bytes_down": 0,
+      "policy_denied": true
+    },
+    {
+      "host": "player.bilibili.com",
+      "port": 443,
+      "connects": 4,
+      "bytes_up": 0,
+      "bytes_down": 0,
+      "policy_denied": true
+    }
+  ],
+  "transport_udp_attempts": 0,
+  "transport_overflow": 0,
+  "unexplained_transport_hosts": [],
+  "broken_assets": [],
+  "blocked_affordances": [],
+  "interactive_nodes": 11,
+  "aria_snapshot": "- banner:\n  - img \"花山拳小狮子吉祥物阿山\"\n  - heading \"花山拳小勇士训练乐园\" [level=1]\n  - paragraph: AI 动作教练陪你练 · 冲拳计数、马步计时，全是真的！\n  - text: 0 颗星星 等级：小拳手\n- navigation \"主导航\":\n  - button \"训练\":\n    - img\n    - text: 训练\n  - button \"示范\":\n    - img\n    - text: 示范\n  - button \"挑战\":\n    - img\n    - text: 挑战\n  - button \"成长\":\n    - img\n    - text: 成长\n  - button \"记录\":\n    - img\n    - text: 记录\n- text: 📷 摄像头练功房 站远一点 · 全身都要进画面\n- group \"选择训练模式\":\n  - button \"冲拳训练 手臂伸直再收回来，算 1 拳！\":\n    - img\n    - text: 冲拳训练 手臂伸直再收回来，算 1 拳！\n  - button \"马步训练 双脚站开、蹲稳，保持住计时！\":\n    - img\n    - text: 马步训练 双脚站开、蹲稳，保持住计时！\n- strong: 站到镜头前 2–3 米\n- paragraph: 让全身都出现在画面里，光线亮一点，衣服颜色和墙不一样，AI 才看得清。点右边的大按钮开始，浏览器会问你能不能用摄像头，点「允许」就好啦。\n- text: ● 状态：还没开始 肘角 —° 00:00 👋 准备好了吗？选好练法，点「开始练功」！\n- complementary \"实时数据面板\":\n  - text: 📊 我的成绩单 数字会跟着你动 —° 肘角 · 手臂弯不弯 等你站到镜头前哦… 有效冲拳\n  - strong: 0 次\n  - text: 伸直 + 收回，才算一拳 马步保持\n  - strong:\n    - text: \"0.0\"\n    - emphasis: 秒\n  - text: 姿势一歪就暂停 本次用时\n  - strong: 00:00\n  - text: 结束会出小结 当前肘角\n  - strong: —°\n  - text: 数字会随你的动作跳动 冲拳难度 · 伸到多少度算数\n  - status \"冲拳难度 · 伸到多少度算数\": 142°\n  - slider \"冲拳判定阈值\": \"142\"\n  - text: 90° 简单 142° 标准 180° 超难\n  - button \"▶ 开始练功 · 打开摄像头\"\n  - button \"结束 · 看小结\" [disabled]\n  - button \"重新计数\"\n  - text: 🔒 放心练：摄像头画面只在你自己的设备上算，不上传、不录像、不保存。请让爸爸妈妈或教练陪着一起用，练完点「结束」摄像头就关啦。\n- heading \"冲拳怎么算数？\" [level=3]:\n  - img\n  - text: 冲拳怎么算数？\n- list:\n  - listitem: 第 1 步 AI 找到你的肩膀、胳膊肘和手腕，量出手臂的角度\n  - listitem: 第 2 步 出拳伸直到 142° 以上（难度可以调）\n  - listitem: 第 3 步 再收回到 115° 以内，完整一次，计数 +1\n  - listitem: 不算数 只伸不收、随便晃晃手臂，都不会计数\n- heading \"马步怎么计时？\" [level=3]:\n  - img\n  - text: 马步怎么计时？\n- list:\n  - listitem: 条件 1 两条腿的膝盖角度在 75°–135° 之间，蹲到位\n  - listitem: 条件 2 双脚距离 ≥ 肩宽的 1.35 倍，站得够开\n  - listitem: 计时 两个条件都做到才开始计时，歪了立刻暂停\n  - listitem: 小提示 上面的大字会告诉你差在哪：腿再弯一点？还是脚再开一点？\n- contentinfo: 花山拳小勇士训练乐园 · 摄像头只在自己的设备上运行，不上传画面 · 建议用最新版 Chrome / Edge · 距镜头 2–3 米、全身入画，识别最准",
+  "document_text": {
+    "path": "/home/hatch/workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T15-59-34Z-032846064/document-text.txt",
+    "chars": 6010,
+    "truncated": false
+  },
+  "audit_session_id": "e25cc6de-2fe4-4b72-959c-7fca2015fc47",
+  "readiness": {
+    "desktop": {
+      "settled": true,
+      "settle_ms": 2322,
+      "in_flight": null,
+      "network_idle": true,
+      "retried": false
+    },
+    "mobile": {
+      "settled": true,
+      "settle_ms": 2342,
+      "in_flight": null,
+      "network_idle": true,
+      "retried": false
+    }
+  },
+  "color_scheme": {
+    "declared": "light",
+    "media_dependent": null,
+    "dark_frame": false
+  },
+  "mobile_ms": 4877.216281999999,
+  "cold_launch_ms": 3087.1068029999997,
+  "desktop_ms": 5283.194009999999,
+  "browser_launches": 1,
+  "audit_path": "shared-concurrent",
+  "diagnostics": {
+    "audit_path": "shared-concurrent",
+    "concurrent_ran": true,
+    "concurrent_desktop_retry": false,
+    "concurrent_mobile_retry": false,
+    "shared_launch_failed": false,
+    "nav_retries": 0,
+    "settle_retries": 0
+  }
+}

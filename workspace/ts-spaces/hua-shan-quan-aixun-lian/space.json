@@ -1,0 +1,8 @@
+{
+  "runtime": "static",
+  "platformVersion": 15,
+  "entry": "index.html",
+  "name": "花山拳AI训练",
+  "slug": "hua-shan-quan-aixun-lian",
+  "managedCronJobs": []
+}

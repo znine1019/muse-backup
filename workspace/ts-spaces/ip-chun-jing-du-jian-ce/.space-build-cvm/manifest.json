@@ -1,6 +1,6 @@
 {
-  "built_at": "2026-11-23T09:31:32.577365174+00:00",
-  "cvm_runtime_version": 4,
+  "built_at": "2026-11-24T04:09:10.973814817+00:00",
+  "cvm_runtime_version": 5,
   "entrypoint": "index.html",
   "format": "hatch-space-cvm-v1",
   "source_manifest_format": "bun-space-manifest-v1",

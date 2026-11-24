@@ -1,0 +1,8 @@
+{
+  "built_at": "2026-11-24T16:01:00.828000477+00:00",
+  "cvm_runtime_version": 5,
+  "entrypoint": "index.html",
+  "format": "hatch-space-cvm-v1",
+  "source_manifest_format": "static-html-v1",
+  "source_standard_sha256": "35be032af9c8dff20b5527e685dac085b5876066de38adc5a4558585c36e2cba"
+}
