@@ -1,0 +1,39 @@
+当前网络出口
+自动获取本机 IP 失败（网络或浏览器限制），可以在下面手动输入 IP 检测。
+检测任意 IP
+[input text: 例如 8.8.8.8 或 2606:4700:4700::1111]
+[button: 检测]
+试试：
+[button: 8.8.8.8] [button: 1.1.1.1] [button: 9.9.9.9]
+检测结果会显示在这里：纯净度评分、风险因子和完整的 IP 信息。
+## WebRTC 泄露检测
+通过 RTCPeerConnection 收集浏览器暴露的候选地址，看真实 IP 会不会绕过代理/VPN 泄露。
+[button: 开始检测]
+## 浏览器指纹（本机）
+浏览器 UA
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36
+语言
+en-US, en
+系统时区
+UTC
+屏幕
+1440 × 900 · 24 位色
+CPU 线程
+4
+设备内存
+约 8 GB
+触控
+不支持
+IP 干净但指纹对不上（时区、语言与 IP 归属地不一致）同样容易触发风控。
+## 检测历史
+[button: 清空历史]
+- [button:
+185.220.101.4
+0 · 高风险
+Tor 出口节点 · Germany Brandenburg an der Havel · 2026/11/23 09:31:38
+] [button: 删除]
+- [button:
+8.8.8.8
+60 · 良好
+数据中心 / 机房 · United States Ashburn · 2026/11/23 09:31:37
+] [button: 删除]

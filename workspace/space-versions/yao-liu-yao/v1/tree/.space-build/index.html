@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>摇六爻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --bg-deep:#ece7db;
+    --panel:#fdfcf8;
+    --panel-2:#f8f5ee;
+    --ink:#211d16;
+    --ink-2:#57503f;
+    --ink-3:#8a8171;
+    --line:#ddd5c3;
+    --line-strong:#c9bda0;
+    --red:#a62b1f;
+    --red-deep:#8c2115;
+    --brass:#b98a2f;
+    --brass-light:#e8c877;
+    --brass-dark:#7d5c17;
+    --coin-face:#d9ab4a;
+    --coin-edge:#9a7420;
+    --shadow:0 10px 30px rgba(60,48,20,.10), 0 2px 6px rgba(60,48,20,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#171512;
+      --bg-deep:#100e0c;
+      --panel:#211e19;
+      --panel-2:#26221c;
+      --ink:#ece5d3;
+      --ink-2:#bdb29a;
+      --ink-3:#857b66;
+      --line:#3a352b;
+      --line-strong:#554d3c;
+      --red:#d96a58;
+      --red-deep:#e0806e;
+      --brass:#c99b3f;
+      --brass-light:#e8c877;
+      --brass-dark:#8a6a24;
+      --coin-face:#c79c3e;
+      --coin-edge:#7d5c17;
+      --shadow:0 10px 30px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 50% -120px, var(--bg-deep), transparent 70%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height:1.65;
+  }
+  button, input, [role="button"]{ min-height:44px; }
+  button{ font-family:inherit; cursor:pointer; }
+  .wrap{ max-width:860px; margin:0 auto; padding:28px 18px 56px; }
+
+  /* ---------- header ---------- */
+  header{ text-align:center; padding:10px 0 22px; }
+  .seal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:7px;
+    background:var(--red); color:#fdf6ec;
+    font-family:"Noto Serif SC", serif; font-weight:900; font-size:19px;
+    writing-mode:vertical-rl; letter-spacing:2px; line-height:1;
+    margin-bottom:12px;
+  }
+  h1{
+    margin:0; font-family:"Noto Serif SC", serif; font-weight:900;
+    font-size:clamp(34px, 7vw, 46px); letter-spacing:.14em; text-indent:.14em;
+  }
+  .sub{ margin:6px 0 0; color:var(--ink-2); font-size:14px; letter-spacing:.28em; text-indent:.28em; }
+  .rule{ width:56px; height:2px; background:var(--red); margin:16px auto 0; border-radius:2px; opacity:.85; }
+
+  /* ---------- panels ---------- */
+  .panel{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px; margin-bottom:16px;
+  }
+  .panel h2{
+    margin:0 0 12px; font-family:"Noto Serif SC", serif; font-size:17px; font-weight:700;
+    letter-spacing:.06em; display:flex; align-items:baseline; gap:10px;
+  }
+  .panel h2 .hint{ font-family:"Noto Sans SC",sans-serif; font-size:12.5px; font-weight:400; color:var(--ink-3); letter-spacing:0; }
+
+  label.q-label{ display:block; font-size:13px; color:var(--ink-2); margin-bottom:7px; letter-spacing:.05em; }
+  #question{
+    width:100%; padding:11px 13px; font-size:16px; font-family:inherit;
+    color:var(--ink); background:var(--panel-2);
+    border:1px solid var(--line-strong); border-radius:9px; outline:none;
+  }
+  #question:focus{ border-color:var(--red); box-shadow:0 0 0 3px color-mix(in srgb, var(--red) 16%, transparent); }
+  #question::placeholder{ color:var(--ink-3); }
+
+  /* mode switch */
+  .modes{ display:flex; gap:8px; margin-top:16px; }
+  .mode-btn{
+    flex:1; padding:10px 8px; border-radius:9px; border:1px solid var(--line-strong);
+    background:var(--panel-2); color:var(--ink-2); font-size:15px; font-weight:500;
+    display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1.4;
+  }
+  .mode-btn small{ font-size:12px; color:var(--ink-3); font-weight:400; }
+  .mode-btn[aria-pressed="true"]{
+    background:var(--ink); color:var(--bg); border-color:var(--ink);
+  }
+  .mode-btn[aria-pressed="true"] small{ color:inherit; opacity:.65; }
+
+  /* ---------- stage ---------- */
+  .stage-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .progress-text{ font-family:"Noto Serif SC",serif; font-size:17px; font-weight:700; letter-spacing:.05em; }
+  .progress-text em{ font-style:normal; color:var(--red); }
+  .dots{ display:flex; gap:7px; align-items:center; }
+  .dot{
+    width:26px; height:9px; border-radius:5px; background:var(--line);
+    position:relative; overflow:hidden;
+  }
+  .dot.yang{ background:var(--ink); }
+  .dot.yin{ background:transparent; border:none; }
+  .dot.yin::before,.dot.yin::after{
+    content:""; position:absolute; top:0; height:9px; width:10px; border-radius:5px; background:var(--ink);
+  }
+  .dot.yin::before{ left:0; } .dot.yin::after{ right:0; }
+  .dot.moving{ outline:2px solid var(--red); outline-offset:1px; }
+  .dot.next{ background:transparent; border:1.5px dashed var(--line-strong); }
+
+  .tray{
+    margin-top:18px; padding:26px 12px 20px;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 34px, color-mix(in srgb, var(--line) 45%, transparent) 34px, color-mix(in srgb, var(--line) 45%, transparent) 35px),
+      var(--panel-2);
+    border:1px solid var(--line); border-radius:11px;
+    text-align:center;
+  }
+  .coins{ display:flex; justify-content:center; gap:clamp(14px, 5vw, 34px); }
+  .coin-slot{ display:flex; flex-direction:column; align-items:center; gap:9px; }
+  .coin{
+    width:clamp(78px, 22vw, 104px); height:clamp(78px, 22vw, 104px);
+    border-radius:50%; position:relative; flex:none;
+    background:radial-gradient(circle at 34% 30%, var(--brass-light), var(--coin-face) 55%, var(--coin-edge) 100%);
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--coin-edge) 65%, transparent),
+                inset 0 0 0 7px color-mix(in srgb, #fff 14%, transparent),
+                0 6px 14px rgba(60,44,8,.28);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .18s ease;
+  }
+  .coin::after{
+    content:""; width:26%; height:26%;
+    background:var(--panel-2);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--coin-edge) 70%, transparent), inset 0 2px 4px rgba(0,0,0,.25);
+  }
+  .coin .glyph{
+    position:absolute; inset:0; pointer-events:none;
+    font-family:"Noto Serif SC",serif; font-weight:900; color:var(--brass-dark);
+    text-shadow:0 1px 0 rgba(255,255,255,.35);
+  }
+  .coin .glyph span{ position:absolute; font-size:clamp(14px,4vw,18px); line-height:1; }
+  .coin .glyph .n{ top:9%; left:50%; transform:translateX(-50%); }
+  .coin .glyph .s{ bottom:9%; left:50%; transform:translateX(-50%); }
+  .coin .glyph .w{ left:10%; top:50%; transform:translateY(-50%); }
+  .coin .glyph .e{ right:10%; top:50%; transform:translateY(-50%); }
+  .coin.is-back .glyph{ display:none; }
+  .coin .back-mark{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    font-family:"Noto Serif SC",serif; font-weight:700; color:var(--brass-dark);
+    font-size:clamp(17px,5vw,22px); opacity:.75; pointer-events:none;
+  }
+  .coin.is-back .back-mark{ display:flex; }
+  .coin.shaking{ animation:tumble .72s cubic-bezier(.3,.6,.4,1); }
+  @keyframes tumble{
+    0%{ transform:translateY(0) rotate(0) scale(1); }
+    25%{ transform:translateY(-16px) rotate(140deg) scale(1.04); }
+    55%{ transform:translateY(3px) rotate(330deg) scale(.98); }
+    80%{ transform:translateY(-6px) rotate(430deg) scale(1.01); }
+    100%{ transform:translateY(0) rotate(360deg) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .coin.shaking{ animation:none; }
+  }
+  .coin-cap{ font-size:14px; font-weight:700; letter-spacing:.3em; text-indent:.3em; color:var(--ink-2); min-height:22px; }
+  .coin-cap .face-name{ color:var(--ink); }
+  button.coin-btn{ background:none; border:none; padding:6px; border-radius:50%; min-height:0; }
+  button.coin-btn:focus-visible{ outline:2px solid var(--red); outline-offset:2px; }
+  .tray-note{ margin:14px 0 0; font-size:13px; color:var(--ink-3); min-height:21px; }
+  .tray-note strong{ color:var(--ink); font-weight:700; }
+  .tray-note .mv{ color:var(--red); font-weight:700; }
+
+  .actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .btn{
+    border-radius:9px; border:1px solid var(--line-strong);
+    background:var(--panel-2); color:var(--ink);
+    padding:10px 18px; font-size:15px; font-weight:500;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .btn:disabled{ opacity:.42; cursor:not-allowed; }
+  .btn-primary{
+    flex:1 1 200px; background:var(--red); border-color:var(--red-deep); color:#fdf6ec;
+    font-family:"Noto Serif SC",serif; font-size:18px; font-weight:700; letter-spacing:.22em; text-indent:.22em;
+    padding:13px 18px;
+  }
+  .btn-primary:hover:not(:disabled){ background:var(--red-deep); }
+  .btn-ghost{ color:var(--ink-2); }
+  .btn:active:not(:disabled){ transform:translateY(1px); }
+
+  .manual-sum{
+    margin-top:14px; font-size:14px; color:var(--ink-2); text-align:center; min-height:23px;
+  }
+  .manual-sum strong{ color:var(--ink); }
+  [hidden]{ display:none !important; }
+
+  /* ---------- hexagram build ---------- */
+  .build-grid{ display:grid; grid-template-columns:150px 1fr; gap:22px; align-items:start; }
+  @media (max-width:560px){ .build-grid{ grid-template-columns:1fr; } }
+  .gua-visual{ text-align:center; }
+  .gua-stack{ display:flex; flex-direction:column-reverse; gap:8px; padding:16px 14px; background:var(--panel-2); border:1px solid var(--line); border-radius:11px; min-height:196px; justify-content:flex-start; }
+  .gua-stack:empty::after{ content:"尚未起爻"; color:var(--ink-3); font-size:13px; margin:auto; }
+  .yao-line{ display:flex; align-items:center; gap:8px; }
+  .yao-bar{ flex:1; height:13px; display:flex; gap:0; }
+  .yao-bar .seg{ height:100%; background:var(--ink); border-radius:3px; flex:1; }
+  .yao-bar.yin .seg{ flex:0 0 calc(50% - 7px); }
+  .yao-bar.yin{ justify-content:space-between; }
+  .yao-mark{ width:20px; flex:none; text-align:center; font-weight:900; font-size:16px; color:var(--red); font-family:"Noto Serif SC",serif; }
+  .yao-pos{ width:34px; flex:none; font-size:12px; color:var(--ink-3); text-align:right; }
+  .gua-visual .cap{ margin-top:9px; font-size:12.5px; color:var(--ink-3); }
+
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th, td{ padding:8px 8px; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th{ font-size:12.5px; color:var(--ink-3); font-weight:500; letter-spacing:.06em; white-space:nowrap; }
+  td.pos{ font-family:"Noto Serif SC",serif; font-weight:700; white-space:nowrap; }
+  td .mv-tag{ display:inline-block; margin-left:6px; padding:0 7px; border-radius:20px; background:var(--red); color:#fdf6ec; font-size:11.5px; font-weight:700; vertical-align:1px; }
+  .empty-row td{ color:var(--ink-3); text-align:center; padding:18px 8px; }
+  .table-scroll{ overflow-x:auto; }
+  @media (max-width:560px){
+    .detail-table th:nth-child(2), .detail-table td:nth-child(2){ display:none; } /* 仅明细表窄屏隐藏铜钱列，记数与爻象仍在 */
+  }
+
+  /* ---------- result ---------- */
+  #resultPanel{ border-color:var(--line-strong); }
+  .result-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:560px){ .result-grid{ grid-template-columns:1fr; } }
+  .result-gua{ text-align:center; padding:16px 12px; background:var(--panel-2); border:1px solid var(--line); border-radius:11px; }
+  .result-gua .kind{ font-size:12.5px; color:var(--ink-3); letter-spacing:.3em; text-indent:.3em; }
+  .result-gua .name{ font-family:"Noto Serif SC",serif; font-weight:900; font-size:27px; margin:4px 0 2px; letter-spacing:.04em; }
+  .result-gua .tri{ font-size:13px; color:var(--ink-2); margin-bottom:13px; }
+  .result-gua .gua-stack{ min-height:0; background:transparent; border:none; padding:2px 8px; }
+  .moving-line{ margin-top:14px; font-size:14.5px; color:var(--ink-2); text-align:center; }
+  .moving-line strong{ color:var(--red); font-family:"Noto Serif SC",serif; }
+  .result-actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .result-actions .btn{ flex:1 1 130px; }
+  .copy-ok{ font-size:13px; color:var(--red); align-self:center; min-height:20px; font-weight:700; }
+
+  /* ---------- rules ---------- */
+  .rules-table td:first-child{ white-space:nowrap; font-weight:500; }
+  .rules-note{ font-size:13.5px; color:var(--ink-2); margin:12px 0 0; }
+  details.rules-more{ margin-top:12px; }
+  details.rules-more summary{ cursor:pointer; font-size:14px; font-weight:500; color:var(--ink); padding:6px 0; }
+  details.rules-more p, details.rules-more li{ font-size:13.5px; color:var(--ink-2); }
+  details.rules-more ul{ margin:6px 0; padding-left:20px; }
+  footer{ text-align:center; color:var(--ink-3); font-size:12.5px; padding-top:6px; letter-spacing:.08em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="seal" aria-hidden="true">易</div>
+    <h1>摇六爻</h1>
+    <p class="sub">三 钱 起 卦 · 自 下 而 上</p>
+    <div class="rule" aria-hidden="true"></div>
+  </header>
+
+  <!-- 起卦设置 -->
+  <section class="panel" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">起卦 <span class="hint">先静心默念所问之事，再摇钱六次</span></h2>
+    <label class="q-label" for="question">所问之事（可不填）</label>
+    <input id="question" type="text" autocomplete="off" placeholder="例如：此事可否着手去办" maxlength="100" />
+    <div class="modes" role="group" aria-label="起卦方式">
+      <button type="button" class="mode-btn" id="modeShake" aria-pressed="true">摇钱起卦<small>在本页摇三枚铜钱</small></button>
+      <button type="button" class="mode-btn" id="modeManual" aria-pressed="false">实物录入<small>手摇真铜钱，逐次录入字背</small></button>
+    </div>
+  </section>
+
+  <!-- 摇钱台 -->
+  <section class="panel" aria-labelledby="stageTitle">
+    <h2 id="stageTitle" hidden>摇钱台</h2>
+    <div class="stage-head">
+      <div class="progress-text" id="progressText">第<em>一</em>摇 · 初爻</div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </div>
+
+    <div class="tray">
+      <div class="coins" id="coins"></div>
+      <p class="tray-note" id="trayNote">点「摇一摇」，三枚铜钱定一爻。</p>
+      <p class="manual-sum" id="manualSum" hidden></p>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="shakeBtn">摇 一 摇</button>
+      <button type="button" class="btn btn-primary" id="recordBtn" hidden>记下这一爻</button>
+      <button type="button" class="btn btn-ghost" id="undoBtn" disabled>撤回上一爻</button>
+      <button type="button" class="btn btn-ghost" id="resetBtn" disabled>重新起卦</button>
+    </div>
+  </section>
+
+  <!-- 成卦过程 -->
+  <section class="panel" aria-labelledby="buildTitle">
+    <h2 id="buildTitle">成卦 <span class="hint">初爻在下，上爻在上，逐爻叠起</span></h2>
+    <div class="build-grid">
+      <div class="gua-visual">
+        <div class="gua-stack" id="buildStack"></div>
+        <div class="cap" id="buildCap">六爻未齐</div>
+      </div>
+      <div class="table-scroll">
+        <table class="detail-table" aria-label="六爻明细">
+          <thead>
+            <tr><th>爻位</th><th>铜钱</th><th>记数</th><th>爻象</th></tr>
+          </thead>
+          <tbody id="detailBody">
+            <tr class="empty-row"><td colspan="4">尚未起爻，摇第一钱后逐爻列于此。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 结果 -->
+  <section class="panel" id="resultPanel" hidden aria-labelledby="resultTitle">
+    <h2 id="resultTitle">卦象</h2>
+    <div class="result-grid">
+      <div class="result-gua">
+        <div class="kind">本 卦</div>
+        <div class="name" id="benName">—</div>
+        <div class="tri" id="benTri">—</div>
+        <div class="gua-stack" id="benStack"></div>
+      </div>
+      <div class="result-gua" id="bianBox">
+        <div class="kind">变 卦</div>
+        <div class="name" id="bianName">—</div>
+        <div class="tri" id="bianTri">—</div>
+        <div class="gua-stack" id="bianStack"></div>
+      </div>
+    </div>
+    <p class="moving-line" id="movingLine"></p>
+    <div class="result-actions">
+      <button type="button" class="btn" id="copyBtn">复制结果</button>
+      <button type="button" class="btn" id="downloadBtn">下载为文本</button>
+      <span class="copy-ok" id="copyOk" role="status"></span>
+    </div>
+  </section>
+
+  <!-- 规矩 -->
+  <section class="panel" aria-labelledby="rulesTitle">
+    <h2 id="rulesTitle">铜钱记数规矩</h2>
+    <div class="table-scroll">
+      <table class="rules-table" aria-label="铜钱记数规矩">
+        <thead><tr><th>三钱字背</th><th>记数</th><th>成爻</th></tr></thead>
+        <tbody>
+          <tr><td>三个背</td><td>9</td><td>老阳 ○ 动爻</td></tr>
+          <tr><td>两背一字</td><td>8</td><td>少阴 静爻</td></tr>
+          <tr><td>一背两字</td><td>7</td><td>少阳 静爻</td></tr>
+          <tr><td>三个字</td><td>6</td><td>老阴 × 动爻</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="rules-note">记法：一个背记 3，一个字记 2，三钱相加得 6、7、8、9。背为无字的一面，字为有字的一面。老阳、老阴为动爻，动则变：阳变阴、阴变阳，变出的卦为变卦；无动爻则只有本卦。</p>
+    <details class="rules-more">
+      <summary>起卦次序</summary>
+      <ul>
+        <li>共摇六次，第一次得初爻，依次向上叠至上爻。</li>
+        <li>下三爻为内卦（下卦），上三爻为外卦（上卦），两卦相重成本卦。</li>
+        <li>实物录入：手持三枚铜钱实摇，落定后点铜钱翻面，使页面与实物字背一致，再记下这一爻。</li>
+      </ul>
+    </details>
+  </section>
+
+  <footer>如实起卦出象 · 断卦不在此页</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 基础数据 ---------- */
+  var POS = ["初爻","二爻","三爻","四爻","五爻","上爻"];
+  var POS_CN = ["一","二","三","四","五","六"];
+  var TRI_ORDER = ["乾","兑","离","震","巽","坎","艮","坤"];
+  var TRI_SYMBOL = {"乾":"☰","兑":"☱","离":"☲","震":"☳","巽":"☴","坎":"☵","艮":"☶","坤":"☷"};
+  var TRI_BY_BITS = {"111":"乾","110":"兑","101":"离","100":"震","011":"巽","010":"坎","001":"艮","000":"坤"};
+  /* 行=上卦，列=下卦，顺序均为 乾兑离震巽坎艮坤 */
+  var HEX_NAMES = [
+    ["乾为天","天泽履","天火同人","天雷无妄","天风姤","天水讼","天山遁","天地否"],
+    ["泽天夬","兑为泽","泽火革","泽雷随","泽风大过","泽水困","泽山咸","泽地萃"],
+    ["火天大有","火泽睽","离为火","火雷噬嗑","火风鼎","火水未济","火山旅","火地晋"],
+    ["雷天大壮","雷泽归妹","雷火丰","震为雷","雷风恒","雷水解","雷山小过","雷地豫"],
+    ["风天小畜","风泽中孚","风火家人","风雷益","巽为风","风水涣","风山渐","风地观"],
+    ["水天需","水泽节","水火既济","水雷屯","水风井","坎为水","水山蹇","水地比"],
+    ["山天大畜","山泽损","山火贲","山雷颐","山风蛊","山水蒙","艮为山","山地剥"],
+    ["地天泰","地泽临","地火明夷","地雷复","地风升","地水师","地山谦","坤为地"]
+  ];
+
+  function yaoInfo(sum){
+    if(sum===9) return {name:"老阳", yang:true,  moving:true,  mark:"○"};
+    if(sum===7) return {name:"少阳", yang:true,  moving:false, mark:""};
+    if(sum===8) return {name:"少阴", yang:false, moving:false, mark:""};
+    return {name:"老阴", yang:false, moving:true, mark:"×"}; /* 6 */
+  }
+  function posLabel(idx, yang){
+    if(idx===0) return yang ? "初九" : "初六";
+    if(idx===5) return yang ? "上九" : "上六";
+    return (yang ? "九" : "六") + POS_CN[idx];
+  }
+  function trigramOf(threeYang){ /* threeYang: [bool,bool,bool] 自下而上 */
+    var bits = threeYang.map(function(y){ return y ? "1" : "0"; }).join("");
+    return TRI_BY_BITS[bits];
+  }
+  function hexagramOf(sixYang){
+    var lower = trigramOf(sixYang.slice(0,3));
+    var upper = trigramOf(sixYang.slice(3,6));
+    var name = HEX_NAMES[TRI_ORDER.indexOf(upper)][TRI_ORDER.indexOf(lower)];
+    return { name:name, upper:upper, lower:lower };
+  }
+
+  /* ---------- 状态（仅存于页面内存，关掉即清空） ---------- */
+  var lines = [];               /* 每爻 {coins:[back,back,back], sum} 自下而上 */
+  var mode = "shake";           /* shake | manual */
+  var manualCoins = [true, false, true]; /* 实物录入当前三钱：true=背 false=字 */
+  var displayCoins = [true, false, true];/* 摇钱台当前展示三钱 */
+  var shaking = false;
+  var doneAt = null;
+
+  /* ---------- 元素 ---------- */
+  function $(id){ return document.getElementById(id); }
+  var questionEl=$("question"), coinsEl=$("coins"), trayNote=$("trayNote"),
+      manualSum=$("manualSum"), progressText=$("progressText"), dotsEl=$("dots"),
+      shakeBtn=$("shakeBtn"), recordBtn=$("recordBtn"), undoBtn=$("undoBtn"), resetBtn=$("resetBtn"),
+      buildStack=$("buildStack"), buildCap=$("buildCap"), detailBody=$("detailBody"),
+      resultPanel=$("resultPanel");
+
+  /* ---------- 铜钱渲染 ---------- */
+  function coinHTML(back){
+    return '<div class="coin'+(back?' is-back':'')+'" aria-hidden="true">'
+      + (back
+          ? '<span class="back-mark">背</span>'
+          : '<span class="glyph"><span class="n">通</span><span class="s">寶</span><span class="w">乾</span><span class="e">隆</span></span>')
+      + '</div>'
+      + '<div class="coin-cap"><span class="face-name">'+(back?'背':'字')+'</span></div>';
+  }
+  function renderCoins(){
+    coinsEl.innerHTML = "";
+    displayCoins.forEach(function(back, i){
+      var slot = document.createElement("div");
+      slot.className = "coin-slot";
+      if(mode==="manual" && lines.length<6){
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "coin-btn";
+        btn.setAttribute("aria-label", "第"+(i+1)+"枚铜钱，当前为"+(back?"背":"字")+"，点按翻面");
+        btn.innerHTML = coinHTML(back);
+        btn.addEventListener("click", function(){
+          manualCoins[i] = !manualCoins[i];
+          displayCoins = manualCoins.slice();
+          renderCoins(); renderManualSum();
+        });
+        slot.appendChild(btn);
+      } else {
+        slot.innerHTML = coinHTML(back);
+      }
+      coinsEl.appendChild(slot);
+    });
+  }
+  function manualSumValue(){
+    return manualCoins.reduce(function(s,b){ return s + (b?3:2); }, 0);
+  }
+  function renderManualSum(){
+    if(mode!=="manual" || lines.length>=6){ manualSum.hidden = true; return; }
+    var sum = manualSumValue();
+    var info = yaoInfo(sum);
+    manualSum.hidden = false;
+    manualSum.innerHTML = "当前三钱记数 <strong>"+sum+"</strong>，成 <strong>"+info.name+"</strong>"
+      + (info.moving ? "（动爻）" : "") + "。点铜钱可翻面。";
+  }
+
+  /* ---------- 爻线渲染 ---------- */
+  function yaoLineEl(yang, mark, posText){
+    var row = document.createElement("div");
+    row.className = "yao-line";
+    var bar = document.createElement("div");
+    bar.className = "yao-bar " + (yang ? "yang" : "yin");
+    if(yang){ bar.innerHTML = '<div class="seg"></div>'; }
+    else { bar.innerHTML = '<div class="seg"></div><div class="seg"></div>'; }
+    var mk = document.createElement("div");
+    mk.className = "yao-mark"; mk.textContent = mark || "";
+    row.appendChild(bar); row.appendChild(mk);
+    if(posText){
+      var p = document.createElement("div");
+      p.className = "yao-pos"; p.textContent = posText;
+      row.insertBefore(p, bar);
+    }
+    return row;
+  }
+  function fillStack(el, sixYang, marks){
+    el.innerHTML = "";
+    /* column-reverse：先放初爻，视觉上初爻在下 */
+    sixYang.forEach(function(yang, i){
+      el.appendChild(yaoLineEl(yang, marks ? marks[i] : "", null));
+    });
+  }
+
+  /* ---------- 主渲染 ---------- */
+  function render(){
+    var n = lines.length;
+    /* 进度 */
+    if(n < 6){
+      progressText.innerHTML = "第<em>"+POS_CN[n]+"</em>摇 · "+POS[n];
+    } else {
+      progressText.innerHTML = "六摇已成";
+    }
+    /* 进度点 */
+    dotsEl.innerHTML = "";
+    for(var i=0;i<6;i++){
+      var d = document.createElement("span");
+      if(i < n){
+        var inf = yaoInfo(lines[i].sum);
+        d.className = "dot " + (inf.yang ? "yang" : "yin") + (inf.moving ? " moving" : "");
+      } else if(i === n){
+        d.className = "dot next";
+      } else {
+        d.className = "dot";
+      }
+      dotsEl.appendChild(d);
+    }
+    /* 成卦图 */
+    buildStack.innerHTML = "";
+    lines.forEach(function(ln, idx){
+      var inf2 = yaoInfo(ln.sum);
+      buildStack.appendChild(yaoLineEl(inf2.yang, inf2.mark, POS[idx]));
+    });
+    buildCap.textContent = n===0 ? "六爻未齐" : (n<6 ? "已得 "+n+" 爻，还差 "+(6-n)+" 爻" : "六爻已齐");
+    /* 明细表：上爻在前展示，次序自上而下读表 */
+    if(n===0){
+      detailBody.innerHTML = '<tr class="empty-row"><td colspan="4">尚未起爻，摇第一钱后逐爻列于此。</td></tr>';
+    } else {
+      detailBody.innerHTML = "";
+      for(var j=n-1;j>=0;j--){
+        var ln2 = lines[j], inf3 = yaoInfo(ln2.sum);
+        var tr = document.createElement("tr");
+        var coinsText = ln2.coins.map(function(b){ return b?"背":"字"; }).join(" ");
+        tr.innerHTML = "<td class='pos'>"+POS[j]+"<span style='color:var(--ink-3);font-weight:400;font-size:12.5px'> "+posLabel(j, inf3.yang)+"</span></td>"
+          + "<td>"+coinsText+"</td>"
+          + "<td>"+ln2.sum+"</td>"
+          + "<td>"+inf3.name+(inf3.moving ? "<span class='mv-tag'>动</span>" : "")+"</td>";
+        detailBody.appendChild(tr);
+      }
+    }
+    /* 按钮状态 */
+    var finished = n>=6;
+    shakeBtn.hidden = mode!=="shake";
+    recordBtn.hidden = mode!=="manual";
+    shakeBtn.disabled = finished || shaking;
+    recordBtn.disabled = finished;
+    undoBtn.disabled = n===0 || shaking;
+    resetBtn.disabled = n===0 && !questionEl.value;
+    shakeBtn.textContent = finished ? "六 摇 已 成" : "摇 一 摇";
+    renderCoins();
+    renderManualSum();
+    /* 结果 */
+    if(finished){ renderResult(); } else { resultPanel.hidden = true; }
+  }
+
+  function renderResult(){
+    var sixYang = lines.map(function(ln){ return yaoInfo(ln.sum).yang; });
+    var marks = lines.map(function(ln){ return yaoInfo(ln.sum).mark; });
+    var ben = hexagramOf(sixYang);
+    $("benName").textContent = ben.name;
+    $("benTri").textContent = "上卦 "+ben.upper+" "+TRI_SYMBOL[ben.upper]+" · 下卦 "+ben.lower+" "+TRI_SYMBOL[ben.lower];
+    fillStack($("benStack"), sixYang, marks);
+
+    var movingIdx = [];
+    lines.forEach(function(ln, i){ if(yaoInfo(ln.sum).moving) movingIdx.push(i); });
+
+    if(movingIdx.length){
+      var bianYang = sixYang.map(function(y, i){ return movingIdx.indexOf(i)>=0 ? !y : y; });
+      var bian = hexagramOf(bianYang);
+      $("bianBox").style.display = "";
+      $("bianName").textContent = bian.name;
+      $("bianTri").textContent = "上卦 "+bian.upper+" "+TRI_SYMBOL[bian.upper]+" · 下卦 "+bian.lower+" "+TRI_SYMBOL[bian.lower];
+      fillStack($("bianStack"), bianYang, null);
+      var names = movingIdx.map(function(i){
+        return POS[i]+"（"+posLabel(i, sixYang[i])+"）";
+      }).join("、");
+      $("movingLine").innerHTML = "动爻：<strong>"+names+"</strong>，共 "+movingIdx.length+" 爻动。";
+    } else {
+      $("bianBox").style.display = "none";
+      $("movingLine").innerHTML = "六爻皆静，<strong>无动爻</strong>，只有本卦。";
+    }
+    resultPanel.hidden = false;
+  }
+
+  /* ---------- 记爻 ---------- */
+  function pushLine(coins){
+    var sum = coins.reduce(function(s,b){ return s + (b?3:2); }, 0);
+    lines.push({ coins: coins.slice(), sum: sum });
+    if(lines.length===6 && !doneAt){ doneAt = new Date(); }
+    if(lines.length<6){ doneAt = null; }
+    var inf = yaoInfo(sum);
+    trayNote.innerHTML = "第"+POS_CN[lines.length-1]+"摇得 <strong>"+POS[lines.length-1]+"</strong>："
+      + coins.map(function(b){ return b?"背":"字"; }).join(" ") + "，记数 <strong>"+sum+"</strong>，为 <strong>"+inf.name+"</strong>"
+      + (inf.moving ? ' <span class="mv">动爻</span>' : "") + "。";
+    render();
+  }
+
+  shakeBtn.addEventListener("click", function(){
+    if(shaking || lines.length>=6) return;
+    shaking = true;
+    shakeBtn.disabled = true;
+    trayNote.textContent = "铜钱落定之前，心中只存所问之事……";
+    var coinEls = coinsEl.querySelectorAll(".coin");
+    coinEls.forEach(function(c, k){
+      c.style.animationDelay = (k*0.09)+"s";
+      c.classList.add("shaking");
+    });
+    var result = [Math.random()<0.5, Math.random()<0.5, Math.random()<0.5]; /* true=背 */
+    setTimeout(function(){
+      displayCoins = result.slice();
+      shaking = false;
+      render();
+      pushLine(result);
+    }, 820);
+  });
+
+  recordBtn.addEventListener("click", function(){
+    if(lines.length>=6) return;
+    displayCoins = manualCoins.slice();
+    pushLine(manualCoins);
+  });
+
+  undoBtn.addEventListener("click", function(){
+    if(lines.length===0 || shaking) return;
+    lines.pop();
+    doneAt = null;
+    trayNote.textContent = lines.length===0 ? "已撤回，可重新起爻。" : "已撤回上一爻，现为第"+POS_CN[lines.length]+"摇。";
+    render();
+  });
+
+  resetBtn.addEventListener("click", function(){
+    lines = [];
+    doneAt = null;
+    questionEl.value = "";
+    displayCoins = [true, false, true];
+    manualCoins = [true, false, true];
+    trayNote.textContent = mode==="shake" ? "点「摇一摇」，三枚铜钱定一爻。" : "点铜钱翻面，与手中的实物一致后记下这一爻。";
+    render();
+  });
+
+  questionEl.addEventListener("input", function(){
+    resetBtn.disabled = lines.length===0 && !questionEl.value;
+  });
+
+  /* ---------- 模式切换 ---------- */
+  function setMode(m){
+    mode = m;
+    $("modeShake").setAttribute("aria-pressed", m==="shake" ? "true" : "false");
+    $("modeManual").setAttribute("aria-pressed", m==="manual" ? "true" : "false");
+    if(lines.length<6){
+      trayNote.textContent = m==="shake"
+        ? "点「摇一摇」，三枚铜钱定一爻。"
+        : "手摇实物铜钱后，点铜钱翻面，使字背与实物一致，再记下这一爻。";
+    }
+    render();
+  }
+  $("modeShake").addEventListener("click", function(){ setMode("shake"); });
+  $("modeManual").addEventListener("click", function(){ setMode("manual"); });
+
+  /* ---------- 结果文本 ---------- */
+  function pad(n){ return (n<10?"0":"")+n; }
+  function resultText(){
+    var sixYang = lines.map(function(ln){ return yaoInfo(ln.sum).yang; });
+    var ben = hexagramOf(sixYang);
+    var movingIdx = [];
+    lines.forEach(function(ln, i){ if(yaoInfo(ln.sum).moving) movingIdx.push(i); });
+    var when = doneAt || new Date();
+    var out = [];
+    out.push("摇六爻");
+    var q = questionEl.value.trim();
+    out.push("所问之事：" + (q ? q : "（未填）"));
+    out.push("起卦时间：" + when.getFullYear()+"-"+pad(when.getMonth()+1)+"-"+pad(when.getDate())
+      + " " + pad(when.getHours())+":"+pad(when.getMinutes()));
+    out.push("");
+    out.push("六爻明细（自下而上）：");
+    lines.forEach(function(ln, i){
+      var inf = yaoInfo(ln.sum);
+      var coinsText = ln.coins.map(function(b){ return b?"背":"字"; }).join("");
+      out.push(POS[i]+" "+posLabel(i, inf.yang)+"｜"+coinsText+"｜记数 "+ln.sum+"｜"+inf.name+(inf.moving?"（动）":""));
+    });
+    out.push("");
+    out.push("本卦：" + ben.name + "（上"+ben.upper+"下"+ben.lower+"）");
+    if(movingIdx.length){
+      var bianYang = sixYang.map(function(y, i){ return movingIdx.indexOf(i)>=0 ? !y : y; });
+      var bian = hexagramOf(bianYang);
+      var names = movingIdx.map(function(i){ return POS[i]; }).join("、");
+      out.push("动爻：" + names + "，共 " + movingIdx.length + " 爻动");
+      out.push("变卦：" + bian.name + "（上"+bian.upper+"下"+bian.lower+"）");
+    } else {
+      out.push("动爻：无（六爻皆静）");
+    }
+    return out.join("\n");
+  }
+
+  $("copyBtn").addEventListener("click", function(){
+    var text = resultText();
+    var ok = $("copyOk");
+    function done(){ ok.textContent = "已复制"; setTimeout(function(){ ok.textContent=""; }, 2200); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch(e){ ok.textContent = "复制未成功，请用下载"; }
+      document.body.removeChild(ta);
+    }
+  });
+
+  $("downloadBtn").addEventListener("click", function(){
+    var text = resultText();
+    var blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var when = doneAt || new Date();
+    a.href = url;
+    a.download = "六爻卦象-" + when.getFullYear() + pad(when.getMonth()+1) + pad(when.getDate()) + "-" + pad(when.getHours()) + pad(when.getMinutes()) + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

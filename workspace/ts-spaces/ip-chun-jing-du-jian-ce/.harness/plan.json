@@ -1,0 +1,26 @@
+{
+  "data_plan": {
+    "declared_hosts": [
+      {
+        "host": "ip-api.com",
+        "source": "agent_inferred"
+      },
+      {
+        "host": "proxycheck.io",
+        "source": "agent_inferred"
+      },
+      {
+        "host": "ipwho.is",
+        "source": "agent_inferred"
+      }
+    ],
+    "markdown": "## Context provenance\n- `给做一个类似于ippure.com的ip纯净度空间` (verbatim user request; the artifact mirrors IPPure's core: current-IP detection, IP 纯净度 score, risk/proxy/VPN/Tor detection, IP type & geo/ISP/ASN info, WebRTC leak check)\n- IPPure homepage (browser.open https://ippure.com, crawled 2026-11-23): feature list is IP 定位信息、IP 风险检测、指纹信息分析、IP 出口地图、VPN 泄露检测、WebRTC 检测、DNS 泄露检测 — the build covers 定位/风险/指纹（基础）/WebRTC; DNS leak needs a controlled authoritative DNS server and is not faked.\n\n## Tested sources\n### ip-api.com (free JSON API, no key)\n**Used by**: checkIp action (server-side fetch, avoids the free tier's HTTP-only mixed-content limit in the browser)\n**Test command**: `curl -s 'http://ip-api.com/json/8.8.8.8?fields=status,country,regionName,city,isp,org,as,proxy,hosting,mobile,query'` and a residential IP 24.48.0.1 with full field set\n**Sample output**: 8.8.8.8 → country United States, city Ashburn, isp Google LLC, as AS15169, proxy:true, hosting:true; 24.48.0.1 → Videotron (Montreal CA), proxy:false, hosting:false, reverse DNS present. Rate headers X-Rl: 44 / X-Ttl: 60 (≈45 req/min).\n**Processing**: geo + ISP/ASN + proxy/hosting/mobile flags feed the info panel and the purity score.\n\n### proxycheck.io v2 (keyless free tier)\n**Used by**: checkIp action (server-side fetch)\n**Test command**: `curl -s 'https://proxycheck.io/v2/<ip>?vpn=1&asn=1&risk=1'` for 8.8.8.8, 1.1.1.1, 159.65.1.1 (DigitalOcean), 185.220.101.4 (Tor exit)\n**Sample output**: 8.8.8.8 → proxy:no, type:Business, risk:0; 159.65.1.1 → proxy:yes, type:VPN, risk:66; 185.220.101.4 → proxy:yes, type:TOR, risk:100. Also returns ASN, provider, geo, range, devices counts.\n**Processing**: risk 0–100 and proxy/type are the strongest purity signals; on keyless rate-limit failure the action falls back to ip-api-only scoring and labels the result 数据源受限.\n\n### ipwho.is (free, CORS `Access-Control-Allow-Origin: *` verified via curl -sI)\n**Used by**: client-side own-IP detection on page load (the server action cannot see the visitor's real egress IP behind the artifact gateway)\n**Test command**: `curl -s 'https://ipwho.is/8.8.8.8'`\n**Sample output**: ip, country/city, connection.asn/isp/org, timezone, lat/lon.\n**Processing**: client reads its own public IP from ipwho.is, then passes it to checkIp for the full merged report.\n\n## Imagery\nImagery not needed: this is a data/diagnostic tool like its reference ippure.com; all visuals are the live score gauge, signal lists, and data panels generated from real API responses. No photos or illustrations depict any subject.\n\n## Long-term data behavior\n- **Refresh policy**: no scheduled refresh; every check is an explicit live query. Results cached per-IP in the DB for 6 hours to respect ip-api (45/min) and proxycheck keyless quotas; a 重新检测 button bypasses cache.\n- **Growth**: one history row per distinct check (re-checks update the row), user can delete single rows or clear all; history is the user's own lookup log, seeded empty.\n- **Ordering**: history newest first by checked_at.\n- **Time semantics**: checked_at stored as UTC instant, rendered viewer-local (Asia/Shanghai).\n\n## Rejected approaches\n- **ipapi.is free tier**: probed `https://api.ipapi.is/?q=8.8.8.8` — free response now omits the risk/datacenter/proxy flags (basic geo only), so it adds nothing over ip-api.\n- **IPQualityScore / Scamalytics / AbuseIPDB**: accurate risk data but all require API keys the user has not provided; proxycheck keyless covers the same signals.\n- **DNS leak test**: a genuine test needs a controlled authoritative DNS resolver; not simulated. WebRTC leak is done for real in the browser via RTCPeerConnection srflx candidates.\n- **Server-side own-IP detection**: action requests arrive via the artifact gateway, so the client detects its own IP through CORS-enabled ipwho.is instead."
+  },
+  "design_brief": {
+    "aesthetic": "instrument-grade, dark network-ops console: dense mono-spaced data readouts, one decisive score gauge, signal-green/amber/red verdict colors, no decoration that isn't data",
+    "colors": "deep ink-navy background #0a0f14, panel slate #111a21, primary signal cyan #38e1ff for data/links, clean-green #2ee6a8, warn-amber #ffb224, risk-red #ff5d5d; text in cool off-white #e8f1f2 and muted steel #8fa6ad",
+    "hero_element": "the 纯净度 score itself: a large SVG ring gauge with the 0–100 score and grade （极度纯净→高风险） front and center for the visitor's own IP, auto-detected on load",
+    "moment": "老板刚买了个 VPS 或代理节点，在手机上打开这个空间，先看自己当前网络出口的纯净度，再把新节点的 IP 输进去查一遍，决定这个节点能不能用来注册账号、过风控。",
+    "typography": "ui-monospace / 'SF Mono' / Menlo for all IP addresses, scores and data values; system sans (PingFang SC, Microsoft YaHei, system-ui) in heavy weights for Chinese headings and labels"
+  }
+}

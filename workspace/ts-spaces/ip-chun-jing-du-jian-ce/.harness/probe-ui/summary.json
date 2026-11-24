@@ -1,0 +1,14 @@
+{
+  "schema_version": "hatch.probe_ui_summary.v1",
+  "slug": "ip-chun-jing-du-jian-ce",
+  "session_id": "baeadbae-3d7b-409b-a0b1-48f969fd13ba",
+  "observes": 9,
+  "acts": 5,
+  "acts_ok": 5,
+  "interactive_nodes": 9,
+  "viewports_seen": [
+    "desktop",
+    "mobile"
+  ],
+  "findings": []
+}

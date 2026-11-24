@@ -1,0 +1,121 @@
+{
+  "ok": true,
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-21498252-f03e-4143-8687-39881adbb4b7/",
+  "duration_ms": 2874.551798,
+  "output_dir": "/home/hatch/workspace/space_data/ip-chun-jing-du-jian-ce/.previews/.tmp/1795426381102-fb80ec7792eb4c6b87acafc438252af3",
+  "nav_status": 200,
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "screenshot_path": "/home/hatch/workspace/space_data/ip-chun-jing-du-jian-ce/.previews/.tmp/1795426381102-fb80ec7792eb4c6b87acafc438252af3/screenshot.png",
+      "fullpage_screenshot_path": "/home/hatch/workspace/space_data/ip-chun-jing-du-jian-ce/.previews/.tmp/1795426381102-fb80ec7792eb4c6b87acafc438252af3/screenshot-full.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "screenshot_path": null
+    }
+  },
+  "targets": null,
+  "mobile_layout": null,
+  "horizontal_scrollers": [],
+  "unreachable_controls": {
+    "desktop": [],
+    "mobile": []
+  },
+  "clipped": {
+    "desktop": [],
+    "mobile": []
+  },
+  "images": {
+    "total": 0,
+    "broken": [],
+    "duplicate": [],
+    "unstable": [],
+    "failed_requests": [],
+    "external_blocked": {
+      "count": 0,
+      "sample": []
+    },
+    "sample_urls": [],
+    "verdict": "pass"
+  },
+  "text_issues": [],
+  "console_errors": [],
+  "console_warnings": [],
+  "external_fetch_failures": 1,
+  "external_fetch_failure_samples": [
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://ipwho.is/)"
+  ],
+  "blocked_requests": [],
+  "external_requests": [
+    {
+      "url": "https://ipwho.is/",
+      "method": "GET",
+      "resource_type": "fetch"
+    }
+  ],
+  "external_requests_dropped": 0,
+  "external_requests_dropped_data_bearing": 0,
+  "transport_ledger_active": true,
+  "egress_lockdown": true,
+  "transport_connections": [
+    {
+      "host": "artifact-capture.invalid",
+      "port": 443,
+      "connects": 1,
+      "bytes_up": 1950,
+      "bytes_down": 1244
+    },
+    {
+      "host": "ipwho.is",
+      "port": 443,
+      "connects": 1,
+      "bytes_up": 0,
+      "bytes_down": 0,
+      "policy_denied": true
+    }
+  ],
+  "transport_udp_attempts": 0,
+  "transport_overflow": 0,
+  "unexplained_transport_hosts": [],
+  "broken_assets": [],
+  "blocked_affordances": [],
+  "interactive_nodes": 6,
+  "aria_snapshot": "- main:\n  - paragraph: 当前网络出口\n  - paragraph: 自动获取本机 IP 失败（网络或浏览器限制），可以在下面手动输入 IP 检测。\n  - text: 检测任意 IP\n  - textbox \"检测任意 IP\"\n  - button \"检测\"\n  - text: 试试：\n  - button \"检测示例 IP 8.8.8.8\": 8.8.8.8\n  - button \"检测示例 IP 1.1.1.1\": 1.1.1.1\n  - button \"检测示例 IP 9.9.9.9\": 9.9.9.9\n  - paragraph: 检测结果会显示在这里：纯净度评分、风险因子和完整的 IP 信息。\n  - heading \"WebRTC 泄露检测\" [level=2]\n  - paragraph: 通过 RTCPeerConnection 收集浏览器暴露的候选地址，看真实 IP 会不会绕过代理/VPN 泄露。\n  - button \"开始检测\"\n  - heading \"浏览器指纹（本机）\" [level=2]\n  - text: 浏览器 UA Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36 语言 en-US, en 系统时区 UTC 屏幕 1440 × 900 · 24 位色 CPU 线程 4 设备内存 约 8 GB 触控 不支持\n  - paragraph: IP 干净但指纹对不上（时区、语言与 IP 归属地不一致）同样容易触发风控。\n  - heading \"检测历史\" [level=2]\n  - paragraph: 还没有检测记录。上面查过的 IP 会自动留在这里，方便对比不同节点的纯净度。\n  - list",
+  "document_text": {
+    "path": "/home/hatch/workspace/space_data/ip-chun-jing-du-jian-ce/.previews/.tmp/1795426381102-fb80ec7792eb4c6b87acafc438252af3/document-text.txt",
+    "chars": 581,
+    "truncated": false
+  },
+  "audit_session_id": "2f1c8277-647f-477c-a8f3-8eeeee4b6116",
+  "readiness": {
+    "desktop": {
+      "settled": true,
+      "settle_ms": 1008,
+      "in_flight": 0,
+      "network_idle": true,
+      "retried": false
+    },
+    "mobile": null
+  },
+  "color_scheme": {
+    "declared": "light dark",
+    "media_dependent": null,
+    "dark_frame": false
+  },
+  "cold_launch_ms": 261.304572,
+  "desktop_ms": 1684.913994,
+  "browser_launches": 1,
+  "audit_path": "shared",
+  "diagnostics": {
+    "audit_path": "shared",
+    "concurrent_ran": false,
+    "concurrent_desktop_retry": false,
+    "concurrent_mobile_retry": false,
+    "shared_launch_failed": false,
+    "nav_retries": 0,
+    "settle_retries": 0
+  }
+}

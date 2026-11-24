@@ -1,0 +1,8 @@
+{
+  "schema_version": "hatch.probe_ui_session.v1",
+  "socket": "/home/hatch/workspace/ts-spaces/ip-chun-jing-du-jian-ce/.harness/probe-ui/sock",
+  "slug": "ip-chun-jing-du-jian-ce",
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-7df0bf85-bb8f-483d-b68d-6f8d1c6980d7/",
+  "audit_session_id": "baeadbae-3d7b-409b-a0b1-48f969fd13ba",
+  "pid": 2583
+}
