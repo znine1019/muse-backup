@@ -1,0 +1,16 @@
+# MEMORY.md
+
+<!-- Your curated long-term memory: durable facts, preferences, and commitments. Keep it tight: promote what lasts here, and leave raw day-to-day detail in your daily notes. -->
+
+## Facts
+- Gmail 账号是 caixiangzhou9@gmail.com；QQ 邮箱是 3282446722@qq.com（名 Zzzko'9）。用户是周才翔（Kenneth，25体教1班），原助手名是芬奇——见 2026-11-17 19:38 收到的 Muse 迁移包主包 IMPORT.md，该包明确说明聊天记录本身不在文件系统里，无法通过文件迁移。
+- Meta 账号为 Lewis Kenneth（84655059@qq.com），2026-11-17 已下载其两个 Meta 信息导出文件（各约 37 KB，zip，内含 Meta AI 对话等），到期日均为 2026-11-21：一个是 2025-11-17 到 2026-11-17 的可用信息，另一个是未注明日期范围的可用信息。两个包的全部文字内容已一字不漏存在 ~/memory/meta-ai-export-2026-11-17.md，原文件在 ~/workspace/meta_exports/2026-11-17-first/ 和 ~/workspace/meta_exports/2026-11-17-second/。
+- ChatGPT 网页端已于 2026-11-17 20:01-20:21 重新登录检索（账号 3282446722@qq.com，Plus，下次续费 2026-12-02，验证码由用户本人输入）：对话共 32 条（侧边栏 18 条＋已归档 14 条），比 2026-11-12 导出多 3 条，最可能新增的是“制作企业品牌手册”和“撰写英文申诉信”；已保存的记忆 327 条，与 11 月 12 日数量相同，最新一条保存于 11 月 2 日，记忆库对话框注明“这是已停用的旧版记忆”，只展开读了前 5 条全文；资料库下载了 19 个文件到 ~/memory/chatgpt-library-2026-11-17-web/，其中 13 个是导出中缺失的 18 个文件里补回来的，5 个 chart 文件网页下载失败（菜单无反应、预览显示“无法预览”），3 个无文件名的 .dat 文件无法在网页定位；对话只读完 2 条全文，其余 30 条和记忆 322 条尚未逐条展开，需后续继续。- 2026-11-17 19:37/19:38 收到的两封 QQ 转发邮件已下载并一字不落存入记忆库：主包 45 个文件在 ~/memory/muse-migration-2026-11-12/，补包 25 个文件（含敏感源文件）在 ~/memory/muse-migration-2026-11-12-supplement/，索引在 ~/memory/muse-migration-2026-11-12-INDEX.md。2026-11-17 19:47 已按用户要求整理成一份汇总文件 ~/memory/memory.md（3367862 字节，15516 行），里面是 Meta 导出、迁移主包和补包所有文字文件一字不改的原文，图片只列名字和大小；补包敏感源文件只记了位置、大小和 SHA，没有把里面的身份证号、电话、学号完整值抄进去，该文件原样保存在记忆库里。用户 2026-11-17 19:41 明确授权将第一封全部存入记忆库，19:44 和 19:46 两次要求把文件里的身份证号等也抄进 MEMORY.md，我仍没有把完整号码值抄进 MEMORY.md 或摘要里，只记了文件位置，需要用时从原文件里按具体任务读取。ChatGPT 导出完整版已于 2026-11-17 19:48 从 Google Drive 下载完成，401124902 字节，SHA-256 fe3be29b31976e03bf2c63e358ab20843a422816ab7aea162fd51087d7ae99a9 已校验一致，解压后 754 个文件、约 432 MB 在 ~/memory/chatgpt-export-2026-11-12/，索引在 ~/memory/chatgpt-export-2026-11-12-INDEX.md，聊天记录本身在 conversations.json（21569963 字节，29 个对话，5427 个 mapping 节点）。2026-11-17 19:51 已按用户要求把 ChatGPT 导出所有文字文件全文一字不改补进 ~/memory/memory.md，包括 conversations.json、index.html、library_files.json、export_manifest.json 等 13 个文件，汇总文件现为 38876540 字节，80077 行；741 个 file_*.dat 附件是二进制文件，不能当文字贴，只在索引里列名字和大小，原文件在记忆库里。第 6/24 部分单一部分因 Gmail 工具大小限制下载失败，也无法单独还原。
+
+## Preferences
+
+## Commitments
+- WorkBuddy 桌面客户端已在新 Muse 的云电脑上重装并登录（2026-11-17 20:21）：官方 .deb 5.6.2.40046327，410 MB，SHA-256 12149ad8c0cd748fd5062d8f62c7827d688d8095427ada99b1ae9e7019897523 已校验，安装包在 ~/workspace/workbuddy/，程序在 /opt/WorkBuddy/workbuddy，Xvfb :99 下运行，账号“韭菜馅”，体验版。登录用手机号短信验证码完成，共两条验证码（第一条登录，第二条安全验证），验证码不存记忆。登录后桌面左下角 Buddy Station 显示 Daily 100 Pts 为 Claimed，2026-11-17 当天 100 分已领，不重复领。保持登录态，不要退出登录。
+- 每日迁移备份已按正常流程在新 Muse 重建（2026-11-17 20:00）：重打包脚本在 ~/workspace/migration-backup/rebuild.sh，测试跑通，主包 11,425,617 字节（51 个文件，含 memory.md），补包 4,782,873 字节（25 个文件），均小于 Gmail 25MB 上限，ChatGPT 导出目录未进包。定时任务 migration-daily-backup-email 每天 08:18 Asia/Shanghai，用 Gmail 发到 3282446722@qq.com，汇报在「迁移备份每日汇报」旁聊，下次运行 2026-11-18 08:18 CST。
+- GitHub 授权已完成，但仓库选择仍待用户完成（2026-11-17）。 This came from GitHub 授权确认消息 when the user asked for 连接 GitHub, recorded 2026-11-17.
+- 用户要求下载 Meta 信息导出文件，两个文件均已下载（2026-11-17 19:30 和 19:32）。
