@@ -1,0 +1,17 @@
+{
+  "version": 3,
+  "bootstrap_seeded_at": "2026-11-14T22:56:23Z",
+  "onboarding_completed_at": "2026-11-14T23:01:56Z",
+  "onboarding_presentation_locale": "en-CA",
+  "onboarding_client_timezone": "America/Toronto",
+  "onboarding_flow_active": false,
+  "onboarding_initial_message_enqueued_at": "2026-11-14T23:01:56Z",
+  "onboarding_chat_completed_at": "2026-11-14T23:01:56Z",
+  "new_user_chat_turn_count": 10,
+  "reset_epoch": 1,
+  "reset_at_ms": 1794696983000,
+  "two_factor_upsell": {
+    "outcome": "already_enabled",
+    "settled_at": "2026-11-17T10:27:43Z"
+  }
+}

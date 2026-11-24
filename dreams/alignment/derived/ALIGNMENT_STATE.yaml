@@ -1,0 +1,29 @@
+schema_version: 1
+relationship_contract:
+  status: unconfigured
+  user_words: null
+  user_label: null
+  permitted_behaviors: []
+  boundaries: []
+  source_message_ids: []
+  review_after: null
+user_facets:
+  model_scope:
+    user_model_completeness: ''
+    rule: ''
+    unknown_frontier: []
+  facets: []
+working_alliance:
+  goal_agreement: []
+  task_agreement: []
+  appropriate_reliance: []
+  current_frictions: []
+observed_fit:
+  dimensions: []
+proactivity_policies:
+- surface: main_chat
+  stance: reactive
+repair_threads: []
+# reflection_run:
+#   reflected_at: 2026-11-23T06:49:17.605484+00:00
+#   turns_reflected: 0

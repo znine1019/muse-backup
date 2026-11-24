@@ -1,0 +1,254 @@
+version: 1
+entries:
+  ahrefs:
+    status: available
+  app_00widget:
+    status: available
+  argos:
+    status: available
+  asana:
+    status: available
+  basecamp:
+    status: available
+  beehiiv:
+    status: available
+  box:
+    status: available
+  calendly:
+    status: available
+  canva:
+    status: connected
+  circleback:
+    status: available
+  cloudflare:
+    status: available
+  clutch:
+    status: available
+  crunchbase:
+    status: available
+  cult_beauty:
+    status: available
+  debenhams:
+    status: available
+  deepl:
+    status: available
+  deglaze:
+    status: available
+  descript:
+    status: available
+  despegar:
+    status: available
+  dreamrender:
+    status: available
+  dropbox:
+    status: available
+  easyjet:
+    status: available
+  eight_sleep:
+    status: available
+  estimatekit:
+    status: available
+  evernote:
+    status: available
+  expedia:
+    status: available
+  facebook_cli:
+    status: available
+  figma:
+    status: available
+  filament:
+    status: available
+  findtime_io:
+    status: available
+  function_health:
+    status: available
+  gamma:
+    status: available
+  getmattered:
+    status: available
+  ghl:
+    status: available
+  github:
+    status: connected
+  gmail:
+    status: connected
+  google_calendar:
+    status: available
+  google_contacts:
+    status: available
+  google_docs:
+    status: connected
+  google_drive:
+    status: connected
+  google_forms:
+    status: available
+  google_sheets:
+    status: connected
+  google_slides:
+    status: available
+  google_tasks:
+    status: available
+  grab_mcp:
+    status: available
+  granola:
+    status: available
+  gumroad_mcp:
+    status: available
+  healthex:
+    status: available
+  imap_email:
+    status: available
+  instacart:
+    status: available
+  instagram:
+    status: available
+  instagram_messages:
+    status: available
+  intellist:
+    status: available
+  jellypod:
+    status: available
+  justpark:
+    status: available
+  kavak:
+    status: available
+  klaviyo:
+    status: available
+  krea:
+    status: available
+  kukini:
+    status: available
+  lemonpost:
+    status: available
+  linear:
+    status: available
+  local_falcon:
+    status: available
+  lookfantastic:
+    status: available
+  lovable:
+    status: available
+  luau:
+    status: available
+  luma:
+    status: available
+  meltflex:
+    status: available
+  messenger_read:
+    status: available
+  meta_ads:
+    status: connected
+  moneyforward_me:
+    status: available
+  movemate:
+    status: available
+  myprotein:
+    status: available
+  notion:
+    status: available
+  onepassword:
+    status: available
+  opendoor:
+    status: available
+  opentable:
+    status: available
+  opusclip:
+    status: available
+  otter:
+    status: available
+  outlook_calendar:
+    status: available
+  outlook_contacts:
+    status: available
+  outlook_mail:
+    status: available
+  pandadoc:
+    status: available
+  pantryfy:
+    status: available
+  paperoffice_ai:
+    status: available
+  partypal:
+    status: available
+  paypal:
+    status: available
+  pcexpress:
+    status: available
+  peloton:
+    status: available
+  philips_hue:
+    status: available
+  plaid:
+    status: available
+  pool:
+    status: available
+  postiz:
+    status: available
+  postpone:
+    status: available
+  printify:
+    status: available
+  quickbooks:
+    status: available
+  rappi_mcp:
+    status: available
+  readwise_mcp:
+    status: available
+  rememberthemilk:
+    status: available
+  replit:
+    status: available
+  runway_mcp:
+    status: available
+  shopback_mcp:
+    status: available
+  shopify:
+    status: available
+  siftivo:
+    status: available
+  slack:
+    status: available
+  spotify:
+    status: available
+  stripe:
+    status: available
+  studocu:
+    status: available
+  superhuman:
+    status: available
+  sweetgreen:
+    status: available
+  tessie:
+    status: available
+  threads:
+    status: available
+  threads_messages:
+    status: available
+  todoist:
+    status: available
+  trustandwill:
+    status: available
+  typeform:
+    status: available
+  uber_courier:
+    status: available
+  vercel:
+    status: available
+  vidiq_mcp:
+    status: available
+  vritto:
+    status: available
+  walmart:
+    status: available
+  warp:
+    status: available
+  wavelength:
+    status: available
+  withings:
+    status: available
+  wix:
+    status: available
+  zapier:
+    status: available
+  zoom:
+    status: available
