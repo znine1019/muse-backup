@@ -1,0 +1,134 @@
+{
+  "ok": true,
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-6196ddc6-c12a-404d-9762-d61c98ce147f/",
+  "duration_ms": 4037.614878,
+  "output_dir": "/home/hatch/workspace/ts-spaces/yao-liu-yao/audits/2026-11-17T12-01-09Z-244478395",
+  "nav_status": 200,
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/yao-liu-yao/audits/2026-11-17T12-01-09Z-244478395/screenshot.png",
+      "fullpage_screenshot_path": "/home/hatch/workspace/ts-spaces/yao-liu-yao/audits/2026-11-17T12-01-09Z-244478395/screenshot-full.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/yao-liu-yao/audits/2026-11-17T12-01-09Z-244478395/screenshot-mobile.png"
+    }
+  },
+  "mobile_layout": {
+    "viewport_width": 390,
+    "scroll_width": 390,
+    "overflow_px": 0,
+    "widest_selector": null,
+    "verdict": "pass"
+  },
+  "horizontal_scrollers": [],
+  "unreachable_controls": {
+    "desktop": [],
+    "mobile": []
+  },
+  "clipped": {
+    "desktop": [],
+    "mobile": []
+  },
+  "images": {
+    "total": 0,
+    "broken": [],
+    "duplicate": [],
+    "unstable": [],
+    "failed_requests": [],
+    "external_blocked": {
+      "count": 0,
+      "sample": []
+    },
+    "sample_urls": [],
+    "verdict": "pass"
+  },
+  "text_issues": [],
+  "console_errors": [],
+  "console_warnings": [],
+  "external_fetch_failures": 2,
+  "external_fetch_failure_samples": [
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap)",
+    "console.error: Failed to load resource: net::ERR_SOCKS_CONNECTION_FAILED (https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap)"
+  ],
+  "blocked_requests": [],
+  "external_requests": [
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap",
+      "method": "GET",
+      "resource_type": "stylesheet"
+    }
+  ],
+  "external_requests_dropped": 0,
+  "external_requests_dropped_data_bearing": 0,
+  "transport_ledger_active": true,
+  "egress_lockdown": true,
+  "transport_connections": [
+    {
+      "host": "artifact-capture.invalid",
+      "port": 443,
+      "connects": 2,
+      "bytes_up": 4092,
+      "bytes_down": 2488
+    },
+    {
+      "host": "fonts.googleapis.com",
+      "port": 443,
+      "connects": 2,
+      "bytes_up": 0,
+      "bytes_down": 0,
+      "policy_denied": true
+    }
+  ],
+  "transport_udp_attempts": 0,
+  "transport_overflow": 0,
+  "unexplained_transport_hosts": [],
+  "broken_assets": [],
+  "blocked_affordances": [],
+  "interactive_nodes": 7,
+  "aria_snapshot": "- banner:\n  - heading \"摇六爻\" [level=1]\n  - paragraph: 三 钱 起 卦 · 自 下 而 上\n- region \"起卦 先静心默念所问之事，再摇钱六次\":\n  - heading \"起卦 先静心默念所问之事，再摇钱六次\" [level=2]\n  - text: 所问之事（可不填）\n  - textbox \"所问之事（可不填）\"\n  - group \"起卦方式\":\n    - button \"摇钱起卦 在本页摇三枚铜钱\" [pressed]\n    - button \"实物录入 手摇真铜钱，逐次录入字背\"\n- region \"摇钱台\":\n  - text: 第\n  - emphasis: 一\n  - text: 摇 · 初爻 背 字 背\n  - paragraph: 点「摇一摇」，三枚铜钱定一爻。\n  - button \"摇 一 摇\"\n  - button \"撤回上一爻\" [disabled]\n  - button \"重新起卦\" [disabled]\n- region \"成卦 初爻在下，上爻在上，逐爻叠起\":\n  - heading \"成卦 初爻在下，上爻在上，逐爻叠起\" [level=2]\n  - text: 尚未起爻 六爻未齐\n  - table \"六爻明细\":\n    - rowgroup:\n      - row \"爻位 铜钱 记数 爻象\":\n        - cell \"爻位\"\n        - cell \"铜钱\"\n        - cell \"记数\"\n        - cell \"爻象\"\n    - rowgroup:\n      - row \"尚未起爻，摇第一钱后逐爻列于此。\":\n        - cell \"尚未起爻，摇第一钱后逐爻列于此。\"\n- region \"铜钱记数规矩\":\n  - heading \"铜钱记数规矩\" [level=2]\n  - table \"铜钱记数规矩\":\n    - rowgroup:\n      - row \"三钱字背 记数 成爻\":\n        - cell \"三钱字背\"\n        - cell \"记数\"\n        - cell \"成爻\"\n    - rowgroup:\n      - row \"三个背 9 老阳 ○ 动爻\":\n        - cell \"三个背\"\n        - cell \"9\"\n        - cell \"老阳 ○ 动爻\"\n      - row \"两背一字 8 少阴 静爻\":\n        - cell \"两背一字\"\n        - cell \"8\"\n        - cell \"少阴 静爻\"\n      - row \"一背两字 7 少阳 静爻\":\n        - cell \"一背两字\"\n        - cell \"7\"\n        - cell \"少阳 静爻\"\n      - row \"三个字 6 老阴 × 动爻\":\n        - cell \"三个字\"\n        - cell \"6\"\n        - cell \"老阴 × 动爻\"\n  - paragraph: 记法：一个背记 3，一个字记 2，三钱相加得 6、7、8、9。背为无字的一面，字为有字的一面。老阳、老阴为动爻，动则变：阳变阴、阴变阳，变出的卦为变卦；无动爻则只有本卦。\n  - group: 起卦次序\n- contentinfo: 如实起卦出象 · 断卦不在此页",
+  "document_text": {
+    "path": "/home/hatch/workspace/ts-spaces/yao-liu-yao/audits/2026-11-17T12-01-09Z-244478395/document-text.txt",
+    "chars": 802,
+    "truncated": false
+  },
+  "audit_session_id": "6e814479-efa3-4331-89ec-95605ad38262",
+  "readiness": {
+    "desktop": {
+      "settled": true,
+      "settle_ms": 503,
+      "in_flight": null,
+      "network_idle": true,
+      "retried": false
+    },
+    "mobile": {
+      "settled": true,
+      "settle_ms": 495,
+      "in_flight": null,
+      "network_idle": true,
+      "retried": false
+    }
+  },
+  "color_scheme": {
+    "declared": "light dark",
+    "media_dependent": null,
+    "dark_frame": false
+  },
+  "mobile_ms": 2081.506219,
+  "cold_launch_ms": 416.6252589999999,
+  "desktop_ms": 2338.243059,
+  "browser_launches": 1,
+  "audit_path": "shared-concurrent",
+  "diagnostics": {
+    "audit_path": "shared-concurrent",
+    "concurrent_ran": true,
+    "concurrent_desktop_retry": false,
+    "concurrent_mobile_retry": false,
+    "shared_launch_failed": false,
+    "nav_retries": 0,
+    "settle_retries": 0
+  }
+}

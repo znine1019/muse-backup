@@ -1,0 +1,2364 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>摇六爻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ea;
+    --bg-deep:#ece7db;
+    --panel:#fdfcf8;
+    --panel-2:#f8f5ee;
+    --ink:#211d16;
+    --ink-2:#57503f;
+    --ink-3:#8a8171;
+    --line:#ddd5c3;
+    --line-strong:#c9bda0;
+    --red:#a62b1f;
+    --red-deep:#8c2115;
+    --brass:#b98a2f;
+    --brass-light:#e8c877;
+    --brass-dark:#7d5c17;
+    --coin-face:#d9ab4a;
+    --coin-edge:#9a7420;
+    --shadow:0 10px 30px rgba(60,48,20,.10), 0 2px 6px rgba(60,48,20,.06);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#171512;
+      --bg-deep:#100e0c;
+      --panel:#211e19;
+      --panel-2:#26221c;
+      --ink:#ece5d3;
+      --ink-2:#bdb29a;
+      --ink-3:#857b66;
+      --line:#3a352b;
+      --line-strong:#554d3c;
+      --red:#d96a58;
+      --red-deep:#e0806e;
+      --brass:#c99b3f;
+      --brass-light:#e8c877;
+      --brass-dark:#8a6a24;
+      --coin-face:#c79c3e;
+      --coin-edge:#7d5c17;
+      --shadow:0 10px 30px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 500px at 50% -120px, var(--bg-deep), transparent 70%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans SC", system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height:1.65;
+  }
+  button, input, [role="button"]{ min-height:44px; }
+  button{ font-family:inherit; cursor:pointer; }
+  .wrap{ max-width:860px; margin:0 auto; padding:28px 18px 56px; }
+
+  /* ---------- header ---------- */
+  header{ text-align:center; padding:10px 0 22px; }
+  .seal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:7px;
+    background:var(--red); color:#fdf6ec;
+    font-family:"Noto Serif SC", serif; font-weight:900; font-size:19px;
+    writing-mode:vertical-rl; letter-spacing:2px; line-height:1;
+    margin-bottom:12px;
+  }
+  h1{
+    margin:0; font-family:"Noto Serif SC", serif; font-weight:900;
+    font-size:clamp(34px, 7vw, 46px); letter-spacing:.14em; text-indent:.14em;
+  }
+  .sub{ margin:6px 0 0; color:var(--ink-2); font-size:14px; letter-spacing:.28em; text-indent:.28em; }
+  .rule{ width:56px; height:2px; background:var(--red); margin:16px auto 0; border-radius:2px; opacity:.85; }
+
+  /* ---------- panels ---------- */
+  .panel{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:20px; margin-bottom:16px;
+  }
+  .panel h2{
+    margin:0 0 12px; font-family:"Noto Serif SC", serif; font-size:17px; font-weight:700;
+    letter-spacing:.06em; display:flex; align-items:baseline; gap:10px;
+  }
+  .panel h2 .hint{ font-family:"Noto Sans SC",sans-serif; font-size:12.5px; font-weight:400; color:var(--ink-3); letter-spacing:0; }
+
+  label.q-label{ display:block; font-size:13px; color:var(--ink-2); margin-bottom:7px; letter-spacing:.05em; }
+  #question{
+    width:100%; padding:11px 13px; font-size:16px; font-family:inherit;
+    color:var(--ink); background:var(--panel-2);
+    border:1px solid var(--line-strong); border-radius:9px; outline:none;
+  }
+  #question:focus{ border-color:var(--red); box-shadow:0 0 0 3px color-mix(in srgb, var(--red) 16%, transparent); }
+  #question::placeholder{ color:var(--ink-3); }
+
+  /* mode switch */
+  .modes{ display:flex; gap:8px; margin-top:16px; }
+  .mode-btn{
+    flex:1; padding:10px 8px; border-radius:9px; border:1px solid var(--line-strong);
+    background:var(--panel-2); color:var(--ink-2); font-size:15px; font-weight:500;
+    display:flex; flex-direction:column; align-items:center; gap:1px; line-height:1.4;
+  }
+  .mode-btn small{ font-size:12px; color:var(--ink-3); font-weight:400; }
+  .mode-btn[aria-pressed="true"]{
+    background:var(--ink); color:var(--bg); border-color:var(--ink);
+  }
+  .mode-btn[aria-pressed="true"] small{ color:inherit; opacity:.65; }
+
+  /* ---------- stage ---------- */
+  .stage-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .progress-text{ font-family:"Noto Serif SC",serif; font-size:17px; font-weight:700; letter-spacing:.05em; }
+  .progress-text em{ font-style:normal; color:var(--red); }
+  .dots{ display:flex; gap:7px; align-items:center; }
+  .dot{
+    width:26px; height:9px; border-radius:5px; background:var(--line);
+    position:relative; overflow:hidden;
+  }
+  .dot.yang{ background:var(--ink); }
+  .dot.yin{ background:transparent; border:none; }
+  .dot.yin::before,.dot.yin::after{
+    content:""; position:absolute; top:0; height:9px; width:10px; border-radius:5px; background:var(--ink);
+  }
+  .dot.yin::before{ left:0; } .dot.yin::after{ right:0; }
+  .dot.moving{ outline:2px solid var(--red); outline-offset:1px; }
+  .dot.next{ background:transparent; border:1.5px dashed var(--line-strong); }
+
+  .tray{
+    margin-top:18px; padding:26px 12px 20px;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 34px, color-mix(in srgb, var(--line) 45%, transparent) 34px, color-mix(in srgb, var(--line) 45%, transparent) 35px),
+      var(--panel-2);
+    border:1px solid var(--line); border-radius:11px;
+    text-align:center;
+  }
+  .coins{ display:flex; justify-content:center; gap:clamp(14px, 5vw, 34px); }
+  .coin-slot{ display:flex; flex-direction:column; align-items:center; gap:9px; }
+  .coin{
+    width:clamp(78px, 22vw, 104px); height:clamp(78px, 22vw, 104px);
+    border-radius:50%; position:relative; flex:none;
+    background:radial-gradient(circle at 34% 30%, var(--brass-light), var(--coin-face) 55%, var(--coin-edge) 100%);
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--coin-edge) 65%, transparent),
+                inset 0 0 0 7px color-mix(in srgb, #fff 14%, transparent),
+                0 6px 14px rgba(60,44,8,.28);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .18s ease;
+  }
+  .coin::after{
+    content:""; width:26%; height:26%;
+    background:var(--panel-2);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--coin-edge) 70%, transparent), inset 0 2px 4px rgba(0,0,0,.25);
+  }
+  .coin .glyph{
+    position:absolute; inset:0; pointer-events:none;
+    font-family:"Noto Serif SC",serif; font-weight:900; color:var(--brass-dark);
+    text-shadow:0 1px 0 rgba(255,255,255,.35);
+  }
+  .coin .glyph span{ position:absolute; font-size:clamp(14px,4vw,18px); line-height:1; }
+  .coin .glyph .n{ top:9%; left:50%; transform:translateX(-50%); }
+  .coin .glyph .s{ bottom:9%; left:50%; transform:translateX(-50%); }
+  .coin .glyph .w{ left:10%; top:50%; transform:translateY(-50%); }
+  .coin .glyph .e{ right:10%; top:50%; transform:translateY(-50%); }
+  .coin.is-back .glyph{ display:none; }
+  .coin .back-mark{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    font-family:"Noto Serif SC",serif; font-weight:700; color:var(--brass-dark);
+    font-size:clamp(17px,5vw,22px); opacity:.75; pointer-events:none;
+  }
+  .coin.is-back .back-mark{ display:flex; }
+  .coin.shaking{ animation:tumble .72s cubic-bezier(.3,.6,.4,1); }
+  @keyframes tumble{
+    0%{ transform:translateY(0) rotate(0) scale(1); }
+    25%{ transform:translateY(-16px) rotate(140deg) scale(1.04); }
+    55%{ transform:translateY(3px) rotate(330deg) scale(.98); }
+    80%{ transform:translateY(-6px) rotate(430deg) scale(1.01); }
+    100%{ transform:translateY(0) rotate(360deg) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .coin.shaking{ animation:none; }
+  }
+  .coin-cap{ font-size:14px; font-weight:700; letter-spacing:.3em; text-indent:.3em; color:var(--ink-2); min-height:22px; }
+  .coin-cap .face-name{ color:var(--ink); }
+  button.coin-btn{ background:none; border:none; padding:6px; border-radius:50%; min-height:0; }
+  button.coin-btn:focus-visible{ outline:2px solid var(--red); outline-offset:2px; }
+  .tray-note{ margin:14px 0 0; font-size:13px; color:var(--ink-3); min-height:21px; }
+  .tray-note strong{ color:var(--ink); font-weight:700; }
+  .tray-note .mv{ color:var(--red); font-weight:700; }
+
+  .actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .btn{
+    border-radius:9px; border:1px solid var(--line-strong);
+    background:var(--panel-2); color:var(--ink);
+    padding:10px 18px; font-size:15px; font-weight:500;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .btn:disabled{ opacity:.42; cursor:not-allowed; }
+  .btn-primary{
+    flex:1 1 200px; background:var(--red); border-color:var(--red-deep); color:#fdf6ec;
+    font-family:"Noto Serif SC",serif; font-size:18px; font-weight:700; letter-spacing:.22em; text-indent:.22em;
+    padding:13px 18px;
+  }
+  .btn-primary:hover:not(:disabled){ background:var(--red-deep); }
+  .btn-ghost{ color:var(--ink-2); }
+  .btn:active:not(:disabled){ transform:translateY(1px); }
+
+  .manual-sum{
+    margin-top:14px; font-size:14px; color:var(--ink-2); text-align:center; min-height:23px;
+  }
+  .manual-sum strong{ color:var(--ink); }
+  [hidden]{ display:none !important; }
+
+  /* ---------- hexagram build ---------- */
+  .build-grid{ display:grid; grid-template-columns:150px 1fr; gap:22px; align-items:start; }
+  @media (max-width:560px){ .build-grid{ grid-template-columns:1fr; } }
+  .gua-visual{ text-align:center; }
+  .gua-stack{ display:flex; flex-direction:column-reverse; gap:8px; padding:16px 14px; background:var(--panel-2); border:1px solid var(--line); border-radius:11px; min-height:196px; justify-content:flex-start; }
+  .gua-stack:empty::after{ content:"尚未起爻"; color:var(--ink-3); font-size:13px; margin:auto; }
+  .yao-line{ display:flex; align-items:center; gap:8px; }
+  .yao-bar{ flex:1; height:13px; display:flex; gap:0; }
+  .yao-bar .seg{ height:100%; background:var(--ink); border-radius:3px; flex:1; }
+  .yao-bar.yin .seg{ flex:0 0 calc(50% - 7px); }
+  .yao-bar.yin{ justify-content:space-between; }
+  .yao-mark{ width:20px; flex:none; text-align:center; font-weight:900; font-size:16px; color:var(--red); font-family:"Noto Serif SC",serif; }
+  .yao-pos{ width:34px; flex:none; font-size:12px; color:var(--ink-3); text-align:right; }
+  .gua-visual .cap{ margin-top:9px; font-size:12.5px; color:var(--ink-3); }
+
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th, td{ padding:8px 8px; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th{ font-size:12.5px; color:var(--ink-3); font-weight:500; letter-spacing:.06em; white-space:nowrap; }
+  td.pos{ font-family:"Noto Serif SC",serif; font-weight:700; white-space:nowrap; }
+  td .mv-tag{ display:inline-block; margin-left:6px; padding:0 7px; border-radius:20px; background:var(--red); color:#fdf6ec; font-size:11.5px; font-weight:700; vertical-align:1px; }
+  .empty-row td{ color:var(--ink-3); text-align:center; padding:18px 8px; }
+  .table-scroll{ overflow-x:auto; }
+  @media (max-width:560px){
+    .detail-table th:nth-child(2), .detail-table td:nth-child(2){ display:none; } /* 仅明细表窄屏隐藏铜钱列，记数与爻象仍在 */
+  }
+
+  /* ---------- result ---------- */
+  #resultPanel{ border-color:var(--line-strong); }
+  .result-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:560px){ .result-grid{ grid-template-columns:1fr; } }
+  .result-gua{ text-align:center; padding:16px 12px; background:var(--panel-2); border:1px solid var(--line); border-radius:11px; }
+  .result-gua .kind{ font-size:12.5px; color:var(--ink-3); letter-spacing:.3em; text-indent:.3em; }
+  .result-gua .name{ font-family:"Noto Serif SC",serif; font-weight:900; font-size:27px; margin:4px 0 2px; letter-spacing:.04em; }
+  .result-gua .tri{ font-size:13px; color:var(--ink-2); margin-bottom:13px; }
+  .result-gua .gua-stack{ min-height:0; background:transparent; border:none; padding:2px 8px; }
+  .moving-line{ margin-top:14px; font-size:14.5px; color:var(--ink-2); text-align:center; }
+  .moving-line strong{ color:var(--red); font-family:"Noto Serif SC",serif; }
+  .result-actions{ display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .result-actions .btn{ flex:1 1 130px; }
+  .copy-ok{ font-size:13px; color:var(--red); align-self:center; min-height:20px; font-weight:700; }
+
+  /* ---------- rules ---------- */
+  .rules-table td:first-child{ white-space:nowrap; font-weight:500; }
+  .rules-note{ font-size:13.5px; color:var(--ink-2); margin:12px 0 0; }
+  details.rules-more{ margin-top:12px; }
+  details.rules-more summary{ cursor:pointer; font-size:14px; font-weight:500; color:var(--ink); padding:6px 0; }
+  details.rules-more p, details.rules-more li{ font-size:13.5px; color:var(--ink-2); }
+  details.rules-more ul{ margin:6px 0; padding-left:20px; }
+  footer{ text-align:center; color:var(--ink-3); font-size:12.5px; padding-top:6px; letter-spacing:.08em; }
+</style>
+  <style data-hatch-cvm-bundle></style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="seal" aria-hidden="true">易</div>
+    <h1>摇六爻</h1>
+    <p class="sub">三 钱 起 卦 · 自 下 而 上</p>
+    <div class="rule" aria-hidden="true"></div>
+  </header>
+
+  <!-- 起卦设置 -->
+  <section class="panel" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">起卦 <span class="hint">先静心默念所问之事，再摇钱六次</span></h2>
+    <label class="q-label" for="question">所问之事（可不填）</label>
+    <input id="question" type="text" autocomplete="off" placeholder="例如：此事可否着手去办" maxlength="100" />
+    <div class="modes" role="group" aria-label="起卦方式">
+      <button type="button" class="mode-btn" id="modeShake" aria-pressed="true">摇钱起卦<small>在本页摇三枚铜钱</small></button>
+      <button type="button" class="mode-btn" id="modeManual" aria-pressed="false">实物录入<small>手摇真铜钱，逐次录入字背</small></button>
+    </div>
+  </section>
+
+  <!-- 摇钱台 -->
+  <section class="panel" aria-labelledby="stageTitle">
+    <h2 id="stageTitle" hidden>摇钱台</h2>
+    <div class="stage-head">
+      <div class="progress-text" id="progressText">第<em>一</em>摇 · 初爻</div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </div>
+
+    <div class="tray">
+      <div class="coins" id="coins"></div>
+      <p class="tray-note" id="trayNote">点「摇一摇」，三枚铜钱定一爻。</p>
+      <p class="manual-sum" id="manualSum" hidden></p>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="shakeBtn">摇 一 摇</button>
+      <button type="button" class="btn btn-primary" id="recordBtn" hidden>记下这一爻</button>
+      <button type="button" class="btn btn-ghost" id="undoBtn" disabled>撤回上一爻</button>
+      <button type="button" class="btn btn-ghost" id="resetBtn" disabled>重新起卦</button>
+    </div>
+  </section>
+
+  <!-- 成卦过程 -->
+  <section class="panel" aria-labelledby="buildTitle">
+    <h2 id="buildTitle">成卦 <span class="hint">初爻在下，上爻在上，逐爻叠起</span></h2>
+    <div class="build-grid">
+      <div class="gua-visual">
+        <div class="gua-stack" id="buildStack"></div>
+        <div class="cap" id="buildCap">六爻未齐</div>
+      </div>
+      <div class="table-scroll">
+        <table class="detail-table" aria-label="六爻明细">
+          <thead>
+            <tr><th>爻位</th><th>铜钱</th><th>记数</th><th>爻象</th></tr>
+          </thead>
+          <tbody id="detailBody">
+            <tr class="empty-row"><td colspan="4">尚未起爻，摇第一钱后逐爻列于此。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 结果 -->
+  <section class="panel" id="resultPanel" hidden aria-labelledby="resultTitle">
+    <h2 id="resultTitle">卦象</h2>
+    <div class="result-grid">
+      <div class="result-gua">
+        <div class="kind">本 卦</div>
+        <div class="name" id="benName">—</div>
+        <div class="tri" id="benTri">—</div>
+        <div class="gua-stack" id="benStack"></div>
+      </div>
+      <div class="result-gua" id="bianBox">
+        <div class="kind">变 卦</div>
+        <div class="name" id="bianName">—</div>
+        <div class="tri" id="bianTri">—</div>
+        <div class="gua-stack" id="bianStack"></div>
+      </div>
+    </div>
+    <p class="moving-line" id="movingLine"></p>
+    <div class="result-actions">
+      <button type="button" class="btn" id="copyBtn">复制结果</button>
+      <button type="button" class="btn" id="downloadBtn">下载为文本</button>
+      <span class="copy-ok" id="copyOk" role="status"></span>
+    </div>
+  </section>
+
+  <!-- 规矩 -->
+  <section class="panel" aria-labelledby="rulesTitle">
+    <h2 id="rulesTitle">铜钱记数规矩</h2>
+    <div class="table-scroll">
+      <table class="rules-table" aria-label="铜钱记数规矩">
+        <thead><tr><th>三钱字背</th><th>记数</th><th>成爻</th></tr></thead>
+        <tbody>
+          <tr><td>三个背</td><td>9</td><td>老阳 ○ 动爻</td></tr>
+          <tr><td>两背一字</td><td>8</td><td>少阴 静爻</td></tr>
+          <tr><td>一背两字</td><td>7</td><td>少阳 静爻</td></tr>
+          <tr><td>三个字</td><td>6</td><td>老阴 × 动爻</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="rules-note">记法：一个背记 3，一个字记 2，三钱相加得 6、7、8、9。背为无字的一面，字为有字的一面。老阳、老阴为动爻，动则变：阳变阴、阴变阳，变出的卦为变卦；无动爻则只有本卦。</p>
+    <details class="rules-more">
+      <summary>起卦次序</summary>
+      <ul>
+        <li>共摇六次，第一次得初爻，依次向上叠至上爻。</li>
+        <li>下三爻为内卦（下卦），上三爻为外卦（上卦），两卦相重成本卦。</li>
+        <li>实物录入：手持三枚铜钱实摇，落定后点铜钱翻面，使页面与实物字背一致，再记下这一爻。</li>
+      </ul>
+    </details>
+  </section>
+
+  <footer>如实起卦出象 · 断卦不在此页</footer>
+</div>
+
+
+<script data-hatch-cvm-bundle>(() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  function __accessProp(key) {
+    return this[key];
+  }
+  var __toCommonJS = (from) => {
+    var entry = (__moduleCache ??= new WeakMap).get(from), desc;
+    if (entry)
+      return entry;
+    entry = __defProp({}, "__esModule", { value: true });
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (var key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(entry, key))
+          __defProp(entry, key, {
+            get: __accessProp.bind(from, key),
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+          });
+    }
+    __moduleCache.set(from, entry);
+    return entry;
+  };
+  var __moduleCache;
+
+  // src/prelude.ts
+  var exports_prelude = {};
+
+  // src/tunnel-url.ts
+  var B64_CHUNK = 32768;
+  function computeSelfBaseDir(selfHref) {
+    if (!selfHref)
+      return "";
+    let h = selfHref;
+    const hash = h.indexOf("#");
+    if (hash >= 0)
+      h = h.slice(0, hash);
+    const q = h.indexOf("?");
+    if (q >= 0)
+      h = h.slice(0, q);
+    const slash = h.lastIndexOf("/");
+    return slash >= 0 ? h.slice(0, slash + 1) : "";
+  }
+  function isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!selfBaseDir || !u.startsWith(selfBaseDir))
+      return false;
+    if (u === selfHref)
+      return false;
+    return !objectUrls.has(u);
+  }
+  function isExternalUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!u)
+      return false;
+    if (u.startsWith("#"))
+      return true;
+    if (isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls))
+      return false;
+    if (u.startsWith("data:") || u.startsWith("blob:"))
+      return true;
+    if (u.startsWith("about:") || u.startsWith("javascript:"))
+      return true;
+    if (u.startsWith("//"))
+      return true;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) {
+      return true;
+    }
+    return false;
+  }
+  function ownObjectUrl(scriptUrl, objectUrls) {
+    const href = typeof scriptUrl === "string" ? scriptUrl : scriptUrl instanceof URL ? scriptUrl.href : null;
+    return href !== null && href.startsWith("blob:") && objectUrls.has(href) ? href : null;
+  }
+  var WORKER_TUNNEL_SHIM = [
+    "self.__tunnel=self.__tunnel||{",
+    "fetch:function(){return self.fetch.apply(self,arguments)},",
+    "XHR:self.XMLHttpRequest,WebSocket:self.WebSocket,EventSource:self.EventSource,",
+    "Worker:self.Worker,import:function(s){return import(s)},",
+    "Image:function(w,h){return new Image(w,h)},",
+    "sendBeacon:function(){return false},",
+    "getStyle:function(x){if(x==null)return x;try{return x.style}catch(e){return undefined}},",
+    "setStyle:function(x,n,v){x.style[n]=v},",
+    "setUrlProp:function(x,n,v){x[n]=v;return v},",
+    "setAttr:function(x){return x.setAttribute.apply(x,[].slice.call(arguments,1))},",
+    "setAttrNS:function(x){return x.setAttributeNS.apply(x,[].slice.call(arguments,1))},",
+    "setInnerHTML:function(x,v,w){x[w||'innerHTML']=v},",
+    "setStyleText:function(x,v){x.textContent=v},",
+    "insertAdjacentHTML:function(x,p,v){return x.insertAdjacentHTML(p,v)},",
+    `_importMeta:{url:self.location.href}};
+`
+  ].join("");
+  function isWorkerScriptBlob(obj) {
+    return obj instanceof Blob && (obj.type === "" || /javascript|ecmascript/i.test(obj.type));
+  }
+  function workerScriptBlob(script) {
+    return new Blob([WORKER_TUNNEL_SHIM, script], { type: "text/javascript" });
+  }
+  function normalizeToRelPath(u, selfBaseDir) {
+    let s = u;
+    if (selfBaseDir && s.startsWith(selfBaseDir)) {
+      s = s.slice(selfBaseDir.length);
+    }
+    s = s.replace(/^\.\//, "");
+    s = s.replace(/^\/+/, "");
+    return s;
+  }
+  function blobInner(base, NativeURL) {
+    if (base == null)
+      return null;
+    const s = typeof base === "string" ? base : base instanceof NativeURL ? base.href : String(base);
+    return s.startsWith("blob:") ? s.slice("blob:".length) : null;
+  }
+  var OPAQUE_BLOB_ORIGIN = "https://hatch-cvm-opaque.invalid";
+  function isAbsoluteUrlString(s, NativeURL) {
+    try {
+      new NativeURL(s);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function resolveAgainstBlobBase(u, base, NativeURL) {
+    const inner = blobInner(base, NativeURL);
+    if (inner === null)
+      return null;
+    if (isAbsoluteUrlString(inner, NativeURL)) {
+      return new NativeURL("blob:" + new NativeURL(u, inner).href);
+    }
+    const slash = inner.indexOf("/");
+    const token = slash >= 0 ? inner.slice(0, slash) : inner;
+    const path = slash >= 0 ? inner.slice(slash) : "/";
+    const resolved = new NativeURL(u, OPAQUE_BLOB_ORIGIN + path);
+    return new NativeURL("blob:" + token + resolved.pathname + resolved.search + resolved.hash);
+  }
+  function resolveTunnelUrl(url, base, selfHref, NativeURL) {
+    const u = url == null ? "" : typeof url === "string" ? url : url instanceof NativeURL ? url.href : String(url);
+    const uAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith("//");
+    if (base !== undefined && base !== null && !uAbsolute) {
+      const viaBlob = resolveAgainstBlobBase(u, base, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+      return new NativeURL(u, base);
+    }
+    if (!uAbsolute && selfHref) {
+      const viaBlob = resolveAgainstBlobBase(u, selfHref, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+    }
+    return base === undefined ? new NativeURL(u) : new NativeURL(u, base);
+  }
+  function bytesToBase64(bytes) {
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    let s = "";
+    for (let i = 0;i < u8.length; i += B64_CHUNK) {
+      s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + B64_CHUNK)));
+    }
+    return btoa(s);
+  }
+  function base64ToBytes(b64) {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0;i < bin.length; i++)
+      out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function importMetaUrl(selfHref, selfBaseDir) {
+    return selfBaseDir ? `${selfBaseDir}assets/cvm-bundle.js` : selfHref;
+  }
+
+  // src/download-links.ts
+  function installDownloadLinks(fetchAsset, isExternalUrl, revokeDelayMs) {
+    document.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor?.hasAttribute("download"))
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href || isExternalUrl(href))
+        return;
+      event.preventDefault();
+      const filename = anchor.download || resourceFilename(href);
+      (async () => {
+        const response = await fetchAsset(href);
+        if (!response.ok) {
+          throw new Error(`Artifact download failed: HTTP ${response.status}`);
+        }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
+        }
+      })().catch((error) => reportError(error));
+    });
+  }
+  function resourceFilename(href) {
+    const path = new URL(href, document.baseURI).pathname;
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    try {
+      return decodeURIComponent(name);
+    } catch {
+      return name;
+    }
+  }
+
+  // src/fragment-links.ts
+  function installFragmentLinks() {
+    if (!location.href.startsWith("blob:null/"))
+      return;
+    const NativeURL = URL;
+    const pushState = history.pushState.bind(history);
+    const replaceState = history.replaceState.bind(history);
+    window.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor || anchor.hasAttribute("download"))
+        return;
+      const targetName = anchor.getAttribute("target") ?? document.querySelector("base[target]")?.getAttribute("target") ?? "";
+      if (targetName !== "" && targetName.toLowerCase() !== "_self")
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href?.startsWith("#"))
+        return;
+      const oldURL = location.href;
+      const nextURL = new NativeURL(href, oldURL);
+      event.preventDefault();
+      const changed = nextURL.href !== oldURL;
+      if (changed) {
+        pushState(null, "", nextURL.href);
+      } else {
+        replaceState(null, "", nextURL.href);
+      }
+      window.dispatchEvent(new PopStateEvent("popstate", { state: null }));
+      const target = fragmentTarget(nextURL.hash);
+      if (target) {
+        target.scrollIntoView();
+        if (target !== document.documentElement && (target instanceof HTMLElement || target instanceof SVGElement)) {
+          const hadTabIndex = target.hasAttribute("tabindex");
+          if (!hadTabIndex)
+            target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+          if (!hadTabIndex)
+            target.removeAttribute("tabindex");
+        }
+      }
+      if (changed) {
+        queueMicrotask(() => window.dispatchEvent(new HashChangeEvent("hashchange", {
+          oldURL,
+          newURL: nextURL.href
+        })));
+      }
+    });
+  }
+  function fragmentTarget(hash) {
+    const bytes = hash.slice(1).replace(/%([0-9a-f]{2})/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+    const fragment = new TextDecoder().decode(Uint8Array.from(bytes, (byte) => byte.charCodeAt(0)));
+    if (fragment === "")
+      return document.documentElement;
+    const idTarget = document.getElementById(fragment);
+    if (idTarget)
+      return idTarget;
+    const namedTarget = Array.from(document.getElementsByName(fragment)).find((node) => node instanceof HTMLAnchorElement);
+    return namedTarget ?? (fragment.toLowerCase() === "top" ? document.documentElement : null);
+  }
+
+  // src/prelude.ts
+  (function installTunnel() {
+    installFragmentLinks();
+    let port = null;
+    let portReadyResolve = null;
+    const portReady = new Promise((res) => {
+      portReadyResolve = res;
+    });
+    const pending = new Map;
+    const openWs = new Map;
+    function newId() {
+      return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    }
+    function bytesToB64(bytes) {
+      return bytesToBase64(bytes);
+    }
+    function b64ToBytes(b64) {
+      return base64ToBytes(b64);
+    }
+    async function httpReq(method, path, body, headers) {
+      const p = port ?? await portReady;
+      const id = newId();
+      const headerArr = [];
+      if (headers) {
+        const h = new Headers(headers);
+        h.forEach((v, k) => headerArr.push([k, v]));
+      }
+      let bodyB64 = "";
+      if (body != null && body !== "") {
+        let bytes;
+        if (typeof body === "string") {
+          bytes = new TextEncoder().encode(body);
+        } else if (body instanceof ArrayBuffer) {
+          bytes = new Uint8Array(body);
+        } else if (body instanceof Uint8Array) {
+          bytes = body;
+        } else if (body instanceof Blob) {
+          bytes = new Uint8Array(await body.arrayBuffer());
+        } else if (body instanceof FormData) {
+          const boundary = "----HatchBoundary" + Math.random().toString(36).slice(2);
+          let s = "";
+          for (const [k, v] of body.entries()) {
+            s += `--${boundary}\r
+Content-Disposition: form-data; name="${k}"`;
+            if (v instanceof File) {
+              s += `; filename="${v.name}"\r
+Content-Type: ${v.type || "application/octet-stream"}\r
+\r
+`;
+              const fb = new Uint8Array(await v.arrayBuffer());
+              s += new TextDecoder("latin1").decode(fb);
+            } else {
+              s += `\r
+\r
+${v}`;
+            }
+            s += `\r
+`;
+          }
+          s += `--${boundary}--\r
+`;
+          bytes = new TextEncoder().encode(s);
+          headerArr.push([
+            "content-type",
+            `multipart/form-data; boundary=${boundary}`
+          ]);
+        } else {
+          bytes = new TextEncoder().encode(String(body));
+        }
+        bodyB64 = bytesToB64(bytes);
+      }
+      return new Promise((resolve, reject) => {
+        pending.set(id, {
+          resolve: (msg) => {
+            if (msg.error) {
+              reject(new Error(msg.error.message ?? "tunnel error"));
+              return;
+            }
+            resolve({
+              status: msg.status,
+              headers: msg.headers,
+              bytes: msg.bodyB64 ? b64ToBytes(msg.bodyB64) : new Uint8Array(0)
+            });
+          },
+          reject
+        });
+        p.postMessage({
+          type: "http.req",
+          id,
+          method,
+          path,
+          headers: headerArr,
+          bodyB64
+        });
+      });
+    }
+    async function tunnelFetch(input, init) {
+      let urlStr;
+      let method = init?.method ?? "GET";
+      let headers = init?.headers;
+      let body = init?.body;
+      if (input instanceof Request) {
+        urlStr = input.url;
+        method = init?.method ?? input.method;
+        headers = init?.headers ?? input.headers;
+        if (body == null && input.body) {
+          body = await input.arrayBuffer();
+        }
+      } else {
+        urlStr = String(input);
+      }
+      if (isExternalUrl2(urlStr)) {
+        return originalFetch(input, init);
+      }
+      const relPath = normalizeToRelPath2(urlStr);
+      const r = await httpReq(method, relPath, body ?? null, headers);
+      const respHeaders = new Headers;
+      for (const [k, v] of r.headers ?? [])
+        respHeaders.set(k, v);
+      return new Response(r.bytes, {
+        status: r.status,
+        headers: respHeaders
+      });
+    }
+
+    class TunnelWebSocket extends EventTarget {
+      readyState = 0;
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSING = 2;
+      static CLOSED = 3;
+      CONNECTING = 0;
+      OPEN = 1;
+      CLOSING = 2;
+      CLOSED = 3;
+      url;
+      binaryType = "blob";
+      bufferedAmount = 0;
+      protocol = "";
+      extensions = "";
+      onopen = null;
+      onmessage = null;
+      onclose = null;
+      onerror = null;
+      _id;
+      constructor(urlIn, _protocols) {
+        super();
+        const urlStr = String(urlIn);
+        this.url = urlStr;
+        this._id = newId();
+        openWs.set(this._id, this);
+        const path = normalizeToRelPath2(urlStr);
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.open", id: this._id, path });
+        })();
+      }
+      _handle(msg) {
+        if (msg.type === "ws.opened") {
+          this.readyState = 1;
+          const ev = new Event("open");
+          this.onopen?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.message") {
+          const bytes = msg.dataB64 ? b64ToBytes(msg.dataB64) : new Uint8Array(0);
+          let data;
+          if (msg.binary) {
+            data = this.binaryType === "arraybuffer" ? bytes.buffer : new Blob([bytes]);
+          } else {
+            data = new TextDecoder().decode(bytes);
+          }
+          const ev = new MessageEvent("message", { data });
+          this.onmessage?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.closed") {
+          this.readyState = 3;
+          const ev = new CloseEvent("close", {
+            code: msg.code ?? 1000,
+            reason: msg.reason ?? ""
+          });
+          this.onclose?.(ev);
+          this.dispatchEvent(ev);
+          openWs.delete(this._id);
+        } else if (msg.type === "ws.error") {
+          const ev = new Event("error");
+          this.onerror?.(ev);
+          this.dispatchEvent(ev);
+        }
+      }
+      send(data) {
+        (async () => {
+          const p = port ?? await portReady;
+          let bytes;
+          let binary = false;
+          if (typeof data === "string") {
+            bytes = new TextEncoder().encode(data);
+          } else if (data instanceof Blob) {
+            bytes = new Uint8Array(await data.arrayBuffer());
+            binary = true;
+          } else if (data instanceof ArrayBuffer) {
+            bytes = new Uint8Array(data);
+            binary = true;
+          } else if (ArrayBuffer.isView(data)) {
+            bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+            binary = true;
+          } else {
+            bytes = new TextEncoder().encode(String(data));
+          }
+          p.postMessage({
+            type: "ws.send",
+            id: this._id,
+            dataB64: bytesToB64(bytes),
+            binary
+          });
+        })();
+      }
+      close(code, reason) {
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.close", id: this._id, code, reason });
+        })();
+      }
+      addEventListener(type, listener, options) {
+        super.addEventListener(type, listener, options);
+      }
+    }
+
+    class TunnelXHR extends EventTarget {
+      static UNSENT = 0;
+      static OPENED = 1;
+      static HEADERS_RECEIVED = 2;
+      static LOADING = 3;
+      static DONE = 4;
+      UNSENT = 0;
+      OPENED = 1;
+      HEADERS_RECEIVED = 2;
+      LOADING = 3;
+      DONE = 4;
+      readyState = 0;
+      status = 0;
+      statusText = "";
+      responseText = "";
+      response = null;
+      responseType = "";
+      responseURL = "";
+      withCredentials = false;
+      timeout = 0;
+      upload = new EventTarget;
+      onreadystatechange = null;
+      onload = null;
+      onerror = null;
+      onloadend = null;
+      onabort = null;
+      onprogress = null;
+      ontimeout = null;
+      _method = "GET";
+      _url = "";
+      _reqHeaders = [];
+      _respHeaders = [];
+      _aborted = false;
+      open(method, url) {
+        this._method = method;
+        this._url = url;
+        this.readyState = 1;
+        this.onreadystatechange?.();
+      }
+      setRequestHeader(name, value) {
+        this._reqHeaders.push([name, value]);
+      }
+      getAllResponseHeaders() {
+        return this._respHeaders.map(([k, v]) => `${k}: ${v}`).join(`\r
+`);
+      }
+      getResponseHeader(name) {
+        const lc = name.toLowerCase();
+        const hit = this._respHeaders.find(([k]) => k.toLowerCase() === lc);
+        return hit ? hit[1] : null;
+      }
+      abort() {
+        this._aborted = true;
+        this.readyState = 0;
+      }
+      send(body) {
+        if (isExternalUrl2(this._url)) {
+          const real = new originalXHR;
+          real.open(this._method, this._url);
+          for (const [k, v] of this._reqHeaders)
+            real.setRequestHeader(k, v);
+          real.onload = () => {
+            this.status = real.status;
+            this.responseText = real.responseText;
+            this.response = real.response;
+            this.readyState = 4;
+            this.onreadystatechange?.();
+            this.onload?.();
+            this.onloadend?.();
+            this.dispatchEvent(new Event("load"));
+          };
+          real.onerror = () => {
+            this.onerror?.();
+            this.dispatchEvent(new Event("error"));
+          };
+          real.send(body);
+          return;
+        }
+        const relPath = normalizeToRelPath2(this._url);
+        httpReq(this._method, relPath, body ?? null, this._reqHeaders).then((r) => {
+          if (this._aborted)
+            return;
+          this.status = r.status;
+          this._respHeaders = r.headers ?? [];
+          this.responseText = new TextDecoder().decode(r.bytes);
+          if (this.responseType === "arraybuffer") {
+            this.response = r.bytes.buffer;
+          } else if (this.responseType === "blob") {
+            this.response = new Blob([r.bytes]);
+          } else if (this.responseType === "json") {
+            try {
+              this.response = JSON.parse(this.responseText);
+            } catch {
+              this.response = null;
+            }
+          } else {
+            this.response = this.responseText;
+          }
+          this.readyState = 4;
+          this.onreadystatechange?.();
+          this.onload?.();
+          this.onloadend?.();
+          this.dispatchEvent(new Event("load"));
+        }, () => {
+          if (this._aborted)
+            return;
+          this.onerror?.();
+          this.dispatchEvent(new Event("error"));
+        });
+      }
+    }
+
+    class TunnelEventSource extends EventTarget {
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSED = 2;
+      readyState = 0;
+      url;
+      withCredentials = false;
+      onopen = null;
+      onmessage = null;
+      onerror = null;
+      constructor(url) {
+        super();
+        this.url = String(url);
+        (async () => {
+          try {
+            const relPath = normalizeToRelPath2(this.url);
+            const r = await httpReq("GET", relPath, null, [
+              ["accept", "text/event-stream"]
+            ]);
+            this.readyState = 1;
+            this.onopen?.(new Event("open"));
+            const text = new TextDecoder().decode(r.bytes);
+            for (const block of text.split(/\n\n/)) {
+              const data = block.split(`
+`).filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join(`
+`);
+              if (data) {
+                const ev = new MessageEvent("message", { data });
+                this.onmessage?.(ev);
+                this.dispatchEvent(ev);
+              }
+            }
+            this.readyState = 2;
+          } catch {
+            this.onerror?.(new Event("error"));
+          }
+        })();
+      }
+      close() {
+        this.readyState = 2;
+      }
+    }
+    const SELF_HREF = (() => {
+      try {
+        return globalThis.location?.href ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    const SELF_BASE_DIR = computeSelfBaseDir(SELF_HREF);
+    const objectUrls = new Set;
+    const objectUrlScripts = new Map;
+    function isSelfOriginUrl2(u) {
+      return isSelfOriginUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function isExternalUrl2(u) {
+      return isExternalUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function normalizeToRelPath2(u) {
+      return normalizeToRelPath(u, SELF_BASE_DIR);
+    }
+    const URL_ATTRS = new Set([
+      "src",
+      "srcset",
+      "href",
+      "poster",
+      "action",
+      "formaction",
+      "data",
+      "background",
+      "cite",
+      "longdesc",
+      "usemap",
+      "manifest"
+    ]);
+    const URL_STYLE_PROPS = new Set([
+      "background",
+      "backgroundImage",
+      "background-image",
+      "borderImage",
+      "border-image",
+      "borderImageSource",
+      "border-image-source",
+      "listStyle",
+      "list-style",
+      "listStyleImage",
+      "list-style-image",
+      "cursor",
+      "mask",
+      "maskImage",
+      "mask-image",
+      "webkitMask",
+      "-webkit-mask",
+      "webkitMaskImage",
+      "-webkit-mask-image",
+      "content",
+      "src"
+    ]);
+    const __BLOB_CACHE_MAX = 256;
+    const __BLOB_REVOKE_DELAY_MS = 30000;
+    const blobCache = new Map;
+    const blobStats = {
+      created: 0,
+      revoked: 0,
+      hits: 0,
+      misses: 0,
+      inFlightRevokes: 0
+    };
+    function __evictIfOverCap() {
+      while (blobCache.size > __BLOB_CACHE_MAX) {
+        const oldestKey = blobCache.keys().next().value;
+        if (oldestKey === undefined)
+          break;
+        const ent = blobCache.get(oldestKey);
+        blobCache.delete(oldestKey);
+        blobStats.inFlightRevokes++;
+        const t = setTimeout(() => {
+          ent.url.then((u) => {
+            if (typeof u === "string" && u.startsWith("blob:")) {
+              try {
+                URL.revokeObjectURL(u);
+                blobStats.revoked++;
+              } catch {}
+            }
+          }).finally(() => {
+            blobStats.inFlightRevokes--;
+          });
+        }, __BLOB_REVOKE_DELAY_MS);
+        ent.pendingRevoke = t;
+      }
+    }
+    function resolveToBlobUrl(rel) {
+      if (isExternalUrl2(rel))
+        return Promise.resolve(rel);
+      const hashIdx = rel.indexOf("#");
+      const pathPart = hashIdx >= 0 ? rel.slice(0, hashIdx) : rel;
+      const frag = hashIdx >= 0 ? rel.slice(hashIdx) : "";
+      const key = normalizeToRelPath2(pathPart);
+      let ent = blobCache.get(key);
+      if (ent) {
+        if (ent.pendingRevoke != null) {
+          clearTimeout(ent.pendingRevoke);
+          ent.pendingRevoke = undefined;
+          blobStats.inFlightRevokes--;
+        }
+        blobCache.delete(key);
+        blobCache.set(key, ent);
+        blobStats.hits++;
+      } else {
+        blobStats.misses++;
+        const url = httpReq("GET", key, null).then((r) => {
+          const ctHeader = r.headers.find(([k]) => k.toLowerCase() === "content-type");
+          const ct = ctHeader?.[1] ?? "application/octet-stream";
+          const blob = new Blob([r.bytes], { type: ct });
+          blobStats.created++;
+          return URL.createObjectURL(blob);
+        });
+        ent = { url };
+        blobCache.set(key, ent);
+        __evictIfOverCap();
+      }
+      return frag ? ent.url.then((b) => b + frag) : ent.url;
+    }
+    const HATCH_PIXEL_PREFIX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HATCH_FRAG = "#hatch=";
+    function isHatchPlaceholder(url) {
+      return url.indexOf(HATCH_PIXEL_PREFIX + HATCH_FRAG) === 0;
+    }
+    function unwrapHatchPlaceholder(url) {
+      if (!isHatchPlaceholder(url))
+        return null;
+      return decodeURIComponent(url.slice((HATCH_PIXEL_PREFIX + HATCH_FRAG).length));
+    }
+    async function rewriteCssTextAsync(text) {
+      const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+      const tasks = [];
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        tasks.push({ match: m[0], index: m.index, url: m[2].trim() });
+      }
+      if (tasks.length === 0)
+        return text;
+      const resolved = await Promise.all(tasks.map(async (t) => {
+        if (t.url.startsWith("blob:"))
+          return t.url;
+        const unwrapped = unwrapHatchPlaceholder(t.url);
+        if (unwrapped != null) {
+          try {
+            return await resolveToBlobUrl(unwrapped);
+          } catch {
+            return t.url;
+          }
+        }
+        if (isExternalUrl2(t.url))
+          return t.url;
+        try {
+          return await resolveToBlobUrl(t.url);
+        } catch {
+          return t.url;
+        }
+      }));
+      let out = "";
+      let last = 0;
+      tasks.forEach((t, i) => {
+        out += text.slice(last, t.index);
+        out += `url("${resolved[i]}")`;
+        last = t.index + t.match.length;
+      });
+      out += text.slice(last);
+      return out;
+    }
+    function rewriteCssText(text) {
+      return rewriteCssTextAsync(text);
+    }
+    const mediaSourceLoads = new WeakMap;
+    window.addEventListener("error", (event) => {
+      const source = event.target;
+      if (!event.isTrusted || !(source instanceof HTMLSourceElement) || !(source.parentElement instanceof HTMLMediaElement) || source.hasAttribute("src"))
+        return;
+      const state = mediaSourceLoads.get(source);
+      if (state === "pending" || state === undefined && source.hasAttribute("data-hatch-src")) {
+        event.stopImmediatePropagation();
+      }
+    }, true);
+    function isElement(el) {
+      if (el instanceof Element)
+        return true;
+      const ownerWindow = el?.ownerDocument?.defaultView;
+      return ownerWindow != null && el instanceof ownerWindow.Element;
+    }
+    function setAttr(el, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttribute(name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        if (name.toLowerCase() === "src" && el instanceof HTMLSourceElement) {
+          mediaSourceLoads.set(el, "settled");
+        }
+        try {
+          el.removeAttribute(name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.toLowerCase();
+      const tag = el.tagName?.toUpperCase();
+      if ((tag === "A" || tag === "BASE" || tag === "AREA") && lcName === "href") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (!URL_ATTRS.has(lcName) && lcName !== "style" && lcName !== "srcset") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (lcName === "srcset") {
+        const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+        Promise.all(parts.map(async (p) => {
+          const segs = p.split(/\s+/);
+          const url = segs[0];
+          const rest = segs.slice(1).join(" ");
+          if (isExternalUrl2(url))
+            return p;
+          const resolved = await resolveToBlobUrl(url);
+          return rest ? `${resolved} ${rest}` : resolved;
+        })).then((rebuilt) => {
+          try {
+            el.setAttribute("srcset", rebuilt.join(", "));
+          } catch {}
+        });
+        return;
+      }
+      if (URL_ATTRS.has(lcName)) {
+        const isMediaSource = tag === "SOURCE" && lcName === "src";
+        if (isExternalUrl2(v)) {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          el.setAttribute(name, v);
+          return;
+        }
+        if (isMediaSource)
+          mediaSourceLoads.set(el, "pending");
+        if (tag === "IMG" || tag === "VIDEO" && lcName === "poster") {
+          el.setAttribute(name, TRANSPARENT_PIXEL);
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          try {
+            el.setAttribute(name, blobUrl);
+            if (isMediaSource) {
+              const media = el.parentElement;
+              if (media instanceof HTMLMediaElement && media.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+                const nextSibling = el.nextSibling;
+                el.remove();
+                media.insertBefore(el, nextSibling);
+              }
+            }
+          } catch {}
+        }, () => {
+          if (isMediaSource) {
+            mediaSourceLoads.set(el, "settled");
+            el.dispatchEvent(new Event("error"));
+          }
+        });
+        return;
+      }
+      if (lcName === "style") {
+        setStyleAttr(el, v);
+        return;
+      }
+      el.setAttribute(name, v);
+    }
+    function setAttrNS(el, ns, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttributeNS(ns, name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        try {
+          el.removeAttributeNS(ns ?? null, name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.split(":").pop().toLowerCase();
+      if (lcName === "href" && URL_ATTRS.has("href")) {
+        if (isExternalUrl2(v)) {
+          el.setAttributeNS(ns ?? null, name, v);
+          return;
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          try {
+            el.setAttributeNS(ns ?? null, name, blobUrl);
+          } catch {}
+        }, () => {});
+        return;
+      }
+      try {
+        el.setAttributeNS(ns ?? null, name, v);
+      } catch {}
+    }
+    function setUrlProp(el, name, value) {
+      if (isElement(el)) {
+        setAttr(el, name.toLowerCase(), value);
+      } else {
+        el[name] = value;
+      }
+      return value;
+    }
+    const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HTML_TAG_ATTRS = {
+      img: ["src", "srcset", "poster"],
+      image: ["href"],
+      video: ["src", "poster"],
+      audio: ["src"],
+      source: ["src", "srcset"],
+      script: ["src"],
+      link: ["href"],
+      iframe: ["src"],
+      embed: ["src"],
+      object: ["data"],
+      track: ["src"],
+      input: ["src"],
+      form: ["action"],
+      button: ["formaction"],
+      use: ["href"]
+    };
+    function rewriteHtmlString(html) {
+      return html.replace(/<([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/g, (m, tag, attrs) => {
+        const lc = String(tag).toLowerCase();
+        const candidates = HTML_TAG_ATTRS[lc];
+        if (!candidates)
+          return m;
+        let out = attrs;
+        for (const a of candidates) {
+          const re = new RegExp(`\\b${a}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, "i");
+          const matched = out.match(re);
+          if (!matched)
+            continue;
+          const value = matched[2] ?? matched[3] ?? matched[4] ?? "";
+          if (isExternalUrl2(value))
+            continue;
+          out = out.replace(re, `data-hatch-${a}="${value.replace(/"/g, "&quot;")}"`);
+        }
+        const styleRe = /\bstyle\s*=\s*("([^"]*)"|'([^']*)')/i;
+        const sm = out.match(styleRe);
+        if (sm) {
+          const value = sm[2] ?? sm[3] ?? "";
+          if (value.includes("url(")) {
+            out = out.replace(styleRe, `data-hatch-style="${value.replace(/"/g, "&quot;")}"`);
+          }
+        }
+        return `<${tag}${out}>`;
+      });
+    }
+    const HTML_URL_ATTRS_BY_TAG = {
+      IMG: ["src", "srcset", "poster"],
+      IMAGE: ["href"],
+      VIDEO: ["src", "poster"],
+      AUDIO: ["src"],
+      SOURCE: ["src", "srcset"],
+      SCRIPT: ["src"],
+      LINK: ["href"],
+      IFRAME: ["src"],
+      EMBED: ["src"],
+      OBJECT: ["data"],
+      TRACK: ["src"],
+      INPUT: ["src"],
+      FORM: ["action"],
+      BUTTON: ["formaction"],
+      USE: ["href", "xlink:href"]
+    };
+    function rewriteSubtreeForTunnel(root) {
+      if (!root)
+        return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+      let n = walker.currentNode;
+      if (root.nodeType === 1)
+        processOne(root);
+      while (n = walker.nextNode()) {
+        processOne(n);
+      }
+    }
+    function processOne(el) {
+      const tag = (el.tagName ?? "").toUpperCase();
+      const attrs = HTML_URL_ATTRS_BY_TAG[tag];
+      if (attrs) {
+        for (const a of attrs) {
+          const v = el.getAttribute(a);
+          if (v == null)
+            continue;
+          if (isExternalUrl2(v))
+            continue;
+          el.setAttribute("data-hatch-" + a, v);
+          el.removeAttribute(a);
+        }
+      }
+      const style = el.getAttribute("style");
+      if (style && style.includes("url(")) {
+        el.setAttribute("data-hatch-style", style);
+        el.removeAttribute("style");
+      }
+    }
+    function parseAndCleanHtml(html) {
+      const tpl = document.createElement("template");
+      tpl.innerHTML = html;
+      rewriteSubtreeForTunnel(tpl.content);
+      return tpl.content;
+    }
+    function setInnerHTML(el, html, which = "innerHTML") {
+      const s = html == null ? "" : String(html);
+      if (which === "innerHTML" && typeof el.tagName === "string" && el.tagName.toUpperCase() === "TEMPLATE") {
+        try {
+          el.innerHTML = s;
+        } catch {}
+        return;
+      }
+      if (which === "outerHTML") {
+        const frag = parseAndCleanHtml(s);
+        const wrap = document.createElement("div");
+        wrap.appendChild(frag);
+        try {
+          el.outerHTML = wrap.innerHTML;
+        } catch {}
+        queueMicrotask(() => processDataHatchAttrs(document.body));
+        return;
+      }
+      const frag = parseAndCleanHtml(s);
+      try {
+        while (el.firstChild)
+          el.removeChild(el.firstChild);
+        el.appendChild(frag);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(el));
+    }
+    function insertAdjacentHTMLT(el, position, html) {
+      const s = html == null ? "" : String(html);
+      const frag = parseAndCleanHtml(s);
+      const wrap = document.createElement("template");
+      wrap.content.appendChild(frag);
+      try {
+        el.insertAdjacentHTML(position, wrap.innerHTML);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(document.body));
+    }
+    function processDataHatchAttrs(root) {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset], [data-hatch-poster], [data-hatch-action], [data-hatch-data], [data-hatch-style]";
+      root.querySelectorAll(SELECTORS).forEach((el) => {
+        const attrs = el.getAttributeNames();
+        for (const a of attrs) {
+          if (!a.startsWith("data-hatch-"))
+            continue;
+          const real = a.slice("data-hatch-".length);
+          const value = el.getAttribute(a) ?? "";
+          el.removeAttribute(a);
+          if (real === "style")
+            setStyleAttr(el, value);
+          else
+            setAttr(el, real, value);
+        }
+      });
+    }
+    const styleProxyCache = new WeakMap;
+    function getStyle(el) {
+      if (el == null)
+        return el;
+      let real;
+      try {
+        real = el.style;
+      } catch {
+        return;
+      }
+      if (real == null || typeof real !== "object" && typeof real !== "function") {
+        return real;
+      }
+      let proxy = styleProxyCache.get(real);
+      if (proxy)
+        return proxy;
+      proxy = new Proxy(real, {
+        get(target, prop, _receiver) {
+          const v = Reflect.get(target, prop, target);
+          if (typeof v === "function")
+            return v.bind(target);
+          return v;
+        },
+        set(target, prop, value) {
+          if (typeof prop === "string") {
+            setStyle(el, prop, value);
+            return true;
+          }
+          return Reflect.set(target, prop, value, target);
+        }
+      });
+      styleProxyCache.set(real, proxy);
+      return proxy;
+    }
+    function setStyle(el, propName, value) {
+      const v = value == null ? "" : String(value);
+      if (propName.startsWith("--")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style.setProperty(propName, rewritten);
+          } catch {}
+        });
+        return;
+      }
+      if (URL_STYLE_PROPS.has(propName) && v.includes("url(")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style[propName] = rewritten;
+          } catch {}
+        });
+        return;
+      }
+      try {
+        el.style[propName] = v;
+      } catch {}
+    }
+    function setStyleAttr(el, attrValue) {
+      if (!attrValue.includes("url(")) {
+        el.setAttribute("style", attrValue);
+        return;
+      }
+      rewriteCssText(attrValue).then((rewritten) => {
+        try {
+          el.setAttribute("style", rewritten);
+        } catch {}
+      });
+    }
+    function setStyleText(styleEl, text) {
+      if (!(styleEl instanceof HTMLStyleElement)) {
+        try {
+          styleEl.textContent = text;
+        } catch {}
+        return;
+      }
+      if (!text.includes("url(")) {
+        styleEl.textContent = text;
+        return;
+      }
+      rewriteCssText(text).then((rewritten) => {
+        try {
+          styleEl.textContent = rewritten;
+        } catch {}
+      });
+    }
+    function tunnelImage(_w, _h) {
+      const img = new originalImage;
+      const desc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+      if (desc?.set) {
+        const origSet = desc.set;
+        const origGet = desc.get;
+        Object.defineProperty(img, "src", {
+          configurable: true,
+          get() {
+            return origGet.call(img);
+          },
+          set(v) {
+            if (v == null)
+              return origSet.call(img, "");
+            const s = String(v);
+            if (isExternalUrl2(s))
+              return origSet.call(img, s);
+            resolveToBlobUrl(s).then((b) => origSet.call(img, b), () => origSet.call(img, s));
+          }
+        });
+      }
+      return img;
+    }
+    function tunnelSendBeacon(url, data) {
+      tunnelFetch(url, { method: "POST", body: data, keepalive: true }).catch(() => {});
+      return true;
+    }
+    function tunnelWorker(url, options) {
+      const own = ownObjectUrl(url, objectUrls);
+      if (own === null || typeof originalWorker !== "function") {
+        throw new Error("[__tunnel] new Worker() is not supported in Muse Spaces.");
+      }
+      const script = objectUrlScripts.get(own);
+      return new originalWorker(script === undefined ? own : originalCreateObjectURL(workerScriptBlob(script)), options);
+    }
+    function tunnelImport(spec) {
+      throw new Error("[__tunnel] dynamic import() of '" + String(spec) + "' is not supported in Muse Spaces.");
+    }
+    function installCssObserver() {
+      try {
+        const proto = window.CSSStyleSheet?.prototype;
+        if (proto) {
+          const origInsertRule = proto.insertRule;
+          proto.insertRule = function(rule, index) {
+            if (typeof rule === "string" && rule.includes("url(")) {
+              const idx = origInsertRule.call(this, rule, index);
+              rewriteCssText(rule).then((rewritten) => {
+                if (rewritten !== rule) {
+                  try {
+                    this.deleteRule(idx);
+                    origInsertRule.call(this, rewritten, idx);
+                  } catch {}
+                }
+              });
+              return idx;
+            }
+            return origInsertRule.call(this, rule, index);
+          };
+          const origReplace = proto.replace;
+          if (origReplace) {
+            proto.replace = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                return rewriteCssText(text).then((rewritten) => origReplace.call(this, rewritten));
+              }
+              return origReplace.call(this, text);
+            };
+          }
+          const origReplaceSync = proto.replaceSync;
+          if (origReplaceSync) {
+            proto.replaceSync = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                const ret = origReplaceSync.call(this, text);
+                rewriteCssText(text).then((rewritten) => {
+                  try {
+                    origReplaceSync.call(this, rewritten);
+                  } catch {}
+                });
+                return ret;
+              }
+              return origReplaceSync.call(this, text);
+            };
+          }
+        }
+      } catch (e) {}
+      function sweepSheet(sheet) {
+        try {
+          const rules = sheet.cssRules;
+          for (let i = 0;i < rules.length; i++) {
+            const rule = rules[i];
+            const txt = rule.cssText;
+            if (txt && (txt.includes(HATCH_FRAG) || txt.includes("url(") && !/url\(\s*["']?(blob:|https?:|data:image\/gif;base64,R0)/.test(txt))) {
+              rewriteCssText(txt).then((rewritten) => {
+                if (rewritten !== txt) {
+                  try {
+                    sheet.deleteRule(i);
+                    sheet.insertRule(rewritten, i);
+                  } catch {}
+                }
+              });
+            }
+          }
+        } catch {}
+      }
+      function sweepAll() {
+        for (const sheet of Array.from(document.styleSheets)) {
+          sweepSheet(sheet);
+        }
+      }
+      const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          for (const node of Array.from(m.addedNodes)) {
+            if (node instanceof HTMLStyleElement) {
+              const txt = node.textContent ?? "";
+              if (txt.includes("url(")) {
+                rewriteCssText(txt).then((rewritten) => {
+                  if (rewritten !== txt) {
+                    try {
+                      node.textContent = rewritten;
+                    } catch {}
+                  }
+                });
+              }
+            } else if (node instanceof HTMLLinkElement && node.rel === "stylesheet") {
+              node.addEventListener("load", () => sweepSheet(node.sheet), { once: true });
+            }
+          }
+        }
+      });
+      mo.observe(document, { subtree: true, childList: true });
+      Promise.resolve().then(sweepAll);
+      setTimeout(sweepAll, 0);
+      setTimeout(sweepAll, 50);
+      setTimeout(sweepAll, 250);
+    }
+    function rewriteAuthoredHtml() {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset]";
+      document.querySelectorAll(SELECTORS).forEach((el) => {
+        const src = el.getAttribute("data-hatch-src");
+        const href = el.getAttribute("data-hatch-href");
+        const srcset = el.getAttribute("data-hatch-srcset");
+        if (src)
+          setAttr(el, "src", src);
+        if (href)
+          setAttr(el, "href", href);
+        if (srcset)
+          setAttr(el, "srcset", srcset);
+      });
+    }
+    let historyUrlWarned = false;
+    function warnHistoryUrlDropped(method, url) {
+      if (url === undefined || url === null)
+        return;
+      if (historyUrlWarned)
+        return;
+      historyUrlWarned = true;
+      try {
+        console.warn("[__tunnel] history." + method + "() was called with a URL; the URL was ignored. A Muse web artifact " + "renders in an opaque origin with no navigable URL of its own, so " + "the browser rejects any URL change. State kept in the URL will not " + "persist or survive a reload — keep it in component state, or in " + "the artifact's database through a server action.");
+      } catch {}
+    }
+    const originalFetch = globalThis.fetch?.bind(globalThis) ?? (() => {
+      throw new Error("no native fetch");
+    });
+    const originalXHR = globalThis.XMLHttpRequest;
+    const originalWorker = globalThis.Worker;
+    const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+    const originalImage = globalThis.Image;
+    const tunnel = {
+      fetch: tunnelFetch,
+      XHR: TunnelXHR,
+      WebSocket: TunnelWebSocket,
+      EventSource: TunnelEventSource,
+      Image: tunnelImage,
+      Worker: tunnelWorker,
+      import: tunnelImport,
+      sendBeacon: tunnelSendBeacon,
+      setAttr,
+      setAttrNS,
+      setUrlProp,
+      setStyle,
+      getStyle,
+      setStyleAttr,
+      setStyleText,
+      setInnerHTML,
+      insertAdjacentHTML: insertAdjacentHTMLT,
+      rewriteCssText,
+      resolveToBlobUrl,
+      processDataHatchAttrs,
+      rewriteHtmlString,
+      _resolveUrlString: (v) => v,
+      _resolveCssValue: (v) => v,
+      _resolveCssText: (v) => v,
+      _resolveStyleProp: (v) => v,
+      _importMeta: {
+        get url() {
+          return importMetaUrl(SELF_HREF, SELF_BASE_DIR);
+        }
+      },
+      _state: {
+        get port() {
+          return port;
+        },
+        get inFlight() {
+          return pending.size;
+        },
+        get blobCacheSize() {
+          return blobCache.size;
+        },
+        get blobStats() {
+          return { ...blobStats };
+        }
+      }
+    };
+    globalThis.__tunnel = tunnel;
+    window.__tunnel = tunnel;
+    try {
+      globalThis.fetch = tunnelFetch;
+      window.fetch = tunnelFetch;
+      globalThis.XMLHttpRequest = TunnelXHR;
+      window.XMLHttpRequest = TunnelXHR;
+      globalThis.WebSocket = TunnelWebSocket;
+      window.WebSocket = TunnelWebSocket;
+      globalThis.EventSource = TunnelEventSource;
+      window.EventSource = TunnelEventSource;
+      const nav = globalThis.navigator;
+      if (nav && typeof nav.sendBeacon === "function") {
+        nav.sendBeacon = (url, data) => tunnelSendBeacon(url, data);
+      }
+      const NativeURL = globalThis.URL;
+      const TunnelURL = function(url, base) {
+        return resolveTunnelUrl(url, base, SELF_HREF, NativeURL);
+      };
+      TunnelURL.prototype = NativeURL.prototype;
+      for (const k of Object.getOwnPropertyNames(NativeURL)) {
+        if (k === "prototype" || k === "length" || k === "name")
+          continue;
+        try {
+          TunnelURL[k] = NativeURL[k];
+        } catch {}
+      }
+      globalThis.URL = TunnelURL;
+      window.URL = TunnelURL;
+    } catch {}
+    try {
+      const hist = globalThis.history;
+      if (hist && typeof hist.pushState === "function" && typeof hist.replaceState === "function") {
+        const nativePushState = hist.pushState.bind(hist);
+        const nativeReplaceState = hist.replaceState.bind(hist);
+        hist.pushState = function(state, title, url) {
+          warnHistoryUrlDropped("pushState", url);
+          return nativePushState(state, title ?? "");
+        };
+        hist.replaceState = function(state, title, url) {
+          warnHistoryUrlDropped("replaceState", url);
+          return nativeReplaceState(state, title ?? "");
+        };
+      }
+    } catch {}
+    try {
+      const nativeCreateObjectURL = URL.createObjectURL.bind(URL);
+      const nativeRevokeObjectURL = URL.revokeObjectURL.bind(URL);
+      URL.createObjectURL = function(obj) {
+        const created = nativeCreateObjectURL(obj);
+        try {
+          objectUrls.add(created);
+          if (isWorkerScriptBlob(obj))
+            objectUrlScripts.set(created, obj);
+        } catch {}
+        return created;
+      };
+      URL.revokeObjectURL = function(objectUrl) {
+        try {
+          objectUrls.delete(objectUrl);
+          objectUrlScripts.delete(objectUrl);
+        } catch {}
+        nativeRevokeObjectURL(objectUrl);
+      };
+    } catch {}
+    const announceEpoch = Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    let announceTimer = null;
+    function announce() {
+      try {
+        window.parent.postMessage({ type: "bundle:ready", epoch: announceEpoch }, "*");
+      } catch {}
+    }
+    function startAnnouncing() {
+      announce();
+      announceTimer = setInterval(() => {
+        if (port != null) {
+          if (announceTimer != null)
+            clearInterval(announceTimer);
+          announceTimer = null;
+          return;
+        }
+        announce();
+      }, 120);
+    }
+    function onParentMessage(ev) {
+      const data = ev.data;
+      if (!data || typeof data !== "object")
+        return;
+      if (data.type === "bundle:init-port" && ev.ports && ev.ports[0]) {
+        if (port != null)
+          return;
+        if (announceTimer != null) {
+          clearInterval(announceTimer);
+          announceTimer = null;
+        }
+        port = ev.ports[0];
+        port.onmessage = (pe) => {
+          const msg = pe.data;
+          if (!msg || typeof msg !== "object")
+            return;
+          if (msg.type === "http.res") {
+            const ent = pending.get(msg.id);
+            if (ent) {
+              pending.delete(msg.id);
+              ent.resolve(msg);
+            }
+          } else if (msg.type === "ws.opened" || msg.type === "ws.message" || msg.type === "ws.closed" || msg.type === "ws.error") {
+            openWs.get(msg.id)?._handle(msg);
+          }
+        };
+        port.start?.();
+        portReadyResolve?.(port);
+        installCssObserver();
+        rewriteAuthoredHtml();
+        try {
+          window.parent.postMessage({ type: "bundle:port-attached" }, "*");
+        } catch {}
+      }
+    }
+    window.addEventListener("message", onParentMessage);
+    installDownloadLinks(tunnelFetch, isExternalUrl2, __BLOB_REVOKE_DELAY_MS);
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      startAnnouncing();
+    } else {
+      document.addEventListener("DOMContentLoaded", startAnnouncing);
+    }
+  })();
+})();
+
+;
+(function () {
+  "use strict";
+  var POS = ["初爻", "二爻", "三爻", "四爻", "五爻", "上爻"];
+  var POS_CN = ["一", "二", "三", "四", "五", "六"];
+  var TRI_ORDER = ["乾", "兑", "离", "震", "巽", "坎", "艮", "坤"];
+  var TRI_SYMBOL = {
+    "乾": "☰",
+    "兑": "☱",
+    "离": "☲",
+    "震": "☳",
+    "巽": "☴",
+    "坎": "☵",
+    "艮": "☶",
+    "坤": "☷"
+  };
+  var TRI_BY_BITS = {
+    "111": "乾",
+    "110": "兑",
+    "101": "离",
+    "100": "震",
+    "011": "巽",
+    "010": "坎",
+    "001": "艮",
+    "000": "坤"
+  };
+  var HEX_NAMES = [["乾为天", "天泽履", "天火同人", "天雷无妄", "天风姤", "天水讼", "天山遁", "天地否"], ["泽天夬", "兑为泽", "泽火革", "泽雷随", "泽风大过", "泽水困", "泽山咸", "泽地萃"], ["火天大有", "火泽睽", "离为火", "火雷噬嗑", "火风鼎", "火水未济", "火山旅", "火地晋"], ["雷天大壮", "雷泽归妹", "雷火丰", "震为雷", "雷风恒", "雷水解", "雷山小过", "雷地豫"], ["风天小畜", "风泽中孚", "风火家人", "风雷益", "巽为风", "风水涣", "风山渐", "风地观"], ["水天需", "水泽节", "水火既济", "水雷屯", "水风井", "坎为水", "水山蹇", "水地比"], ["山天大畜", "山泽损", "山火贲", "山雷颐", "山风蛊", "山水蒙", "艮为山", "山地剥"], ["地天泰", "地泽临", "地火明夷", "地雷复", "地风升", "地水师", "地山谦", "坤为地"]];
+  function yaoInfo(sum) {
+    if (sum === 9) return {
+      name: "老阳",
+      yang: true,
+      moving: true,
+      mark: "○"
+    };
+    if (sum === 7) return {
+      name: "少阳",
+      yang: true,
+      moving: false,
+      mark: ""
+    };
+    if (sum === 8) return {
+      name: "少阴",
+      yang: false,
+      moving: false,
+      mark: ""
+    };
+    return {
+      name: "老阴",
+      yang: false,
+      moving: true,
+      mark: "×"
+    };
+  }
+  function posLabel(idx, yang) {
+    if (idx === 0) return yang ? "初九" : "初六";
+    if (idx === 5) return yang ? "上九" : "上六";
+    return (yang ? "九" : "六") + POS_CN[idx];
+  }
+  function trigramOf(threeYang) {
+    var bits = threeYang.map(function (y) {
+      return y ? "1" : "0";
+    }).join("");
+    return TRI_BY_BITS[bits];
+  }
+  function hexagramOf(sixYang) {
+    var lower = trigramOf(sixYang.slice(0, 3));
+    var upper = trigramOf(sixYang.slice(3, 6));
+    var name = HEX_NAMES[TRI_ORDER.indexOf(upper)][TRI_ORDER.indexOf(lower)];
+    return {
+      name: name,
+      upper: upper,
+      lower: lower
+    };
+  }
+  var lines = [];
+  var mode = "shake";
+  var manualCoins = [true, false, true];
+  var displayCoins = [true, false, true];
+  var shaking = false;
+  var doneAt = null;
+  function $(id) {
+    return document.getElementById(id);
+  }
+  var questionEl = $("question"),
+    coinsEl = $("coins"),
+    trayNote = $("trayNote"),
+    manualSum = $("manualSum"),
+    progressText = $("progressText"),
+    dotsEl = $("dots"),
+    shakeBtn = $("shakeBtn"),
+    recordBtn = $("recordBtn"),
+    undoBtn = $("undoBtn"),
+    resetBtn = $("resetBtn"),
+    buildStack = $("buildStack"),
+    buildCap = $("buildCap"),
+    detailBody = $("detailBody"),
+    resultPanel = $("resultPanel");
+  function coinHTML(back) {
+    return '<div class="coin' + (back ? ' is-back' : '') + '" aria-hidden="true">' + (back ? '<span class="back-mark">背</span>' : '<span class="glyph"><span class="n">通</span><span class="s">寶</span><span class="w">乾</span><span class="e">隆</span></span>') + '</div>' + '<div class="coin-cap"><span class="face-name">' + (back ? '背' : '字') + '</span></div>';
+  }
+  function renderCoins() {
+    __tunnel.setInnerHTML(coinsEl, "", "innerHTML");
+    displayCoins.forEach(function (back, i) {
+      var slot = document.createElement("div");
+      slot.className = "coin-slot";
+      if (mode === "manual" && lines.length < 6) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "coin-btn";
+        __tunnel.setAttr(btn, "aria-label", "第" + (i + 1) + "枚铜钱，当前为" + (back ? "背" : "字") + "，点按翻面");
+        __tunnel.setInnerHTML(btn, coinHTML(back), "innerHTML");
+        btn.addEventListener("click", function () {
+          manualCoins[i] = !manualCoins[i];
+          displayCoins = manualCoins.slice();
+          renderCoins();
+          renderManualSum();
+        });
+        slot.appendChild(btn);
+      } else {
+        __tunnel.setInnerHTML(slot, coinHTML(back), "innerHTML");
+      }
+      coinsEl.appendChild(slot);
+    });
+  }
+  function manualSumValue() {
+    return manualCoins.reduce(function (s, b) {
+      return s + (b ? 3 : 2);
+    }, 0);
+  }
+  function renderManualSum() {
+    if (mode !== "manual" || lines.length >= 6) {
+      manualSum.hidden = true;
+      return;
+    }
+    var sum = manualSumValue();
+    var info = yaoInfo(sum);
+    manualSum.hidden = false;
+    __tunnel.setInnerHTML(manualSum, "当前三钱记数 <strong>" + sum + "</strong>，成 <strong>" + info.name + "</strong>" + (info.moving ? "（动爻）" : "") + "。点铜钱可翻面。", "innerHTML");
+  }
+  function yaoLineEl(yang, mark, posText) {
+    var row = document.createElement("div");
+    row.className = "yao-line";
+    var bar = document.createElement("div");
+    bar.className = "yao-bar " + (yang ? "yang" : "yin");
+    if (yang) {
+      __tunnel.setInnerHTML(bar, '<div class="seg"></div>', "innerHTML");
+    } else {
+      __tunnel.setInnerHTML(bar, '<div class="seg"></div><div class="seg"></div>', "innerHTML");
+    }
+    var mk = document.createElement("div");
+    mk.className = "yao-mark";
+    mk.textContent = mark || "";
+    row.appendChild(bar);
+    row.appendChild(mk);
+    if (posText) {
+      var p = document.createElement("div");
+      p.className = "yao-pos";
+      p.textContent = posText;
+      row.insertBefore(p, bar);
+    }
+    return row;
+  }
+  function fillStack(el, sixYang, marks) {
+    __tunnel.setInnerHTML(el, "", "innerHTML");
+    sixYang.forEach(function (yang, i) {
+      el.appendChild(yaoLineEl(yang, marks ? marks[i] : "", null));
+    });
+  }
+  function render() {
+    var n = lines.length;
+    if (n < 6) {
+      __tunnel.setInnerHTML(progressText, "第<em>" + POS_CN[n] + "</em>摇 · " + POS[n], "innerHTML");
+    } else {
+      __tunnel.setInnerHTML(progressText, "六摇已成", "innerHTML");
+    }
+    __tunnel.setInnerHTML(dotsEl, "", "innerHTML");
+    for (var i = 0; i < 6; i++) {
+      var d = document.createElement("span");
+      if (i < n) {
+        var inf = yaoInfo(lines[i].sum);
+        d.className = "dot " + (inf.yang ? "yang" : "yin") + (inf.moving ? " moving" : "");
+      } else if (i === n) {
+        d.className = "dot next";
+      } else {
+        d.className = "dot";
+      }
+      dotsEl.appendChild(d);
+    }
+    __tunnel.setInnerHTML(buildStack, "", "innerHTML");
+    lines.forEach(function (ln, idx) {
+      var inf2 = yaoInfo(ln.sum);
+      buildStack.appendChild(yaoLineEl(inf2.yang, inf2.mark, POS[idx]));
+    });
+    buildCap.textContent = n === 0 ? "六爻未齐" : n < 6 ? "已得 " + n + " 爻，还差 " + (6 - n) + " 爻" : "六爻已齐";
+    if (n === 0) {
+      __tunnel.setInnerHTML(detailBody, '<tr class="empty-row"><td colspan="4">尚未起爻，摇第一钱后逐爻列于此。</td></tr>', "innerHTML");
+    } else {
+      __tunnel.setInnerHTML(detailBody, "", "innerHTML");
+      for (var j = n - 1; j >= 0; j--) {
+        var ln2 = lines[j],
+          inf3 = yaoInfo(ln2.sum);
+        var tr = document.createElement("tr");
+        var coinsText = ln2.coins.map(function (b) {
+          return b ? "背" : "字";
+        }).join(" ");
+        __tunnel.setInnerHTML(tr, "<td class='pos'>" + POS[j] + "<span style='color:var(--ink-3);font-weight:400;font-size:12.5px'> " + posLabel(j, inf3.yang) + "</span></td>" + "<td>" + coinsText + "</td>" + "<td>" + ln2.sum + "</td>" + "<td>" + inf3.name + (inf3.moving ? "<span class='mv-tag'>动</span>" : "") + "</td>", "innerHTML");
+        detailBody.appendChild(tr);
+      }
+    }
+    var finished = n >= 6;
+    shakeBtn.hidden = mode !== "shake";
+    recordBtn.hidden = mode !== "manual";
+    shakeBtn.disabled = finished || shaking;
+    recordBtn.disabled = finished;
+    undoBtn.disabled = n === 0 || shaking;
+    resetBtn.disabled = n === 0 && !questionEl.value;
+    shakeBtn.textContent = finished ? "六 摇 已 成" : "摇 一 摇";
+    renderCoins();
+    renderManualSum();
+    if (finished) {
+      renderResult();
+    } else {
+      resultPanel.hidden = true;
+    }
+  }
+  function renderResult() {
+    var sixYang = lines.map(function (ln) {
+      return yaoInfo(ln.sum).yang;
+    });
+    var marks = lines.map(function (ln) {
+      return yaoInfo(ln.sum).mark;
+    });
+    var ben = hexagramOf(sixYang);
+    $("benName").textContent = ben.name;
+    $("benTri").textContent = "上卦 " + ben.upper + " " + TRI_SYMBOL[ben.upper] + " · 下卦 " + ben.lower + " " + TRI_SYMBOL[ben.lower];
+    fillStack($("benStack"), sixYang, marks);
+    var movingIdx = [];
+    lines.forEach(function (ln, i) {
+      if (yaoInfo(ln.sum).moving) movingIdx.push(i);
+    });
+    if (movingIdx.length) {
+      var bianYang = sixYang.map(function (y, i) {
+        return movingIdx.indexOf(i) >= 0 ? !y : y;
+      });
+      var bian = hexagramOf(bianYang);
+      __tunnel.setStyle($("bianBox"), "display", "");
+      $("bianName").textContent = bian.name;
+      $("bianTri").textContent = "上卦 " + bian.upper + " " + TRI_SYMBOL[bian.upper] + " · 下卦 " + bian.lower + " " + TRI_SYMBOL[bian.lower];
+      fillStack($("bianStack"), bianYang, null);
+      var names = movingIdx.map(function (i) {
+        return POS[i] + "（" + posLabel(i, sixYang[i]) + "）";
+      }).join("、");
+      __tunnel.setInnerHTML($("movingLine"), "动爻：<strong>" + names + "</strong>，共 " + movingIdx.length + " 爻动。", "innerHTML");
+    } else {
+      __tunnel.setStyle($("bianBox"), "display", "none");
+      __tunnel.setInnerHTML($("movingLine"), "六爻皆静，<strong>无动爻</strong>，只有本卦。", "innerHTML");
+    }
+    resultPanel.hidden = false;
+  }
+  function pushLine(coins) {
+    var sum = coins.reduce(function (s, b) {
+      return s + (b ? 3 : 2);
+    }, 0);
+    lines.push({
+      coins: coins.slice(),
+      sum: sum
+    });
+    if (lines.length === 6 && !doneAt) {
+      doneAt = new Date();
+    }
+    if (lines.length < 6) {
+      doneAt = null;
+    }
+    var inf = yaoInfo(sum);
+    __tunnel.setInnerHTML(trayNote, "第" + POS_CN[lines.length - 1] + "摇得 <strong>" + POS[lines.length - 1] + "</strong>：" + coins.map(function (b) {
+      return b ? "背" : "字";
+    }).join(" ") + "，记数 <strong>" + sum + "</strong>，为 <strong>" + inf.name + "</strong>" + (inf.moving ? ' <span class="mv">动爻</span>' : "") + "。", "innerHTML");
+    render();
+  }
+  shakeBtn.addEventListener("click", function () {
+    if (shaking || lines.length >= 6) return;
+    shaking = true;
+    shakeBtn.disabled = true;
+    trayNote.textContent = "铜钱落定之前，心中只存所问之事……";
+    var coinEls = coinsEl.querySelectorAll(".coin");
+    coinEls.forEach(function (c, k) {
+      __tunnel.setStyle(c, "animationDelay", k * 0.09 + "s");
+      c.classList.add("shaking");
+    });
+    var result = [Math.random() < 0.5, Math.random() < 0.5, Math.random() < 0.5];
+    setTimeout(function () {
+      displayCoins = result.slice();
+      shaking = false;
+      render();
+      pushLine(result);
+    }, 820);
+  });
+  recordBtn.addEventListener("click", function () {
+    if (lines.length >= 6) return;
+    displayCoins = manualCoins.slice();
+    pushLine(manualCoins);
+  });
+  undoBtn.addEventListener("click", function () {
+    if (lines.length === 0 || shaking) return;
+    lines.pop();
+    doneAt = null;
+    trayNote.textContent = lines.length === 0 ? "已撤回，可重新起爻。" : "已撤回上一爻，现为第" + POS_CN[lines.length] + "摇。";
+    render();
+  });
+  resetBtn.addEventListener("click", function () {
+    lines = [];
+    doneAt = null;
+    questionEl.value = "";
+    displayCoins = [true, false, true];
+    manualCoins = [true, false, true];
+    trayNote.textContent = mode === "shake" ? "点「摇一摇」，三枚铜钱定一爻。" : "点铜钱翻面，与手中的实物一致后记下这一爻。";
+    render();
+  });
+  questionEl.addEventListener("input", function () {
+    resetBtn.disabled = lines.length === 0 && !questionEl.value;
+  });
+  function setMode(m) {
+    mode = m;
+    __tunnel.setAttr($("modeShake"), "aria-pressed", m === "shake" ? "true" : "false");
+    __tunnel.setAttr($("modeManual"), "aria-pressed", m === "manual" ? "true" : "false");
+    if (lines.length < 6) {
+      trayNote.textContent = m === "shake" ? "点「摇一摇」，三枚铜钱定一爻。" : "手摇实物铜钱后，点铜钱翻面，使字背与实物一致，再记下这一爻。";
+    }
+    render();
+  }
+  $("modeShake").addEventListener("click", function () {
+    setMode("shake");
+  });
+  $("modeManual").addEventListener("click", function () {
+    setMode("manual");
+  });
+  function pad(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+  function resultText() {
+    var sixYang = lines.map(function (ln) {
+      return yaoInfo(ln.sum).yang;
+    });
+    var ben = hexagramOf(sixYang);
+    var movingIdx = [];
+    lines.forEach(function (ln, i) {
+      if (yaoInfo(ln.sum).moving) movingIdx.push(i);
+    });
+    var when = doneAt || new Date();
+    var out = [];
+    out.push("摇六爻");
+    var q = questionEl.value.trim();
+    out.push("所问之事：" + (q ? q : "（未填）"));
+    out.push("起卦时间：" + when.getFullYear() + "-" + pad(when.getMonth() + 1) + "-" + pad(when.getDate()) + " " + pad(when.getHours()) + ":" + pad(when.getMinutes()));
+    out.push("");
+    out.push("六爻明细（自下而上）：");
+    lines.forEach(function (ln, i) {
+      var inf = yaoInfo(ln.sum);
+      var coinsText = ln.coins.map(function (b) {
+        return b ? "背" : "字";
+      }).join("");
+      out.push(POS[i] + " " + posLabel(i, inf.yang) + "｜" + coinsText + "｜记数 " + ln.sum + "｜" + inf.name + (inf.moving ? "（动）" : ""));
+    });
+    out.push("");
+    out.push("本卦：" + ben.name + "（上" + ben.upper + "下" + ben.lower + "）");
+    if (movingIdx.length) {
+      var bianYang = sixYang.map(function (y, i) {
+        return movingIdx.indexOf(i) >= 0 ? !y : y;
+      });
+      var bian = hexagramOf(bianYang);
+      var names = movingIdx.map(function (i) {
+        return POS[i];
+      }).join("、");
+      out.push("动爻：" + names + "，共 " + movingIdx.length + " 爻动");
+      out.push("变卦：" + bian.name + "（上" + bian.upper + "下" + bian.lower + "）");
+    } else {
+      out.push("动爻：无（六爻皆静）");
+    }
+    return out.join("\n");
+  }
+  $("copyBtn").addEventListener("click", function () {
+    var text = resultText();
+    var ok = $("copyOk");
+    function done() {
+      ok.textContent = "已复制";
+      setTimeout(function () {
+        ok.textContent = "";
+      }, 2200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {
+        fallback();
+      });
+    } else {
+      fallback();
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      __tunnel.setStyle(ta, "position", "fixed");
+      __tunnel.setStyle(ta, "opacity", "0");
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        done();
+      } catch (e) {
+        ok.textContent = "复制未成功，请用下载";
+      }
+      document.body.removeChild(ta);
+    }
+  });
+  $("downloadBtn").addEventListener("click", function () {
+    var text = resultText();
+    var blob = new Blob([text], {
+      type: "text/plain;charset=utf-8"
+    });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var when = doneAt || new Date();
+    __tunnel.setUrlProp(a, "href", url);
+    a.download = "六爻卦象-" + when.getFullYear() + pad(when.getMonth() + 1) + pad(when.getDate()) + "-" + pad(when.getHours()) + pad(when.getMinutes()) + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 1500);
+  });
+  render();
+})();</script>
+</body>
+</html>

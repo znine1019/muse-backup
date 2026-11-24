@@ -1,0 +1,8 @@
+{
+  "runtime": "typescript",
+  "platformVersion": 29,
+  "entry": "client/dist/index.html",
+  "name": "IP 纯净度检测",
+  "slug": "ip-chun-jing-du-jian-ce",
+  "managedCronJobs": []
+}

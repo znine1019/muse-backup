@@ -1,0 +1,8 @@
+{
+  "schema_version": "hatch.probe_ui_session.v1",
+  "socket": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/.harness/probe-ui/sock",
+  "slug": "qiao-ge-xun-ji-xi-tong",
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-77a0e450-5545-47e0-a071-7ad1e1f6af0e/",
+  "audit_session_id": "dded4dbb-1697-48d4-845f-209de6918fad",
+  "pid": 6509
+}

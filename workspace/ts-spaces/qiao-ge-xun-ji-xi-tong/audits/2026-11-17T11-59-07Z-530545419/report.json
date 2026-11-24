@@ -1,0 +1,263 @@
+{
+  "ok": true,
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-77a0e450-5545-47e0-a071-7ad1e1f6af0e/",
+  "duration_ms": 5879.204473000001,
+  "output_dir": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419",
+  "nav_status": 200,
+  "viewports": {
+    "desktop": {
+      "width": 1440,
+      "height": 900,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419/screenshot.png",
+      "fullpage_screenshot_path": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419/screenshot-full.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "screenshot_path": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419/screenshot-mobile.png"
+    }
+  },
+  "mobile_layout": {
+    "viewport_width": 390,
+    "scroll_width": 390,
+    "overflow_px": 0,
+    "widest_selector": null,
+    "verdict": "pass"
+  },
+  "horizontal_scrollers": [],
+  "unreachable_controls": {
+    "desktop": [],
+    "mobile": []
+  },
+  "clipped": {
+    "desktop": [
+      {
+        "tag": "label",
+        "text": "里程碑 R02 状态",
+        "kind": "text_truncated",
+        "overflow_px": 116,
+        "bbox": [
+          424,
+          621,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "里程碑 BP02-B 状态",
+        "kind": "text_truncated",
+        "overflow_px": 141,
+        "bbox": [
+          424,
+          790,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "里程碑 R12 状态",
+        "kind": "text_truncated",
+        "overflow_px": 116,
+        "bbox": [
+          424,
+          958,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          416,
+          1233,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          416,
+          1403,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          416,
+          1574,
+          1,
+          1
+        ]
+      }
+    ],
+    "mobile": [
+      {
+        "tag": "label",
+        "text": "里程碑 R02 状态",
+        "kind": "text_truncated",
+        "overflow_px": 116,
+        "bbox": [
+          80,
+          641,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "里程碑 BP02-B 状态",
+        "kind": "text_truncated",
+        "overflow_px": 141,
+        "bbox": [
+          80,
+          810,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "里程碑 R12 状态",
+        "kind": "text_truncated",
+        "overflow_px": 116,
+        "bbox": [
+          80,
+          978,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          72,
+          1253,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          72,
+          1423,
+          1,
+          1
+        ]
+      },
+      {
+        "tag": "label",
+        "text": "任务状态",
+        "kind": "text_truncated",
+        "overflow_px": 63,
+        "bbox": [
+          72,
+          1594,
+          1,
+          1
+        ]
+      }
+    ]
+  },
+  "images": {
+    "total": 0,
+    "broken": [],
+    "duplicate": [],
+    "unstable": [],
+    "failed_requests": [],
+    "external_blocked": {
+      "count": 0,
+      "sample": []
+    },
+    "sample_urls": [],
+    "verdict": "pass"
+  },
+  "text_issues": [],
+  "console_errors": [],
+  "console_warnings": [],
+  "external_fetch_failures": 0,
+  "external_fetch_failure_samples": [],
+  "blocked_requests": [],
+  "external_requests": [],
+  "external_requests_dropped": 0,
+  "external_requests_dropped_data_bearing": 0,
+  "transport_ledger_active": true,
+  "egress_lockdown": true,
+  "transport_connections": [
+    {
+      "host": "artifact-capture.invalid",
+      "port": 443,
+      "connects": 2,
+      "bytes_up": 3996,
+      "bytes_down": 2488
+    }
+  ],
+  "transport_udp_attempts": 0,
+  "transport_overflow": 0,
+  "unexplained_transport_hosts": [],
+  "broken_assets": [],
+  "blocked_affordances": [],
+  "interactive_nodes": 13,
+  "aria_snapshot": "- main:\n  - region \"项目状态\":\n    - text: 乔格体育 · 内部 2026年11月12日 更新\n    - heading \"乔格训迹系统\" [level=1]\n    - paragraph: 微信小程序 · 俱乐部内部使用\n    - paragraph: 当前版本\n    - paragraph: V1.6.2\n    - text: 已暂停 PAUSED\n    - paragraph: 当前暂停，待明确恢复后从真实停点继续。\n    - img \"里程碑进度：3 个中 1 个已完成\": R02 · 已完成 BP02-B · 受阻 R12 · 部分完成\n    - button \"恢复项目\"\n    - button \"编辑项目信息\"\n    - paragraph: 项目保持暂停。没有你的明确操作，不会启动开发、补测或部署；下面的状态和备注按原记录保留，可随时编辑。\n  - region \"里程碑\":\n    - heading \"里程碑 3\" [level=2]\n    - button \"新增里程碑\": + 新增\n    - article:\n      - text: 1 R02 已完成 1/1 任务完成\n      - heading \"R02 收口\" [level=3]\n      - paragraph: 已收口，带偏差记录。\n      - text: 里程碑 R02 状态\n      - combobox \"里程碑 R02 状态\":\n        - option \"已完成\" [selected]\n        - option \"受阻\"\n        - option \"部分完成\"\n        - option \"进行中\"\n        - option \"未开始\"\n      - button \"编辑里程碑 R02\": 编辑\n      - button \"删除里程碑 R02\": 删除\n    - article:\n      - text: 2 BP02-B 受阻 0/1 任务完成\n      - heading \"BP02-B 问题修复\" [level=3]\n      - paragraph: P1 未修复。\n      - text: 里程碑 BP02-B 状态\n      - combobox \"里程碑 BP02-B 状态\":\n        - option \"已完成\"\n        - option \"受阻\" [selected]\n        - option \"部分完成\"\n        - option \"进行中\"\n        - option \"未开始\"\n      - button \"编辑里程碑 BP02-B\": 编辑\n      - button \"删除里程碑 BP02-B\": 删除\n    - article:\n      - text: 3 R12 部分完成 0/1 任务完成\n      - heading \"R12 · Muse API 三方闭环\" [level=3]\n      - paragraph: PARTIAL，Muse API 三方闭环未完成。\n      - text: 里程碑 R12 状态\n      - combobox \"里程碑 R12 状态\":\n        - option \"已完成\"\n        - option \"受阻\"\n        - option \"部分完成\" [selected]\n        - option \"进行中\"\n        - option \"未开始\"\n      - button \"编辑里程碑 R12\": 编辑\n      - button \"删除里程碑 R12\": 删除\n  - region \"任务清单\":\n    - heading \"任务清单 3\" [level=2]\n    - button \"新增任务\": + 新增\n    - group \"按里程碑筛选任务\":\n      - button \"显示全部任务\" [pressed]: 全部\n      - button \"只看 R02 的任务\": R02\n      - button \"只看 BP02-B 的任务\": BP02-B\n      - button \"只看 R12 的任务\": R12\n    - article:\n      - button \"将任务「R02 收口归档（含偏差记录）」标记为待办\": ✓\n      - heading \"R02 收口归档（含偏差记录）\" [level=3]\n      - text: R02 已完成 任务状态\n      - combobox \"任务「R02 收口归档（含偏差记录）」状态\":\n        - option \"已完成\" [selected]\n        - option \"受阻\"\n        - option \"进行中\"\n        - option \"待办\"\n      - button \"编辑任务 R02 收口归档（含偏差记录）\": 编辑\n      - button \"删除任务 R02 收口归档（含偏差记录）\": 删除\n    - article:\n      - button \"将任务「修复 BP02-B 的 P1 问题」标记为已完成\": ✓\n      - heading \"修复 BP02-B 的 P1 问题\" [level=3]\n      - text: BP02-B 受阻 P1\n      - paragraph: 未修复。\n      - text: 任务状态\n      - combobox \"任务「修复 BP02-B 的 P1 问题」状态\":\n        - option \"已完成\"\n        - option \"受阻\" [selected]\n        - option \"进行中\"\n        - option \"待办\"\n      - button \"编辑任务 修复 BP02-B 的 P1 问题\": 编辑\n      - button \"删除任务 修复 BP02-B 的 P1 问题\": 删除\n    - article:\n      - button \"将任务「完成 R12 的 Muse API 三方闭环」标记为已完成\": ✓\n      - heading \"完成 R12 的 Muse API 三方闭环\" [level=3]\n      - text: R12 进行中\n      - paragraph: 当前为 PARTIAL。\n      - text: 任务状态\n      - combobox \"任务「完成 R12 的 Muse API 三方闭环」状态\":\n        - option \"已完成\"\n        - option \"受阻\"\n        - option \"进行中\" [selected]\n        - option \"待办\"\n      - button \"编辑任务 完成 R12 的 Muse API 三方闭环\": 编辑\n      - button \"删除任务 完成 R12 的 Muse API 三方闭环\": 删除\n    - text: 原始记录来源：上一个 Muse 导出 joger-space-data.json（2026-11-12）。项目、里程碑与任务的状态和备注按原样录入，此后修改以你在这里的操作为准。",
+  "document_text": {
+    "path": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419/document-text.txt",
+    "chars": 1253,
+    "truncated": false
+  },
+  "audit_session_id": "dded4dbb-1697-48d4-845f-209de6918fad",
+  "readiness": {
+    "desktop": {
+      "settled": true,
+      "settle_ms": 1030,
+      "in_flight": 0,
+      "network_idle": true,
+      "retried": false
+    },
+    "mobile": {
+      "settled": true,
+      "settle_ms": 1025,
+      "in_flight": 0,
+      "network_idle": true,
+      "retried": false
+    }
+  },
+  "color_scheme": {
+    "declared": "light dark",
+    "media_dependent": null,
+    "dark_frame": false
+  },
+  "mobile_ms": 2305.8915460000003,
+  "cold_launch_ms": 2725.660108,
+  "desktop_ms": 2451.883573,
+  "browser_launches": 1,
+  "audit_path": "shared-concurrent",
+  "diagnostics": {
+    "audit_path": "shared-concurrent",
+    "concurrent_ran": true,
+    "concurrent_desktop_retry": false,
+    "concurrent_mobile_retry": false,
+    "shared_launch_failed": false,
+    "nav_retries": 0,
+    "settle_retries": 0
+  }
+}

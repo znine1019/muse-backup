@@ -1,0 +1,8 @@
+{
+  "schema_version": "hatch.probe_ui_session.v1",
+  "socket": "/home/hatch/workspace/ts-spaces/yao-liu-yao/.harness/probe-ui/sock",
+  "slug": "yao-liu-yao",
+  "url": "https://artifact-capture.invalid/spaces/v2/hatch-audit-77453d24-4e9a-4573-9244-398e3cb75739/",
+  "audit_session_id": "b9f684e7-3d56-4b4d-8f78-9d2df225c272",
+  "pid": 8447
+}

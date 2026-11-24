@@ -1,0 +1,52 @@
+@import "tailwindcss";
+@import "tailwindcss-safe-area";
+
+@theme {
+  --text-xs: 12px; --text-xs--line-height: 16px;
+  --text-sm: 14px; --text-sm--line-height: 20px;
+  --text-base: 16px; --text-base--line-height: 24px;
+  --text-lg: 18px; --text-lg--line-height: 28px;
+  --text-xl: 20px; --text-xl--line-height: 28px;
+  --text-2xl: 24px; --text-2xl--line-height: 32px;
+  --text-3xl: 30px; --text-3xl--line-height: 36px;
+  --text-4xl: 36px; --text-4xl--line-height: 40px;
+}
+
+:root {
+  color-scheme: light dark;
+  --bg: #FAF7F2;
+  --surface: #FFFFFF;
+  --surface2: #F3EDE3;
+  --text: #1A1815;
+  --dim: #7A7268;
+  --border: #E8E0D6;
+  --accent: #E85D1A;
+  --accent-text: #FFFFFF;
+  --done: #3A7D44;
+  --blocked: #C0392B;
+  --partial: #B7791F;
+  --radius: 14px;
+  --space-surface: var(--surface);
+  --space-surface-alt: var(--surface2);
+  --space-muted: var(--dim);
+  --space-border: var(--border);
+  --space-accent: var(--accent);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141210;
+    --surface: #1E1B18;
+    --surface2: #2A2622;
+    --text: #F5EFE6;
+    --dim: #A89C8D;
+    --border: #3A342E;
+    --accent: #FF7A33;
+    --done: #6FCF7E;
+    --blocked: #FF7A6B;
+    --partial: #E8B84B;
+  }
+}
+@layer base {
+  button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+}
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }

@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "audited_at_ms": 1794916764850,
+  "audit_dir": "/home/hatch/workspace/ts-spaces/qiao-ge-xun-ji-xi-tong/audits/2026-11-17T11-59-07Z-530545419",
+  "declared_post_submit_action": "seedFromMigration",
+  "rendered_data_digest": "df5a388a6b9d405752d434b3cea3cb8af50f1c4d8d7c45ffcd086782bfcbedf1",
+  "rendered_blob_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

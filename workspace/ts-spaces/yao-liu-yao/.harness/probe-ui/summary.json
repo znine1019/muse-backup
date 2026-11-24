@@ -1,0 +1,13 @@
+{
+  "schema_version": "hatch.probe_ui_summary.v1",
+  "slug": "yao-liu-yao",
+  "session_id": "b9f684e7-3d56-4b4d-8f78-9d2df225c272",
+  "observes": 2,
+  "acts": 0,
+  "acts_ok": 0,
+  "interactive_nodes": 7,
+  "viewports_seen": [
+    "mobile"
+  ],
+  "findings": []
+}

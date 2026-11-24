@@ -1,0 +1,8 @@
+{
+  "entry": "client/dist/index.html",
+  "managedCronJobs": [],
+  "name": "乔格训迹系统",
+  "platformVersion": 28,
+  "runtime": "typescript",
+  "slug": "qiao-ge-xun-ji-xi-tong"
+}

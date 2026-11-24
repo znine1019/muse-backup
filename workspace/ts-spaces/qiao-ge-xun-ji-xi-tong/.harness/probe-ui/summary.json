@@ -1,0 +1,13 @@
+{
+  "schema_version": "hatch.probe_ui_summary.v1",
+  "slug": "qiao-ge-xun-ji-xi-tong",
+  "session_id": "dded4dbb-1697-48d4-845f-209de6918fad",
+  "observes": 3,
+  "acts": 5,
+  "acts_ok": 5,
+  "interactive_nodes": 19,
+  "viewports_seen": [
+    "mobile"
+  ],
+  "findings": []
+}
