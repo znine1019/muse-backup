@@ -1,0 +1,2335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="dark"/>
+<link rel="icon" href="data:,"/>
+<title>花山拳 AI 训练 · 姿态检测终端</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous" data-hatch-cvm-external></script>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#07090D; --panel:#0E131B; --panel2:#121A25; --panel3:#0A0F16;
+  --line:#223041; --line2:#2E4258;
+  --ink:#F2F6FA; --muted:#8FA3B8; --muted2:#5F7287;
+  --acc:#FF4A1C; --acc2:#FF7A1A; --lime:#B8FF2E; --lime-dim:#1C2B08;
+  --amber:#FFB020; --red-bg:#2A0E08; --radius:10px;
+  --numfont:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --font:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;font-family:var(--font);background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+button{min-height:48px;font-family:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px 48px}
+/* ===== Top system bar ===== */
+.sysbar{display:flex;align-items:stretch;justify-content:space-between;gap:0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sys-left{display:flex;align-items:center;gap:14px;padding:14px 0}
+.mark{width:46px;height:46px;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:900;font-size:22px;flex-shrink:0}
+.sys-left h1{margin:0;font-size:21px;font-weight:900;letter-spacing:.02em;line-height:1.1}
+.sys-left h1 span{color:var(--acc)}
+.sys-left p{margin:2px 0 0;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-family:var(--numfont)}
+.sys-right{display:flex;align-items:center;gap:0}
+.sys-stat{padding:8px 16px;border-left:1px solid var(--line);text-align:left}
+.sys-stat b{display:block;font-family:var(--numfont);font-size:17px;letter-spacing:.06em;line-height:1;color:var(--lime)}
+.sys-stat b.orange{color:var(--acc2)}
+.sys-stat small{color:var(--muted2);font-size:10px;font-weight:700;letter-spacing:.14em}
+@media(max-width:640px){.sys-stat{padding:8px 10px}.sys-stat.hideS{display:none}}
+/* ===== Tabs ===== */
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--panel3);border:1px solid var(--line);margin:16px 0;position:sticky;top:8px;z-index:30}
+.tabs button{border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font-weight:900;font-size:15px;cursor:pointer;padding:13px 6px;letter-spacing:.04em}
+.tabs button:last-child{border-right:0}
+.tabs button small{display:block;font-family:var(--numfont);font-size:10px;letter-spacing:.22em;font-weight:600;color:var(--muted2)}
+.tabs button.active{background:var(--ink);color:#0A0E13}
+.tabs button.active small{color:#5A6B7D}
+.view{display:none}.view.active{display:block}
+/* ===== Console layout ===== */
+.console{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:14px;align-items:start}
+@media(max-width:920px){.console{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.panel-head b{font-size:12px;letter-spacing:.18em;font-weight:900}
+.panel-head b i{font-style:normal;color:var(--acc)}
+.panel-head span{font-family:var(--numfont);font-size:11px;letter-spacing:.16em;color:var(--muted2);font-weight:600}
+/* Mode switch */
+.modeRow{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.modeCard{border:0;border-right:1px solid var(--line);background:var(--panel3);color:var(--muted);padding:14px;text-align:left;cursor:pointer;width:100%}
+.modeCard:last-child{border-right:0}
+.modeCard .m-tag{font-family:var(--numfont);font-size:10px;letter-spacing:.22em;font-weight:700;color:var(--muted2)}
+.modeCard b{font-size:19px;display:block;color:var(--ink);font-weight:900;margin:2px 0}
+.modeCard small{color:var(--muted);font-weight:500;font-size:12px;line-height:1.45;display:block}
+.modeCard.active{background:#1A0E08;box-shadow:inset 0 -3px 0 var(--acc)}
+.modeCard.active .m-tag{color:var(--acc2)}
+/* Stage / viewfinder */
+.stage{background:#000;overflow:hidden;position:relative;aspect-ratio:4/3}
+@media(min-width:700px){.stage{aspect-ratio:16/10}}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.stagePlaceholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#C7D3E0;padding:28px;background:var(--panel3)}
+.stagePlaceholder .big{font-family:var(--numfont);font-size:15px;letter-spacing:.3em;color:var(--acc2);font-weight:700}
+.stagePlaceholder strong{font-size:24px;display:block;color:#fff;margin:8px 0 6px;font-weight:900}
+.stagePlaceholder p{color:var(--muted);font-size:13px;max-width:440px;margin:0 auto;line-height:1.7}
+.corner{position:absolute;width:26px;height:26px;border-color:var(--lime);border-style:solid;opacity:.9;pointer-events:none;z-index:3}
+.c-tl{top:10px;left:10px;border-width:3px 0 0 3px}.c-tr{top:10px;right:10px;border-width:3px 3px 0 0}
+.c-bl{bottom:10px;left:10px;border-width:0 0 3px 3px}.c-br{bottom:10px;right:10px;border-width:0 3px 3px 0}
+.hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;gap:0;pointer-events:none;z-index:4}
+.hud div{background:rgba(4,6,9,.82);color:#fff;padding:8px 12px;font-weight:700;font-size:12px;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,.14)}
+.hud .live{color:var(--lime);font-family:var(--numfont);font-size:15px;letter-spacing:.08em}
+.hud .rec{color:#FF5A3C}
+.hud .rec::before{content:"● ";animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+@media(prefers-reduced-motion:reduce){.hud .rec::before{animation:none}}
+/* Status feedback bar */
+.feedback{display:flex;align-items:center;gap:12px;padding:15px 16px;font-size:19px;font-weight:900;line-height:1.35;background:var(--panel2);border-top:1px solid var(--line);border-left:6px solid var(--line2);min-height:64px}
+.feedback::before{content:"";width:11px;height:11px;border-radius:50%;background:var(--muted2);flex-shrink:0}
+.feedback.good{border-left-color:var(--lime);background:var(--lime-dim);color:#E9FFC4}
+.feedback.good::before{background:var(--lime);box-shadow:0 0 12px var(--lime)}
+.feedback.warn{border-left-color:var(--amber);background:#2A1E05;color:#FFE3A1}
+.feedback.warn::before{background:var(--amber)}
+.error{display:none;background:var(--red-bg);border:1px solid #6E2413;color:#FFB4A0;padding:13px 15px;margin-top:12px;font-weight:700;font-size:14px;line-height:1.6}
+.error.show{display:block}
+/* Dashboard rail */
+.gaugeBox{padding:18px 14px 8px;text-align:center;border-bottom:1px solid var(--line)}
+.gaugeWrap{position:relative;width:196px;height:196px;margin:0 auto}
+.gaugeWrap svg{transform:rotate(-90deg)}
+.gaugeCenter{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.gaugeCenter .g-num{font-family:var(--numfont);font-size:64px;font-weight:700;line-height:.95;letter-spacing:.01em}
+.gaugeCenter .g-lab{font-size:11px;letter-spacing:.2em;color:var(--muted);font-weight:900;margin-top:2px}
+.gaugeSub{color:var(--muted);font-size:12px;font-weight:700;margin:8px 0 10px}
+.gaugeSub.ok{color:var(--lime)}
+.tiles{display:grid;grid-template-columns:1fr 1fr}
+.tile{padding:13px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tile:nth-child(2n){border-right:0}
+.tile label{font-size:10px;font-weight:900;letter-spacing:.18em;color:var(--muted2);display:block}
+.tile strong{font-family:var(--numfont);font-size:37px;font-weight:700;display:block;line-height:1.05;margin-top:2px}
+.tile strong em{font-style:normal;font-size:17px;color:var(--muted)}
+.tile small{color:var(--muted);font-weight:500;font-size:11px}
+.tile.hero-tile{grid-column:1/-1;background:var(--panel3)}
+.tile.hero-tile strong{font-size:52px;color:var(--acc2)}
+.tile.hero-tile strong.lime{color:var(--lime)}
+.sliderBox{padding:13px 14px;border-bottom:1px solid var(--line)}
+.sliderBox label{font-weight:900;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.sliderBox label output{font-family:var(--numfont);color:var(--acc2);font-size:17px}
+input[type=range]{width:100%;height:40px;accent-color:var(--acc)}
+.scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted2);font-weight:700;font-family:var(--numfont);letter-spacing:.06em}
+.controls{display:flex;flex-direction:column;gap:9px;padding:14px}
+.btn{border:0;padding:15px 16px;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:.05em;width:100%;text-align:center}
+.btn-primary{background:var(--acc);color:#fff}
+.btn-primary:disabled{background:#3A2320;color:#8A6A62;cursor:not-allowed}
+.btn-stop{background:var(--ink);color:#0A0E13}
+.btn-stop:disabled{background:#26313F;color:#66788C;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--line2);color:var(--muted)}
+.btn-ghost:hover{color:var(--ink)}
+.privacy{padding:12px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.7}
+.privacy b{color:var(--lime)}
+/* Rules strip */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:700px){.rules{grid-template-columns:1fr}}
+.rule{padding:16px 18px}
+.rule h3{margin:0 0 4px;font-size:16px;font-weight:900}
+.rule h3 span{font-family:var(--numfont);color:var(--acc2);letter-spacing:.14em;font-size:12px;margin-right:8px}
+.rule ul{margin:8px 0 0;padding:0;list-style:none}
+.rule li{padding:7px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;font-weight:500;display:flex;gap:10px}
+.rule li b{color:var(--ink);font-family:var(--numfont);letter-spacing:.05em;flex-shrink:0}
+.summaryBox{display:none;margin-top:14px;background:#0D1A08;border:1px solid #3D5A16;padding:18px}
+.summaryBox.show{display:block}
+.summaryBox h3{margin:0;color:var(--lime);font-size:17px}
+.summaryBox p{margin:8px 0 0;line-height:1.8;color:#DCEBC2}
+.kbd{font-size:12px;color:var(--muted)}
+/* ===== Demo ===== */
+.demo-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:4px 0 14px}
+.demo-head h2{margin:0;font-size:30px;font-weight:900;line-height:1.15}
+.demo-head h2 span{color:var(--acc)}
+.demo-head p{margin:6px 0 0;color:var(--muted);font-size:14px;max-width:640px}
+.demo-head .en{font-family:var(--numfont);letter-spacing:.26em;color:var(--muted2);font-size:12px;font-weight:700}
+.videoCard{margin-bottom:16px;overflow:hidden}
+.videoGrid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+@media(max-width:820px){.videoGrid{grid-template-columns:1fr}}
+.player{background:#000;position:relative;aspect-ratio:16/9}
+.player video{position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
+.player .live-tag{position:absolute;top:10px;left:10px;z-index:2;background:var(--acc);color:#fff;font-size:11px;font-weight:900;letter-spacing:.14em;padding:5px 9px;pointer-events:none}
+.playerPending{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;background:#0A0E13}
+.playerPending .pp-en{font-family:var(--numfont);letter-spacing:.3em;color:var(--muted2);font-size:12px;font-weight:700}
+.playerPending strong{display:block;font-size:22px;margin:10px 0 6px;color:#fff}
+.playerPending p{color:var(--muted);font-size:13px;max-width:380px;margin:0 auto;line-height:1.7}
+.playerPending .pp-badge{display:inline-block;margin-top:12px;border:1px dashed var(--amber);color:var(--amber);font-size:12px;font-weight:900;padding:6px 12px;letter-spacing:.08em}
+.videoInfo{padding:18px}
+.videoInfo h3{margin:0;font-size:21px;font-weight:900}
+.videoInfo h3 span{font-family:var(--numfont);color:var(--acc2);font-size:13px;letter-spacing:.16em;margin-left:8px}
+.videoInfo .spec{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.videoInfo .spec span{font-size:11.5px;font-weight:800;border:1px solid var(--line2);color:var(--muted);padding:4px 8px;font-family:var(--numfont);letter-spacing:.06em}
+.videoInfo ol{margin:10px 0 0;padding:0;list-style:none;counter-reset:step}
+.videoInfo li{counter-increment:step;padding:9px 0;border-top:1px solid var(--line);font-size:14px;color:var(--muted);display:flex;gap:12px;line-height:1.6}
+.videoInfo li::before{content:counter(step,decimal-leading-zero);font-family:var(--numfont);color:var(--acc2);font-weight:700;font-size:16px;flex-shrink:0}
+.videoInfo li b{color:var(--ink)}
+.src-note{font-size:12px;color:var(--muted2);padding:10px 14px;border-top:1px solid var(--line);line-height:1.7}
+/* ===== History ===== */
+.hist-head h2{margin:0;font-size:26px;font-weight:900}
+.hist-head p{color:var(--muted);margin:6px 0 0;font-size:14px}
+.historyItem{display:flex;justify-content:space-between;gap:14px;padding:15px 16px;border:1px solid var(--line);background:var(--panel);margin-top:10px;flex-wrap:wrap;align-items:center}
+.historyItem .h-date{font-family:var(--numfont);font-size:16px;letter-spacing:.04em;font-weight:600}
+.historyItem .h-mode{color:var(--acc2);font-size:12px;font-weight:900;letter-spacing:.12em}
+.historyItem .h-nums{font-family:var(--numfont);font-size:20px;font-weight:700;text-align:right}
+.historyItem .h-nums small{display:block;font-family:var(--font);font-size:11.5px;color:var(--muted);font-weight:500}
+.emptyBox{border:1px dashed var(--line2);color:var(--muted);padding:22px;text-align:center;margin-top:14px;font-size:14px;line-height:1.8}
+footer{color:var(--muted2);font-size:11.5px;text-align:center;padding:26px 0 0;line-height:1.8;letter-spacing:.04em}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(2,4,7,.78);display:none;place-items:center;z-index:60;padding:16px}
+.modal.show{display:grid}
+.modalCard{background:var(--panel);border:1px solid var(--line2);padding:24px;max-width:520px;width:100%}
+.modalCard h3{margin:0;font-size:20px;font-weight:900}
+.modalCard p{color:var(--muted);font-size:14px;line-height:1.7}
+.check{display:flex;gap:11px;align-items:flex-start;background:var(--panel3);border:1px solid var(--line);padding:13px;margin:14px 0;cursor:pointer;font-size:14px}
+.check input{width:22px;height:22px;margin-top:2px;flex-shrink:0;accent-color:var(--acc)}
+.modalBtns{display:flex;gap:9px;flex-wrap:wrap}
+.modalBtns .btn{flex:1;width:auto;min-width:150px}
+</style>
+  <style data-hatch-cvm-bundle></style>
+</head>
+<body>
+<div class="wrap">
+  <header class="sysbar">
+    <div class="sys-left">
+      <div class="mark">拳</div>
+      <div>
+        <h1>花山拳 <span>AI 训练终端</span></h1>
+        <p>HUASHAN POSE LAB · YOUTH 6–12</p>
+      </div>
+    </div>
+    <div class="sys-right" aria-hidden="true">
+      <div class="sys-stat hideS"><b>33 PT</b><small>姿态关键点</small></div>
+      <div class="sys-stat hideS"><b class="orange">LIVE</b><small>本地实时计算</small></div>
+      <div class="sys-stat"><b>0 上传</b><small>画面不离设备</small></div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="主导航">
+    <button class="active" data-tab="train">实测训练<small>TRAINING</small></button>
+    <button data-tab="demo">真人示范<small>DEMO VIDEO</small></button>
+    <button data-tab="history">训练记录<small>RECORDS</small></button>
+  </nav>
+
+  <!-- TRAIN -->
+  <section id="view-train" class="view active">
+    <div class="console">
+      <div class="panel">
+        <div class="panel-head"><b>摄像头取景 <i>/ CAMERA</i></b><span>DIST 2–3M · FULL BODY IN FRAME</span></div>
+        <div class="modeRow" role="group" aria-label="选择训练模式">
+          <button class="modeCard active" id="modePunch"><span class="m-tag">MODE 01 · STRIKE</span><b>冲拳训练</b><small>肩–肘–腕算肘角 · 伸直 + 收回 = 1 次有效冲拳</small></button>
+          <button class="modeCard" id="modeHorse"><span class="m-tag">MODE 02 · STANCE</span><b>马步训练</b><small>髋–膝–踝算膝角 · 步宽 + 膝角双达标才计时</small></button>
+        </div>
+        <div class="stage" id="stage">
+          <video id="video" playsinline muted></video>
+          <canvas id="canvas" width="1280" height="720"></canvas>
+          <span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span>
+          <div class="stagePlaceholder" id="placeholder">
+            <div>
+              <div class="big">POSE DETECTION STANDBY</div>
+              <strong>站到镜头前 2–3 米</strong>
+              <p>全身入画、光线充足、衣服颜色与背景拉开差距，识别更准。点右侧红色按钮开始，浏览器会弹出摄像头授权。骨骼线与角度会在这里实时叠加。</p>
+            </div>
+          </div>
+          <div class="hud"><div class="rec">状态：<span id="hudState">未开始</span></div><div class="live" id="hudAngle">肘角 —°</div><div id="hudTime">00:00</div></div>
+        </div>
+        <div class="feedback" id="feedback">准备好了吗？选好模式，点「开始检测」</div>
+        <div class="error" id="errorBox" role="alert"></div>
+        <div class="summaryBox" id="summaryBox"><h3>本次训练小结</h3><p id="summaryText"></p><p class="kbd">已自动保存到「训练记录」，刷新页面也不会丢。</p></div>
+      </div>
+
+      <aside class="panel" aria-label="实时数据仪表盘">
+        <div class="panel-head"><b>实时数据 <i>/ TELEMETRY</i></b><span>MEDIAPIPE POSE</span></div>
+        <div class="gaugeBox">
+          <div class="gaugeWrap">
+            <svg width="196" height="196" viewBox="0 0 196 196" aria-hidden="true">
+              <circle cx="98" cy="98" r="86" fill="none" stroke="#1D2A3A" stroke-width="12"/>
+              <circle id="ringFg" cx="98" cy="98" r="86" fill="none" stroke="#FF4A1C" stroke-width="12" stroke-linecap="butt" stroke-dasharray="540.35" stroke-dashoffset="540.35"/>
+            </svg>
+            <div class="gaugeCenter"><div class="g-num" id="gaugeVal">—°</div><div class="g-lab" id="gaugeLab">ELBOW ANGLE · 肘角</div></div>
+          </div>
+          <div class="gaugeSub" id="mAngleSub">等待识别人体…</div>
+        </div>
+        <div class="tiles">
+          <div class="tile hero-tile"><label id="countLabel">有效冲拳 · VALID STRIKES</label><strong id="mCount">0 次</strong><small>伸直达标 + 收回才计数</small></div>
+          <div class="tile"><label>马步保持 · HOLD</label><strong id="mHorse">0.0<em> 秒</em></strong><small>姿势破掉自动暂停</small></div>
+          <div class="tile"><label>本次用时 · TIME</label><strong id="mTime">00:00</strong><small>结束生成小结</small></div>
+          <div class="tile" style="grid-column:1/-1"><label id="angleLabel">当前肘角 · CURRENT</label><strong id="mAngle">—°</strong><small>数字随身体实时变化</small></div>
+        </div>
+        <div class="sliderBox" id="sliderBox">
+          <label><span>冲拳阈值 · 肘角达标线</span><output><span id="thVal">142</span>°</output></label>
+          <input type="range" id="threshold" min="90" max="180" value="142" step="1" aria-label="冲拳判定阈值"/>
+          <div class="scale"><span>90° 易</span><span>142° 标准</span><span>180° 完全伸直</span></div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" id="btnStart">开始检测 · 打开摄像头</button>
+          <button class="btn btn-stop" id="btnStop" disabled>结束并生成小结</button>
+          <button class="btn btn-ghost" id="btnReset">重新计数</button>
+        </div>
+        <div class="privacy"><b>本地处理 · 不上传：</b>全部识别在本机浏览器完成，视频画面不上传、不录制、不保存。请在家长或教练陪同下使用，用完点「结束」即关闭摄像头。</div>
+      </aside>
+    </div>
+
+    <div class="rules">
+      <div class="panel rule"><h3><span>RULE A</span>冲拳判定规则</h3><ul>
+        <li><b>STEP 1</b>取肩、肘、腕三点连线，实时算肘关节夹角</li>
+        <li><b>STEP 2</b>角度冲过阈值（默认 142°）判定出拳伸直</li>
+        <li><b>STEP 3</b>再收回到 115° 以内，完成一次，计数 +1</li>
+        <li><b>无效</b>只伸不收、只晃手臂，一律不计数</li>
+      </ul></div>
+      <div class="panel rule"><h3><span>RULE B</span>马步判定规则</h3><ul>
+        <li><b>条件 1</b>双腿膝角都进入 75°–135°，蹲到位</li>
+        <li><b>条件 2</b>双脚间距 ≥ 肩宽 × 1.35，站得够开</li>
+        <li><b>计时</b>两条件同时满足才计时，任一破掉立刻暂停</li>
+        <li><b>纠正</b>反馈直说差在哪：腿再弯 / 脚再开一点</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- DEMO -->
+  <section id="view-demo" class="view">
+    <div class="demo-head">
+      <div>
+        <h2>真人示范，<span>照着练</span></h2>
+        <p>不再用卡通动画糊弄。马步是真人教练在武馆里的完整示范视频，点开就能播；冲拳真人视频补拍到位后替换占位，在此之前如实标注，绝不放播不了的假链接。</p>
+      </div>
+      <div class="en">REAL DEMONSTRATION · NO CARTOON · NO FAKE LINKS</div>
+    </div>
+
+    <div class="panel videoCard">
+      <div class="panel-head"><b>示范 02 <i>/ HORSE STANCE</i></b><span>真人视频 · 可播放 · 10 秒</span></div>
+      <div class="videoGrid">
+        <div class="player">
+          <span class="live-tag">真人示范</span>
+          <video controls playsinline preload="metadata" data-hatch-poster="assets/mabu-poster.jpg" data-hatch-src="assets/mabu-demo.mp4" aria-label="马步真人示范视频"></video>
+        </div>
+        <div class="videoInfo">
+          <h3>马步 · 蹲稳与保持<span>MA BU</span></h3>
+          <div class="spec"><span>步宽 ≥ 肩宽 ×1.35</span><span>膝角 75°–135°</span><span>系统同标准判定</span></div>
+          <ol>
+            <li><span><b>先看脚：</b>视频里教练双脚大幅分开站立，明显宽于肩——这就是系统要求的步宽，下蹲前先把脚站开。</span></li>
+            <li><span><b>再看蹲：</b>屈膝下沉、重心压低，大腿趋近水平，对应膝角进入 75°–135° 区间。</span></li>
+            <li><span><b>看上身：</b>挺胸直腰、目视前方、双手收于身前，不前倾、不塌腰。</span></li>
+            <li><span><b>练法：</b>先对着视频模仿到位，再去「实测训练」开摄像头——姿势对了，计时自己会开始走。</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="src-note">视频来源：本页内置的真人教练示范录像（武馆实拍风格，1280×720），文件保存在本页资源内，点开即播，不依赖外部视频站。</div>
+    </div>
+
+    <div class="panel videoCard">
+      <div class="panel-head"><b>示范 01 <i>/ STRAIGHT PUNCH</i></b><span>真人视频待补</span></div>
+      <div class="videoGrid">
+        <div class="player">
+          <div class="playerPending">
+            <div>
+              <div class="pp-en">VIDEO PENDING</div>
+              <strong>冲拳真人示范视频待补拍 / 待生成</strong>
+              <p>这一格不放卡通动画、不放假链接。真人冲拳示范拍好后会直接替换到这里，播放器位置和尺寸已经留好。</p>
+              <span class="pp-badge">补拍到位后上线 · 现在先看右侧文字要点</span>
+            </div>
+          </div>
+        </div>
+        <div class="videoInfo">
+          <h3>冲拳 · 出拳与收拳<span>CHONG QUAN</span></h3>
+          <div class="spec"><span>肘角 ≥ 142° 伸直</span><span>收回 ≤ 115° 计数</span><span>系统同标准判定</span></div>
+          <ol>
+            <li><span><b>起势：</b>双拳收于腰际 / 胸前，肘贴身，别把手垂着。</span></li>
+            <li><span><b>出拳：</b>拳走直线快速打出，肘完全伸直（≥142°），拳眼向上。</span></li>
+            <li><span><b>收拳：</b>沿原路收回胸前（肘角 ≤115°），伸 + 收完整一次才计数。</span></li>
+            <li><span><b>呼吸眼神：</b>目视拳尖，出拳呼气、收拳吸气，肩膀别耸。</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="src-note">说明：花山拳完整套路需以真实传承资料核对后再上架，本页不编造招式清单、不凑数。示范只做系统真能检测的冲拳与马步两个动作。</div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section id="view-history" class="view">
+    <div class="hist-head">
+      <h2>训练记录</h2>
+      <p>每次点「结束并生成小结」存一条，只存这台设备的浏览器（localStorage），不上传。最多保留最近 50 条。</p>
+    </div>
+    <div id="historyList"></div>
+    <div id="histEmpty" class="emptyBox">还没有记录。<br/>去「实测训练」练一次，回来这里就能看到冲拳次数、马步时长和用时。</div>
+    <div style="margin-top:14px"><button class="btn btn-ghost" id="btnClearHist" style="width:auto;padding:13px 22px">清空全部记录</button></div>
+  </section>
+
+  <footer>花山拳 AI 训练终端 · 摄像头只在本地运行 · 建议 Chrome / Edge 最新版 · 距镜头 2–3 米、全身入画效果最好</footer>
+</div>
+
+<!-- Guardian modal -->
+<div class="modal" id="guardianModal" role="dialog" aria-modal="true">
+  <div class="modalCard">
+    <h3>开始前，请家长 / 教练确认</h3>
+    <p>本功能会打开摄像头做动作识别。画面只在本机浏览器本地处理，不上传、不录制、不保存。孩子请在成人陪同下使用。</p>
+    <label class="check"><input type="checkbox" id="guardianCheck"/><span><strong>我是家长或教练，已知晓并同意打开摄像头</strong><br/><small style="color:var(--muted)">勾选后才能开始；不勾选不会打开摄像头。</small></span></label>
+    <div class="modalBtns"><button class="btn btn-primary" id="btnGuardianOk" disabled>同意并打开摄像头</button><button class="btn btn-ghost" id="btnGuardianCancel">先不练</button></div>
+  </div>
+</div>
+
+
+<script data-hatch-cvm-bundle>(() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  function __accessProp(key) {
+    return this[key];
+  }
+  var __toCommonJS = (from) => {
+    var entry = (__moduleCache ??= new WeakMap).get(from), desc;
+    if (entry)
+      return entry;
+    entry = __defProp({}, "__esModule", { value: true });
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (var key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(entry, key))
+          __defProp(entry, key, {
+            get: __accessProp.bind(from, key),
+            enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+          });
+    }
+    __moduleCache.set(from, entry);
+    return entry;
+  };
+  var __moduleCache;
+
+  // src/prelude.ts
+  var exports_prelude = {};
+
+  // src/tunnel-url.ts
+  var B64_CHUNK = 32768;
+  function computeSelfBaseDir(selfHref) {
+    if (!selfHref)
+      return "";
+    let h = selfHref;
+    const hash = h.indexOf("#");
+    if (hash >= 0)
+      h = h.slice(0, hash);
+    const q = h.indexOf("?");
+    if (q >= 0)
+      h = h.slice(0, q);
+    const slash = h.lastIndexOf("/");
+    return slash >= 0 ? h.slice(0, slash + 1) : "";
+  }
+  function isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!selfBaseDir || !u.startsWith(selfBaseDir))
+      return false;
+    if (u === selfHref)
+      return false;
+    return !objectUrls.has(u);
+  }
+  function isExternalUrl(u, selfBaseDir, selfHref, objectUrls) {
+    if (!u)
+      return false;
+    if (u.startsWith("#"))
+      return true;
+    if (isSelfOriginUrl(u, selfBaseDir, selfHref, objectUrls))
+      return false;
+    if (u.startsWith("data:") || u.startsWith("blob:"))
+      return true;
+    if (u.startsWith("about:") || u.startsWith("javascript:"))
+      return true;
+    if (u.startsWith("//"))
+      return true;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(u)) {
+      return true;
+    }
+    return false;
+  }
+  function ownObjectUrl(scriptUrl, objectUrls) {
+    const href = typeof scriptUrl === "string" ? scriptUrl : scriptUrl instanceof URL ? scriptUrl.href : null;
+    return href !== null && href.startsWith("blob:") && objectUrls.has(href) ? href : null;
+  }
+  var WORKER_TUNNEL_SHIM = [
+    "self.__tunnel=self.__tunnel||{",
+    "fetch:function(){return self.fetch.apply(self,arguments)},",
+    "XHR:self.XMLHttpRequest,WebSocket:self.WebSocket,EventSource:self.EventSource,",
+    "Worker:self.Worker,import:function(s){return import(s)},",
+    "Image:function(w,h){return new Image(w,h)},",
+    "sendBeacon:function(){return false},",
+    "getStyle:function(x){if(x==null)return x;try{return x.style}catch(e){return undefined}},",
+    "setStyle:function(x,n,v){x.style[n]=v},",
+    "setUrlProp:function(x,n,v){x[n]=v;return v},",
+    "setAttr:function(x){return x.setAttribute.apply(x,[].slice.call(arguments,1))},",
+    "setAttrNS:function(x){return x.setAttributeNS.apply(x,[].slice.call(arguments,1))},",
+    "setInnerHTML:function(x,v,w){x[w||'innerHTML']=v},",
+    "setStyleText:function(x,v){x.textContent=v},",
+    "insertAdjacentHTML:function(x,p,v){return x.insertAdjacentHTML(p,v)},",
+    `_importMeta:{url:self.location.href}};
+`
+  ].join("");
+  function isWorkerScriptBlob(obj) {
+    return obj instanceof Blob && (obj.type === "" || /javascript|ecmascript/i.test(obj.type));
+  }
+  function workerScriptBlob(script) {
+    return new Blob([WORKER_TUNNEL_SHIM, script], { type: "text/javascript" });
+  }
+  function normalizeToRelPath(u, selfBaseDir) {
+    let s = u;
+    if (selfBaseDir && s.startsWith(selfBaseDir)) {
+      s = s.slice(selfBaseDir.length);
+    }
+    s = s.replace(/^\.\//, "");
+    s = s.replace(/^\/+/, "");
+    return s;
+  }
+  function blobRequestPath(cacheKey) {
+    if (!cacheKey.startsWith("blobs/"))
+      return cacheKey;
+    const query = cacheKey.indexOf("?");
+    return query < 0 ? cacheKey : cacheKey.slice(0, query);
+  }
+  function blobInner(base, NativeURL) {
+    if (base == null)
+      return null;
+    const s = typeof base === "string" ? base : base instanceof NativeURL ? base.href : String(base);
+    return s.startsWith("blob:") ? s.slice("blob:".length) : null;
+  }
+  var OPAQUE_BLOB_ORIGIN = "https://hatch-cvm-opaque.invalid";
+  function isAbsoluteUrlString(s, NativeURL) {
+    try {
+      new NativeURL(s);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function resolveAgainstBlobBase(u, base, NativeURL) {
+    const inner = blobInner(base, NativeURL);
+    if (inner === null)
+      return null;
+    if (isAbsoluteUrlString(inner, NativeURL)) {
+      return new NativeURL("blob:" + new NativeURL(u, inner).href);
+    }
+    const slash = inner.indexOf("/");
+    const token = slash >= 0 ? inner.slice(0, slash) : inner;
+    const path = slash >= 0 ? inner.slice(slash) : "/";
+    const resolved = new NativeURL(u, OPAQUE_BLOB_ORIGIN + path);
+    return new NativeURL("blob:" + token + resolved.pathname + resolved.search + resolved.hash);
+  }
+  function resolveTunnelUrl(url, base, selfHref, NativeURL) {
+    const u = url == null ? "" : typeof url === "string" ? url : url instanceof NativeURL ? url.href : String(url);
+    const uAbsolute = /^[a-z][a-z0-9+.-]*:/i.test(u) || u.startsWith("//");
+    if (base !== undefined && base !== null && !uAbsolute) {
+      const viaBlob = resolveAgainstBlobBase(u, base, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+      return new NativeURL(u, base);
+    }
+    if (!uAbsolute && selfHref) {
+      const viaBlob = resolveAgainstBlobBase(u, selfHref, NativeURL);
+      if (viaBlob !== null)
+        return viaBlob;
+    }
+    return base === undefined ? new NativeURL(u) : new NativeURL(u, base);
+  }
+  function bytesToBase64(bytes) {
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+    let s = "";
+    for (let i = 0;i < u8.length; i += B64_CHUNK) {
+      s += String.fromCharCode.apply(null, Array.from(u8.subarray(i, i + B64_CHUNK)));
+    }
+    return btoa(s);
+  }
+  function base64ToBytes(b64) {
+    const bin = atob(b64);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0;i < bin.length; i++)
+      out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function importMetaUrl(selfHref, selfBaseDir) {
+    return selfBaseDir ? `${selfBaseDir}assets/cvm-bundle.js` : selfHref;
+  }
+
+  // src/download-links.ts
+  function installDownloadLinks(fetchAsset, isExternalUrl, revokeDelayMs) {
+    document.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor?.hasAttribute("download"))
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href || isExternalUrl(href))
+        return;
+      event.preventDefault();
+      const filename = anchor.download || resourceFilename(href);
+      (async () => {
+        const response = await fetchAsset(href);
+        if (!response.ok) {
+          throw new Error(`Artifact download failed: HTTP ${response.status}`);
+        }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.hidden = true;
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
+        }
+      })().catch((error) => reportError(error));
+    });
+  }
+  function resourceFilename(href) {
+    const path = new URL(href, document.baseURI).pathname;
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    try {
+      return decodeURIComponent(name);
+    } catch {
+      return name;
+    }
+  }
+
+  // src/fragment-links.ts
+  function installFragmentLinks() {
+    if (!location.href.startsWith("blob:null/"))
+      return;
+    const NativeURL = URL;
+    const pushState = history.pushState.bind(history);
+    const replaceState = history.replaceState.bind(history);
+    window.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+        return;
+      const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
+      if (!anchor || anchor.hasAttribute("download"))
+        return;
+      const targetName = anchor.getAttribute("target") ?? document.querySelector("base[target]")?.getAttribute("target") ?? "";
+      if (targetName !== "" && targetName.toLowerCase() !== "_self")
+        return;
+      const href = anchor.getAttribute("href");
+      if (!href?.startsWith("#"))
+        return;
+      const oldURL = location.href;
+      const nextURL = new NativeURL(href, oldURL);
+      event.preventDefault();
+      const changed = nextURL.href !== oldURL;
+      if (changed) {
+        pushState(null, "", nextURL.href);
+      } else {
+        replaceState(null, "", nextURL.href);
+      }
+      window.dispatchEvent(new PopStateEvent("popstate", { state: null }));
+      const target = fragmentTarget(nextURL.hash);
+      if (target) {
+        target.scrollIntoView();
+        if (target !== document.documentElement && (target instanceof HTMLElement || target instanceof SVGElement)) {
+          const hadTabIndex = target.hasAttribute("tabindex");
+          if (!hadTabIndex)
+            target.setAttribute("tabindex", "-1");
+          target.focus({ preventScroll: true });
+          if (!hadTabIndex)
+            target.removeAttribute("tabindex");
+        }
+      }
+      if (changed) {
+        queueMicrotask(() => window.dispatchEvent(new HashChangeEvent("hashchange", {
+          oldURL,
+          newURL: nextURL.href
+        })));
+      }
+    });
+  }
+  function fragmentTarget(hash) {
+    const bytes = hash.slice(1).replace(/%([0-9a-f]{2})/gi, (_match, hex) => String.fromCharCode(parseInt(hex, 16)));
+    const fragment = new TextDecoder().decode(Uint8Array.from(bytes, (byte) => byte.charCodeAt(0)));
+    if (fragment === "")
+      return document.documentElement;
+    const idTarget = document.getElementById(fragment);
+    if (idTarget)
+      return idTarget;
+    const namedTarget = Array.from(document.getElementsByName(fragment)).find((node) => node instanceof HTMLAnchorElement);
+    return namedTarget ?? (fragment.toLowerCase() === "top" ? document.documentElement : null);
+  }
+
+  // src/prelude.ts
+  (function installTunnel() {
+    installFragmentLinks();
+    let port = null;
+    let portReadyResolve = null;
+    const portReady = new Promise((res) => {
+      portReadyResolve = res;
+    });
+    const pending = new Map;
+    const openWs = new Map;
+    function newId() {
+      return Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    }
+    function bytesToB64(bytes) {
+      return bytesToBase64(bytes);
+    }
+    function b64ToBytes(b64) {
+      return base64ToBytes(b64);
+    }
+    async function httpReq(method, path, body, headers) {
+      const p = port ?? await portReady;
+      const id = newId();
+      const headerArr = [];
+      if (headers) {
+        const h = new Headers(headers);
+        h.forEach((v, k) => headerArr.push([k, v]));
+      }
+      let bodyB64 = "";
+      if (body != null && body !== "") {
+        let bytes;
+        if (typeof body === "string") {
+          bytes = new TextEncoder().encode(body);
+        } else if (body instanceof ArrayBuffer) {
+          bytes = new Uint8Array(body);
+        } else if (body instanceof Uint8Array) {
+          bytes = body;
+        } else if (body instanceof Blob) {
+          bytes = new Uint8Array(await body.arrayBuffer());
+        } else if (body instanceof FormData) {
+          const boundary = "----HatchBoundary" + Math.random().toString(36).slice(2);
+          let s = "";
+          for (const [k, v] of body.entries()) {
+            s += `--${boundary}\r
+Content-Disposition: form-data; name="${k}"`;
+            if (v instanceof File) {
+              s += `; filename="${v.name}"\r
+Content-Type: ${v.type || "application/octet-stream"}\r
+\r
+`;
+              const fb = new Uint8Array(await v.arrayBuffer());
+              s += new TextDecoder("latin1").decode(fb);
+            } else {
+              s += `\r
+\r
+${v}`;
+            }
+            s += `\r
+`;
+          }
+          s += `--${boundary}--\r
+`;
+          bytes = new TextEncoder().encode(s);
+          headerArr.push([
+            "content-type",
+            `multipart/form-data; boundary=${boundary}`
+          ]);
+        } else {
+          bytes = new TextEncoder().encode(String(body));
+        }
+        bodyB64 = bytesToB64(bytes);
+      }
+      return new Promise((resolve, reject) => {
+        pending.set(id, {
+          resolve: (msg) => {
+            if (msg.error) {
+              reject(new Error(msg.error.message ?? "tunnel error"));
+              return;
+            }
+            resolve({
+              status: msg.status,
+              headers: msg.headers,
+              bytes: msg.bodyB64 ? b64ToBytes(msg.bodyB64) : new Uint8Array(0)
+            });
+          },
+          reject
+        });
+        p.postMessage({
+          type: "http.req",
+          id,
+          method,
+          path,
+          headers: headerArr,
+          bodyB64
+        });
+      });
+    }
+    async function tunnelFetch(input, init) {
+      let urlStr;
+      let method = init?.method ?? "GET";
+      let headers = init?.headers;
+      let body = init?.body;
+      if (input instanceof Request) {
+        urlStr = input.url;
+        method = init?.method ?? input.method;
+        headers = init?.headers ?? input.headers;
+        if (body == null && input.body) {
+          body = await input.arrayBuffer();
+        }
+      } else {
+        urlStr = String(input);
+      }
+      if (isExternalUrl2(urlStr)) {
+        return originalFetch(input, init);
+      }
+      const relPath = normalizeToRelPath2(urlStr);
+      const r = await httpReq(method, relPath, body ?? null, headers);
+      const respHeaders = new Headers;
+      for (const [k, v] of r.headers ?? [])
+        respHeaders.set(k, v);
+      return new Response(r.bytes, {
+        status: r.status,
+        headers: respHeaders
+      });
+    }
+
+    class TunnelWebSocket extends EventTarget {
+      readyState = 0;
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSING = 2;
+      static CLOSED = 3;
+      CONNECTING = 0;
+      OPEN = 1;
+      CLOSING = 2;
+      CLOSED = 3;
+      url;
+      binaryType = "blob";
+      bufferedAmount = 0;
+      protocol = "";
+      extensions = "";
+      onopen = null;
+      onmessage = null;
+      onclose = null;
+      onerror = null;
+      _id;
+      constructor(urlIn, _protocols) {
+        super();
+        const urlStr = String(urlIn);
+        this.url = urlStr;
+        this._id = newId();
+        openWs.set(this._id, this);
+        const path = normalizeToRelPath2(urlStr);
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.open", id: this._id, path });
+        })();
+      }
+      _handle(msg) {
+        if (msg.type === "ws.opened") {
+          this.readyState = 1;
+          const ev = new Event("open");
+          this.onopen?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.message") {
+          const bytes = msg.dataB64 ? b64ToBytes(msg.dataB64) : new Uint8Array(0);
+          let data;
+          if (msg.binary) {
+            data = this.binaryType === "arraybuffer" ? bytes.buffer : new Blob([bytes]);
+          } else {
+            data = new TextDecoder().decode(bytes);
+          }
+          const ev = new MessageEvent("message", { data });
+          this.onmessage?.(ev);
+          this.dispatchEvent(ev);
+        } else if (msg.type === "ws.closed") {
+          this.readyState = 3;
+          const ev = new CloseEvent("close", {
+            code: msg.code ?? 1000,
+            reason: msg.reason ?? ""
+          });
+          this.onclose?.(ev);
+          this.dispatchEvent(ev);
+          openWs.delete(this._id);
+        } else if (msg.type === "ws.error") {
+          const ev = new Event("error");
+          this.onerror?.(ev);
+          this.dispatchEvent(ev);
+        }
+      }
+      send(data) {
+        (async () => {
+          const p = port ?? await portReady;
+          let bytes;
+          let binary = false;
+          if (typeof data === "string") {
+            bytes = new TextEncoder().encode(data);
+          } else if (data instanceof Blob) {
+            bytes = new Uint8Array(await data.arrayBuffer());
+            binary = true;
+          } else if (data instanceof ArrayBuffer) {
+            bytes = new Uint8Array(data);
+            binary = true;
+          } else if (ArrayBuffer.isView(data)) {
+            bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+            binary = true;
+          } else {
+            bytes = new TextEncoder().encode(String(data));
+          }
+          p.postMessage({
+            type: "ws.send",
+            id: this._id,
+            dataB64: bytesToB64(bytes),
+            binary
+          });
+        })();
+      }
+      close(code, reason) {
+        (async () => {
+          const p = port ?? await portReady;
+          p.postMessage({ type: "ws.close", id: this._id, code, reason });
+        })();
+      }
+      addEventListener(type, listener, options) {
+        super.addEventListener(type, listener, options);
+      }
+    }
+
+    class TunnelXHR extends EventTarget {
+      static UNSENT = 0;
+      static OPENED = 1;
+      static HEADERS_RECEIVED = 2;
+      static LOADING = 3;
+      static DONE = 4;
+      UNSENT = 0;
+      OPENED = 1;
+      HEADERS_RECEIVED = 2;
+      LOADING = 3;
+      DONE = 4;
+      readyState = 0;
+      status = 0;
+      statusText = "";
+      responseText = "";
+      response = null;
+      responseType = "";
+      responseURL = "";
+      withCredentials = false;
+      timeout = 0;
+      upload = new EventTarget;
+      onreadystatechange = null;
+      onload = null;
+      onerror = null;
+      onloadend = null;
+      onabort = null;
+      onprogress = null;
+      ontimeout = null;
+      _method = "GET";
+      _url = "";
+      _reqHeaders = [];
+      _respHeaders = [];
+      _aborted = false;
+      open(method, url) {
+        this._method = method;
+        this._url = url;
+        this.readyState = 1;
+        this.onreadystatechange?.();
+      }
+      setRequestHeader(name, value) {
+        this._reqHeaders.push([name, value]);
+      }
+      getAllResponseHeaders() {
+        return this._respHeaders.map(([k, v]) => `${k}: ${v}`).join(`\r
+`);
+      }
+      getResponseHeader(name) {
+        const lc = name.toLowerCase();
+        const hit = this._respHeaders.find(([k]) => k.toLowerCase() === lc);
+        return hit ? hit[1] : null;
+      }
+      abort() {
+        this._aborted = true;
+        this.readyState = 0;
+      }
+      send(body) {
+        if (isExternalUrl2(this._url)) {
+          const real = new originalXHR;
+          real.open(this._method, this._url);
+          for (const [k, v] of this._reqHeaders)
+            real.setRequestHeader(k, v);
+          real.onload = () => {
+            this.status = real.status;
+            this.responseText = real.responseText;
+            this.response = real.response;
+            this.readyState = 4;
+            this.onreadystatechange?.();
+            this.onload?.();
+            this.onloadend?.();
+            this.dispatchEvent(new Event("load"));
+          };
+          real.onerror = () => {
+            this.onerror?.();
+            this.dispatchEvent(new Event("error"));
+          };
+          real.send(body);
+          return;
+        }
+        const relPath = normalizeToRelPath2(this._url);
+        httpReq(this._method, relPath, body ?? null, this._reqHeaders).then((r) => {
+          if (this._aborted)
+            return;
+          this.status = r.status;
+          this._respHeaders = r.headers ?? [];
+          this.responseText = new TextDecoder().decode(r.bytes);
+          if (this.responseType === "arraybuffer") {
+            this.response = r.bytes.buffer;
+          } else if (this.responseType === "blob") {
+            this.response = new Blob([r.bytes]);
+          } else if (this.responseType === "json") {
+            try {
+              this.response = JSON.parse(this.responseText);
+            } catch {
+              this.response = null;
+            }
+          } else {
+            this.response = this.responseText;
+          }
+          this.readyState = 4;
+          this.onreadystatechange?.();
+          this.onload?.();
+          this.onloadend?.();
+          this.dispatchEvent(new Event("load"));
+        }, () => {
+          if (this._aborted)
+            return;
+          this.onerror?.();
+          this.dispatchEvent(new Event("error"));
+        });
+      }
+    }
+
+    class TunnelEventSource extends EventTarget {
+      static CONNECTING = 0;
+      static OPEN = 1;
+      static CLOSED = 2;
+      readyState = 0;
+      url;
+      withCredentials = false;
+      onopen = null;
+      onmessage = null;
+      onerror = null;
+      constructor(url) {
+        super();
+        this.url = String(url);
+        (async () => {
+          try {
+            const relPath = normalizeToRelPath2(this.url);
+            const r = await httpReq("GET", relPath, null, [
+              ["accept", "text/event-stream"]
+            ]);
+            this.readyState = 1;
+            this.onopen?.(new Event("open"));
+            const text = new TextDecoder().decode(r.bytes);
+            for (const block of text.split(/\n\n/)) {
+              const data = block.split(`
+`).filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).join(`
+`);
+              if (data) {
+                const ev = new MessageEvent("message", { data });
+                this.onmessage?.(ev);
+                this.dispatchEvent(ev);
+              }
+            }
+            this.readyState = 2;
+          } catch {
+            this.onerror?.(new Event("error"));
+          }
+        })();
+      }
+      close() {
+        this.readyState = 2;
+      }
+    }
+    const SELF_HREF = (() => {
+      try {
+        return globalThis.location?.href ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    const SELF_BASE_DIR = computeSelfBaseDir(SELF_HREF);
+    const objectUrls = new Set;
+    const objectUrlScripts = new Map;
+    function isSelfOriginUrl2(u) {
+      return isSelfOriginUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function isExternalUrl2(u) {
+      return isExternalUrl(u, SELF_BASE_DIR, SELF_HREF, objectUrls);
+    }
+    function normalizeToRelPath2(u) {
+      return normalizeToRelPath(u, SELF_BASE_DIR);
+    }
+    const URL_ATTRS = new Set([
+      "src",
+      "srcset",
+      "href",
+      "poster",
+      "action",
+      "formaction",
+      "data",
+      "background",
+      "cite",
+      "longdesc",
+      "usemap",
+      "manifest"
+    ]);
+    const URL_STYLE_PROPS = new Set([
+      "background",
+      "backgroundImage",
+      "background-image",
+      "borderImage",
+      "border-image",
+      "borderImageSource",
+      "border-image-source",
+      "listStyle",
+      "list-style",
+      "listStyleImage",
+      "list-style-image",
+      "cursor",
+      "mask",
+      "maskImage",
+      "mask-image",
+      "webkitMask",
+      "-webkit-mask",
+      "webkitMaskImage",
+      "-webkit-mask-image",
+      "content",
+      "src"
+    ]);
+    const __BLOB_CACHE_MAX = 256;
+    const __BLOB_REVOKE_DELAY_MS = 30000;
+    const blobCache = new Map;
+    const blobStats = {
+      created: 0,
+      revoked: 0,
+      hits: 0,
+      misses: 0,
+      inFlightRevokes: 0
+    };
+    function __evictIfOverCap() {
+      while (blobCache.size > __BLOB_CACHE_MAX) {
+        const oldestKey = blobCache.keys().next().value;
+        if (oldestKey === undefined)
+          break;
+        const ent = blobCache.get(oldestKey);
+        blobCache.delete(oldestKey);
+        blobStats.inFlightRevokes++;
+        const t = setTimeout(() => {
+          ent.url.then((u) => {
+            if (typeof u === "string" && u.startsWith("blob:")) {
+              try {
+                URL.revokeObjectURL(u);
+                blobStats.revoked++;
+              } catch {}
+            }
+          }).catch(() => {}).finally(() => {
+            blobStats.inFlightRevokes--;
+          });
+        }, __BLOB_REVOKE_DELAY_MS);
+        ent.pendingRevoke = t;
+      }
+    }
+    function resolveToBlobUrl(rel) {
+      if (isExternalUrl2(rel))
+        return Promise.resolve(rel);
+      const hashIdx = rel.indexOf("#");
+      const pathPart = hashIdx >= 0 ? rel.slice(0, hashIdx) : rel;
+      const frag = hashIdx >= 0 ? rel.slice(hashIdx) : "";
+      const key = normalizeToRelPath2(pathPart);
+      let ent = blobCache.get(key);
+      if (ent) {
+        if (ent.pendingRevoke != null) {
+          clearTimeout(ent.pendingRevoke);
+          ent.pendingRevoke = undefined;
+          blobStats.inFlightRevokes--;
+        }
+        blobCache.delete(key);
+        blobCache.set(key, ent);
+        blobStats.hits++;
+      } else {
+        blobStats.misses++;
+        const url = httpReq("GET", blobRequestPath(key), null).then((r) => {
+          if (r.status < 200 || r.status >= 300) {
+            throw new Error(`Space resource returned HTTP ${r.status}`);
+          }
+          const ctHeader = r.headers.find(([k]) => k.toLowerCase() === "content-type");
+          const ct = ctHeader?.[1] ?? "application/octet-stream";
+          const blob = new Blob([r.bytes], { type: ct });
+          blobStats.created++;
+          return URL.createObjectURL(blob);
+        }).catch((error) => {
+          if (blobCache.get(key) === ent)
+            blobCache.delete(key);
+          throw error;
+        });
+        ent = { url };
+        blobCache.set(key, ent);
+        __evictIfOverCap();
+      }
+      return frag ? ent.url.then((b) => b + frag) : ent.url;
+    }
+    const HATCH_PIXEL_PREFIX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HATCH_FRAG = "#hatch=";
+    function isHatchPlaceholder(url) {
+      return url.indexOf(HATCH_PIXEL_PREFIX + HATCH_FRAG) === 0;
+    }
+    function unwrapHatchPlaceholder(url) {
+      if (!isHatchPlaceholder(url))
+        return null;
+      return decodeURIComponent(url.slice((HATCH_PIXEL_PREFIX + HATCH_FRAG).length));
+    }
+    async function rewriteCssTextAsync(text) {
+      const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+      const tasks = [];
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        tasks.push({ match: m[0], index: m.index, url: m[2].trim() });
+      }
+      if (tasks.length === 0)
+        return text;
+      const resolved = await Promise.all(tasks.map(async (t) => {
+        if (t.url.startsWith("blob:"))
+          return t.url;
+        const unwrapped = unwrapHatchPlaceholder(t.url);
+        if (unwrapped != null) {
+          try {
+            return await resolveToBlobUrl(unwrapped);
+          } catch {
+            return t.url;
+          }
+        }
+        if (isExternalUrl2(t.url))
+          return t.url;
+        try {
+          return await resolveToBlobUrl(t.url);
+        } catch {
+          return t.url;
+        }
+      }));
+      let out = "";
+      let last = 0;
+      tasks.forEach((t, i) => {
+        out += text.slice(last, t.index);
+        out += `url("${resolved[i]}")`;
+        last = t.index + t.match.length;
+      });
+      out += text.slice(last);
+      return out;
+    }
+    function rewriteCssText(text) {
+      return rewriteCssTextAsync(text);
+    }
+    const mediaSourceLoads = new WeakMap;
+    window.addEventListener("error", (event) => {
+      const source = event.target;
+      if (!event.isTrusted || !(source instanceof HTMLSourceElement) || !(source.parentElement instanceof HTMLMediaElement) || source.hasAttribute("src"))
+        return;
+      const state = mediaSourceLoads.get(source);
+      if (state === "pending" || state === undefined && source.hasAttribute("data-hatch-src")) {
+        event.stopImmediatePropagation();
+      }
+    }, true);
+    function isElement(el) {
+      if (el instanceof Element)
+        return true;
+      const ownerWindow = el?.ownerDocument?.defaultView;
+      return ownerWindow != null && el instanceof ownerWindow.Element;
+    }
+    function setAttr(el, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttribute(name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        if (name.toLowerCase() === "src" && el instanceof HTMLSourceElement) {
+          mediaSourceLoads.set(el, "settled");
+        }
+        try {
+          el.removeAttribute(name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.toLowerCase();
+      const tag = el.tagName?.toUpperCase();
+      if ((tag === "A" || tag === "BASE" || tag === "AREA") && lcName === "href") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (!URL_ATTRS.has(lcName) && lcName !== "style" && lcName !== "srcset") {
+        el.setAttribute(name, v);
+        return;
+      }
+      if (lcName === "srcset") {
+        const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+        Promise.all(parts.map(async (p) => {
+          const segs = p.split(/\s+/);
+          const url = segs[0];
+          const rest = segs.slice(1).join(" ");
+          if (isExternalUrl2(url))
+            return p;
+          const resolved = await resolveToBlobUrl(url);
+          return rest ? `${resolved} ${rest}` : resolved;
+        })).then((rebuilt) => {
+          try {
+            el.setAttribute("srcset", rebuilt.join(", "));
+          } catch {}
+        }, () => {
+          try {
+            el.dispatchEvent(new Event("error"));
+          } catch {}
+        });
+        return;
+      }
+      if (URL_ATTRS.has(lcName)) {
+        const isMediaSource = tag === "SOURCE" && lcName === "src";
+        if (isExternalUrl2(v)) {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          el.setAttribute(name, v);
+          return;
+        }
+        if (isMediaSource)
+          mediaSourceLoads.set(el, "pending");
+        if (tag === "IMG" || tag === "VIDEO" && lcName === "poster") {
+          el.setAttribute(name, TRANSPARENT_PIXEL);
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          try {
+            el.setAttribute(name, blobUrl);
+            if (isMediaSource) {
+              const media = el.parentElement;
+              if (media instanceof HTMLMediaElement && media.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+                const nextSibling = el.nextSibling;
+                el.remove();
+                media.insertBefore(el, nextSibling);
+              }
+            }
+          } catch {}
+        }, () => {
+          if (isMediaSource)
+            mediaSourceLoads.set(el, "settled");
+          if (isMediaSource || tag === "IMG") {
+            el.dispatchEvent(new Event("error"));
+          }
+        });
+        return;
+      }
+      if (lcName === "style") {
+        setStyleAttr(el, v);
+        return;
+      }
+      el.setAttribute(name, v);
+    }
+    function setAttrNS(el, ns, name, value, ...rest) {
+      if (!isElement(el)) {
+        return el.setAttributeNS(ns, name, value, ...rest);
+      }
+      name = String(name);
+      if (value == null) {
+        try {
+          el.removeAttributeNS(ns ?? null, name);
+        } catch {}
+        return;
+      }
+      const v = String(value);
+      const lcName = name.split(":").pop().toLowerCase();
+      if (lcName === "href" && URL_ATTRS.has("href")) {
+        if (isExternalUrl2(v)) {
+          el.setAttributeNS(ns ?? null, name, v);
+          return;
+        }
+        resolveToBlobUrl(v).then((blobUrl) => {
+          try {
+            el.setAttributeNS(ns ?? null, name, blobUrl);
+          } catch {}
+        }, () => {});
+        return;
+      }
+      try {
+        el.setAttributeNS(ns ?? null, name, v);
+      } catch {}
+    }
+    function setUrlProp(el, name, value) {
+      if (isElement(el)) {
+        setAttr(el, name.toLowerCase(), value);
+      } else {
+        el[name] = value;
+      }
+      return value;
+    }
+    const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const HTML_TAG_ATTRS = {
+      img: ["src", "srcset", "poster"],
+      image: ["href"],
+      video: ["src", "poster"],
+      audio: ["src"],
+      source: ["src", "srcset"],
+      script: ["src"],
+      link: ["href"],
+      iframe: ["src"],
+      embed: ["src"],
+      object: ["data"],
+      track: ["src"],
+      input: ["src"],
+      form: ["action"],
+      button: ["formaction"],
+      use: ["href"]
+    };
+    function rewriteHtmlString(html) {
+      return html.replace(/<([a-zA-Z][a-zA-Z0-9-]*)\b([^>]*)>/g, (m, tag, attrs) => {
+        const lc = String(tag).toLowerCase();
+        const candidates = HTML_TAG_ATTRS[lc];
+        if (!candidates)
+          return m;
+        let out = attrs;
+        for (const a of candidates) {
+          const re = new RegExp(`\\b${a}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, "i");
+          const matched = out.match(re);
+          if (!matched)
+            continue;
+          const value = matched[2] ?? matched[3] ?? matched[4] ?? "";
+          if (isExternalUrl2(value))
+            continue;
+          out = out.replace(re, `data-hatch-${a}="${value.replace(/"/g, "&quot;")}"`);
+        }
+        const styleRe = /\bstyle\s*=\s*("([^"]*)"|'([^']*)')/i;
+        const sm = out.match(styleRe);
+        if (sm) {
+          const value = sm[2] ?? sm[3] ?? "";
+          if (value.includes("url(")) {
+            out = out.replace(styleRe, `data-hatch-style="${value.replace(/"/g, "&quot;")}"`);
+          }
+        }
+        return `<${tag}${out}>`;
+      });
+    }
+    const HTML_URL_ATTRS_BY_TAG = {
+      IMG: ["src", "srcset", "poster"],
+      IMAGE: ["href"],
+      VIDEO: ["src", "poster"],
+      AUDIO: ["src"],
+      SOURCE: ["src", "srcset"],
+      SCRIPT: ["src"],
+      LINK: ["href"],
+      IFRAME: ["src"],
+      EMBED: ["src"],
+      OBJECT: ["data"],
+      TRACK: ["src"],
+      INPUT: ["src"],
+      FORM: ["action"],
+      BUTTON: ["formaction"],
+      USE: ["href", "xlink:href"]
+    };
+    function rewriteSubtreeForTunnel(root) {
+      if (!root)
+        return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+      let n = walker.currentNode;
+      if (root.nodeType === 1)
+        processOne(root);
+      while (n = walker.nextNode()) {
+        processOne(n);
+      }
+    }
+    function processOne(el) {
+      const tag = (el.tagName ?? "").toUpperCase();
+      const attrs = HTML_URL_ATTRS_BY_TAG[tag];
+      if (attrs) {
+        for (const a of attrs) {
+          const v = el.getAttribute(a);
+          if (v == null)
+            continue;
+          if (isExternalUrl2(v))
+            continue;
+          el.setAttribute("data-hatch-" + a, v);
+          el.removeAttribute(a);
+        }
+      }
+      const style = el.getAttribute("style");
+      if (style && style.includes("url(")) {
+        el.setAttribute("data-hatch-style", style);
+        el.removeAttribute("style");
+      }
+    }
+    function parseAndCleanHtml(html) {
+      const tpl = document.createElement("template");
+      tpl.innerHTML = html;
+      rewriteSubtreeForTunnel(tpl.content);
+      return tpl.content;
+    }
+    function setInnerHTML(el, html, which = "innerHTML") {
+      const s = html == null ? "" : String(html);
+      if (which === "innerHTML" && typeof el.tagName === "string" && el.tagName.toUpperCase() === "TEMPLATE") {
+        try {
+          el.innerHTML = s;
+        } catch {}
+        return;
+      }
+      if (which === "outerHTML") {
+        const frag = parseAndCleanHtml(s);
+        const wrap = document.createElement("div");
+        wrap.appendChild(frag);
+        try {
+          el.outerHTML = wrap.innerHTML;
+        } catch {}
+        queueMicrotask(() => processDataHatchAttrs(document.body));
+        return;
+      }
+      const frag = parseAndCleanHtml(s);
+      try {
+        while (el.firstChild)
+          el.removeChild(el.firstChild);
+        el.appendChild(frag);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(el));
+    }
+    function insertAdjacentHTMLT(el, position, html) {
+      const s = html == null ? "" : String(html);
+      const frag = parseAndCleanHtml(s);
+      const wrap = document.createElement("template");
+      wrap.content.appendChild(frag);
+      try {
+        el.insertAdjacentHTML(position, wrap.innerHTML);
+      } catch {}
+      queueMicrotask(() => processDataHatchAttrs(document.body));
+    }
+    function processDataHatchAttrs(root) {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset], [data-hatch-poster], [data-hatch-action], [data-hatch-data], [data-hatch-style]";
+      root.querySelectorAll(SELECTORS).forEach((el) => {
+        const attrs = el.getAttributeNames();
+        for (const a of attrs) {
+          if (!a.startsWith("data-hatch-"))
+            continue;
+          const real = a.slice("data-hatch-".length);
+          const value = el.getAttribute(a) ?? "";
+          el.removeAttribute(a);
+          if (real === "style")
+            setStyleAttr(el, value);
+          else
+            setAttr(el, real, value);
+        }
+      });
+    }
+    const styleProxyCache = new WeakMap;
+    function getStyle(el) {
+      if (el == null)
+        return el;
+      let real;
+      try {
+        real = el.style;
+      } catch {
+        return;
+      }
+      if (real == null || typeof real !== "object" && typeof real !== "function") {
+        return real;
+      }
+      let proxy = styleProxyCache.get(real);
+      if (proxy)
+        return proxy;
+      proxy = new Proxy(real, {
+        get(target, prop, _receiver) {
+          const v = Reflect.get(target, prop, target);
+          if (typeof v === "function")
+            return v.bind(target);
+          return v;
+        },
+        set(target, prop, value) {
+          if (typeof prop === "string") {
+            setStyle(el, prop, value);
+            return true;
+          }
+          return Reflect.set(target, prop, value, target);
+        }
+      });
+      styleProxyCache.set(real, proxy);
+      return proxy;
+    }
+    function setStyle(el, propName, value) {
+      const v = value == null ? "" : String(value);
+      if (propName.startsWith("--")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style.setProperty(propName, rewritten);
+          } catch {}
+        });
+        return;
+      }
+      if (URL_STYLE_PROPS.has(propName) && v.includes("url(")) {
+        rewriteCssText(v).then((rewritten) => {
+          try {
+            el.style[propName] = rewritten;
+          } catch {}
+        });
+        return;
+      }
+      try {
+        el.style[propName] = v;
+      } catch {}
+    }
+    function setStyleAttr(el, attrValue) {
+      if (!attrValue.includes("url(")) {
+        el.setAttribute("style", attrValue);
+        return;
+      }
+      rewriteCssText(attrValue).then((rewritten) => {
+        try {
+          el.setAttribute("style", rewritten);
+        } catch {}
+      });
+    }
+    function setStyleText(styleEl, text) {
+      if (!(styleEl instanceof HTMLStyleElement)) {
+        try {
+          styleEl.textContent = text;
+        } catch {}
+        return;
+      }
+      if (!text.includes("url(")) {
+        styleEl.textContent = text;
+        return;
+      }
+      rewriteCssText(text).then((rewritten) => {
+        try {
+          styleEl.textContent = rewritten;
+        } catch {}
+      });
+    }
+    function tunnelImage(_w, _h) {
+      const img = new originalImage;
+      const desc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "src");
+      if (desc?.set) {
+        const origSet = desc.set;
+        const origGet = desc.get;
+        Object.defineProperty(img, "src", {
+          configurable: true,
+          get() {
+            return origGet.call(img);
+          },
+          set(v) {
+            if (v == null)
+              return origSet.call(img, "");
+            const s = String(v);
+            if (isExternalUrl2(s))
+              return origSet.call(img, s);
+            resolveToBlobUrl(s).then((b) => origSet.call(img, b), () => origSet.call(img, s));
+          }
+        });
+      }
+      return img;
+    }
+    function tunnelSendBeacon(url, data) {
+      tunnelFetch(url, { method: "POST", body: data, keepalive: true }).catch(() => {});
+      return true;
+    }
+    function tunnelWorker(url, options) {
+      const own = ownObjectUrl(url, objectUrls);
+      if (own === null || typeof originalWorker !== "function") {
+        throw new Error("[__tunnel] new Worker() is not supported in Muse Spaces.");
+      }
+      const script = objectUrlScripts.get(own);
+      return new originalWorker(script === undefined ? own : originalCreateObjectURL(workerScriptBlob(script)), options);
+    }
+    function tunnelImport(spec) {
+      throw new Error("[__tunnel] dynamic import() of '" + String(spec) + "' is not supported in Muse Spaces.");
+    }
+    function installCssObserver() {
+      try {
+        const proto = window.CSSStyleSheet?.prototype;
+        if (proto) {
+          const origInsertRule = proto.insertRule;
+          proto.insertRule = function(rule, index) {
+            if (typeof rule === "string" && rule.includes("url(")) {
+              const idx = origInsertRule.call(this, rule, index);
+              rewriteCssText(rule).then((rewritten) => {
+                if (rewritten !== rule) {
+                  try {
+                    this.deleteRule(idx);
+                    origInsertRule.call(this, rewritten, idx);
+                  } catch {}
+                }
+              });
+              return idx;
+            }
+            return origInsertRule.call(this, rule, index);
+          };
+          const origReplace = proto.replace;
+          if (origReplace) {
+            proto.replace = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                return rewriteCssText(text).then((rewritten) => origReplace.call(this, rewritten));
+              }
+              return origReplace.call(this, text);
+            };
+          }
+          const origReplaceSync = proto.replaceSync;
+          if (origReplaceSync) {
+            proto.replaceSync = function(text) {
+              if (typeof text === "string" && text.includes("url(")) {
+                const ret = origReplaceSync.call(this, text);
+                rewriteCssText(text).then((rewritten) => {
+                  try {
+                    origReplaceSync.call(this, rewritten);
+                  } catch {}
+                });
+                return ret;
+              }
+              return origReplaceSync.call(this, text);
+            };
+          }
+        }
+      } catch (e) {}
+      function sweepSheet(sheet) {
+        try {
+          const rules = sheet.cssRules;
+          for (let i = 0;i < rules.length; i++) {
+            const rule = rules[i];
+            const txt = rule.cssText;
+            if (txt && (txt.includes(HATCH_FRAG) || txt.includes("url(") && !/url\(\s*["']?(blob:|https?:|data:image\/gif;base64,R0)/.test(txt))) {
+              rewriteCssText(txt).then((rewritten) => {
+                if (rewritten !== txt) {
+                  try {
+                    sheet.deleteRule(i);
+                    sheet.insertRule(rewritten, i);
+                  } catch {}
+                }
+              });
+            }
+          }
+        } catch {}
+      }
+      function sweepAll() {
+        for (const sheet of Array.from(document.styleSheets)) {
+          sweepSheet(sheet);
+        }
+      }
+      const mo = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          for (const node of Array.from(m.addedNodes)) {
+            if (node instanceof HTMLStyleElement) {
+              const txt = node.textContent ?? "";
+              if (txt.includes("url(")) {
+                rewriteCssText(txt).then((rewritten) => {
+                  if (rewritten !== txt) {
+                    try {
+                      node.textContent = rewritten;
+                    } catch {}
+                  }
+                });
+              }
+            } else if (node instanceof HTMLLinkElement && node.rel === "stylesheet") {
+              node.addEventListener("load", () => sweepSheet(node.sheet), { once: true });
+            }
+          }
+        }
+      });
+      mo.observe(document, { subtree: true, childList: true });
+      Promise.resolve().then(sweepAll);
+      setTimeout(sweepAll, 0);
+      setTimeout(sweepAll, 50);
+      setTimeout(sweepAll, 250);
+    }
+    function rewriteAuthoredHtml() {
+      const SELECTORS = "[data-hatch-src], [data-hatch-href], [data-hatch-srcset]";
+      document.querySelectorAll(SELECTORS).forEach((el) => {
+        const src = el.getAttribute("data-hatch-src");
+        const href = el.getAttribute("data-hatch-href");
+        const srcset = el.getAttribute("data-hatch-srcset");
+        if (src)
+          setAttr(el, "src", src);
+        if (href)
+          setAttr(el, "href", href);
+        if (srcset)
+          setAttr(el, "srcset", srcset);
+      });
+    }
+    let historyUrlWarned = false;
+    function warnHistoryUrlDropped(method, url) {
+      if (url === undefined || url === null)
+        return;
+      if (historyUrlWarned)
+        return;
+      historyUrlWarned = true;
+      try {
+        console.warn("[__tunnel] history." + method + "() was called with a URL; the URL was ignored. A Muse web artifact " + "renders in an opaque origin with no navigable URL of its own, so " + "the browser rejects any URL change. State kept in the URL will not " + "persist or survive a reload — keep it in component state, or in " + "the artifact's database through a server action.");
+      } catch {}
+    }
+    const originalFetch = globalThis.fetch?.bind(globalThis) ?? (() => {
+      throw new Error("no native fetch");
+    });
+    const originalXHR = globalThis.XMLHttpRequest;
+    const originalWorker = globalThis.Worker;
+    const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+    const originalImage = globalThis.Image;
+    const tunnel = {
+      fetch: tunnelFetch,
+      XHR: TunnelXHR,
+      WebSocket: TunnelWebSocket,
+      EventSource: TunnelEventSource,
+      Image: tunnelImage,
+      Worker: tunnelWorker,
+      import: tunnelImport,
+      sendBeacon: tunnelSendBeacon,
+      setAttr,
+      setAttrNS,
+      setUrlProp,
+      setStyle,
+      getStyle,
+      setStyleAttr,
+      setStyleText,
+      setInnerHTML,
+      insertAdjacentHTML: insertAdjacentHTMLT,
+      rewriteCssText,
+      resolveToBlobUrl,
+      processDataHatchAttrs,
+      rewriteHtmlString,
+      _resolveUrlString: (v) => v,
+      _resolveCssValue: (v) => v,
+      _resolveCssText: (v) => v,
+      _resolveStyleProp: (v) => v,
+      _importMeta: {
+        get url() {
+          return importMetaUrl(SELF_HREF, SELF_BASE_DIR);
+        }
+      },
+      _state: {
+        get port() {
+          return port;
+        },
+        get inFlight() {
+          return pending.size;
+        },
+        get blobCacheSize() {
+          return blobCache.size;
+        },
+        get blobStats() {
+          return { ...blobStats };
+        }
+      }
+    };
+    globalThis.__tunnel = tunnel;
+    window.__tunnel = tunnel;
+    try {
+      globalThis.fetch = tunnelFetch;
+      window.fetch = tunnelFetch;
+      globalThis.XMLHttpRequest = TunnelXHR;
+      window.XMLHttpRequest = TunnelXHR;
+      globalThis.WebSocket = TunnelWebSocket;
+      window.WebSocket = TunnelWebSocket;
+      globalThis.EventSource = TunnelEventSource;
+      window.EventSource = TunnelEventSource;
+      const nav = globalThis.navigator;
+      if (nav && typeof nav.sendBeacon === "function") {
+        nav.sendBeacon = (url, data) => tunnelSendBeacon(url, data);
+      }
+      const NativeURL = globalThis.URL;
+      const TunnelURL = function(url, base) {
+        return resolveTunnelUrl(url, base, SELF_HREF, NativeURL);
+      };
+      TunnelURL.prototype = NativeURL.prototype;
+      for (const k of Object.getOwnPropertyNames(NativeURL)) {
+        if (k === "prototype" || k === "length" || k === "name")
+          continue;
+        try {
+          TunnelURL[k] = NativeURL[k];
+        } catch {}
+      }
+      globalThis.URL = TunnelURL;
+      window.URL = TunnelURL;
+    } catch {}
+    try {
+      const hist = globalThis.history;
+      if (hist && typeof hist.pushState === "function" && typeof hist.replaceState === "function") {
+        const nativePushState = hist.pushState.bind(hist);
+        const nativeReplaceState = hist.replaceState.bind(hist);
+        hist.pushState = function(state, title, url) {
+          warnHistoryUrlDropped("pushState", url);
+          return nativePushState(state, title ?? "");
+        };
+        hist.replaceState = function(state, title, url) {
+          warnHistoryUrlDropped("replaceState", url);
+          return nativeReplaceState(state, title ?? "");
+        };
+      }
+    } catch {}
+    try {
+      const nativeCreateObjectURL = URL.createObjectURL.bind(URL);
+      const nativeRevokeObjectURL = URL.revokeObjectURL.bind(URL);
+      URL.createObjectURL = function(obj) {
+        const created = nativeCreateObjectURL(obj);
+        try {
+          objectUrls.add(created);
+          if (isWorkerScriptBlob(obj))
+            objectUrlScripts.set(created, obj);
+        } catch {}
+        return created;
+      };
+      URL.revokeObjectURL = function(objectUrl) {
+        try {
+          objectUrls.delete(objectUrl);
+          objectUrlScripts.delete(objectUrl);
+        } catch {}
+        nativeRevokeObjectURL(objectUrl);
+      };
+    } catch {}
+    const announceEpoch = Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+    let announceTimer = null;
+    function announce() {
+      try {
+        window.parent.postMessage({ type: "bundle:ready", epoch: announceEpoch }, "*");
+      } catch {}
+    }
+    function startAnnouncing() {
+      announce();
+      announceTimer = setInterval(() => {
+        if (port != null) {
+          if (announceTimer != null)
+            clearInterval(announceTimer);
+          announceTimer = null;
+          return;
+        }
+        announce();
+      }, 120);
+    }
+    function onParentMessage(ev) {
+      const data = ev.data;
+      if (!data || typeof data !== "object")
+        return;
+      if (data.type === "bundle:init-port" && ev.ports && ev.ports[0]) {
+        if (port != null)
+          return;
+        if (announceTimer != null) {
+          clearInterval(announceTimer);
+          announceTimer = null;
+        }
+        port = ev.ports[0];
+        port.onmessage = (pe) => {
+          const msg = pe.data;
+          if (!msg || typeof msg !== "object")
+            return;
+          if (msg.type === "http.res") {
+            const ent = pending.get(msg.id);
+            if (ent) {
+              pending.delete(msg.id);
+              ent.resolve(msg);
+            }
+          } else if (msg.type === "ws.opened" || msg.type === "ws.message" || msg.type === "ws.closed" || msg.type === "ws.error") {
+            openWs.get(msg.id)?._handle(msg);
+          }
+        };
+        port.start?.();
+        portReadyResolve?.(port);
+        installCssObserver();
+        rewriteAuthoredHtml();
+        try {
+          window.parent.postMessage({ type: "bundle:port-attached" }, "*");
+        } catch {}
+      }
+    }
+    window.addEventListener("message", onParentMessage);
+    installDownloadLinks(tunnelFetch, isExternalUrl2, __BLOB_REVOKE_DELAY_MS);
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      startAnnouncing();
+    } else {
+      document.addEventListener("DOMContentLoaded", startAnnouncing);
+    }
+  })();
+})();
+
+;
+(function () {
+  var $ = function (id) {
+    return document.getElementById(id);
+  };
+  var video = $('video'),
+    canvas = $('canvas'),
+    ctx = canvas.getContext('2d');
+  var mode = 'punch',
+    threshold = 142,
+    running = false,
+    pose = null,
+    camera = null;
+  var punchCount = 0,
+    punchState = 'retracted',
+    lastAngle = null,
+    lastKnee = null,
+    horseHoldMs = 0,
+    horseInPose = false,
+    horseLastTs = null;
+  var sessionStart = null,
+    sessionTimer = null,
+    elapsedSec = 0;
+  var guardianOk = false;
+  var RING_C = 540.35;
+  function setGauge(deg, state) {
+    var ring = $('ringFg'),
+      val = $('gaugeVal');
+    if (deg == null || isNaN(deg)) {
+      val.textContent = '—°';
+      __tunnel.setStyle(ring, "strokeDashoffset", RING_C);
+      return;
+    }
+    var d = Math.round(deg);
+    val.textContent = d + '°';
+    var pct = Math.max(0, Math.min(1, deg / 180));
+    __tunnel.setStyle(ring, "strokeDashoffset", (RING_C * (1 - pct)).toFixed(1));
+    __tunnel.setStyle(ring, "stroke", state === 'good' ? '#B8FF2E' : state === 'warn' ? '#FFB020' : '#FF4A1C');
+    __tunnel.setStyle(val, "color", state === 'good' ? '#B8FF2E' : '#F2F6FA');
+  }
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) {
+        x.classList.remove('active');
+      });
+      b.classList.add('active');
+      document.querySelectorAll('.view').forEach(function (v) {
+        v.classList.remove('active');
+      });
+      $('view-' + b.dataset.tab).classList.add('active');
+      if (b.dataset.tab === 'history') renderHistory();
+      if (b.dataset.tab !== 'demo') {
+        document.querySelectorAll('#view-demo video').forEach(function (v) {
+          try {
+            v.pause();
+          } catch (e) {}
+        });
+      }
+    });
+  });
+  function setMode(m) {
+    mode = m;
+    $('modePunch').classList.toggle('active', m === 'punch');
+    $('modeHorse').classList.toggle('active', m === 'horse');
+    $('angleLabel').textContent = m === 'punch' ? '当前肘角 · CURRENT' : '当前膝角 · CURRENT';
+    $('countLabel').textContent = m === 'punch' ? '有效冲拳 · VALID STRIKES' : '马步状态 · STANCE';
+    $('gaugeLab').textContent = m === 'punch' ? 'ELBOW ANGLE · 肘角' : 'KNEE ANGLE · 膝角';
+    __tunnel.setStyle($('sliderBox'), "opacity", m === 'punch' ? '1' : '.45');
+    setGauge(null, 'idle');
+    setFeedback(m === 'punch' ? '冲拳模式：伸直超过 ' + threshold + '° 再收回，计 1 次' : '马步模式：双脚站开、膝盖弯到位，保持住别动', '');
+  }
+  $('modePunch').addEventListener('click', function () {
+    setMode('punch');
+  });
+  $('modeHorse').addEventListener('click', function () {
+    setMode('horse');
+  });
+  $('threshold').addEventListener('input', function (e) {
+    threshold = +e.target.value;
+    $('thVal').textContent = threshold;
+  });
+  function setFeedback(text, cls) {
+    var f = $('feedback');
+    f.textContent = text;
+    f.className = 'feedback ' + (cls || '');
+  }
+  function showError(msg) {
+    var e = $('errorBox');
+    e.textContent = msg;
+    e.classList.add('show');
+  }
+  function clearError() {
+    $('errorBox').classList.remove('show');
+  }
+  function fmt(s) {
+    var m = Math.floor(s / 60),
+      ss = Math.floor(s % 60);
+    return (m < 10 ? '0' : '') + m + ':' + (ss < 10 ? '0' : '') + ss;
+  }
+  function angle(a, b, c) {
+    var v1 = {
+        x: a.x - b.x,
+        y: a.y - b.y
+      },
+      v2 = {
+        x: c.x - b.x,
+        y: c.y - b.y
+      };
+    var d1 = Math.hypot(v1.x, v1.y),
+      d2 = Math.hypot(v2.x, v2.y);
+    if (!d1 || !d2) return null;
+    var cos = (v1.x * v2.x + v1.y * v2.y) / (d1 * d2);
+    cos = Math.max(-1, Math.min(1, cos));
+    return Math.acos(cos) * 180 / Math.PI;
+  }
+  function dist(a, b) {
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  }
+  function onResults(res) {
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (res.image) {
+      ctx.drawImage(res.image, 0, 0, canvas.width, canvas.height);
+    }
+    if (!res.poseLandmarks) {
+      setFeedback('没有看到人——请全身站进画面，距镜头 2–3 米', 'warn');
+      $('hudState').textContent = '未检测到人体';
+      setGauge(null, 'idle');
+      ctx.restore();
+      return;
+    }
+    var lm = res.poseLandmarks;
+    try {
+      if (window.drawConnectors && window.POSE_CONNECTIONS) {
+        drawConnectors(ctx, lm, POSE_CONNECTIONS, {
+          color: '#B8FF2E',
+          lineWidth: 4
+        });
+      }
+      if (window.drawLandmarks) {
+        drawLandmarks(ctx, lm, {
+          color: '#FF4A1C',
+          fillColor: '#FFFFFF',
+          lineWidth: 2,
+          radius: 5
+        });
+      }
+    } catch (e) {
+      ctx.fillStyle = '#B8FF2E';
+      lm.forEach(function (p) {
+        ctx.beginPath();
+        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, 7);
+        ctx.fill();
+      });
+    }
+    ctx.restore();
+    $('hudState').textContent = '识别中';
+    var la = angle(lm[11], lm[13], lm[15]),
+      ra = angle(lm[12], lm[14], lm[16]);
+    var elbow = Math.max(la || 0, ra || 0);
+    lastAngle = elbow;
+    var lk = angle(lm[23], lm[25], lm[27]),
+      rk = angle(lm[24], lm[26], lm[28]);
+    var knee = lk && rk ? (lk + rk) / 2 : lk || rk;
+    lastKnee = knee;
+    var shoulderW = dist(lm[11], lm[12]),
+      footW = dist(lm[27], lm[28]),
+      ratio = shoulderW > 0.01 ? footW / shoulderW : 0;
+    if (mode === 'punch') {
+      $('hudAngle').textContent = '肘角 ' + Math.round(elbow) + '°';
+      $('mAngle').textContent = Math.round(elbow) + '°';
+      var sub = $('mAngleSub');
+      sub.textContent = elbow >= threshold ? '已伸直达标 ✓' : elbow > threshold - 25 ? '差一点，再伸直！' : '还没伸直 · 目标 ' + threshold + '°';
+      sub.className = 'gaugeSub' + (elbow >= threshold ? ' ok' : '');
+      setGauge(elbow, elbow >= threshold ? 'good' : elbow > threshold - 25 ? 'warn' : 'idle');
+      if (punchState === 'retracted' && elbow >= threshold) {
+        punchState = 'extended';
+        setFeedback('好！拳伸直了 — 现在收回胸前', 'good');
+      } else if (punchState === 'extended' && elbow <= 115) {
+        punchState = 'retracted';
+        punchCount++;
+        $('mCount').textContent = punchCount + ' 次';
+        $('mCount').className = 'lime';
+        setFeedback('有效冲拳 +1 ！已完成 ' + punchCount + ' 次，再来！', 'good');
+        if (navigator.vibrate) navigator.vibrate(40);
+      } else if (punchState === 'retracted') {
+        setFeedback(elbow > threshold - 25 ? '就差一点 — 手臂再伸直一点（还差 ' + Math.round(threshold - elbow) + '°）' : '出拳！把手臂伸直，超过 ' + threshold + '°', elbow > threshold - 25 ? 'warn' : '');
+      } else {
+        setFeedback('保持伸直，然后收拳到胸前（肘角 ≤115°）', '');
+      }
+    } else {
+      $('hudAngle').textContent = '膝角 ' + (knee ? Math.round(knee) : '—') + '° · 步宽比 ' + (ratio ? ratio.toFixed(2) : '—');
+      $('mAngle').textContent = knee ? Math.round(knee) + '°' : '—°';
+      var kneeOk = knee && knee >= 75 && knee <= 135,
+        footOk = ratio >= 1.35,
+        inPose = kneeOk && footOk;
+      var sub2 = $('mAngleSub');
+      sub2.textContent = inPose ? '姿势达标，保持中 ✓' : !kneeOk ? '膝角需在 75°–135°' : '步宽不够 · 需 ≥1.35 倍肩宽';
+      sub2.className = 'gaugeSub' + (inPose ? ' ok' : '');
+      setGauge(knee, inPose ? 'good' : 'warn');
+      $('mCount').textContent = inPose ? '保持中 ✓' : '未达标';
+      $('mCount').className = inPose ? 'lime' : '';
+      var now = performance.now();
+      if (inPose) {
+        if (horseInPose && horseLastTs) horseHoldMs += now - horseLastTs;
+        horseInPose = true;
+        setFeedback('好，保持住！马步计时中 — ' + (horseHoldMs / 1000).toFixed(1) + ' 秒', 'good');
+      } else {
+        horseInPose = false;
+        if (!kneeOk && knee > 135) setFeedback('腿再弯一点 — 蹲下去，膝角要 ≤135°（现在 ' + Math.round(knee || 0) + '°）', 'warn');else if (!kneeOk && knee < 75) setFeedback('蹲太深了 — 稍微起来一点，膝角要 ≥75°', 'warn');else if (!footOk) setFeedback('双脚再站开一点 — 步宽要达到肩宽的 1.35 倍（现在 ' + ratio.toFixed(2) + ' 倍）', 'warn');else setFeedback('调整姿势：双脚站开 + 膝盖弯到位', 'warn');
+      }
+      horseLastTs = now;
+      $('mHorse').textContent = (horseHoldMs / 1000).toFixed(1) + ' 秒';
+    }
+  }
+  function startSessionTimer() {
+    sessionStart = Date.now();
+    sessionTimer = setInterval(function () {
+      elapsedSec = (Date.now() - sessionStart) / 1000;
+      $('mTime').textContent = fmt(elapsedSec);
+      $('hudTime').textContent = fmt(elapsedSec);
+    }, 500);
+  }
+  function stopSessionTimer() {
+    if (sessionTimer) clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+  async function startDetection() {
+    clearError();
+    if (typeof Pose === 'undefined') {
+      showError('姿态识别模型库加载失败：请检查网络后刷新页面（需要从 CDN 加载 MediaPipe）。断网或被拦截时无法识别，不会假装运行。');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showError('当前浏览器不支持摄像头调用（getUserMedia 不可用）。请用最新版 Chrome / Edge，并通过 HTTPS 打开本页。');
+      return;
+    }
+    setFeedback('正在加载 AI 模型并打开摄像头，请稍候…（首次约需 5–15 秒）', '');
+    $('btnStart').disabled = true;
+    $('btnStart').textContent = '加载模型中…';
+    try {
+      if (!pose) {
+        pose = new Pose({
+          locateFile: function (f) {
+            return 'https://cdn.jsdelivr.net/npm/@mediapipe/pose/' + f;
+          }
+        });
+        pose.setOptions({
+          modelComplexity: 1,
+          smoothLandmarks: true,
+          enableSegmentation: false,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5
+        });
+        pose.onResults(onResults);
+      }
+      var stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: {
+            ideal: 1280
+          },
+          height: {
+            ideal: 720
+          }
+        },
+        audio: false
+      });
+      stream.getTracks().forEach(function (t) {
+        t.stop();
+      });
+      if (typeof Camera === 'undefined') {
+        showError('摄像头工具库加载失败，请刷新页面重试。');
+        $('btnStart').disabled = false;
+        $('btnStart').textContent = '开始检测 · 打开摄像头';
+        return;
+      }
+      camera = new Camera(video, {
+        onFrame: async function () {
+          await pose.send({
+            image: video
+          });
+        },
+        width: 1280,
+        height: 720
+      });
+      await camera.start();
+      running = true;
+      __tunnel.setStyle($('placeholder'), "display", 'none');
+      $('btnStart').textContent = '检测中 · LIVE';
+      $('btnStop').disabled = false;
+      punchCount = 0;
+      horseHoldMs = 0;
+      punchState = 'retracted';
+      $('mCount').textContent = '0 次';
+      $('mCount').className = '';
+      $('mHorse').textContent = '0.0 秒';
+      startSessionTimer();
+      setFeedback(mode === 'punch' ? '开始！出拳伸直超过 ' + threshold + '°，再收回，计 1 次' : '开始！双脚站开、蹲到位，保持住开始计时', 'good');
+    } catch (err) {
+      console.error(err);
+      var msg = '摄像头打开失败。';
+      if (err && err.name === 'NotAllowedError') msg = '摄像头权限被拒绝：请点浏览器地址栏旁的摄像头图标，选「允许」，然后刷新页面再试。';else if (err && err.name === 'NotFoundError') msg = '没有找到摄像头设备：请确认设备有摄像头且未被其他应用占用。';else if (err && err.name === 'NotReadableError') msg = '摄像头被其他应用占用：关掉正在用摄像头的应用后重试。';else msg = '打开失败：' + (err && err.message ? err.message : err) + '。请用最新版 Chrome/Edge、HTTPS 环境重试。';
+      showError(msg);
+      setFeedback('没打开成功 — 看下方红色提示处理，再点开始', 'warn');
+      $('btnStart').disabled = false;
+      $('btnStart').textContent = '开始检测 · 打开摄像头';
+    }
+  }
+  function stopDetection() {
+    if (camera) {
+      try {
+        camera.stop();
+      } catch (e) {}
+      camera = null;
+    }
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(function (t) {
+        t.stop();
+      });
+      video.srcObject = null;
+    }
+    running = false;
+    stopSessionTimer();
+    $('btnStart').disabled = false;
+    $('btnStart').textContent = '开始检测 · 打开摄像头';
+    $('btnStop').disabled = true;
+    __tunnel.setStyle($('placeholder'), "display", 'grid');
+    $('hudState').textContent = '已结束';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var horseSec = Math.round(horseHoldMs / 1000 * 10) / 10;
+    var dur = Math.round(elapsedSec);
+    var rec = {
+      ts: Date.now(),
+      date: new Date().toLocaleString('zh-CN'),
+      mode: mode === 'punch' ? '冲拳' : '马步',
+      punch: punchCount,
+      horse: horseSec,
+      duration: dur
+    };
+    try {
+      var arr = JSON.parse(localStorage.getItem('huashan_history_v1') || '[]');
+      arr.unshift(rec);
+      localStorage.setItem('huashan_history_v1', JSON.stringify(arr.slice(0, 50)));
+    } catch (e) {}
+    __tunnel.setInnerHTML($('summaryText'), '模式：<strong>' + rec.mode + '</strong> · 有效冲拳 <strong>' + punchCount + ' 次</strong> · 马步保持 <strong>' + horseSec + ' 秒</strong> · 本次用时 <strong>' + fmt(dur) + '</strong><br/>' + (punchCount >= 20 ? '冲拳量很棒，注意收拳回位别变形。' : punchCount > 0 ? '已完成真实计数，下一组把收拳做得更干脆。' : mode === 'punch' ? '这次还没计到有效冲拳：多半是没伸过阈值或没收回到位，对照实时角度再试。' : ''), "innerHTML");
+    $('summaryBox').classList.add('show');
+    setFeedback('训练结束，小结已生成并保存到「训练记录」', 'good');
+  }
+  $('btnStart').addEventListener('click', function () {
+    if (running) return;
+    if (!guardianOk) {
+      $('guardianModal').classList.add('show');
+    } else {
+      startDetection();
+    }
+  });
+  $('guardianCheck').addEventListener('change', function (e) {
+    $('btnGuardianOk').disabled = !e.target.checked;
+  });
+  $('btnGuardianCancel').addEventListener('click', function () {
+    $('guardianModal').classList.remove('show');
+  });
+  $('btnGuardianOk').addEventListener('click', function () {
+    guardianOk = true;
+    $('guardianModal').classList.remove('show');
+    startDetection();
+  });
+  $('btnStop').addEventListener('click', stopDetection);
+  $('btnReset').addEventListener('click', function () {
+    punchCount = 0;
+    horseHoldMs = 0;
+    elapsedSec = 0;
+    punchState = 'retracted';
+    $('mCount').textContent = '0 次';
+    $('mCount').className = '';
+    $('mHorse').textContent = '0.0 秒';
+    $('mTime').textContent = '00:00';
+    setGauge(null, 'idle');
+    if (running) {
+      sessionStart = Date.now();
+    }
+    setFeedback('已重新计数', '');
+  });
+  function renderHistory() {
+    var arr = [];
+    try {
+      arr = JSON.parse(localStorage.getItem('huashan_history_v1') || '[]');
+    } catch (e) {}
+    var box = $('historyList');
+    __tunnel.setStyle($('histEmpty'), "display", arr.length ? 'none' : 'block');
+    __tunnel.setInnerHTML(box, arr.map(function (r) {
+      return '<div class="historyItem"><div><div class="h-date">' + r.date + '</div><div class="h-mode">' + r.mode + '训练</div></div><div class="h-nums">冲拳 ' + r.punch + ' 次 · 马步 ' + r.horse + ' 秒<small>用时 ' + fmt(r.duration) + '</small></div></div>';
+    }).join(''), "innerHTML");
+  }
+  $('btnClearHist').addEventListener('click', function () {
+    localStorage.removeItem('huashan_history_v1');
+    renderHistory();
+  });
+  renderHistory();
+})();</script>
+</body>
+</html>
