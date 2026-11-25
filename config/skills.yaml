@@ -2,7 +2,13 @@ version: 1
 entries:
   adobe:
     status: available
+  agentman_skills:
+    status: available
+  agenttask:
+    status: available
   ahrefs:
+    status: available
+  ai_manga_studio:
     status: available
   airtable:
     status: available
@@ -10,7 +16,11 @@ entries:
     status: available
   argos:
     status: available
+  arketa:
+    status: available
   asana:
+    status: available
+  aura_historia:
     status: available
   basecamp:
     status: available
@@ -18,21 +28,37 @@ entries:
     status: available
   box:
     status: available
+  bulkpublish:
+    status: available
   calendly:
     status: available
   canva:
     status: connected
+  capital_one_shopping:
+    status: available
   carrefour:
     status: available
+  certarc:
+    status: available
+  chavruti:
+    status: available
+  circle:
+    status: available
   circleback:
+    status: available
+  close:
     status: available
   cloudflare:
     status: available
   clutch:
     status: available
+  crosswalk:
+    status: available
   crunchbase:
     status: available
   cult_beauty:
+    status: available
+  deal_ai:
     status: available
   debenhams:
     status: available
@@ -44,6 +70,8 @@ entries:
     status: available
   despegar:
     status: available
+  dns_doctor:
+    status: available
   dreamrender:
     status: available
   dropbox:
@@ -51,6 +79,10 @@ entries:
   easyjet:
     status: available
   eight_sleep:
+    status: available
+  elevenlabs:
+    status: available
+  engentfy_cadence:
     status: available
   estimatekit:
     status: available
@@ -60,11 +92,23 @@ entries:
     status: available
   facebook_cli:
     status: available
+  fidexa:
+    status: available
   figma:
     status: available
   filament:
     status: available
+  financial_datasets:
+    status: available
+  find_a_pro:
+    status: available
   findtime_io:
+    status: available
+  flow_state_endurance:
+    status: available
+  flux:
+    status: available
+  forthclear:
     status: available
   function_health:
     status: available
@@ -100,7 +144,11 @@ entries:
     status: available
   granola:
     status: available
+  groundquote:
+    status: available
   gumroad_mcp:
+    status: available
+  gusto:
     status: available
   healthex:
     status: available
@@ -108,13 +156,23 @@ entries:
     status: available
   hubspot:
     status: available
+  ifttt:
+    status: available
+  ilu_rennik:
+    status: available
   imap_email:
+    status: available
+  inkmotion:
+    status: available
+  inkspired:
     status: available
   instacart:
     status: available
   instagram:
     status: available
   instagram_messages:
+    status: available
+  instaport:
     status: available
   intellist:
     status: available
@@ -125,6 +183,8 @@ entries:
   kavak:
     status: available
   klaviyo:
+    status: available
+  klynx:
     status: available
   krea:
     status: available
@@ -144,7 +204,11 @@ entries:
     status: available
   luma:
     status: available
+  manufact:
+    status: available
   meltflex:
+    status: available
+  mercury:
     status: available
   messenger_read:
     status: available
@@ -178,6 +242,8 @@ entries:
     status: available
   pandadoc:
     status: available
+  pantry_persona:
+    status: available
   pantryfy:
     status: available
   paperoffice_ai:
@@ -190,9 +256,17 @@ entries:
     status: available
   peloton:
     status: available
+  peristyle_grocery_cart:
+    status: available
+  pethubble:
+    status: available
   philips_hue:
     status: available
+  piki:
+    status: available
   plaid:
+    status: available
+  playdrop:
     status: available
   pool:
     status: available
@@ -204,6 +278,8 @@ entries:
     status: available
   quickbooks:
     status: available
+  rankify:
+    status: available
   rappi_mcp:
     status: available
   readwise_mcp:
@@ -212,33 +288,65 @@ entries:
     status: available
   replit:
     status: available
+  revup:
+    status: available
   runway_mcp:
+    status: available
+  ryze_ai:
+    status: available
+  secondpage:
+    status: available
+  sentisense:
+    status: available
+  shelvio:
     status: available
   shopback_mcp:
     status: available
   shopify:
     status: available
+  shopsbuilder:
+    status: available
   siftivo:
     status: available
   slack:
     status: available
+  solmarrow:
+    status: available
   spotify:
+    status: available
+  spreeflo:
     status: available
   stripe:
     status: available
   studocu:
     status: available
+  super_ai:
+    status: available
   superhuman:
+    status: available
+  swarm_by_foursquare:
     status: available
   sweetgreen:
     status: available
+  tabico:
+    status: available
+  taim:
+    status: available
+  tella:
+    status: available
   tessie:
+    status: available
+  testbunny:
+    status: available
+  the_prompting_company:
     status: available
   threads:
     status: available
   threads_messages:
     status: available
   todoist:
+    status: available
+  trainingdojo:
     status: available
   trustandwill:
     status: available
@@ -252,15 +360,21 @@ entries:
     status: available
   vritto:
     status: available
+  vurbalize:
+    status: available
   walmart:
     status: available
   warp:
     status: available
   wavelength:
     status: available
+  wendy:
+    status: available
   withings:
     status: available
   wix:
+    status: available
+  workouter:
     status: available
   zapier:
     status: available

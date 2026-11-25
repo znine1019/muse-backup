@@ -18,3 +18,4 @@ Every page under `~/memory/people/`, closest to the user first. Rendered by the 
 - **龙 肖 ("肖教练")** — `~/memory/people/xiao-long.md` — 乔格体育俱乐部800米专项教练，与用户同在俱乐部核心师资名单上；用户称其为肖教练。
 - **林 ("林教练")** — `~/memory/people/lin-jiao-lian.md` — 乔格体育俱乐部400米专项教练，与用户同在俱乐部核心师资名单上。
 - **雪梅 黄 (黄雪梅)** — `~/memory/people/huang-xuemei.md` — 市场营销01班学生（学号 072301206）；2026-11-19 用户让助手为她写形势与政策专题二小论文，同日两次改写：第一次按用户要求改内容写法，第二次按文章拥有者要求改成总分总结构 910 字，关系性质未说明。
+- **珺 刘 (刘珺)** — `~/memory/people/liu-jun.md` — Named as the reviewer on the user's leave applications, including the 2026-11-24 counsellor review; relationship otherwise unstated.

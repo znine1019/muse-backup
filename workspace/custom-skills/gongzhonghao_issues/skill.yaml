@@ -1,0 +1,24 @@
+name: gongzhonghao_issues
+title: Write Gongzhonghao issues
+description: Write and deliver a Gongzhonghao issue in the user's format, with plain text, JPG images, and a scripted one minute video when one is asked for.
+category: Writing
+include_in_prompt: true
+skill_improvement:
+  managed: true
+  status: active
+  evidence_handles:
+  - message:assistant-msg-210ed65a-5c17-4762-be33-31993d48a6cc
+  - message:e3ee333e-6751-4df9-b9a6-4bb01fb2e041
+  - message:b58975bf-9c9e-406c-9c98-54e38cd89ed8
+  - message:assistant-msg-25d75b6d-c11b-4f4f-965b-5bf91b616ee8
+  - scheduler_job:gongzhonghao-every-3-days
+  - ~/MEMORY.md
+  measurement:
+    proxy_metric_id: objective_success_rate
+    success_criterion: The next Gongzhonghao issues in the window are delivered first time as plain dialogue text with JPG images and no repeat correction of the same kind, and no webp format error is reported.
+    window_days: 14
+  needs_review: false
+  rationale: 'The 2026-11-24 issue violated two standing format rules in one delivery. The assistant put the full text in a code block (message:assistant-msg-210ed65a-5c17-4762-be33-31993d48a6cc) and the user asked for dialogue text form (message:e3ee333e-6751-4df9-b9a6-4bb01fb2e041), then the user reported an image format error (message:b58975bf-9c9e-406c-9c98-54e38cd89ed8) and the assistant had to convert four images to JPG. Both rules were already in ~/MEMORY.md, set 2026-11-24, yet they were not applied at delivery time. The previous version of this proposal would not have changed that outcome because it set include_in_prompt to false and named no loading trigger, so a scheduled run that did not search for the skill would repeat both failures. This revision sets include_in_prompt to true, so the skill is listed in every conversation, including the scheduled Gongzhonghao run, and its first instruction is to load it before drafting, converting images, or producing a video. That gives the focused checklist a loading path tied to every run rather than relying on a search the scheduled run may not do. The issue recurs every 96 hours with the next due 2026-11-28, so the same failure can recur. Skill search found only the generic social_publishing skill, which does not cover the WeChat editor plain text and JPG constraints. The skill also codifies the disclosure that worked in the same issue (message:assistant-msg-25d75b6d-c11b-4f4f-965b-5bf91b616ee8) and the one minute scripted narration rule. Other signals were rejected: the 36 tool failures carry bare tool names with no error detail, the memory 92 recurring failures propose a system prompt change which is out of scope, the Huashan stitching method is agreed but still undelivered after 502 errors, and the GitHub 19 card burden is fixed by the user choosing allow always on the first card.'
+  review_after: 2026-12-09T03:51:51.087572+00:00
+  reviewed_at: 2026-11-25T03:51:51.087572+00:00
+  run_id: sirun_31338ef20e124e8fb5dde724466656f2
