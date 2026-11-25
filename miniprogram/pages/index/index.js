@@ -1,6 +1,5 @@
 'use strict';
 
-const api = require('../../services/api');
 const {
   getSessionDestination,
   getStatusLabel
@@ -11,25 +10,28 @@ Page({
     loading: true,
     error: '',
     session: null,
+    isUnregistered: false,
     statusLabel: '',
     actionLabel: '微信一键登录',
-    healthText: ''
   },
 
   onShow() {
     this.identify({ routeActive: true });
   },
 
-  async identify({ routeActive = false, force = false } = {}) {
+  async identify({ routeActive = false, force = false, refresh = false } = {}) {
     this.setData({ loading: true, error: '' });
 
     try {
-      const session = await getApp().ensureSession({ force });
+      const session = await getApp().ensureSession({ force, refresh });
       const destination = getSessionDestination(session);
+      const isUnregistered =
+        session.registered === false || session.user.status === 'unregistered';
 
       this.setData({
         loading: false,
         session,
+        isUnregistered,
         statusLabel: getStatusLabel(session.user.status),
         actionLabel: destination.label
       });
@@ -42,19 +44,33 @@ Page({
         this.setData({
           loading: false,
           session: null,
+          isUnregistered: false,
           error: ''
         });
         return;
       }
       this.setData({
         loading: false,
+        isUnregistered: false,
         error: error.message || '登录失败，请稍后重试。'
       });
     }
   },
 
   handleLogin() {
-    this.identify({ routeActive: true, force: true });
+    this.identify({ routeActive: true, force: true, refresh: true });
+  },
+
+  goStudentRegister() {
+    wx.navigateTo({ url: '/pages/register/register' });
+  },
+
+  goParentRegister() {
+    wx.navigateTo({ url: '/pages/parent-register/parent-register' });
+  },
+
+  goCoachRegister() {
+    wx.navigateTo({ url: '/pages/coach-register/coach-register' });
   },
 
   handleContinue() {
@@ -64,22 +80,5 @@ Page({
     }
     const destination = getSessionDestination(this.data.session);
     wx.reLaunch({ url: destination.url });
-  },
-
-  async handleHealthCheck() {
-    this.setData({ healthText: '正在检查云函数连接...' });
-    try {
-      const result = await api.healthCheck();
-      this.setData({
-        healthText: result.databaseReady
-          ? '云函数与数据库连接正常。'
-          : '云函数连接正常，但数据库集合尚未初始化。'
-      });
-    } catch (error) {
-      const code = error.code ? `（${error.code}）` : '';
-      this.setData({
-        healthText: `${error.message || '云开发连接测试失败。'}${code}`
-      });
-    }
   }
 });

@@ -140,11 +140,10 @@ test('F1-D2b 开发者业务入口不减少', () => {
   }
 });
 
-test('F1-D2b 未新增账号删除、清空或重置入口', () => {
+test('F1-D2b 危险清理入口仅出现在开发者工作台且不含无边界重置操作', () => {
   for (const page of PAGES) {
     const wxml = read(page, 'wxml');
     for (const forbidden of [
-      '删除账号',
       '注销账号',
       '清空数据',
       '重置系统',
@@ -154,6 +153,9 @@ test('F1-D2b 未新增账号删除、清空或重置入口', () => {
       assert.ok(!wxml.includes(forbidden), `${page} 不应新增危险入口：${forbidden}`);
     }
   }
+  const adminWxml = read('admin', 'wxml');
+  assert.ok(adminWxml.includes('删除账号'));
+  assert.ok(adminWxml.includes('删除训练组'));
 });
 
 test('F1-D2b 四页面身份判断与业务 JS 引用未改变', () => {

@@ -4,6 +4,7 @@ const {
   API_FUNCTION_NAME,
   HEALTH_FUNCTION_NAME
 } = require('../config/env');
+const { readActiveRole, sessionToken } = require('../utils/active-role');
 
 function createClientError(code, message) {
   const error = new Error(message);
@@ -11,18 +12,17 @@ function createClientError(code, message) {
   return error;
 }
 
-async function callApi(action, payload = {}) {
+async function executeApiCall(action, requestPayload) {
   try {
     const response = await wx.cloud.callFunction({
       name: API_FUNCTION_NAME,
-      data: { action, payload }
+      data: { action, payload: requestPayload }
     });
     const result = response && response.result;
 
     if (!result || typeof result.ok !== 'boolean') {
       throw createClientError('INVALID_RESPONSE', '云函数返回格式不正确，请稍后重试。');
     }
-
     if (!result.ok) {
       const publicError = result.error || {};
       throw createClientError(
@@ -30,7 +30,6 @@ async function callApi(action, payload = {}) {
         publicError.message || '操作失败，请稍后重试。'
       );
     }
-
     return result.data;
   } catch (error) {
     if (error && error.code) {
@@ -38,6 +37,44 @@ async function callApi(action, payload = {}) {
     }
     throw createClientError('NETWORK_ERROR', '云服务暂时不可用，请检查网络后重试。');
   }
+}
+
+function callApi(action, payload = {}) {
+  const requestPayload = payloadWithActingRole(payload);
+  if (!isDedupableReadAction(action)) {
+    return executeApiCall(action, requestPayload);
+  }
+
+  let identityPart = '';
+  try {
+    const app = getApp();
+    const session = app && app.globalData ? app.globalData.session : null;
+    identityPart = `${sessionToken(session)}#${(session && session.user && session.user.status) || ''}`;
+  } catch (error) {
+    identityPart = 'anonymous';
+  }
+
+  const key = `${requestEpoch}|${identityPart}|${action}|${JSON.stringify(requestPayload)}`;
+  if (inflightReadRequests.has(key)) {
+    return inflightReadRequests.get(key);
+  }
+
+  const epochAtStart = requestEpoch;
+  const task = executeApiCall(action, requestPayload).finally(() => {
+    if (inflightReadRequests.get(key) === task) {
+      inflightReadRequests.delete(key);
+    }
+    if (epochAtStart !== requestEpoch) {
+      inflightReadRequests.clear();
+    }
+  });
+  inflightReadRequests.set(key, task);
+  return task;
+}
+
+function resetRequestCache() {
+  requestEpoch += 1;
+  inflightReadRequests.clear();
 }
 
 async function healthCheck() {
@@ -69,6 +106,8 @@ module.exports = {
     callApi('auth.bootstrap', { bootstrapCode }),
   listTrainingGroups: () => callApi('directory.list_training_groups'),
   getProfile: () => callApi('profile.get'),
+  getCoachProfile: () => callApi('coach.get_profile'),
+  submitCoachProfile: (payload) => callApi('coach.submit_profile', payload),
   updateStudentProfile: (payload) => callApi('profile.update', payload),
   addMeasurement: (payload) => callApi('profile.add_measurement', payload),
   listMeasurements: () => callApi('profile.list_measurements'),
@@ -192,13 +231,67 @@ module.exports = {
   revokeParentLink: (payload) => callApi('parent.revoke_link', payload),
   reviewRegistration: (payload) => callApi('admin.review_registration', payload),
   listUsers: () => callApi('admin.list_users'),
+  getUserDeletionImpact: (targetUserId) =>
+    callApi('admin.get_user_deletion_impact', { targetUserId }),
+  deleteUser: (payload) => callApi('admin.delete_user', payload),
   assignRole: (payload) => callApi('admin.assign_role', payload),
   setUserStatus: (payload) => callApi('admin.set_user_status', payload),
   listAllTrainingGroups: () => callApi('admin.list_training_groups'),
+  getTrainingGroupDeletionImpact: (trainingGroupId) =>
+    callApi('admin.get_training_group_deletion_impact', { trainingGroupId }),
+  deleteTrainingGroup: (payload) =>
+    callApi('admin.delete_training_group', payload),
   createTrainingGroup: (payload) =>
     callApi('admin.create_training_group', payload),
   setTrainingGroupEnabled: (payload) =>
     callApi('admin.set_training_group_enabled', payload),
   setGroupCoach: (payload) => callApi('admin.set_group_coach', payload),
-  healthCheck
+  healthCheck,
+  resetRequestCache
 };
+const inflightReadRequests = new Map();
+let requestEpoch = 0;
+
+const READ_ACTION_PREFIXES = Object.freeze([
+  'directory.',
+  'profile.get',
+  'coach.get_',
+  'parent.get_',
+  'parent.list_',
+  'performance.list_',
+  'report.get_',
+  'statistics.get_',
+  'leaderboard.',
+  'export.',
+  'plan.list_',
+  'plan.get_',
+  'attendance.list_',
+  'attendance.get_',
+  'leave.list_',
+  'competition.list_',
+  'competition.get_',
+  'notice.list_',
+  'notice.get_',
+  'notice.unread_',
+  'feedback.list_',
+  'admin.list_',
+  'admin.get_'
+]);
+
+function isDedupableReadAction(action) {
+  return READ_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix));
+}
+
+function payloadWithActingRole(payload) {
+  try {
+    const app = getApp();
+    const session = app && app.globalData ? app.globalData.session : null;
+    const actingRole = readActiveRole(sessionToken(session));
+    if (actingRole === 'developer' || actingRole === 'coach') {
+      return { ...payload, actingRole };
+    }
+  } catch (error) {
+    return payload;
+  }
+  return payload;
+}

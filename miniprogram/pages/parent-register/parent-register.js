@@ -15,6 +15,7 @@ Page({
     loading: true,
     submitting: false,
     error: '',
+    formError: '',
     relationOptions: RELATION_OPTIONS,
     relationIndex: 2,
     name: '',
@@ -74,10 +75,10 @@ Page({
       return;
     }
     if (!this.data.name.trim()) {
-      this.setData({ error: '请填写家长姓名。' });
+      this.setData({ formError: '请填写家长本人真实姓名，请勿填写孩子的姓名。' });
       return;
     }
-    this.setData({ submitting: true, error: '' });
+    this.setData({ submitting: true, error: '', formError: '' });
     try {
       await api.submitParentProfile({
         name: this.data.name.trim(),
@@ -87,7 +88,7 @@ Page({
       wx.showToast({ title: '已提交，等待审核', icon: 'success' });
       await this.loadPage();
     } catch (error) {
-      this.setData({ error: error.message || '提交失败，请稍后重试。' });
+      this.setData({ formError: error.message || '提交失败，请稍后重试。' });
     } finally {
       this.setData({ submitting: false });
     }

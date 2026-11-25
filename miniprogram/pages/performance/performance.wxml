@@ -25,7 +25,7 @@
         <view class="jg-field-row">
           <text class="jg-field-label">体育项目</text>
           <view class="jg-field-body">
-            <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
+            <picker range="{{events}}" range-key="label" value="{{eventIndex}}" bindchange="onEventChange">
               <view class="jg-input jg-picker {{events[eventIndex] ? '' : 'jg-picker-empty'}}">{{events[eventIndex].name || '请选择项目'}}</view>
             </picker>
           </view>
@@ -85,7 +85,7 @@
             <view class="jg-row-m">取得日期：{{item.achievedAt}}</view>
             <view wx:if="{{item.reviewComment}}" class="jg-row-m">审核意见：{{item.reviewComment}}</view>
           </view>
-          <view class="jg-row-e"><text class="jg-row-v">{{item.value}} {{item.unit}}</text></view>
+          <view class="jg-row-e"><text class="jg-row-v">{{item.valueText}}</text></view>
         </view>
       </view>
 

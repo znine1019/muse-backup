@@ -2,7 +2,22 @@
 
 const api = require('../../services/api');
 const { getSessionDestination, sessionHasRole } = require('../../utils/session');
-const { clearActiveRole } = require('../../utils/active-role');
+const {
+  clearActiveRole,
+  saveActiveRole
+} = require('../../utils/active-role');
+
+function persistActiveRole(role, session) {
+  const user = (session && session.user) || {};
+  if (typeof saveActiveRole !== 'function' || !user.id) {
+    return;
+  }
+  saveActiveRole(role, {
+    userId: user.id,
+    roles: Array.isArray(user.roles) ? user.roles : []
+  });
+}
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const COMPLETION_LABELS = Object.freeze({
   completed: '全部完成',
@@ -106,6 +121,7 @@ Page({
         wx.reLaunch({ url: getSessionDestination(session).url });
         return;
       }
+      persistActiveRole('parent', session);
       const result = await api.listParentStudents();
       const students = result.students || [];
       /* 有学生时展示分区跳转；无学生时跳转无目标，故不展示 */
@@ -150,7 +166,12 @@ Page({
       error: '',
       overview,
       planItems: plans,
-      performanceRows: (overview.performance && overview.performance.personalBests) || [],
+      performanceRows: ((overview.performance && overview.performance.personalBests) || []).map(
+        (item) => ({
+          ...item,
+          valueText: formatPerformanceValue(item.value, item.unit)
+        })
+      ),
       attendanceRows: (overview.attendance && overview.attendance.rows) || [],
       feedbackRows: ((overview.feedback && overview.feedback.rows) || []).map((item) => ({
         ...item,

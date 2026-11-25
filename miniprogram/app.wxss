@@ -372,7 +372,9 @@ button::after { border: none; }
   color: #FFFFFF;
   border: none;
   box-sizing: border-box;
+  transition: opacity 120ms ease, transform 120ms ease;
 }
+.jg-btn:active { opacity: 0.82; transform: scale(0.985); }
 .jg-btn::after { border: none; }
 /* 强调按钮：保留批准的能量橙填色，文字改用深海军蓝（白字在 #F2711C 上仅 2.94:1，不达 AA） */
 .jg-btn-accent { background: var(--jg-accent-2, #F2711C); color: #08203F; }
@@ -442,6 +444,10 @@ button::after { border: none; }
 .jg-note-warn { background: #FEF6E7; border-color: #F1DDB6; }
 .jg-note-warn .jg-note-t { color: #7A4308; }
 .jg-note-warn .jg-note-m { color: #8A5A12; }
+
+/* 注册真实姓名提醒：位于姓名输入区上方，三个角色保持统一样式 */
+.jg-realname-alert { margin-top: 0; margin-bottom: 20rpx; }
+.jg-realname-alert .jg-note-m + .jg-note-m { margin-top: 4rpx; }
 
 /* ---------- 区块级状态（加载 / 错误 / 重试） ---------- */
 .jg-state { padding: 32rpx 28rpx; text-align: center; }

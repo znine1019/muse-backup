@@ -9,6 +9,11 @@ const {
 } = require('../lib/constants');
 const { clubDateTimeString } = require('../lib/dates');
 const { fail } = require('../lib/errors');
+const {
+  assertCanFullyManageScopesInTransaction,
+  canFullyManageScope,
+  isDeveloperActor
+} = require('../lib/management-scope');
 const { listPerformanceEvents } = require('../lib/performance-events');
 const { loadActiveActor } = require('../lib/session');
 const { getDocumentOrNull } = require('../lib/transaction');
@@ -32,7 +37,7 @@ const ACTIVE_REGISTRATION_STATUSES = Object.freeze([
 ]);
 
 function isDeveloper(actor) {
-  return actor.roles.includes(ROLES.DEVELOPER);
+  return isDeveloperActor(actor);
 }
 
 function competitionPhase(competition, now = new Date()) {
@@ -69,6 +74,7 @@ function readableCompetition(competition, extra = {}) {
     events: (competition.events || []).map((event) => ({ ...event })),
     trainingGroupIds: competition.trainingGroupIds || [],
     trainingGroupNames: extra.trainingGroupNames || [],
+    canManage: extra.canManage === true,
     capacityEnabled: competition.capacityEnabled === true,
     capacity: competition.capacity === undefined ? null : competition.capacity,
     activeStudentCount: Number(competition.activeStudentCount) || 0,
@@ -167,7 +173,13 @@ function createCompetitionActions({ repository }) {
       return;
     }
     const coachGroups = await repository.getCoachGroupIds(actor._id);
-    if (!competitionVisibleToGroups(competition, coachGroups)) {
+    if (
+      !canFullyManageScope({
+        actor,
+        resourceGroupIds: competition.trainingGroupIds || [],
+        coachGroupIds: coachGroups
+      })
+    ) {
       fail('OUT_OF_SCOPE', '只能管理本人负责训练组的赛事。');
     }
   }
@@ -218,6 +230,14 @@ function createCompetitionActions({ repository }) {
           trainingGroupNames: (competition.trainingGroupIds || [])
             .map((groupId) => (groupsMap.get(groupId) || {}).name)
             .filter(Boolean)
+          ,
+          canManage:
+            isDeveloper(actor) ||
+            canFullyManageScope({
+              actor,
+              resourceGroupIds: competition.trainingGroupIds || [],
+              coachGroupIds: coachGroups || []
+            })
         })
       ),
       total: visible.length,
@@ -250,6 +270,7 @@ function createCompetitionActions({ repository }) {
         trainingGroupNames: (competition.trainingGroupIds || [])
           .map((groupId) => (groupsMap.get(groupId) || {}).name)
           .filter(Boolean),
+        canManage: true,
         stats: {
           studentCount: registrations.records.length,
           eventCounts
@@ -293,6 +314,11 @@ function createCompetitionActions({ repository }) {
       if (current) {
         return;
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [input.trainingGroupIds]
+      });
       await reference.set({ data: competitionData });
       await transaction
         .collection(COLLECTIONS.AUDIT_LOGS)
@@ -338,6 +364,14 @@ function createCompetitionActions({ repository }) {
       if (!current) {
         fail('COMPETITION_NOT_FOUND', '赛事不存在。');
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [
+          current.trainingGroupIds || [],
+          input.trainingGroupIds
+        ]
+      });
       if ((Number(current.version) || 1) !== input.expectedVersion) {
         fail('COMPETITION_VERSION_CONFLICT', '赛事已被其他操作更新，请重新加载。');
       }
@@ -416,6 +450,11 @@ function createCompetitionActions({ repository }) {
       if (!current) {
         fail('COMPETITION_NOT_FOUND', '赛事不存在。');
       }
+      await assertCanFullyManageScopesInTransaction({
+        transaction,
+        actor,
+        resourceGroupIdSets: [current.trainingGroupIds || []]
+      });
       if ((Number(current.version) || 1) !== input.expectedVersion) {
         fail('COMPETITION_VERSION_CONFLICT', '赛事已被其他操作更新，请重新加载。');
       }

@@ -26,6 +26,9 @@ function setup() {
     status: 'active',
     roles: ['developer']
   });
+  repository.seedRoleBinding(dev._id, 'developer', 'active', {
+    grantedBy: 'secure_bootstrap'
+  });
   const parent = repository.seedStudent({
     _id: 'usr_sec02_parent',
     openid: 'openid_sec02_parent',
@@ -384,6 +387,14 @@ test('SEC-02 其他角色授权不受影响且不能直接授予parent', async (
     openid: 'openid_sec02_role_candidate',
     status: 'active',
     roles: []
+  });
+  ctx.repository.seedCoachProfile(candidate._id, {
+    name: '测试教练',
+    reviewStatus: 'approved'
+  });
+  ctx.repository.seedProfile(candidate._id, {
+    name: '测试学生',
+    reviewStatus: 'approved'
   });
 
   await ctx.userActions['admin.assign_role']({

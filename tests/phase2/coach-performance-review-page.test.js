@@ -60,6 +60,12 @@ function loadPage(apiStub, roles, wxOverrides = {}) {
         if (request.includes('services/api')) {
           return apiStub;
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         return {
           getSessionDestination: () => ({ url: '/pages/index/index' }),
           sessionHasRole: (session, role) => roles.includes(role)

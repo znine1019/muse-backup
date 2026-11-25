@@ -12,7 +12,22 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
-const { clearActiveRole } = require('../../utils/active-role');
+const {
+  clearActiveRole,
+  saveActiveRole
+} = require('../../utils/active-role');
+
+function persistActiveRole(role, session) {
+  const user = (session && session.user) || {};
+  if (typeof saveActiveRole !== 'function' || !user.id) {
+    return;
+  }
+  saveActiveRole(role, {
+    userId: user.id,
+    roles: Array.isArray(user.roles) ? user.roles : []
+  });
+}
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const GENDER_LABELS = Object.freeze({
   male: '男',
@@ -64,16 +79,7 @@ function percentText(value) {
 }
 
 function formatMetric(value, unit) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    return `${value || ''} ${unit || ''}`.trim();
-  }
-  if (unit === '秒' && number >= 60) {
-    const minutes = Math.floor(number / 60);
-    const seconds = Math.round((number % 60) * 100) / 100;
-    return `${minutes}分${String(seconds).padStart(2, '0')}秒`;
-  }
-  return `${number} ${unit || ''}`.trim();
+  return formatPerformanceValue(value, unit);
 }
 
 function shortDate(value) {
@@ -225,6 +231,8 @@ Page({
       }
       return;
     }
+
+    persistActiveRole('student', session);
 
     if (!silent) {
       this.setSectionsLoading(true);

@@ -98,6 +98,7 @@ test('DEP-05完整api部署单元包含入口、actions、lib与锁文件且本�
     'cloudfunctions/api/actions/auth.js',
     'cloudfunctions/api/actions/attendance.js',
     'cloudfunctions/api/actions/competitions.js',
+    'cloudfunctions/api/actions/coach.js',
     'cloudfunctions/api/actions/directory.js',
     'cloudfunctions/api/actions/feedback.js',
     'cloudfunctions/api/actions/groups.js',

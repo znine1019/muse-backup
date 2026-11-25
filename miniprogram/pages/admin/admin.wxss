@@ -2,6 +2,16 @@
    样式基于阶段7-1 F1 融合设计系统的 jg- 公共类，本文件只保留开发者工作台特有微调。 */
 
 /* 账号管理行右侧按钮竖向排列，避免窄屏下按钮被压缩 */
+.jg-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.jg-filter-grid .jg-input {
+  min-width: 0;
+}
+
 .jg-page .jg-todo-a {
   flex-direction: column;
   align-items: stretch;

@@ -85,9 +85,9 @@
         <view class="jg-body-s jg-mt-8 notice-content">{{item.content}}</view>
 
         <view class="jg-actions-wrap">
-          <button wx:if="{{item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition" loading="{{busyId === item.noticeId}}">发布</button>
-          <button wx:if="{{item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="withdraw" bindtap="transition" loading="{{busyId === item.noticeId}}">撤回</button>
-          <button wx:if="{{item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition" loading="{{busyId === item.noticeId}}">归档</button>
+          <button wx:if="{{item.canManage && item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition" loading="{{busyId === item.noticeId}}">发布</button>
+          <button wx:if="{{item.canManage && item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="withdraw" bindtap="transition" loading="{{busyId === item.noticeId}}">撤回</button>
+          <button wx:if="{{item.canManage && item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-notice-id="{{item.noticeId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition" loading="{{busyId === item.noticeId}}">归档</button>
         </view>
       </view>
     </block>

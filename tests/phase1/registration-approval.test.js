@@ -56,6 +56,7 @@ function createTransactionHarness(options = {}) {
       {
         _id: 'profile_student',
         userId: STUDENT._id,
+        name: '模拟学生',
         reviewStatus: 'pending',
         requestedTrainingGroupId: 'group_a',
         currentReviewId: 'review_1'

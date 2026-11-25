@@ -1,10 +1,11 @@
 'use strict';
 
-const { loadUser } = require('../lib/session');
+const { loadOptionalUser } = require('../lib/session');
 
 function createDirectoryActions({ repository }) {
   async function listTrainingGroups({ identity }) {
-    await loadUser(repository, identity);
+    /* 未注册身份需要读取启用的训练组以完成首次实名注册；已停用/已删除账号仍会被拒绝。 */
+    await loadOptionalUser(repository, identity);
     const groups = await repository.listEnabledTrainingGroups();
     return {
       groups: groups.map((group) => ({

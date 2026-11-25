@@ -11,10 +11,12 @@ function buildSession(user) {
 
   return {
     sessionVersion: 1,
+    registered: true,
     user: {
       id: user._id,
       status: user.status,
-      roles
+      roles,
+      pendingProfileType: user.pendingProfileType || ''
     },
     capabilities: {
       student: user.status === USER_STATUS.ACTIVE && roles.includes('student'),
@@ -24,12 +26,61 @@ function buildSession(user) {
   };
 }
 
+function buildUnregisteredSession() {
+  return {
+    sessionVersion: 1,
+    registered: false,
+    user: {
+      id: '',
+      status: 'unregistered',
+      roles: [],
+      pendingProfileType: ''
+    },
+    capabilities: { student: false, coach: false, developer: false }
+  };
+}
+
 async function loadUser(repository, identity, { allowDisabled = false } = {}) {
-  const user = await repository.ensureUser(identity);
+  const user = await getUserByIdentity(repository, identity);
+  if (!user) {
+    fail('REGISTRATION_REQUIRED', '请先完成实名注册。');
+  }
+  if (user.status === USER_STATUS.DELETED) {
+    fail('ACCOUNT_DELETED', '账号已删除，无法继续访问。');
+  }
   if (!allowDisabled && user.status === USER_STATUS.DISABLED) {
     fail('ACCOUNT_DISABLED', '账号已停用，无法访问内部数据。');
   }
   return user;
+}
+
+async function loadOptionalUser(
+  repository,
+  identity,
+  { allowDisabled = false } = {}
+) {
+  const user = await getUserByIdentity(repository, identity);
+  if (!user) {
+    return null;
+  }
+  if (user.status === USER_STATUS.DELETED) {
+    fail('ACCOUNT_DELETED', '账号已删除，无法继续访问。');
+  }
+  if (!allowDisabled && user.status === USER_STATUS.DISABLED) {
+    fail('ACCOUNT_DISABLED', '账号已停用，无法访问内部数据。');
+  }
+  return user;
+}
+
+async function getUserByIdentity(repository, identity) {
+  if (typeof repository.getUserByIdentity === 'function') {
+    return repository.getUserByIdentity(identity);
+  }
+  /* Compatibility for isolated legacy test repositories only. */
+  if (typeof repository.ensureUser === 'function') {
+    return repository.ensureUser(identity);
+  }
+  return null;
 }
 
 async function loadActiveActor(repository, identity, allowedRoles = []) {
@@ -37,10 +88,42 @@ async function loadActiveActor(repository, identity, allowedRoles = []) {
   if (user.status !== USER_STATUS.ACTIVE) {
     fail('ACCOUNT_NOT_ACTIVE', '账号尚未通过审核，暂时不能执行此操作。');
   }
-  if (allowedRoles.length && !allowedRoles.some((role) => hasRole(user, role))) {
+
+  const requestedRole = identity && identity.actingRole;
+  let actor = user;
+  if (requestedRole) {
+    if (!['developer', 'coach'].includes(requestedRole)) {
+      fail('FORBIDDEN', '所选工作台角色不合法。');
+    }
+    if (!Array.isArray(user.roles) || !user.roles.includes(requestedRole)) {
+      fail('FORBIDDEN', '当前账号不具备所选工作台角色。');
+    }
+    actor = { ...user, roles: [requestedRole] };
+  }
+
+  if (allowedRoles.length && !allowedRoles.some((role) => hasRole(actor, role))) {
     fail('FORBIDDEN', '当前账号没有执行此操作的权限。');
   }
-  return user;
+  return actor;
+}
+
+async function loadWorkbenchActor(
+  repository,
+  identity,
+  allowedRoles = [],
+  requestedRole = ''
+) {
+  const actor = await loadActiveActor(repository, identity, allowedRoles);
+  if (!requestedRole) {
+    return actor;
+  }
+  if (!actor.roles.includes(requestedRole)) {
+    fail('FORBIDDEN', '当前账号不具备所选工作台角色。');
+  }
+  if (requestedRole === 'coach') {
+    return { ...actor, roles: ['coach'] };
+  }
+  return actor;
 }
 
 function readableProfile(profile) {
@@ -80,7 +163,11 @@ function readableProfile(profile) {
 
 module.exports = {
   buildSession,
+  buildUnregisteredSession,
+  getUserByIdentity,
   loadActiveActor,
+  loadWorkbenchActor,
   loadUser,
+  loadOptionalUser,
   readableProfile
 };

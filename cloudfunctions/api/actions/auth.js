@@ -12,7 +12,12 @@ const {
   parseAllowedOpenIds
 } = require('../lib/bootstrap-policy');
 const { AppError, fail } = require('../lib/errors');
-const { buildSession, loadUser } = require('../lib/session');
+const {
+  buildSession,
+  buildUnregisteredSession,
+  getUserByIdentity,
+  loadUser
+} = require('../lib/session');
 const { getDocumentOrNull } = require('../lib/transaction');
 
 const BOOTSTRAP_LOG_TAG = '[api][bootstrap]';
@@ -55,7 +60,16 @@ function requiredBootstrapCode(value) {
 
 function createAuthActions({ repository }) {
   async function login({ identity }) {
-    const user = await loadUser(repository, identity);
+    const user = await getUserByIdentity(repository, identity);
+    if (!user) {
+      return {
+        session: buildUnregisteredSession(),
+        registered: false
+      };
+    }
+    if (user.status === USER_STATUS.DELETED) {
+      fail('ACCOUNT_DELETED', '账号已删除，无法继续访问。');
+    }
     return { session: buildSession(user) };
   }
 

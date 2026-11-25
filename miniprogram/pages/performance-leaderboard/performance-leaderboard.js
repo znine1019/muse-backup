@@ -5,6 +5,7 @@ const {
   getSessionDestination,
   sessionHasRole
 } = require('../../utils/session');
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const PERIOD_TYPE_OPTIONS = Object.freeze([
   { value: 'month', label: '月度' },
@@ -13,16 +14,7 @@ const PERIOD_TYPE_OPTIONS = Object.freeze([
 ]);
 
 function formatValue(value, unit) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    return `${value} ${unit}`;
-  }
-  if (unit === '秒' && number >= 60) {
-    const minutes = Math.floor(number / 60);
-    const seconds = Math.round((number % 60) * 100) / 100;
-    return `${minutes}分${String(seconds).padStart(2, '0')}秒`;
-  }
-  return `${number} ${unit}`;
+  return formatPerformanceValue(value, unit);
 }
 
 function buildYearOptions() {

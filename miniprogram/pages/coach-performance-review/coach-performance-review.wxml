@@ -42,7 +42,7 @@
         </view>
 
         <view class="jg-body-s">训练组：{{item.groupText || '未分组'}}</view>
-        <view class="jg-body-s jg-mt-8">申报成绩：{{item.value}} {{item.unit}}</view>
+        <view class="jg-body-s jg-mt-8" data-unit="{{item.unit}}">申报成绩：{{item.valueText}}</view>
         <view class="jg-body-s jg-mt-8">取得日期：{{item.achievedAt}}</view>
         <view class="jg-body-s jg-mt-8">成绩来源：{{item.sourceLabel}}</view>
         <view wx:if="{{item.note}}" class="jg-note">

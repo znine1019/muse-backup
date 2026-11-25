@@ -52,6 +52,12 @@ function loadPage(relativePath, apiStub, roles, wxOverrides = {}, extraModules =
         if (request.includes('config/env')) {
           return { CLOUD_ENV_ID: 'cloud1-test', API_FUNCTION_NAME: 'api', HEALTH_FUNCTION_NAME: 'health_check' };
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         if (extraModules[request]) {
           return extraModules[request];
         }

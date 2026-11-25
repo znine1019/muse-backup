@@ -30,6 +30,9 @@ function setup() {
     roles: ['developer'],
     displayName: '开发者'
   });
+  repository.seedRoleBinding(dev._id, 'developer', 'active', {
+    grantedBy: 'secure_bootstrap'
+  });
   const studentA = repository.seedStudent({
     _id: 'usr_stu_a',
     openid: 'openid_stu_a',

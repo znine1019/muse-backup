@@ -315,6 +315,32 @@
   <view class="jg-sect">
     <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
     <view class="jg-list">
+      <view
+        wx:if="{{canSwitchDeveloper}}"
+        class="jg-row"
+        hover-class="jg-row-hover"
+        bindtap="switchToDeveloper"
+      >
+        <view class="jg-row-ic jg-row-ic-ok">换</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">切换开发者工作台</view>
+          <view class="jg-row-m">仅切换当前展示身份，不修改账号角色或授权</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
+      <view
+        wx:if="{{coachProfileStatus.show}}"
+        class="jg-row"
+        hover-class="jg-row-hover"
+        bindtap="goCoachProfile"
+      >
+        <view class="jg-row-ic jg-row-ic-brand">名</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">{{coachProfileStatus.actionLabel}}</view>
+          <view class="jg-row-m">{{coachProfileStatus.notice}}</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
         <view class="jg-row-main">

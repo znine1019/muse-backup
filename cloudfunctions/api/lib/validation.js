@@ -150,7 +150,7 @@ function validateReviewPayload(payload) {
 
   /* 注册资料类型：学生（默认，保持既有兼容）或家长 */
   const profileType = optionalString(input.profileType, '资料类型', 20) || 'student';
-  if (!['student', 'parent'].includes(profileType)) {
+  if (!['student', 'parent', 'coach'].includes(profileType)) {
     fail('INVALID_FIELD', '资料类型不正确。');
   }
 
@@ -188,6 +188,18 @@ function validateUserStatusPayload(payload) {
   return {
     targetUserId: safeId(input.targetUserId, '用户账号'),
     status
+  };
+}
+
+function validateUserDeletionPayload(payload) {
+  const input = asObject(payload);
+  if (input.confirmationText !== 'DELETE_ACCOUNT') {
+    fail('DELETE_CONFIRMATION_REQUIRED', '请输入完整删除确认。');
+  }
+  return {
+    targetUserId: safeId(input.targetUserId, '用户账号'),
+    confirmationText: input.confirmationText,
+    acknowledgeAssociations: input.acknowledgeAssociations === true
   };
 }
 
@@ -1191,6 +1203,17 @@ function validateGroupCoachPayload(payload) {
   };
 }
 
+function validateTrainingGroupDeletionPayload(payload) {
+  const input = asObject(payload);
+  if (input.confirmationText !== 'DELETE_TRAINING_GROUP') {
+    fail('DELETE_CONFIRMATION_REQUIRED', '请输入完整删除确认。');
+  }
+  return {
+    trainingGroupId: safeId(input.trainingGroupId, '训练组'),
+    confirmationText: input.confirmationText
+  };
+}
+
 /* ---------- 家长端（V1.6 功能补全第一批） ---------- */
 
 /** 关联凭证归一化：统一转大写并去除空格与连字符，避免输入格式差异导致误判 */
@@ -1198,6 +1221,14 @@ function normalizeInviteCode(value) {
   return String(value === undefined || value === null ? '' : value)
     .toUpperCase()
     .replace(/[^A-Z0-9]/g, '');
+}
+
+function validateCoachProfilePayload(payload) {
+  const input = asObject(payload);
+  return {
+    name: requiredString(input.name, '教练姓名', LIMITS.coachNameMaxLength),
+    identityNote: optionalString(input.identityNote, '身份说明', LIMITS.coachNoteMaxLength)
+  };
 }
 
 function validateParentProfilePayload(payload) {
@@ -1274,6 +1305,7 @@ module.exports = {
   validateStatisticsPeriodPayload,
   normalizeInviteCode,
   validateParentProfilePayload,
+  validateCoachProfilePayload,
   validateParentInviteCreatePayload,
   validateParentInviteRedeemPayload,
   validateParentLinkDecisionPayload,
@@ -1329,6 +1361,7 @@ module.exports = {
   validateGroupCoachPayload,
   validateGroupName,
   validateTrainingGroupStatusPayload,
+  validateTrainingGroupDeletionPayload,
   validateGroupSeasonLabel,
   validateProfilePayload,
   validateMeasurementPayload,
@@ -1336,6 +1369,7 @@ module.exports = {
   validatePerformanceSubmissionPayload,
   validateStudentProfileUpdatePayload,
   validateUserStatusPayload,
+  validateUserDeletionPayload,
   validateReviewPayload,
   validateRolePayload
 };

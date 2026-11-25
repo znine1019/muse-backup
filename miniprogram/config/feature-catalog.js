@@ -367,11 +367,20 @@ const FEATURE_CATALOG = Object.freeze({
         label: '系统视角',
         items: [
           {
+            id: 'dev-coach-application',
+            name: '申请教练员身份',
+            desc: '提交本人教练实名资料，审核通过后开通教练工作台',
+            url: '/pages/coach-register/coach-register',
+            tone: 'accent',
+            hideWhenRole: 'coach'
+          },
+          {
             id: 'dev-coach-workbench',
-            name: '查看教练工作台',
-            desc: '按开发者全局范围查看教练工作台界面',
+            name: '切换教练工作台',
+            desc: '当前账号已具有教练角色时可切换教练工作台',
             url: '/pages/coach/coach',
-            tone: 'accent'
+            tone: 'brand',
+            requiresRole: 'coach'
           }
         ]
       }
@@ -418,6 +427,18 @@ function availableRoles(roles) {
   return ROLE_ORDER.filter((role) => list.includes(role) && hasCatalog(role));
 }
 
+/** 按当前真实会话角色过滤单个功能入口，不作为服务端权限依据 */
+function isFeatureAvailable(item, roles) {
+  const roleList = asArray(roles);
+  if (item && item.requiresRole && !roleList.includes(item.requiresRole)) {
+    return false;
+  }
+  if (item && item.hideWhenRole && roleList.includes(item.hideWhenRole)) {
+    return false;
+  }
+  return true;
+}
+
 /** 全部配置中出现过的路由（供路由完整性测试使用） */
 function allRoutes() {
   const routes = [];
@@ -438,5 +459,6 @@ module.exports = {
   availableRoles,
   categoriesForRole,
   featuresForRole,
-  hasCatalog
+  hasCatalog,
+  isFeatureAvailable
 };

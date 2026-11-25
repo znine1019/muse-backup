@@ -118,6 +118,11 @@ function createHarness() {
       [STUDENT_B._id, { _id: 'profile_b', userId: STUDENT_B._id, name: '学生乙', primaryEventCode: 'long_jump', primaryEventName: '跳远', examGoal: {} }],
       [STUDENT_C._id, { _id: 'profile_c', userId: STUDENT_C._id, name: '学生丙', primaryEventCode: 'long_jump', primaryEventName: '跳远', examGoal: {} }]
     ]),
+    coachProfiles: new Map([
+      [COACH_A._id, { _id: 'coach_profile_a', userId: COACH_A._id, name: '教练甲', reviewStatus: 'approved' }],
+      [COACH_B._id, { _id: 'coach_profile_b', userId: COACH_B._id, name: '教练乙', reviewStatus: 'approved' }],
+      [DEVELOPER._id, { _id: 'coach_profile_dev', userId: DEVELOPER._id, name: '开发者', reviewStatus: 'approved' }]
+    ]),
     performances: [],
     sessions: [],
     records: [],
@@ -150,6 +155,12 @@ function createHarness() {
             ) || {}
           )
         ])
+      ),
+    getCoachProfilesMap: async (userIds) =>
+      new Map(
+        userIds
+          .filter((userId) => state.coachProfiles.has(userId))
+          .map((userId) => [userId, clone(state.coachProfiles.get(userId))])
       ),
     getTrainingGroup: async (groupId) =>
       state.groups.has(groupId) ? clone(state.groups.get(groupId)) : null,

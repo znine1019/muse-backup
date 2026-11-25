@@ -8,11 +8,13 @@ const ROLE_ROUTES = Object.freeze({
 });
 
 const STATUS_LABELS = Object.freeze({
+  unregistered: '未注册',
   pending_profile: '待完善资料',
   pending_review: '待审核',
   active: '已启用',
   rejected: '审核未通过',
-  disabled: '已停用'
+  disabled: '已停用',
+  deleted: '已删除'
 });
 
 function getStatusLabel(status) {
@@ -34,6 +36,13 @@ function getSessionDestination(session) {
   }
 
   const { status, roles = [] } = session.user;
+  if (session.registered === false || status === 'unregistered') {
+    return {
+      type: 'register',
+      url: '/pages/pending/pending',
+      label: '开始实名注册'
+    };
+  }
   if (status !== 'active') {
     return { type: 'review', url: '/pages/pending/pending', label: '查看审核状态' };
   }

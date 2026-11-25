@@ -87,6 +87,12 @@ function loadWorkbench(relativePath, apiStub, options = {}) {
             HEALTH_FUNCTION_NAME: 'health_check'
           };
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         return {
           getRoleLabel: (role) =>
             ({ developer: '开发者', coach: '教练员', student: '学生' }[role] || role),
@@ -531,7 +537,9 @@ test('阶段7-2 开发者工作台提供教练工作台入口且不授予额外�
   const appConfig = JSON.parse(read('miniprogram/app.json'));
 
   assert.match(adminWxml, /bindtap="goCoachWorkbench"/, '开发者工作台应提供教练工作台入口');
-  assert.match(adminWxml, /查看教练工作台/);
+  assert.match(adminWxml, /申请教练员身份/, '无有效 Coach 角色时应提供实名申请入口');
+  assert.match(adminWxml, /切换教练工作台/, '已有有效 Coach 角色时应提供工作台切换入口');
+  assert.match(adminWxml, /bindtap="goCoachRegistration"/, '教练实名申请入口应使用独立导航');
 
   const entryBlock = adminJs.slice(
     adminJs.indexOf('goCoachWorkbench()'),
@@ -548,10 +556,10 @@ test('阶段7-2 开发者工作台提供教练工作台入口且不授予额外�
   assert.ok(appConfig.pages.includes('pages/coach/coach'));
 });
 
-test('阶段7-2 教练工作台允许 coach 与 developer 访问且未放宽到其它角色', () => {
+test('阶段7-2 教练工作台只允许 coach，developer 仅控制合法切换入口', () => {
   const coachJs = read('miniprogram/pages/coach/coach.js');
-  assert.match(coachJs, /sessionHasRole\(session, 'coach'\)/);
-  assert.match(coachJs, /sessionHasRole\(session, 'developer'\)/);
+  assert.match(coachJs, /const canManage =\s+sessionHasRole\(session, 'coach'\)/);
+  assert.match(coachJs, /canSwitchDeveloper: sessionHasRole\(session, 'developer'\)/);
   assert.doesNotMatch(coachJs, /sessionHasRole\(session, 'student'\)[\s\S]{0,80}canManage/);
 });
 

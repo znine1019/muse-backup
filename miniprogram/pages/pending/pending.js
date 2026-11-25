@@ -12,6 +12,7 @@ Page({
     error: '',
     status: '',
     statusLabel: '',
+    pendingProfileType: '',
     profile: null,
     reviewComment: ''
   },
@@ -24,16 +25,37 @@ Page({
     this.setData({ loading: true, error: '' });
     try {
       const session = await getApp().ensureSession({ force: true });
+      if (session.registered === false || session.user.status === 'unregistered') {
+        this.setData({
+          loading: false,
+          status: 'unregistered',
+          statusLabel: getStatusLabel('unregistered'),
+          pendingProfileType: '',
+          profile: null,
+          reviewComment: ''
+        });
+        return;
+      }
       if (session.user.status === 'active') {
         wx.reLaunch({ url: getSessionDestination(session).url });
         return;
       }
 
-      const result = await api.getProfile();
+      let result = await api.getProfile();
+      if (session.user.pendingProfileType === 'coach') {
+        const coachResult = await api.getCoachProfile();
+        result = {
+          userStatus: coachResult.userStatus,
+          profile: coachResult.profile,
+          reviewComment:
+            (coachResult.profile && coachResult.profile.reviewComment) || ''
+        };
+      }
       this.setData({
         loading: false,
         status: result.userStatus,
         statusLabel: getStatusLabel(result.userStatus),
+        pendingProfileType: session.user.pendingProfileType || '',
         profile: result.profile,
         reviewComment: result.reviewComment || ''
       });
@@ -52,6 +74,10 @@ Page({
   /* V1.6：首次进入可选择“学生注册”或“家长注册” */
   goParentRegister() {
     wx.navigateTo({ url: '/pages/parent-register/parent-register' });
+  },
+
+  goCoachRegister() {
+    wx.navigateTo({ url: '/pages/coach-register/coach-register' });
   },
 
   goHome() {

@@ -396,6 +396,60 @@ test('全部功能页：多角色账号展示角色切换且切换后目录随�
   assert.equal(instance.data.activeRole, 'developer');
 });
 
+test('全部功能页：Developer单角色和过期Coach记忆只展示实名申请入口', async () => {
+  const navigated = [];
+  const { instance } = loadAllFeaturesPage({
+    session: activeSession(['developer']),
+    storage: {
+      jogger_active_role_v1: {
+        userId: 'user_1',
+        roles: ['developer'],
+        role: 'coach'
+      }
+    },
+    wxOverrides: { navigateTo: (options) => navigated.push(options.url) }
+  });
+  await instance.loadCatalog();
+
+  assert.equal(instance.data.activeRole, 'developer');
+
+  const items = instance.data.categories.flatMap((category) => category.items);
+  const application = items.find((item) => item.id === 'dev-coach-application');
+  assert.ok(application, 'Developer无coach角色时必须显示实名申请入口');
+  assert.equal(application.url, '/pages/coach-register/coach-register');
+  assert.equal(
+    items.some((item) => item.id === 'dev-coach-workbench'),
+    false,
+    'Developer无coach角色时不得显示工作台切换入口'
+  );
+
+  instance.onItemTap({ currentTarget: { dataset: { url: application.url } } });
+  assert.deepEqual(navigated, ['/pages/coach-register/coach-register']);
+});
+
+test('全部功能页：Developer+Coach只展示教练工作台切换入口', async () => {
+  const navigated = [];
+  const { instance } = loadAllFeaturesPage({
+    session: activeSession(['developer', 'coach']),
+    wxOverrides: { navigateTo: (options) => navigated.push(options.url) }
+  });
+  await instance.loadCatalog();
+  instance.onRoleTap({ currentTarget: { dataset: { role: 'developer' } } });
+
+  const items = instance.data.categories.flatMap((category) => category.items);
+  const workbench = items.find((item) => item.id === 'dev-coach-workbench');
+  assert.ok(workbench, 'Developer+Coach必须显示教练工作台切换入口');
+  assert.equal(workbench.url, '/pages/coach/coach');
+  assert.equal(
+    items.some((item) => item.id === 'dev-coach-application'),
+    false,
+    '已有coach角色后不再显示首次申请入口'
+  );
+
+  instance.onItemTap({ currentTarget: { dataset: { url: workbench.url } } });
+  assert.deepEqual(navigated, ['/pages/coach/coach']);
+});
+
 test('全部功能页：家长会话可按分区定位全部只读能力且无写入入口', async () => {
   const { instance } = loadAllFeaturesPage({ session: activeSession(['parent']) });
   await instance.loadCatalog();

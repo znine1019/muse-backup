@@ -83,6 +83,12 @@ function loadPage(relativePath, options = {}) {
         if (request.includes('utils/active-role')) {
           return { clearActiveRole: () => {} };
         }
+        if (request.includes('utils/performance-format')) {
+          return require(path.join(
+            PROJECT_ROOT,
+            'miniprogram/utils/performance-format.js'
+          ));
+        }
         throw new Error(`未打桩的依赖：${request}`);
       },
       Page: (value) => {

@@ -12,7 +12,22 @@ const {
   isPermissionLostError
 } = require('../../utils/workbench-controller');
 
-const { clearActiveRole } = require('../../utils/active-role');
+const {
+  clearActiveRole,
+  saveActiveRole
+} = require('../../utils/active-role');
+
+function persistActiveRole(role, session) {
+  const user = (session && session.user) || {};
+  if (typeof saveActiveRole !== 'function' || !user.id) {
+    return;
+  }
+  saveActiveRole(role, {
+    userId: user.id,
+    roles: Array.isArray(user.roles) ? user.roles : []
+  });
+}
+const { formatPerformanceValue } = require('../../utils/performance-format');
 
 const PHASE_LABELS = Object.freeze({
   not_started: '未开始',
@@ -69,13 +84,6 @@ function shortDate(value) {
   return match ? `${match[2]}-${match[3]}` : String(value);
 }
 
-function formatMetric(value, unit) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    return `${value || ''} ${unit || ''}`.trim();
-  }
-  return `${number} ${unit || ''}`.trim();
-}
 
 Page({
   data: {
@@ -86,6 +94,7 @@ Page({
 
     sessionError: '',
     headMeta: '',
+    canSwitchDeveloper: false,
     todayDate: todayIso(),
 
     todayState: { loading: true, error: '', ready: false },
@@ -106,11 +115,30 @@ Page({
     reviewingUserId: '',
 
     competitionState: { loading: true, error: '', ready: false },
-    competitionText: ''
+    competitionText: '',
+    coachProfileStatus: {
+      show: false,
+      loading: true,
+      error: '',
+      notice: '',
+      actionLabel: '完善实名资料'
+    }
   },
 
   onShow() {
+    this.activateCoachRole();
     this.enterWorkbench();
+  },
+
+  activateCoachRole() {
+    try {
+      const session = getApp().globalData.session;
+      if (sessionHasRole(session, 'coach')) {
+        persistActiveRole('coach', session);
+      }
+    } catch (error) {
+      /* 会话尚未恢复时由 runLoad 的 ensureSession 继续校验 */
+    }
   },
 
   onPullDownRefresh() {
@@ -204,7 +232,7 @@ Page({
     }
 
     const canManage =
-      sessionHasRole(session, 'coach') || sessionHasRole(session, 'developer');
+      sessionHasRole(session, 'coach');
     if (!canManage) {
       this.handlePermissionLost(
         Object.assign(new Error('当前账号不能访问教练工作台。'), { code: 'FORBIDDEN' })
@@ -215,9 +243,10 @@ Page({
       return;
     }
 
-    const isDeveloper = sessionHasRole(session, 'developer');
+    persistActiveRole('coach', session);
     this.controllerSetIfChanged({
-      headMeta: `${getRoleLabel(isDeveloper ? 'developer' : 'coach')} · 负责训练组范围内的待办与考勤`
+      canSwitchDeveloper: sessionHasRole(session, 'developer'),
+      headMeta: `${getRoleLabel('coach')} · 负责训练组范围内的待办与考勤`
     });
 
     if (!silent) {
@@ -229,7 +258,8 @@ Page({
       this.loadTodaySessions(),
       this.loadTodos(),
       this.loadRegistrations(),
-      this.loadCompetitions()
+      this.loadCompetitions(),
+      this.loadCoachProfileStatus(session)
     ]);
 
     /* 权限失效：本轮不再回写任何数据 */
@@ -313,6 +343,7 @@ Page({
       lastUpdatedText: '',
       staleNotice: '',
       headMeta: '',
+      canSwitchDeveloper: false,
       todaySessions: [],
       rosterSummary: null,
       todoItems: [],
@@ -477,7 +508,7 @@ Page({
           typeLabel: '待审成绩',
           typeChip: 'jg-chip-warn',
           title: item.studentName || '学生',
-          detail: `${item.eventName || ''} ${formatMetric(item.value, item.unit)} · ${
+          detail: `${item.eventName || ''} ${formatPerformanceValue(item.value, item.unit)} · ${
             (item.trainingGroupNames || []).join('、') || '未标注训练组'
           }`,
           reason: `${SOURCE_LABELS[item.source] || '来源未知'} · 申报 ${shortDate(item.achievedAt)}`,
@@ -691,6 +722,66 @@ Page({
     } finally {
       this.controllerSetIfChanged({ reviewingUserId: '' });
     }
+  },
+
+  async loadCoachProfileStatus(session) {
+    if (!sessionHasRole(session, 'coach')) {
+      this.controllerSetIfChanged({
+        coachProfileStatus: { show: false, loading: false, error: '', notice: '', actionLabel: '完善实名资料' }
+      });
+      return;
+    }
+    try {
+      const result = await api.getCoachProfile();
+      const profile = result.profile || null;
+      const approved = profile && profile.reviewStatus === 'approved';
+      const notice = !profile
+        ? '当前教练账号尚未完善实名资料，请补充真实姓名。'
+        : profile.reviewStatus === 'pending'
+          ? '实名资料正在等待开发者审核。'
+          : profile.reviewStatus === 'rejected'
+            ? `实名资料审核未通过${profile.reviewComment ? '：' + profile.reviewComment : ''}`
+            : '';
+      this.controllerSetIfChanged({
+        coachProfileStatus: {
+          show: !approved,
+          loading: false,
+          error: '',
+          notice,
+          actionLabel: profile && profile.reviewStatus === 'pending' ? '查看实名审核状态' : '完善实名资料'
+        }
+      });
+    } catch (error) {
+      this.controllerSetIfChanged({
+        coachProfileStatus: {
+          show: false,
+          loading: false,
+          error: error.message || '实名资料状态加载失败。',
+          notice: '',
+          actionLabel: '完善实名资料'
+        }
+      });
+    }
+  },
+
+  goCoachProfile() {
+    wx.navigateTo({ url: '/pages/coach-register/coach-register' });
+  },
+
+  switchToDeveloper() {
+    if (!this.data.canSwitchDeveloper) {
+      return;
+    }
+    try {
+      const session = getApp().globalData.session;
+      if (!sessionHasRole(session, 'developer')) {
+        return;
+      }
+      persistActiveRole('developer', session);
+    } catch (error) {
+      return;
+    }
+    wx.reLaunch({ url: '/pages/admin/admin' });
   },
 
   async goHome() {

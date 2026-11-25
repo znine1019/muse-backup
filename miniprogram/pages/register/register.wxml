@@ -13,13 +13,28 @@
     </view>
 
     <form wx:else bindsubmit="handleSubmit">
+      <view wx:if="{{formError}}" class="jg-state-err">
+        <view class="jg-state-err-t">提交前请检查</view>
+        <view class="jg-state-err-m">{{formError}}</view>
+      </view>
+
       <view class="jg-card">
         <view class="jg-card-h"><text class="jg-card-t">个人基础信息</text></view>
 
+        <view class="jg-note jg-note-warn jg-realname-alert">
+          <view>
+            <view class="jg-note-t">真实姓名填写提醒</view>
+            <view class="jg-note-m">请务必填写您本人的真实姓名！</view>
+            <view class="jg-note-m">真实姓名将用于俱乐部人员管理、身份审核、训练成绩记录及考勤管理。</view>
+            <view class="jg-note-m">禁止使用微信昵称、网名、虚假姓名或他人姓名。</view>
+            <view class="jg-note-m">请填写学生本人真实姓名，请认真核对后提交。</view>
+          </view>
+        </view>
+
         <view class="jg-field-row">
-          <view class="jg-field-label">姓名</view>
+          <view class="jg-field-label">学生姓名 <text class="form-req">*</text></view>
           <view class="jg-field-body">
-            <input class="jg-input" name="name" value="{{form.name}}" data-field="name" bindinput="onFieldInput" placeholder="请输入姓名" />
+            <input class="jg-input" name="name" value="{{form.name}}" maxlength="40" data-field="name" bindinput="onFieldInput" placeholder="请填写学生本人真实姓名" />
           </view>
         </view>
 
