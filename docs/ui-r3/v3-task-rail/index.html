@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>V3 分栏任务流｜乔格训迹 R3 重设计原型</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="v3-shell" id="app">
+    <header class="v3-header">
+      <div class="v3-header-top">
+        <div class="v3-brand-block">
+          <div class="v3-brand-sub">V3 · 分栏任务流</div>
+          <h1 class="v3-brand-title" id="screenTitle">学生首页</h1>
+        </div>
+        <span class="v3-role-pill" id="screenRole">学生</span>
+      </div>
+
+      <div class="v3-demo-bar">演示数据｜仅用于视觉预览</div>
+
+      <div class="v3-stepper" id="workflowStepper" aria-label="业务流转阶段"></div>
+
+      <nav class="v3-workspace-nav" aria-label="七屏工作区切换">
+        <div class="v3-nav-row" id="navRowTop"></div>
+        <div class="v3-nav-row" id="navRowBottom"></div>
+      </nav>
+
+      <div class="v3-state-row" role="group" aria-label="页面状态切换">
+        <button type="button" class="v3-state-btn is-active" data-state="normal">正常</button>
+        <button type="button" class="v3-state-btn" data-state="loading">加载</button>
+        <button type="button" class="v3-state-btn" data-state="empty">空态</button>
+        <button type="button" class="v3-state-btn" data-state="error">错误</button>
+      </div>
+    </header>
+
+    <main class="v3-main" id="screenBody"></main>
+
+    <aside class="v3-action-dock" id="actionDock" aria-label="当前屏幕主操作坞"></aside>
+  </div>
+  <script src="../shared/mock-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

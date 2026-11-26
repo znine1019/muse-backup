@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>V1 赛场指令｜乔格训迹 R3 重设计原型</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="v1-shell" id="app">
+    <header class="v1-topbar">
+      <div class="v1-top-row">
+        <div class="v1-title-wrap">
+          <div class="v1-brand-tag">V1 · 赛场指令</div>
+          <h1 class="v1-page-title" id="screenTitle">学生首页</h1>
+        </div>
+        <div class="v1-role-badge" id="screenRole">学生</div>
+      </div>
+      <div class="v1-demo-strip">演示数据｜仅用于视觉预览</div>
+      <div class="v1-state-bar" role="group" aria-label="页面状态切换">
+        <button type="button" class="v1-state-btn is-active" data-state="normal">正常</button>
+        <button type="button" class="v1-state-btn" data-state="loading">加载</button>
+        <button type="button" class="v1-state-btn" data-state="empty">空态</button>
+        <button type="button" class="v1-state-btn" data-state="error">错误</button>
+      </div>
+    </header>
+
+    <main class="v1-main" id="screenBody"></main>
+
+    <nav class="v1-bottom-nav" aria-label="七屏原型导航">
+      <div class="v1-nav-row" id="navRowTop"></div>
+      <div class="v1-nav-row" id="navRowBottom"></div>
+    </nav>
+  </div>
+  <script src="../shared/mock-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

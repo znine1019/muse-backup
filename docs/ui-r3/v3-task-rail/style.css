@@ -1,0 +1,546 @@
+/* V3 分栏任务流 (Task Rail)
+ * 仅使用微信小程序兼容 CSS：flex、定位、transform、linear-gradient。
+ * 严禁：CSS Grid、backdrop-filter、filter、position: sticky、多层 box-shadow、外部字体。
+ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  background: #F1F3F5;
+  color: #0F172A;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.v3-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #F1F3F5;
+  padding-bottom: 84px;
+}
+
+/* 顶部工作流头：松林绿结构顶带 + 阶段轨道 + 工作区切换 */
+.v3-header {
+  background: #FFFFFF;
+  border-bottom: 1px solid #CBD5E1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v3-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.v3-brand-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.v3-brand-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #14532D;
+}
+
+.v3-brand-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+}
+
+.v3-role-pill {
+  background: #14532D;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.v3-demo-bar {
+  background: #FFEDD5;
+  color: #9A3412;
+  border: 1px solid #FDBA74;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 三段式工作流进度条（V3 独有 IA 元素） */
+.v3-stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.v3-step {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  background: #F8FAFC;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v3-step.is-current {
+  border-color: #14532D;
+  background: #ECFDF5;
+}
+
+.v3-step-no {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+}
+
+.v3-step.is-current .v3-step-no {
+  color: #14532D;
+}
+
+.v3-step-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* 顶部工作区导航 */
+.v3-workspace-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v3-nav-row {
+  display: flex;
+  gap: 6px;
+}
+
+.v3-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  background: #F8FAFC;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v3-nav-btn.is-active {
+  background: #14532D;
+  border-color: #14532D;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.v3-state-row {
+  display: flex;
+  gap: 6px;
+}
+
+.v3-state-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v3-state-btn.is-active {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #FFFFFF;
+}
+
+/* 主区：左侧 4px 语义色轨任务块 */
+.v3-main {
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.v3-rail {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-left: 5px solid #14532D;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v3-rail-urgent {
+  border-left-color: #9A3412;
+}
+
+.v3-rail-info {
+  border-left-color: #1E40AF;
+}
+
+.v3-rail-danger {
+  border-left-color: #B91C1C;
+}
+
+.v3-rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.v3-rail-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.v3-rail-sub {
+  font-size: 12px;
+  color: #475569;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 可折叠任务轨头部 */
+.v3-disclosure-btn {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: #0F172A;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  gap: 8px;
+}
+
+.v3-disclosure-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #14532D;
+  background: #ECFDF5;
+  border: 1px solid #86EFAC;
+  border-radius: 6px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+}
+
+/* 指标横条 */
+.v3-stat-row {
+  display: flex;
+  gap: 8px;
+}
+
+.v3-stat-box {
+  flex: 1;
+  min-width: 0;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.v3-stat-k {
+  font-size: 12px;
+  color: #475569;
+}
+
+.v3-stat-v {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.v3-stat-v.is-pine {
+  color: #14532D;
+}
+
+.v3-stat-v.is-terra {
+  color: #9A3412;
+}
+
+/* 任务列表行 */
+.v3-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #E2E8F0;
+}
+
+.v3-item:first-of-type {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.v3-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.v3-item-t {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0F172A;
+  word-break: break-word;
+}
+
+.v3-item-m {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.v3-item-val {
+  font-size: 16px;
+  font-weight: 800;
+  color: #14532D;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* 语义徽章 */
+.v3-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.v3-badge-pine {
+  background: #DCFCE7;
+  color: #14532D;
+}
+
+.v3-badge-terra {
+  background: #FFEDD5;
+  color: #9A3412;
+}
+
+.v3-badge-info {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.v3-badge-neutral {
+  background: #E2E8F0;
+  color: #334155;
+}
+
+/* 按钮与表单 */
+.v3-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v3-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
+  color: #0F172A;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v3-btn-grow {
+  flex: 1;
+}
+
+.v3-btn-pine {
+  background: #14532D;
+  border-color: #14532D;
+  color: #FFFFFF;
+}
+
+.v3-btn-terra {
+  background: #9A3412;
+  border-color: #9A3412;
+  color: #FFFFFF;
+}
+
+.v3-btn.is-active {
+  background: #14532D;
+  border-color: #14532D;
+  color: #FFFFFF;
+}
+
+.v3-btn-danger {
+  background: #FEF2F2;
+  border-color: #B91C1C;
+  color: #B91C1C;
+}
+
+.v3-btn-block {
+  width: 100%;
+}
+
+.v3-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v3-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.v3-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #94A3B8;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #0F172A;
+  font-size: 14px;
+}
+
+/* 纯 CSS 静态选点区 */
+.v3-map-zone {
+  position: relative;
+  height: 144px;
+  border-radius: 8px;
+  border: 1px solid #94A3B8;
+  background: linear-gradient(135deg, #ECFDF5 0%, #E2E8F0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+}
+
+.v3-map-target {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px solid #14532D;
+  background: #FFFFFF;
+  color: #14532D;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.v3-map-meta {
+  font-size: 12px;
+  color: #1E293B;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* 说明条与骨架 */
+.v3-banner-note {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-left: 4px solid #1E40AF;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #1E3A8A;
+}
+
+.v3-banner-warn {
+  background: #FFF7ED;
+  border-color: #FED7AA;
+  border-left-color: #9A3412;
+  color: #7C2D12;
+}
+
+.v3-skel {
+  height: 68px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: linear-gradient(90deg, #E2E8F0 0%, #F1F5F9 50%, #E2E8F0 100%);
+}
+
+/* 底部固定上下文操作坞（非导航栏，专用于主动作收口） */
+.v3-action-dock {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 430px;
+  background: #FFFFFF;
+  border-top: 2px solid #14532D;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+}
+
+.v3-dock-note {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1E40AF;
+}

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>乔格训迹系统｜R3 全站 UI 重设计方案总览</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      background: #F4F5F7;
+      color: #0F172A;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hero {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-left: 6px solid #14532D;
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .hero-k {
+      font-size: 12px;
+      font-weight: 800;
+      color: #14532D;
+      letter-spacing: 0.5px;
+    }
+    .hero h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0F172A;
+      line-height: 1.3;
+    }
+    .demo-banner {
+      display: inline-flex;
+      align-self: flex-start;
+      background: #FEF3C7;
+      color: #78350F;
+      border: 1px solid #D97706;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .card {
+      flex: 1 1 340px;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-v1 { border-top: 5px solid #047857; }
+    .card-v2 { border-top: 5px solid #9F1239; }
+    .card-v3 { border-top: 5px solid #14532D; }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .score-pill {
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      background: #E2E8F0;
+      color: #0F172A;
+      flex-shrink: 0;
+    }
+    .score-pill-rec {
+      background: #14532D;
+      color: #FFFFFF;
+    }
+    .meta {
+      font-size: 13px;
+      color: #334155;
+    }
+    .preview-img {
+      width: 100%;
+      height: auto;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      background: #F8FAFC;
+      display: block;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .btn {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #0F172A;
+      background: #FFFFFF;
+      color: #0F172A;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    .btn-v1 { background: #047857; border-color: #047857; color: #FFFFFF; }
+    .btn-v2 { background: #9F1239; border-color: #9F1239; color: #FFFFFF; }
+    .btn-v3 { background: #14532D; border-color: #14532D; color: #FFFFFF; }
+    .panel {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .panel h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #CBD5E1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      background: #F1F5F9;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: center;
+    }
+    .foot {
+      font-size: 12px;
+      color: #475569;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-k">JOGER TRACK &amp; FIELD · R3 UI REDESIGN PROPOSALS</div>
+      <h1>乔格训迹系统｜全站 UI 重设计三套可运行原型总览</h1>
+      <div class="demo-banner">演示数据｜仅用于视觉预览（尚未修改 miniprogram / cloudfunctions）</div>
+      <p class="meta">
+        三套方案基于相同业务事实（四角色：学生/教练/家长只读/开发者；无签退、无请假附件、无 AI 计划、无体测硬件对接、无付费；赛事内部意向与材料审核不等于官方报名成功），从<strong>信息架构与布局范式</strong>出发提供三条差异化路径，供所有者选定后再进入 R4 分批落地。
+      </p>
+    </header>
+
+    <section class="cards">
+      <article class="card card-v1">
+        <div class="card-head">
+          <div class="card-title">V1 · 赛场指令</div>
+          <span class="score-pill">35 / 45</span>
+        </div>
+        <p class="meta">
+          <strong>布局范式：</strong>碳黑单焦点指令 Hero + 双列快捷面板 + 底部双排固定导航栏。<br />
+          <strong>强项：</strong>户外单手高频操作快、视觉聚焦强；<strong>弱项：</strong>底栏占高、长表单与高密度报表同屏效率偏低。
+        </p>
+        <img class="preview-img" src="./screenshots/v1-00-overview.png" alt="V1 赛场指令七屏总览图" />
+        <div class="actions">
+          <a class="btn btn-v1" href="./v1-field-command/index.html">打开 V1 可交互原型</a>
+        </div>
+      </article>
+
+      <article class="card card-v2">
+        <div class="card-head">
+          <div class="card-title">V2 · 数据账本</div>
+          <span class="score-pill">39 / 45</span>
+        </div>
+        <p class="meta">
+          <strong>布局范式：</strong>暖白瑞士细线账本 + 顶部索引切换带（无深色大卡、无底栏）+ 三列等宽指标条。<br />
+          <strong>强项：</strong>同屏信息密度与榜单可读性最高；<strong>弱项：</strong>顶部导航单手触达略慢，学生端情绪亲和力偏克制。
+        </p>
+        <img class="preview-img" src="./screenshots/v2-00-overview.png" alt="V2 数据账本七屏总览图" />
+        <div class="actions">
+          <a class="btn btn-v2" href="./v2-editorial-ledger/index.html">打开 V2 可交互原型</a>
+        </div>
+      </article>
+
+      <article class="card card-v3">
+        <div class="card-head">
+          <div class="card-title">V3 · 分栏任务流（推荐）</div>
+          <span class="score-pill score-pill-rec">41 / 45 · 推荐</span>
+        </div>
+        <p class="meta">
+          <strong>布局范式：</strong>顶部三段式工作流轨 + 左侧 5px 语义色轨任务块 + 渐进折叠区 + 底部单排上下文主操作坞。<br />
+          <strong>强项：</strong>四角色一致性、表单友好度、操作效率与无障碍均衡最优；<strong>弱项：</strong>底部操作坞在 R4 落地时需严格适配输入法避让与安全区。
+        </p>
+        <img class="preview-img" src="./screenshots/v3-00-overview.png" alt="V3 分栏任务流七屏总览图" />
+        <div class="actions">
+          <a class="btn btn-v3" href="./v3-task-rail/index.html">打开 V3 可交互原型</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>九维评分速览（满分 45，实现成本已反向归一化：5 = 成本最低）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th class="num">V1 赛场指令</th>
+              <th class="num">V2 数据账本</th>
+              <th class="num">V3 分栏任务流</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>信息密度</td><td class="num">3</td><td class="num">5</td><td class="num">4</td></tr>
+            <tr><td>操作效率</td><td class="num">5</td><td class="num">3</td><td class="num">5</td></tr>
+            <tr><td>视觉辨识度</td><td class="num">4</td><td class="num">5</td><td class="num">4</td></tr>
+            <tr><td>表单友好度</td><td class="num">3</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td>数据可读性</td><td class="num">4</td><td class="num">5</td><td class="num">4</td></tr>
+            <tr><td>四角色一致性</td><td class="num">3</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td>实现成本（反向归一化）</td><td class="num">4</td><td class="num">4</td><td class="num">4</td></tr>
+            <tr><td>动效克制</td><td class="num">5</td><td class="num">5</td><td class="num">5</td></tr>
+            <tr><td>无障碍</td><td class="num">4</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td><strong>总分（/ 45）</strong></td><td class="num"><strong>35</strong></td><td class="num"><strong>39</strong></td><td class="num"><strong>41（推荐）</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">完整对比分析、迁移影响评估、实测对比度与 42 张视口渲染自检数据见同目录 <a href="./README.md">README.md</a>。</p>
+    </section>
+
+    <footer class="foot">
+      <span>乔格训迹系统 · R3 UI 设计提案（静态原型，仅用于视觉选型）</span>
+      <span>严禁将原型误报为已上线实现</span>
+    </footer>
+  </div>
+</body>
+</html>

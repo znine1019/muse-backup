@@ -1,0 +1,584 @@
+/* V2 数据账本 (Editorial Ledger)
+ * 仅使用微信小程序兼容 CSS：flex、定位、transform、linear-gradient。
+ * 严禁：CSS Grid、backdrop-filter、filter、position: sticky、多层 box-shadow、外部字体。
+ */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  background: #F7F4EE;
+  color: #18181B;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.v2-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #F7F4EE;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部编辑部报头（无深色大卡，无底栏） */
+.v2-masthead {
+  background: #FFFFFF;
+  border-bottom: 2px solid #18181B;
+}
+
+.v2-mast-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid #DDD6CA;
+}
+
+.v2-mast-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.v2-index-no {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  color: #9F1239;
+  font-variant-numeric: tabular-nums;
+  padding-right: 10px;
+  border-right: 2px solid #18181B;
+  flex-shrink: 0;
+}
+
+.v2-mast-titles {
+  min-width: 0;
+  flex: 1;
+}
+
+.v2-kicker {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: #52525B;
+  font-weight: 600;
+}
+
+.v2-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #18181B;
+  line-height: 1.25;
+}
+
+.v2-role-stamp {
+  border: 1px solid #18181B;
+  background: #F7F4EE;
+  color: #18181B;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  flex-shrink: 0;
+}
+
+.v2-demo-line {
+  background: #FEF3C7;
+  color: #78350F;
+  border-bottom: 1px solid #D97706;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 顶部双排细线索引条（取代底栏） */
+.v2-top-nav {
+  background: #FFFFFF;
+}
+
+.v2-nav-strip {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #DDD6CA;
+}
+
+.v2-nav-strip-sub {
+  background: #FAF8F5;
+}
+
+.v2-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid #DDD6CA;
+  background: transparent;
+  color: #3F3F46;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v2-nav-btn:last-child {
+  border-right: 0;
+}
+
+.v2-nav-btn.is-active {
+  background: #9F1239;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* 状态切换细线带 */
+.v2-state-strip {
+  display: flex;
+  width: 100%;
+  background: #F7F4EE;
+}
+
+.v2-state-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid #DDD6CA;
+  background: transparent;
+  color: #3F3F46;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v2-state-btn:last-child {
+  border-right: 0;
+}
+
+.v2-state-btn.is-active {
+  background: #18181B;
+  color: #FFFFFF;
+}
+
+/* 主内容：全宽账本分带（无悬浮卡片） */
+.v2-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0 18px;
+}
+
+.v2-band {
+  background: #FFFFFF;
+  border-top: 2px solid #18181B;
+  border-bottom: 1px solid #DDD6CA;
+}
+
+.v2-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #DDD6CA;
+  background: #FAF8F5;
+}
+
+.v2-band-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.v2-sec-no {
+  font-size: 12px;
+  font-weight: 800;
+  color: #9F1239;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.v2-band-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.v2-band-meta {
+  font-size: 12px;
+  color: #52525B;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 三列等宽指标条（高密度对比核心） */
+.v2-kpi-strip {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid #DDD6CA;
+  background: #FFFFFF;
+}
+
+.v2-kpi-cell {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 10px;
+  border-right: 1px solid #DDD6CA;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v2-kpi-cell:last-child {
+  border-right: 0;
+}
+
+.v2-kpi-label {
+  font-size: 12px;
+  color: #52525B;
+  font-weight: 600;
+}
+
+.v2-kpi-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #18181B;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.v2-kpi-val.is-accent {
+  color: #9F1239;
+}
+
+.v2-kpi-sub {
+  font-size: 12px;
+  color: #52525B;
+}
+
+/* 细线账本行与表头 */
+.v2-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #F7F4EE;
+  border-bottom: 1px solid #DDD6CA;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3F3F46;
+}
+
+.v2-ledger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #EAE4D9;
+}
+
+.v2-ledger-row:last-child {
+  border-bottom: 0;
+}
+
+.v2-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.v2-row-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #18181B;
+  word-break: break-word;
+}
+
+.v2-row-sub {
+  font-size: 13px;
+  color: #52525B;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.v2-row-num {
+  font-size: 16px;
+  font-weight: 800;
+  color: #9F1239;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* 细线标签 */
+.v2-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid #A1A1AA;
+  color: #27272A;
+  background: #F4F4F5;
+  flex-shrink: 0;
+}
+
+.v2-tag-crimson {
+  border-color: #9F1239;
+  color: #9F1239;
+  background: #FFF1F2;
+}
+
+.v2-tag-ok {
+  border-color: #166534;
+  color: #166534;
+  background: #DCFCE7;
+}
+
+.v2-tag-info {
+  border-color: #1E3A8A;
+  color: #1E3A8A;
+  background: #EFF6FF;
+}
+
+/* 说明注释带 */
+.v2-callout {
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border-top: 1px solid #DDD6CA;
+  border-bottom: 1px solid #DDD6CA;
+  border-left: 3px solid #18181B;
+  font-size: 13px;
+  color: #27272A;
+}
+
+.v2-callout-warn {
+  background: #FFFBEB;
+  border-left-color: #B45309;
+  color: #78350F;
+}
+
+/* 控件组与按钮（确保 >= 44x44px） */
+.v2-ctrl-pad {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v2-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v2-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #18181B;
+  background: #FFFFFF;
+  color: #18181B;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v2-btn-grow {
+  flex: 1;
+}
+
+.v2-btn-primary {
+  background: #9F1239;
+  border-color: #9F1239;
+  color: #FFFFFF;
+}
+
+.v2-btn-dark {
+  background: #18181B;
+  border-color: #18181B;
+  color: #FFFFFF;
+}
+
+.v2-btn.is-active {
+  background: #9F1239;
+  border-color: #9F1239;
+  color: #FFFFFF;
+}
+
+.v2-btn-danger {
+  background: #FFF1F2;
+  border-color: #9F1239;
+  color: #9F1239;
+}
+
+.v2-btn-block {
+  width: 100%;
+}
+
+/* 快捷链接行列表（学生首页：不使用两列卡片，使用账本索引行） */
+.v2-index-link {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid #EAE4D9;
+  background: #FFFFFF;
+  color: #18181B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+
+.v2-index-link:last-child {
+  border-bottom: 0;
+}
+
+.v2-index-link-l {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 表单字段与折叠抽屉 */
+.v2-accordion-head {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 1px solid #DDD6CA;
+  background: #FAF8F5;
+  color: #18181B;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.v2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v2-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3F3F46;
+}
+
+.v2-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #71717A;
+  background: #FFFFFF;
+  color: #18181B;
+  font-size: 14px;
+}
+
+/* 纯 CSS 静态定位图（无地图 SDK） */
+.v2-map-frame {
+  position: relative;
+  height: 148px;
+  margin: 10px 14px;
+  border: 1px solid #18181B;
+  background: linear-gradient(135deg, #F7F4EE 0%, #EFE9DD 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+}
+
+.v2-map-ring {
+  width: 116px;
+  height: 56px;
+  border: 2px dashed #9F1239;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF1F2;
+  color: #9F1239;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 8px;
+}
+
+.v2-map-coord {
+  font-size: 12px;
+  color: #27272A;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* 非正常态 */
+.v2-state-box {
+  margin: 0 14px;
+  padding: 18px 14px;
+  background: #FFFFFF;
+  border: 1px solid #18181B;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v2-state-box-err {
+  border-color: #9F1239;
+  background: #FFF1F2;
+}
+
+.v2-skel-line {
+  height: 52px;
+  margin: 0 14px;
+  background: linear-gradient(90deg, #EAE4D9 0%, #F7F4EE 50%, #EAE4D9 100%);
+  border: 1px solid #DDD6CA;
+}
+
+.v2-colophon {
+  padding: 10px 14px 16px;
+  border-top: 1px solid #DDD6CA;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #52525B;
+}

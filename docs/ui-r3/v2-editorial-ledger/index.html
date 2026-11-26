@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>V2 数据账本｜乔格训迹 R3 重设计原型</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="v2-shell" id="app">
+    <header class="v2-masthead">
+      <div class="v2-mast-top">
+        <div class="v2-mast-id">
+          <span class="v2-index-no" id="screenIndex">01</span>
+          <div class="v2-mast-titles">
+            <div class="v2-kicker">V2 · 数据账本</div>
+            <h1 class="v2-title" id="screenTitle">学生首页</h1>
+          </div>
+        </div>
+        <div class="v2-role-stamp" id="screenRole">学生</div>
+      </div>
+
+      <div class="v2-demo-line">演示数据｜仅用于视觉预览</div>
+
+      <nav class="v2-top-nav" aria-label="七屏顶部账本索引">
+        <div class="v2-nav-strip" id="navRowTop"></div>
+        <div class="v2-nav-strip v2-nav-strip-sub" id="navRowBottom"></div>
+      </nav>
+
+      <div class="v2-state-strip" role="group" aria-label="页面状态切换">
+        <button type="button" class="v2-state-btn is-active" data-state="normal">正常</button>
+        <button type="button" class="v2-state-btn" data-state="loading">加载</button>
+        <button type="button" class="v2-state-btn" data-state="empty">空态</button>
+        <button type="button" class="v2-state-btn" data-state="error">错误</button>
+      </div>
+    </header>
+
+    <main class="v2-main" id="screenBody"></main>
+
+    <footer class="v2-colophon">
+      <span>乔格训迹 · V2 数据账本原型</span>
+      <span>无底栏 · 高同屏密度</span>
+    </footer>
+  </div>
+  <script src="../shared/mock-data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

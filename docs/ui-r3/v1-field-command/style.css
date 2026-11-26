@@ -1,0 +1,506 @@
+/* V1 赛场指令 (Field Command)
+ * 约束检查：仅用 flex/定位/transform/linear-gradient；无 grid、无 backdrop-filter、无 sticky、无重阴影
+ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #F5F6F8;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.v1-shell {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 112px;
+}
+
+.v1-topbar {
+  background: #FFFFFF;
+  border-bottom: 1px solid #D9DFE7;
+  padding: 12px 14px 10px;
+}
+
+.v1-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.v1-title-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.v1-brand-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #047857;
+  letter-spacing: 0.4px;
+}
+
+.v1-page-title {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.v1-role-badge {
+  flex-shrink: 0;
+  background: #D1FAE5;
+  color: #065F46;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.v1-demo-strip {
+  margin-top: 8px;
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #F59E0B;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.v1-state-bar {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.v1-state-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.v1-state-btn.is-active {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #F8FAFC;
+}
+
+.v1-main {
+  flex: 1;
+  padding: 12px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 核心特色：顶部单焦点碳黑指令卡 */
+.v1-hero {
+  background: linear-gradient(140deg, #0F172A 0%, #1E293B 100%);
+  color: #F8FAFC;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v1-hero-k {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6EE7B7;
+  letter-spacing: 0.5px;
+}
+
+.v1-hero-num-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.v1-hero-num {
+  font-size: 34px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: #F8FAFC;
+}
+
+.v1-hero-unit {
+  font-size: 14px;
+  color: #CBD5E1;
+  font-weight: 600;
+}
+
+.v1-hero-meta {
+  font-size: 14px;
+  color: #CBD5E1;
+  word-break: break-word;
+}
+
+.v1-hero-metrics {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #334155;
+  padding-top: 10px;
+}
+
+.v1-hero-metric {
+  flex: 1;
+  min-width: 0;
+}
+
+.v1-hero-metric-l {
+  font-size: 12px;
+  color: #CBD5E1;
+}
+
+.v1-hero-metric-v {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #F8FAFC;
+}
+
+/* 快捷指令双列 Flex 面板 */
+.v1-deck {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v1-deck-btn {
+  flex: 1 1 46%;
+  min-width: 44px;
+  min-height: 52px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #D9DFE7;
+  background: #FFFFFF;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.v1-card {
+  background: #FFFFFF;
+  border: 1px solid #D9DFE7;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v1-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.v1-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.v1-card-sub {
+  font-size: 13px;
+  color: #4B5563;
+  font-weight: 600;
+}
+
+.v1-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.v1-row:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.v1-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.v1-row-t {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  word-break: break-word;
+}
+
+.v1-row-m {
+  margin-top: 2px;
+  font-size: 14px;
+  color: #4B5563;
+  word-break: break-word;
+}
+
+.v1-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: #111827;
+  flex-shrink: 0;
+}
+
+.v1-chip {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.v1-chip-ok { background: #D1FAE5; color: #065F46; }
+.v1-chip-warn { background: #FEF3C7; color: #92400E; }
+.v1-chip-err { background: #FEE2E2; color: #B91C1C; }
+.v1-chip-neutral { background: #E5E7EB; color: #1F2937; }
+
+.v1-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v1-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #047857;
+  background: #047857;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.v1-btn-block {
+  width: 100%;
+}
+
+.v1-btn-ghost {
+  background: #FFFFFF;
+  color: #111827;
+  border-color: #CBD5E1;
+}
+
+.v1-btn-danger {
+  background: #B91C1C;
+  border-color: #B91C1C;
+  color: #FFFFFF;
+}
+
+.v1-btn.is-active {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #F8FAFC;
+}
+
+.v1-note {
+  background: #ECFDF5;
+  border: 1px solid #6EE7B7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #065F46;
+  font-size: 14px;
+}
+
+.v1-note-warn {
+  background: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+}
+
+/* 静态 CSS 地图占位（无外部 SDK） */
+.v1-map-box {
+  position: relative;
+  height: 150px;
+  border-radius: 12px;
+  border: 1px solid #CBD5E1;
+  background: linear-gradient(135deg, #E2E8F0 0%, #F1F5F9 50%, #DCFCE7 100%);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.v1-map-track {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 34px;
+  bottom: 34px;
+  border: 3px dashed #047857;
+  border-radius: 40px;
+}
+
+.v1-map-pin {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  margin-top: 28px;
+  background: #0F172A;
+  color: #F8FAFC;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.v1-map-caption {
+  position: relative;
+  z-index: 1;
+  background: #FFFFFF;
+  color: #111827;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 表单与折叠面板 */
+.v1-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v1-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.v1-input, .v1-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #94A3B8;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #111827;
+  font-size: 14px;
+}
+
+.v1-accordion-btn {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  background: #F8FAFC;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+/* 三态展示 */
+.v1-skel {
+  height: 76px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #E2E8F0 0%, #F1F5F9 50%, #E2E8F0 100%);
+}
+
+.v1-empty {
+  background: #FFFFFF;
+  border: 1px dashed #94A3B8;
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.v1-err-box {
+  background: #FEF2F2;
+  border: 1px solid #DC2626;
+  border-radius: 12px;
+  padding: 16px;
+  color: #991B1B;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 底部双行固定导航栏（触控目标全部 >= 44px） */
+.v1-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: #FFFFFF;
+  border-top: 1px solid #CBD5E1;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v1-nav-row {
+  display: flex;
+  gap: 6px;
+}
+
+.v1-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.v1-nav-btn.is-active {
+  background: #047857;
+  border-color: #047857;
+  color: #FFFFFF;
+}
