@@ -1,0 +1,181 @@
+/* V3 光栅脉动（Raster Pulse）
+ * 运动语法：光栅扫描主导 | 信息节奏：任务推进 | 数据呈现：卡片流
+ * 动效令牌：120ms / 200ms / 320ms；缓动 cubic-bezier(0.16, 1, 0.3, 1)；stagger 40ms
+ */
+:root {
+  --ease-main: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jg-stagger-1 { animation-delay: 40ms; }
+.jg-stagger-2 { animation-delay: 80ms; }
+.jg-stagger-3 { animation-delay: 120ms; }
+.jg-stagger-4 { animation-delay: 160ms; }
+
+/* 光栅扫描全屏水平光带（页面切换时触发，280ms） */
+.v3-scan-overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 64px;
+  margin-left: -215px;
+  background: linear-gradient(90deg, transparent, rgba(238, 131, 0, 0.42), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.v3-scan-overlay.is-active {
+  animation: v3-screen-sweep 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v3-screen-sweep {
+  0% { opacity: 0.9; transform: translateX(-40px); }
+  100% { opacity: 0; transform: translateX(430px); }
+}
+
+.jg-main.is-enter-fwd {
+  animation: v3-raster-fwd 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.jg-main.is-enter-back {
+  animation: v3-raster-back 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v3-raster-fwd {
+  from { opacity: 0.15; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes v3-raster-back {
+  from { opacity: 0.15; transform: translateX(-14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 顶部锋利建筑感切换条 */
+.v3-top-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v3-nav-row {
+  display: flex;
+  gap: 4px;
+}
+
+.v3-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--text-mid);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.v3-nav-btn.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+/* 任务推进三段进度槽 */
+.v3-mission-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.v3-step {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-mid);
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.v3-step.is-now {
+  border-color: var(--orange);
+  background: var(--surface-2);
+  color: var(--orange-glow);
+}
+
+/* 卡片流（4px 左侧语义轨道） */
+.v3-stream-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.v3-rail-orange {
+  border-left-color: var(--orange);
+}
+
+.v3-big-num {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--orange-glow);
+  line-height: 1.1;
+}
+
+/* V3 招牌动效：排行榜垂直橙色光栅扫描 + FLIP 名次置换（540ms） */
+.v3-raster-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 56px;
+  background: linear-gradient(90deg, transparent, rgba(238, 131, 0, 0.55), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.jg-rank-list.is-raster-scan .v3-raster-beam {
+  animation: v3-rank-beam 540ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v3-rank-beam {
+  0% { opacity: 0.95; transform: translateX(-60px); }
+  100% { opacity: 0; transform: translateX(380px); }
+}
+
+.v1-pulse-ring {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--orange);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jg-map-box.is-pulsing .v1-pulse-1 {
+  animation: v3-ring-ping 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v3-ring-ping {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(2.1); opacity: 0; }
+}

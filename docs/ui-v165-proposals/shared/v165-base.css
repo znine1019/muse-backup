@@ -1,0 +1,937 @@
+/* 乔格训迹系统 V1.6.5 品牌色阶与微信小程序可落地基础层
+ * 仅使用允许属性：flex、绝对定位、transform(2D/3D)、opacity、transition、@keyframes、
+ * linear/radial/conic-gradient、border、box-shadow(<=2层)、CSS变量、系统字体。
+ * 严格禁止：CSS Grid、backdrop-filter、filter:blur()、position:sticky、外部字体、will-change滥用。
+ */
+:root {
+  --void: #060E18;
+  --deep: #0B1728;
+  --surface: #132D49;
+  --surface-2: #1A3A5C;
+  --line: #2A4A6B;
+  --text-hi: #EAF2FB;
+  --text-mid: #9DB2C9;
+  --orange: #EE8300;
+  --orange-glow: #FF9E2C;
+  --on-orange: #060E18;
+  --success: #2FBF8F;
+  --warning: #F2B233;
+  --danger: #E5484D;
+  --danger-text: #FF8A8E;
+  --badge-bg: #0B1728;
+  --input-bg: #0B1728;
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-main: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 日光高对比模式：浅底深字 + 品牌橙同步加深至 #A84E00 (对比度 >= 5.3:1) */
+body.is-daylight {
+  --void: #E6EEF7;
+  --deep: #F3F7FC;
+  --surface: #FFFFFF;
+  --surface-2: #E2ECF6;
+  --line: #8FA9C4;
+  --text-hi: #0B1728;
+  --text-mid: #28415C;
+  --orange: #A84E00;
+  --orange-glow: #8C3F00;
+  --on-orange: #FFFFFF;
+  --success: #0F7A57;
+  --warning: #8C5200;
+  --danger: #B91C1C;
+  --danger-text: #B91C1C;
+  --badge-bg: #E2ECF6;
+  --input-bg: #FFFFFF;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  background: var(--void);
+  color: var(--text-hi);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.jg-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--deep);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.jg-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 顶部统一品牌条 + 日光开关 + 状态切换 */
+.jg-top {
+  background: var(--void);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 10;
+}
+
+.jg-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jg-brand-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.jg-brand-k {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--orange-glow);
+  letter-spacing: 0.4px;
+}
+
+.jg-screen-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-hi);
+  line-height: 1.25;
+}
+
+.jg-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.jg-daylight-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--orange);
+  background: var(--surface);
+  color: var(--orange-glow);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--dur-fast) var(--ease-main), opacity var(--dur-fast) var(--ease-main);
+}
+
+.jg-daylight-btn.is-on {
+  background: var(--orange);
+  color: var(--on-orange);
+}
+
+.jg-daylight-btn:active {
+  transform: scale(0.96);
+}
+
+.jg-role-chip {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-hi);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.jg-demo-strip {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jg-demo-tag {
+  color: var(--orange-glow);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.jg-state-row {
+  display: flex;
+  gap: 6px;
+}
+
+.jg-state-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-mid);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--dur-fast) var(--ease-main), opacity var(--dur-fast) var(--ease-main);
+}
+
+.jg-state-btn.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+/* 自定义下拉刷新指示器（交互 #10，仅使用 transform + opacity，不触发布局重排） */
+.jg-ptr-wrap {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translate(-50%, -80px);
+  padding: 8px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--void);
+  border: 1.5px solid var(--orange);
+  box-shadow: 0 6px 18px rgba(6, 14, 24, 0.48);
+  transition: transform var(--dur-base) var(--ease-main), opacity var(--dur-base) var(--ease-main);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 45;
+}
+
+.jg-ptr-wrap.is-open {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.jg-ptr-ring {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--orange);
+  animation: jg-spin 700ms linear infinite;
+}
+
+.jg-ptr-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--orange-glow);
+}
+
+/* 主视图容器 */
+.jg-main {
+  flex: 1;
+  padding: 12px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+/* 列表 Stagger 入场（交互 #2：位移 <= 12px，间隔 32-40ms） */
+.jg-stagger {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: jg-stagger-in var(--dur-base) var(--ease-main) forwards;
+}
+
+.jg-stagger-0 { animation-delay: 0ms; }
+.jg-stagger-1 { animation-delay: 34ms; }
+.jg-stagger-2 { animation-delay: 68ms; }
+.jg-stagger-3 { animation-delay: 102ms; }
+.jg-stagger-4 { animation-delay: 136ms; }
+.jg-stagger-5 { animation-delay: 170ms; }
+
+@keyframes jg-stagger-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 通用表面与组件 */
+.jg-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.jg-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jg-card-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-hi);
+}
+
+.jg-card-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-mid);
+  flex-shrink: 0;
+}
+
+.jg-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.jg-row:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.jg-row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.jg-row-t {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-hi);
+  word-break: break-word;
+}
+
+.jg-row-m {
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.jg-val-accent {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--orange-glow);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.jg-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--badge-bg);
+  border: 1px solid var(--line);
+  color: var(--text-hi);
+  flex-shrink: 0;
+}
+
+.jg-pill-orange {
+  border-color: var(--orange);
+  color: var(--orange-glow);
+}
+
+.jg-pill-ok {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.jg-pill-danger {
+  border-color: var(--danger);
+  color: var(--danger-text);
+}
+
+.jg-note {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--orange);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-hi);
+}
+
+.jg-note-warn {
+  border-left-color: var(--warning);
+}
+
+/* 按钮与提交变形进度环（交互 #7） */
+.jg-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.jg-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-hi);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-main), opacity var(--dur-fast) var(--ease-main);
+}
+
+.jg-btn:active {
+  transform: scale(0.97);
+}
+
+.jg-btn-grow {
+  flex: 1;
+}
+
+.jg-btn-block {
+  width: 100%;
+}
+
+.jg-btn-primary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+.jg-btn.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+.jg-btn-danger {
+  background: var(--void);
+  border-color: var(--danger);
+  color: var(--danger-text);
+}
+
+.jg-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid var(--on-orange);
+  border-top-color: transparent;
+  animation: jg-spin 650ms linear infinite;
+}
+
+.jg-btn-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--on-orange);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  animation: jg-pop-check 400ms var(--ease-main) forwards;
+}
+
+@keyframes jg-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes jg-pop-check {
+  0% { transform: scale(0.5); opacity: 0; }
+  65% { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 表单聚焦流光 + 校验失败单次抖动（交互 #6） */
+.jg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jg-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-mid);
+}
+
+.jg-input-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--input-bg);
+}
+
+.jg-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-hi);
+  font-size: 14px;
+  outline: none;
+}
+
+.jg-focus-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--orange), var(--orange-glow), var(--orange));
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition: transform var(--dur-base) var(--ease-main), opacity var(--dur-base) var(--ease-main);
+}
+
+.jg-input-wrap:focus-within .jg-focus-bar,
+.jg-input-wrap.is-focused .jg-focus-bar {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.jg-input-wrap.is-error {
+  border-color: var(--danger);
+  animation: jg-shake 180ms ease-in-out 1;
+}
+
+@keyframes jg-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.jg-field-err {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--danger-text);
+}
+
+/* 骨架屏 Shimmer 扫光 1.2s（仅用 transform，不重排）（交互 #4） */
+.jg-skel-card {
+  height: 76px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+
+.jg-skel-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(238, 131, 0, 0.22) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: jg-shimmer 1.2s linear infinite;
+}
+
+@keyframes jg-shimmer {
+  to { transform: translateX(100%); }
+}
+
+.jg-reveal-in {
+  animation: jg-fade-up 200ms var(--ease-main) forwards;
+}
+
+@keyframes jg-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 空态插画淡出（交互 #11） */
+.jg-empty-box {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.jg-empty-box.is-leaving {
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.jg-err-box {
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  border-left: 4px solid var(--danger);
+  border-radius: 12px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 左滑审批 + 长按多选待办项（交互 #12） */
+.jg-swipe-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--void);
+}
+
+.jg-swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 144px;
+  display: flex;
+  align-items: stretch;
+  z-index: 1;
+}
+
+.jg-swipe-act-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.jg-swipe-approve {
+  background: var(--orange);
+  color: var(--on-orange);
+}
+
+.jg-swipe-reject {
+  background: var(--surface-2);
+  color: var(--danger-text);
+  border-left: 1px solid var(--line);
+}
+
+.jg-swipe-fg {
+  position: relative;
+  z-index: 2;
+  background: var(--surface);
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  transition: transform var(--dur-base) var(--ease-main);
+  touch-action: pan-y;
+}
+
+.jg-swipe-wrap.is-swiped .jg-swipe-fg {
+  transform: translateX(-144px);
+}
+
+.jg-swipe-wrap.is-selected {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 1px var(--orange);
+}
+
+.jg-swipe-wrap.is-done {
+  opacity: 0.62;
+}
+
+/* 底部抽屉（弹性打开、遮罩 200ms 渐入、下滑关闭）（交互 #5） */
+.jg-drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(6, 14, 24, 0.72);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.jg-drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.jg-drawer-panel {
+  width: 100%;
+  max-width: 430px;
+  background: var(--surface);
+  border-top: 2px solid var(--orange);
+  border-radius: 16px 16px 0 0;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateY(100%);
+  transition: transform 300ms cubic-bezier(0.34, 1.24, 0.64, 1);
+  box-shadow: 0 -8px 24px rgba(6, 14, 24, 0.45);
+}
+
+.jg-drawer-backdrop.is-open .jg-drawer-panel {
+  transform: translateY(0);
+}
+
+.jg-drawer-handle {
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  align-self: center;
+}
+
+/* Canvas 2D 容器与数据可视化 */
+.jg-canvas-box {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--deep);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jg-trend-canvas {
+  width: 100%;
+  height: 164px;
+  display: block;
+}
+
+.jg-ring-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jg-ring-canvas {
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* 排行榜条形与名次置换 */
+.jg-rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.jg-rank-item {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 320ms var(--ease-main);
+}
+
+.jg-rank-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jg-rank-bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.jg-rank-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--orange-glow));
+  transform-origin: left center;
+  transition: transform 320ms var(--ease-main);
+}
+
+/* 静态 CSS 地图围栏选点区（无地图 SDK） */
+.jg-map-box {
+  position: relative;
+  height: 146px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: radial-gradient(circle at center, var(--surface-2) 0%, var(--void) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.jg-map-ring {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 2px dashed var(--orange);
+  background: var(--surface);
+  color: var(--orange-glow);
+  font-size: 13px;
+  font-weight: 800;
+  position: relative;
+  z-index: 2;
+}
+
+.jg-map-coord {
+  font-size: 12px;
+  color: var(--text-mid);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+/* 角色/学生局部遮罩揭示（交互 #8） */
+.jg-scope-stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.jg-scope-wipe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.jg-scope-stage.is-wiping .jg-scope-wipe {
+  animation: jg-wipe-sweep 280ms var(--ease-main) forwards;
+}
+
+@keyframes jg-wipe-sweep {
+  0% { opacity: 0.7; transform: translateX(-100%); }
+  100% { opacity: 0; transform: translateX(100%); }
+}
+
+/* 动效演示页按钮卡片 */
+.jg-lab-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.jg-lab-log {
+  background: var(--void);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--orange-glow);
+  font-weight: 700;
+}
+
+/* Toast 反馈 */
+.jg-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 92px;
+  transform: translate(-50%, 16px);
+  background: var(--void);
+  border: 1px solid var(--orange);
+  color: var(--text-hi);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity 180ms ease, transform 180ms var(--ease-main);
+  max-width: 340px;
+  text-align: center;
+}
+
+.jg-toast.is-show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* prefers-reduced-motion 静态降级规范 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

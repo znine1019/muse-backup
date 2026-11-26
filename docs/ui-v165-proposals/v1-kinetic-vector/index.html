@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>V1 矢量竞速｜乔格训迹 V1.6.5 动效原型</title>
+  <link rel="stylesheet" href="../shared/v165-base.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="jg-shell v1-shell" id="app">
+    <header class="jg-top">
+      <div class="jg-top-bar">
+        <div class="jg-brand-wrap">
+          <div class="jg-brand-k">V1.6.5 · V1 矢量竞速（位移主导）</div>
+          <h1 class="jg-screen-title" id="screenTitle">学生首页</h1>
+        </div>
+        <div class="jg-top-actions">
+          <button type="button" class="jg-daylight-btn" id="daylightBtn">日光模式</button>
+          <span class="jg-role-chip" id="screenRole">学生</span>
+        </div>
+      </div>
+      <div class="jg-demo-strip">
+        <span>V1.6.5 演示数据｜仅用于动效预览</span>
+        <span class="jg-demo-tag">仪表盘</span>
+      </div>
+      <div class="jg-state-row" role="group" aria-label="页面状态切换">
+        <button type="button" class="jg-state-btn is-active" data-state="normal">正常</button>
+        <button type="button" class="jg-state-btn" data-state="loading">加载</button>
+        <button type="button" class="jg-state-btn" data-state="empty">空态</button>
+        <button type="button" class="jg-state-btn" data-state="error">错误</button>
+      </div>
+    </header>
+
+    <div class="jg-ptr-wrap" id="ptrIndicator" aria-live="polite">
+      <div class="jg-ptr-ring"></div>
+      <span class="jg-ptr-text">赛道矢量刷新中…</span>
+    </div>
+
+    <main class="jg-main" id="screenBody"></main>
+
+    <nav class="v1-jump-bar" aria-label="页内八屏区块跳转（非原生 tabBar）">
+      <div class="v1-jump-row" id="navRowTop"></div>
+      <div class="v1-jump-row" id="navRowBottom"></div>
+    </nav>
+
+    <div class="jg-drawer-backdrop" id="drawerBackdrop">
+      <div class="jg-drawer-panel" id="drawerPanel">
+        <div class="jg-drawer-handle"></div>
+        <div class="jg-card-title" id="drawerTitle">详情抽屉</div>
+        <div id="drawerBody"></div>
+      </div>
+    </div>
+    <div class="jg-toast" id="toastEl"></div>
+  </div>
+  <script src="../shared/mock-data.js"></script>
+  <script src="../shared/motion-charts.js"></script>
+  <script src="../shared/v165-app-core.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

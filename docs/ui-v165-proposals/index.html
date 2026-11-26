@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>乔格训迹系统 V1.6.5｜蓝黑 + 商标橙动效升级三套方案总览</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      background: #060E18;
+      color: #EAF2FB;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #132D49 0%, #0B1728 100%);
+      border: 1px solid #2A4A6B;
+      border-left: 6px solid #EE8300;
+      border-radius: 12px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .kicker {
+      font-size: 12px;
+      font-weight: 800;
+      color: #FF9E2C;
+      letter-spacing: 0.6px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      color: #EAF2FB;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #EAF2FB;
+      border-left: 4px solid #EE8300;
+      padding-left: 10px;
+    }
+    .meta {
+      color: #9DB2C9;
+      font-size: 13px;
+    }
+    .pill {
+      display: inline-flex;
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #EE8300;
+      background: #0B1728;
+      color: #FF9E2C;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .card {
+      flex: 1 1 350px;
+      background: #132D49;
+      border: 1px solid #2A4A6B;
+      border-top: 4px solid #EE8300;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #EAF2FB;
+    }
+    .score {
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: #0B1728;
+      border: 1px solid #2A4A6B;
+      color: #FF9E2C;
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+    .score-rec {
+      background: #EE8300;
+      border-color: #EE8300;
+      color: #060E18;
+    }
+    .shot {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid #2A4A6B;
+      background: #0B1728;
+      display: block;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .btn {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #2A4A6B;
+      background: #1A3A5C;
+      color: #EAF2FB;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    .btn-primary {
+      background: #EE8300;
+      border-color: #EE8300;
+      color: #060E18;
+    }
+    .panel {
+      background: #132D49;
+      border: 1px solid #2A4A6B;
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .media-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .media-box {
+      flex: 1 1 320px;
+      background: #0B1728;
+      border: 1px solid #2A4A6B;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .media-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FF9E2C;
+    }
+    video {
+      width: 100%;
+      max-height: 420px;
+      border-radius: 6px;
+      border: 1px solid #2A4A6B;
+      background: #060E18;
+    }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #2A4A6B;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th {
+      background: #0B1728;
+      color: #FF9E2C;
+      font-weight: 800;
+    }
+    .num {
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+    .foot {
+      font-size: 12px;
+      color: #9DB2C9;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    a.link {
+      color: #FF9E2C;
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="kicker">JOGER TRACK &amp; FIELD · V1.6.5 MOTION &amp; INTERACTION UPGRADE</div>
+      <h1>乔格训迹系统 V1.6.5｜「蓝黑 #132D49 + 商标橙 #EE8300」三套动效原型总览</h1>
+      <span class="pill">V1.6.5 静态动效原型｜未修改 miniprogram / cloudfunctions / docs/ui-r3</span>
+      <p class="meta">
+        同一品牌海军蓝 + 商标橙色系，三条两两不同的<strong>运动语法 × 信息节奏 × 数据呈现</strong>演进路线。每套均含 7 个业务屏 + 1 个动效实验室（共 8 屏）、13 项可点真实动效、3 种 Canvas 2D/条形数据可视化与户外「日光高对比模式」。
+      </p>
+    </header>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">V1 · 矢量竞速</div>
+          <span class="score">40 / 45</span>
+        </div>
+        <p class="meta">
+          <strong>位移主导 · 结论先行 · 仪表盘</strong><br />
+          招牌动效：打卡成功三层赛道橙光环扩散（560ms）。适合田径场单手高频执行，实现成本最低。
+        </p>
+        <img class="shot" src="./screenshots/v1-00-overview.png" alt="V1 矢量竞速八屏总览" />
+        <div class="actions">
+          <a class="btn btn-primary" href="./v1-kinetic-vector/index.html">打开 V1 原型</a>
+          <a class="btn" href="./v1-kinetic-vector/index.html?screen=08-motion">V1 动效页</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">V2 · 态变遥测</div>
+          <span class="score">36 / 45</span>
+        </div>
+        <p class="meta">
+          <strong>形变主导 · 过程可视 · 时间轴</strong><br />
+          招牌动效：PB 遥测卡 3D Y 轴立体翻面（520ms）。适合复盘成长过程，长表单视野最大。
+        </p>
+        <img class="shot" src="./screenshots/v2-00-overview.png" alt="V2 态变遥测八屏总览" />
+        <div class="actions">
+          <a class="btn btn-primary" href="./v2-morph-telemetry/index.html">打开 V2 原型</a>
+          <a class="btn" href="./v2-morph-telemetry/index.html?screen=08-motion">V2 动效页</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title">V3 · 光栅脉动（推荐）</div>
+          <span class="score score-rec">41 / 45 · 推荐</span>
+        </div>
+        <p class="meta">
+          <strong>光栅扫描主导 · 任务推进 · 卡片流</strong><br />
+          招牌动效：排行榜橙色光栅扫描 + FLIP 名次置换（540ms）。四角色一致性、效率与科技感综合最优。
+        </p>
+        <img class="shot" src="./screenshots/v3-00-overview.png" alt="V3 光栅脉动八屏总览" />
+        <div class="actions">
+          <a class="btn btn-primary" href="./v3-raster-pulse/index.html">打开 V3 原型</a>
+          <a class="btn" href="./v3-raster-pulse/index.html?screen=08-motion">V3 动效页</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>户外日光高对比模式实拍（6 张：教练工作台 + 考勤签到）</h2>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V1 日光 · 教练工作台</div><img class="shot" src="./screenshots/v1-daylight-02-coach.png" alt="V1 日光教练工作台" /></div>
+        <div class="media-box"><div class="media-label">V2 日光 · 教练工作台</div><img class="shot" src="./screenshots/v2-daylight-02-coach.png" alt="V2 日光教练工作台" /></div>
+        <div class="media-box"><div class="media-label">V3 日光 · 教练工作台</div><img class="shot" src="./screenshots/v3-daylight-02-coach.png" alt="V3 日光教练工作台" /></div>
+      </div>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V1 日光 · 考勤签到</div><img class="shot" src="./screenshots/v1-daylight-06-attendance.png" alt="V1 日光考勤签到" /></div>
+        <div class="media-box"><div class="media-label">V2 日光 · 考勤签到</div><img class="shot" src="./screenshots/v2-daylight-06-attendance.png" alt="V2 日光考勤签到" /></div>
+        <div class="media-box"><div class="media-label">V3 日光 · 考勤签到</div><img class="shot" src="./screenshots/v3-daylight-06-attendance.png" alt="V3 日光考勤签到" /></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>动效关键帧条图（6 张，与下方 WebM 录屏一一对应）</h2>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V1 关键帧 · 打卡光环扩散</div><img class="shot" src="./screenshots/v1-kf-01-signature.png" alt="V1 招牌动效关键帧" /></div>
+        <div class="media-box"><div class="media-label">V2 关键帧 · PB 卡 3D 翻面</div><img class="shot" src="./screenshots/v2-kf-01-signature.png" alt="V2 招牌动效关键帧" /></div>
+        <div class="media-box"><div class="media-label">V3 关键帧 · 光栅名次置换</div><img class="shot" src="./screenshots/v3-kf-01-signature.png" alt="V3 招牌动效关键帧" /></div>
+      </div>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V1 关键帧 · 表单校验与审批流</div><img class="shot" src="./screenshots/v1-kf-02-workflow.png" alt="V1 表单审批关键帧" /></div>
+        <div class="media-box"><div class="media-label">V2 关键帧 · 表单校验与审批流</div><img class="shot" src="./screenshots/v2-kf-02-workflow.png" alt="V2 表单审批关键帧" /></div>
+        <div class="media-box"><div class="media-label">V3 关键帧 · 表单校验与审批流</div><img class="shot" src="./screenshots/v3-kf-02-workflow.png" alt="V3 表单审批关键帧" /></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>CDP 实机录屏（9 段 WebM，每段 8–15s，≥24fps）</h2>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V1 · 01 页面转场</div><video controls muted playsinline src="./videos/v1-01-transition.webm"></video></div>
+        <div class="media-box"><div class="media-label">V1 · 02 招牌动效（打卡光环）</div><video controls muted playsinline src="./videos/v1-02-signature.webm"></video></div>
+        <div class="media-box"><div class="media-label">V1 · 03 表单与审批流</div><video controls muted playsinline src="./videos/v1-03-workflow.webm"></video></div>
+      </div>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V2 · 01 页面转场</div><video controls muted playsinline src="./videos/v2-01-transition.webm"></video></div>
+        <div class="media-box"><div class="media-label">V2 · 02 招牌动效（3D 翻面）</div><video controls muted playsinline src="./videos/v2-02-signature.webm"></video></div>
+        <div class="media-box"><div class="media-label">V2 · 03 表单与审批流</div><video controls muted playsinline src="./videos/v2-03-workflow.webm"></video></div>
+      </div>
+      <div class="media-row">
+        <div class="media-box"><div class="media-label">V3 · 01 页面转场</div><video controls muted playsinline src="./videos/v3-01-transition.webm"></video></div>
+        <div class="media-box"><div class="media-label">V3 · 02 招牌动效（光栅置换）</div><video controls muted playsinline src="./videos/v3-02-signature.webm"></video></div>
+        <div class="media-box"><div class="media-label">V3 · 03 表单与审批流</div><video controls muted playsinline src="./videos/v3-03-workflow.webm"></video></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>九维评分速览（满分 45，实现成本反向归一化：5 = 成本最低）</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th class="num">V1 矢量竞速</th>
+              <th class="num">V2 态变遥测</th>
+              <th class="num">V3 光栅脉动</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>信息密度</td><td class="num">4</td><td class="num">3</td><td class="num">5</td></tr>
+            <tr><td>操作效率</td><td class="num">5</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td>视觉辨识度</td><td class="num">4</td><td class="num">5</td><td class="num">5</td></tr>
+            <tr><td>表单友好度</td><td class="num">3</td><td class="num">5</td><td class="num">4</td></tr>
+            <tr><td>数据可读性</td><td class="num">5</td><td class="num">4</td><td class="num">4</td></tr>
+            <tr><td>四角色一致性</td><td class="num">4</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td>实现成本（反向归一化）</td><td class="num">5</td><td class="num">3</td><td class="num">4</td></tr>
+            <tr><td>动效克制</td><td class="num">5</td><td class="num">4</td><td class="num">4</td></tr>
+            <tr><td>无障碍</td><td class="num">5</td><td class="num">4</td><td class="num">5</td></tr>
+            <tr><td><strong>总分（/ 45）</strong></td><td class="num"><strong>40</strong></td><td class="num"><strong>36</strong></td><td class="num"><strong>41（推荐）</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">完整动效令牌、13 项三态定义、对比度实测、日光模式分析与 V1.6.2→V1.6.5 变更草稿见 <a class="link" href="./README.md">README.md</a>。</p>
+    </section>
+
+    <footer class="foot">
+      <span>乔格训迹系统 V1.6.5 · R3B 动效原型总览</span>
+      <span>严禁将静态原型误报为已上线实现</span>
+    </footer>
+  </div>
+</body>
+</html>

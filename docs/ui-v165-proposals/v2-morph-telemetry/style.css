@@ -1,0 +1,190 @@
+/* V2 态变遥测（Morph Telemetry）
+ * 运动语法：形变主导 | 信息节奏：过程可视 | 数据呈现：时间轴
+ * 动效令牌：120ms / 200ms / 320ms；缓动 cubic-bezier(0.34, 1.32, 0.64, 1)；stagger 36ms
+ */
+:root {
+  --ease-main: cubic-bezier(0.34, 1.32, 0.64, 1);
+}
+
+.jg-stagger-1 { animation-delay: 36ms; }
+.jg-stagger-2 { animation-delay: 72ms; }
+.jg-stagger-3 { animation-delay: 108ms; }
+.jg-stagger-4 { animation-delay: 144ms; }
+
+/* 形变主导页面转场（缩放形变前进/后退区分，320ms） */
+.jg-main.is-enter-fwd {
+  animation: v2-morph-fwd 320ms cubic-bezier(0.34, 1.32, 0.64, 1) forwards;
+}
+
+.jg-main.is-enter-back {
+  animation: v2-morph-back 320ms cubic-bezier(0.34, 1.32, 0.64, 1) forwards;
+}
+
+@keyframes v2-morph-fwd {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes v2-morph-back {
+  from { opacity: 0; transform: scale(1.04) translateY(-6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* 顶部胶囊形变切换（无底部栏，释放垂直时间轴视口） */
+.v2-top-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.v2-nav-row {
+  display: flex;
+  gap: 5px;
+}
+
+.v2-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-mid);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms cubic-bezier(0.34, 1.32, 0.64, 1), opacity 200ms ease;
+}
+
+.v2-nav-btn.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+  border-radius: 10px;
+}
+
+/* V2 招牌动效：PB 遥测数据卡 3D Y 轴立体翻面（520ms） */
+.v2-flip-scene {
+  perspective: 900px;
+  width: 100%;
+}
+
+.v2-flip-card {
+  position: relative;
+  width: 100%;
+  min-height: 192px;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.34, 1.24, 0.64, 1);
+}
+
+.v2-flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.v2-flip-face {
+  width: 100%;
+  min-height: 192px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--orange);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.v2-flip-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface-2);
+  border-left-color: var(--orange-glow);
+  transform: rotateY(180deg);
+}
+
+.v2-pb-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.v2-big-num {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--orange-glow);
+  line-height: 1.1;
+}
+
+/* 过程可视：垂直橙色节点时间轴 */
+.v2-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 16px;
+  border-left: 2px solid var(--line);
+  margin-left: 6px;
+}
+
+.v2-tl-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v2-tl-dot {
+  position: absolute;
+  left: -23px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--deep);
+  border: 2.5px solid var(--line);
+}
+
+.v2-tl-item.is-now .v2-tl-dot {
+  background: var(--orange);
+  border-color: var(--orange-glow);
+  box-shadow: 0 0 0 4px rgba(238, 131, 0, 0.26);
+}
+
+.v2-tl-body {
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.v1-pulse-ring {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--orange);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jg-map-box.is-pulsing .v1-pulse-1 {
+  animation: v2-morph-ring 520ms cubic-bezier(0.34, 1.32, 0.64, 1) forwards;
+}
+
+@keyframes v2-morph-ring {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+.v3-raster-beam {
+  display: none;
+}

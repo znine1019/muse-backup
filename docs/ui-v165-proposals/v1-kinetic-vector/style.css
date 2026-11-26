@@ -1,0 +1,172 @@
+/* V1 矢量竞速（Kinetic Vector）
+ * 运动语法：位移主导 | 信息节奏：结论先行 | 数据呈现：仪表盘
+ * 动效令牌：120ms / 200ms / 320ms；缓动 cubic-bezier(0.22, 1, 0.36, 1)；stagger 32ms
+ */
+:root {
+  --ease-main: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v1-shell {
+  padding-bottom: 108px;
+}
+
+/* 方向性页面切换（前进左滑入 / 后退右滑入，300ms） */
+.jg-main.is-enter-fwd {
+  animation: v1-slide-fwd 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.jg-main.is-enter-back {
+  animation: v1-slide-back 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes v1-slide-fwd {
+  from { opacity: 0; transform: translateX(26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes v1-slide-back {
+  from { opacity: 0; transform: translateX(-26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 结论先行：驾驶舱仪表盘卡 */
+.v1-cockpit {
+  background: linear-gradient(145deg, var(--surface) 0%, var(--void) 100%);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--orange);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(6, 14, 24, 0.32);
+}
+
+body.is-daylight .v1-cockpit {
+  background: linear-gradient(145deg, #FFFFFF 0%, #E6EEF7 100%);
+  box-shadow: 0 4px 12px rgba(11, 23, 40, 0.12);
+}
+
+.v1-cockpit-nums {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.v1-big-num {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--orange-glow);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+/* 双列 Flex 快捷指令面板 */
+.v1-quick-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.v1-quick-btn {
+  flex: 1 1 46%;
+  min-width: 44px;
+  min-height: 52px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-hi);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v1-quick-btn:active {
+  transform: translateX(3px);
+}
+
+/* V1 招牌动效：打卡成功三层赛道光环扩散（560ms） */
+.v1-pulse-ring {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2.5px solid var(--orange);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.jg-map-box.is-pulsing .v1-pulse-1 {
+  animation: v1-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 0ms forwards;
+}
+
+.jg-map-box.is-pulsing .v1-pulse-2 {
+  animation: v1-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 110ms forwards;
+}
+
+.jg-map-box.is-pulsing .v1-pulse-3 {
+  animation: v1-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 220ms forwards;
+}
+
+@keyframes v1-ring-burst {
+  0% { transform: scale(0.45); opacity: 0.95; }
+  100% { transform: scale(2.45); opacity: 0; }
+}
+
+/* 底部页内区块跳转栏（小程序无原生 tabBar，此为页面内跳转控件） */
+.v1-jump-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 100%;
+  max-width: 430px;
+  background: var(--void);
+  border-top: 1px solid var(--line);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 30;
+}
+
+.v1-jump-row {
+  display: flex;
+  gap: 5px;
+}
+
+.v1-nav-btn {
+  flex: 1;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-mid);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v1-nav-btn.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--on-orange);
+}
+
+.v3-raster-beam {
+  display: none;
+}
