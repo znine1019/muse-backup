@@ -35,6 +35,7 @@ const REVOCABLE_PARENT_LINK_STATUSES = Object.freeze([
 ]);
 const MAX_ACCOUNT_DELETION_RELATIONS = 40;
 const ADMIN_GUARD_DOC_ID = 'bootstrap';
+const MAX_ADMIN_USER_LIST = 1000;
 
 function createUserAdminActions({ repository }) {
   async function loadDeveloperActorInTransaction(transaction, actorUserId) {
@@ -527,9 +528,115 @@ function createUserAdminActions({ repository }) {
     return { roleBindings, memberships, parentLinks, pendingReviews, profiles };
   }
 
+  async function loadUserDeletionRelationsInTransaction(transaction, targetUser) {
+    const userId = targetUser._id;
+    const parentStatuses = repository.db.command.in(REVOCABLE_PARENT_LINK_STATUSES);
+    const [
+      roleBindingsResult,
+      membershipsResult,
+      linksAsParentResult,
+      linksAsStudentResult,
+      pendingReviewsResult
+    ] = await Promise.all([
+      transaction
+        .collection(COLLECTIONS.ROLE_BINDINGS)
+        .where({ userId, status: 'active' })
+        .limit(MAX_ACCOUNT_DELETION_RELATIONS + 1)
+        .get(),
+      transaction
+        .collection(COLLECTIONS.GROUP_MEMBERSHIPS)
+        .where({ userId, status: MEMBERSHIP_STATUS.ACTIVE })
+        .limit(MAX_ACCOUNT_DELETION_RELATIONS + 1)
+        .get(),
+      transaction
+        .collection(COLLECTIONS.PARENT_LINKS)
+        .where({
+          parentUserId: userId,
+          kind: PARENT_LINK_KIND.RELATION,
+          status: parentStatuses
+        })
+        .limit(MAX_ACCOUNT_DELETION_RELATIONS + 1)
+        .get(),
+      transaction
+        .collection(COLLECTIONS.PARENT_LINKS)
+        .where({
+          studentUserId: userId,
+          kind: PARENT_LINK_KIND.RELATION,
+          status: parentStatuses
+        })
+        .limit(MAX_ACCOUNT_DELETION_RELATIONS + 1)
+        .get(),
+      transaction
+        .collection(COLLECTIONS.REGISTRATION_REVIEWS)
+        .where({ userId, status: 'pending' })
+        .limit(MAX_ACCOUNT_DELETION_RELATIONS + 1)
+        .get()
+    ]);
+    const parentLinks = Array.from(
+      new Map(
+        (linksAsParentResult.data || [])
+          .concat(linksAsStudentResult.data || [])
+          .map((link) => [link._id, link])
+      ).values()
+    );
+    const profileSpecs = [
+      {
+        collectionName: COLLECTIONS.STUDENT_PROFILES,
+        profileId: repository.profileIdForUser(userId)
+      },
+      {
+        collectionName: COLLECTIONS.PARENT_PROFILES,
+        profileId: repository.parentProfileIdForUser(userId)
+      },
+      {
+        collectionName: COLLECTIONS.COACH_PROFILES,
+        profileId: repository.coachProfileIdForUser(userId)
+      }
+    ];
+    const profiles = [];
+    for (const spec of profileSpecs) {
+      const profile = await getDocumentOrNull(
+        transaction.collection(spec.collectionName).doc(spec.profileId)
+      );
+      if (profile) {
+        profiles.push({ ...profile, collectionName: spec.collectionName });
+      }
+    }
+    const mutableRelationCount =
+      (roleBindingsResult.data || []).length +
+      (membershipsResult.data || []).length +
+      parentLinks.length +
+      (pendingReviewsResult.data || []).length +
+      profiles.filter((profile) => profile.reviewStatus === 'pending').length;
+    if (mutableRelationCount > MAX_ACCOUNT_DELETION_RELATIONS) {
+      fail(
+        'ACCOUNT_DELETION_RELATION_LIMIT',
+        '账号待处理关联过多，请先由开发者人工清理关联后再删除。'
+      );
+    }
+    return {
+      roleBindings: roleBindingsResult.data || [],
+      memberships: membershipsResult.data || [],
+      parentLinks,
+      pendingReviews: pendingReviewsResult.data || [],
+      profiles,
+      mutableRelationCount
+    };
+  }
+
   async function listUsers({ identity }) {
     await loadActiveActor(repository, identity, [ROLES.DEVELOPER]);
-    const allUsers = await repository.queryAll(repository.userCollection, null, 300);
+    const allUsers = await repository.queryAll(
+      repository.userCollection,
+      null,
+      MAX_ADMIN_USER_LIST + 1
+    );
+    if (allUsers.length > MAX_ADMIN_USER_LIST) {
+      fail(
+        'USER_LIST_LIMIT_EXCEEDED',
+        '用户数量超过当前管理页安全上限，请先启用分页后再操作。'
+      );
+    }
     const users = allUsers
       .filter((user) => user.status !== USER_STATUS.DELETED)
       .sort((left, right) => {
@@ -544,8 +651,8 @@ function createUserAdminActions({ repository }) {
       repository.getCoachProfilesMap(userIds)
     ]);
 
-    return {
-      users: users.map((user) => {
+    const projectedUsers = users
+      .map((user) => {
         const roles = Array.isArray(user.roles) ? user.roles : [];
         const pendingProfileType = user.pendingProfileType || '';
         const studentProfile = studentProfiles.get(user._id) || null;
@@ -591,6 +698,11 @@ function createUserAdminActions({ repository }) {
           updatedAt: user.updatedAt || null
         };
       }).filter((entry) => entry.hasRealName)
+    return {
+      users: projectedUsers,
+      totalVisible: projectedUsers.length,
+      limit: MAX_ADMIN_USER_LIST,
+      truncated: false
     };
   }
 
@@ -647,8 +759,18 @@ function createUserAdminActions({ repository }) {
       if ((currentUser.roles || []).includes(ROLES.DEVELOPER)) {
         fail('DEVELOPER_DELETE_FORBIDDEN', '合法开发者账号受保护，不能删除。');
       }
+      const transactionRelations = await loadUserDeletionRelationsInTransaction(
+        transaction,
+        currentUser
+      );
+      if (!input.acknowledgeAssociations && transactionRelations.mutableRelationCount > 0) {
+        fail(
+          'ACCOUNT_ASSOCIATIONS_REQUIRE_ACK',
+          '该账号存在业务关联，确认关联影响后才能删除。'
+        );
+      }
 
-      for (const binding of deletionRelations.roleBindings) {
+      for (const binding of transactionRelations.roleBindings) {
         const reference = transaction
           .collection(COLLECTIONS.ROLE_BINDINGS)
           .doc(binding._id);
@@ -667,7 +789,7 @@ function createUserAdminActions({ repository }) {
         });
       }
 
-      for (const membership of deletionRelations.memberships) {
+      for (const membership of transactionRelations.memberships) {
         const reference = transaction
           .collection(COLLECTIONS.GROUP_MEMBERSHIPS)
           .doc(membership._id);
@@ -686,7 +808,7 @@ function createUserAdminActions({ repository }) {
         });
       }
 
-      for (const link of deletionRelations.parentLinks) {
+      for (const link of transactionRelations.parentLinks) {
         const reference = transaction
           .collection(COLLECTIONS.PARENT_LINKS)
           .doc(link._id);
@@ -705,7 +827,7 @@ function createUserAdminActions({ repository }) {
         });
       }
 
-      for (const profile of deletionRelations.profiles) {
+      for (const profile of transactionRelations.profiles) {
         if (profile.reviewStatus !== 'pending') {
           continue;
         }
@@ -726,7 +848,7 @@ function createUserAdminActions({ repository }) {
         });
       }
 
-      for (const review of deletionRelations.pendingReviews) {
+      for (const review of transactionRelations.pendingReviews) {
         const reference = transaction
           .collection(COLLECTIONS.REGISTRATION_REVIEWS)
           .doc(review._id);

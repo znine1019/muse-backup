@@ -239,6 +239,50 @@ function createGroupAdminActions({ repository }) {
     return { impact: await buildTrainingGroupDeletionImpact(group) };
   }
 
+  // Transaction operation budget for deleteTrainingGroup:
+  // 1 group read + up to 12 blocking-collection limit(1) reads + 1 group update + 1 audit set
+  // = at most 15 operations (<= 20, well below CloudBase's 100-operation transaction limit).
+  async function assertNoBlockingAssociationsInTransaction(transaction, groupId) {
+    const containsGroupId = repository.db.command.in([groupId]);
+    const blockingQueries = [
+      { collectionName: COLLECTIONS.GROUP_MEMBERSHIPS, where: { groupId } },
+      {
+        collectionName: COLLECTIONS.STUDENT_PROFILES,
+        where: { requestedTrainingGroupId: groupId }
+      },
+      {
+        collectionName: COLLECTIONS.REGISTRATION_REVIEWS,
+        where: { requestedTrainingGroupId: groupId }
+      },
+      { collectionName: COLLECTIONS.PERFORMANCE_RECORDS, where: { trainingGroupId: groupId } },
+      { collectionName: COLLECTIONS.TRAINING_PLANS, where: { trainingGroupId: groupId } },
+      { collectionName: COLLECTIONS.ATTENDANCE_SESSIONS, where: { trainingGroupId: groupId } },
+      { collectionName: COLLECTIONS.ATTENDANCE_RECORDS, where: { trainingGroupId: groupId } },
+      { collectionName: COLLECTIONS.LEAVE_REQUESTS, where: { trainingGroupId: groupId } },
+      { collectionName: COLLECTIONS.COMPETITIONS, where: { trainingGroupIds: containsGroupId } },
+      {
+        collectionName: COLLECTIONS.COMPETITION_REGISTRATIONS,
+        where: { trainingGroupIds: containsGroupId }
+      },
+      { collectionName: COLLECTIONS.CLUB_NOTICES, where: { trainingGroupIds: containsGroupId } },
+      { collectionName: COLLECTIONS.TRAINING_FEEDBACK, where: { trainingGroupId: groupId } }
+    ];
+
+    for (const check of blockingQueries) {
+      const result = await transaction
+        .collection(check.collectionName)
+        .where(check.where)
+        .limit(1)
+        .get();
+      if ((result.data || []).length > 0) {
+        fail(
+          'TRAINING_GROUP_HAS_ASSOCIATIONS',
+          '训练组仍有关联成员或历史业务数据，不能删除。'
+        );
+      }
+    }
+  }
+
   async function deleteTrainingGroup({ identity, payload }) {
     const actor = await loadActiveActor(repository, identity, [ROLES.DEVELOPER]);
     const input = validateTrainingGroupDeletionPayload(payload);
@@ -276,6 +320,7 @@ function createGroupAdminActions({ repository }) {
           name: current.name || ''
         };
       }
+      await assertNoBlockingAssociationsInTransaction(transaction, current._id);
       await reference.update({
         data: {
           status: 'deleted',
