@@ -1,7 +1,7 @@
 <view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="乔格训迹"
-    meta="乔格体育数字化训练管理 · V1.6.2"
+    meta="乔格体育数字化训练管理 · V1.6.5"
   />
 
   <view class="jg-note">

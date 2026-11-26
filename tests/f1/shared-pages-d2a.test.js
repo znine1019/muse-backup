@@ -180,7 +180,7 @@ test('F1-D2a index 保留身份识别和登录，不展示健康检查入口', (
   for (const label of ['学生注册', '家长注册', '教练员注册']) {
     assert.ok(wxml.includes(label), `首页缺少注册文字 ${label}`);
   }
-  assert.ok(wxml.includes('V1.6.2'), '本地修复版首页应显示 V1.6.2');
+  assert.ok(wxml.includes('V1.6.5'), '首页应显示当前版本号 V1.6.5');
   assert.ok(!wxml.includes('首次登录会创建待完善账号'), '不得继续展示旧自动建号说明');
   for (const binding of ['session', 'statusLabel', 'actionLabel', 'loading', 'error', 'isUnregistered']) {
     assert.ok(wxml.includes(binding), `index 缺少绑定 ${binding}`);

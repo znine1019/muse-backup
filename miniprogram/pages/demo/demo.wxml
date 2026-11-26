@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <!-- 演示横幅：任何演示视图都常驻显示 -->
   <view class="demo-banner">
     <view class="demo-banner-t">{{demoMarker}}</view>

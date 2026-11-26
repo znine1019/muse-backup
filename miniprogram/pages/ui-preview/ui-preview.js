@@ -163,23 +163,12 @@ Page({
   },
 
   runCountUp(pbTarget, rateTarget, todoTarget) {
-    const steps = 20;
-    const intervalMs = 30; // 20 * 30ms = 600ms
-    let cur = 0;
-    const step = () => {
-      cur += 1;
-      const p = cur / steps;
-      const eased = 1 - Math.pow(1 - p, 3);
-      this.setData({
-        pbDisplay: (pbTarget * eased).toFixed(2),
-        rateDisplay: String(Math.round(rateTarget * eased)),
-        pendingDisplay: String(Math.round(todoTarget * eased))
-      });
-      if (cur < steps) {
-        this.schedule(step, intervalMs);
-      }
-    };
-    step();
+    /* V1.6.5 动效规范：数值形变入场由纯 CSS transform/opacity（.pv-num-roll）驱动，禁止 setData 逐帧循环 */
+    this.setData({
+      pbDisplay: Number(pbTarget || 0).toFixed(2),
+      rateDisplay: String(Math.round(Number(rateTarget || 0))),
+      pendingDisplay: String(Math.round(Number(todoTarget || 0)))
+    });
   },
 
   replayStaggerAndCount() {
