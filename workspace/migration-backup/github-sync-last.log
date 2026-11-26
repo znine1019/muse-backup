@@ -1,6 +1,6 @@
-GitHub 同步：2026-11-25 00:38 UTC+08:00
-暂存：树内文件 1476 个（其中暂存阶段写入 1474 个，另含 SYNC-EXCLUDED.md/README.md），总字节 162307766
-排除：1284 条（见树根 SYNC-EXCLUDED.md）
+GitHub 同步：2026-11-26 00:32 UTC+08:00
+暂存：树内文件 1457 个（其中暂存阶段写入 1455 个，另含 SYNC-EXCLUDED.md/README.md），总字节 162015380
+排除：1299 条（见树根 SYNC-EXCLUDED.md）
 切分：9 个大文件
   - memory/memory.md：38898068 字节，SHA-256 1e510e3b87812bd06a2652ac967d404863bfa0eced24974426414ff714ffda52，20 块
   - memory/bank/reflections.md：4244273 字节，SHA-256 5a7484e2df282a19e933d1c993840cb0b8f711ca58765e567dc9413a2afe604b，3 块
@@ -11,43 +11,7 @@ GitHub 同步：2026-11-25 00:38 UTC+08:00
   - workspace/space-versions/hua-shan-quan-aixun-lian/v4/tree/.space-build-cloudflare/deploy-manifest.json：28671471 字节，SHA-256 bb7e48f45042a2379b42f1d4f9b45a75cb41e53a271bab7b601705f36c1dedba，15 块
   - workspace/space-versions/hua-shan-quan-aixun-lian/v5/tree/.space-build-cloudflare/deploy-manifest.json：9098943 字节，SHA-256 a578d2decc9a7d634905300469978c8ab147cdb695c363216d5d9ce5fb141c82，5 块
   - workspace/ts-spaces/hua-shan-quan-aixun-lian/.space-build-cloudflare/deploy-manifest.json：9098943 字节，SHA-256 a578d2decc9a7d634905300469978c8ab147cdb695c363216d5d9ce5fb141c82，5 块
-比对：已同步状态 1188 条（引导 0 条）；待推送 458 个文件，19 块；本地已删除、不推送删除 130 个路径
-  块 1/19：301 个文件，3988298 字节
-  块 2/19：50 个文件，2711261 字节
-  块 3/19：11 个文件，3917553 字节
-  块 4/19：2 个文件，4000000 字节
-  块 5/19：2 个文件，4000000 字节
-  块 6/19：11 个文件，3430264 字节
-  块 7/19：2 个文件，4000000 字节
-  块 8/19：2 个文件，4000000 字节
-  块 9/19：2 个文件，4000000 字节
-  块 10/19：2 个文件，4000000 字节
-  块 11/19：2 个文件，4000000 字节
-  块 12/19：2 个文件，4000000 字节
-  块 13/19：11 个文件，3002373 字节
-  块 14/19：2 个文件，4000000 字节
-  块 15/19：2 个文件，4000000 字节
-  块 16/19：16 个文件，3429018 字节
-  块 17/19：2 个文件，4000000 字节
-  块 18/19：26 个文件，3943310 字节
-  块 19/19：10 个文件，1409564 字节
-块 1/19 已推送：301 个文件，commit SHA 前16位 c4a6808e2a0c60f0
-块 2/19 已推送：50 个文件，commit SHA 前16位 b75362df11585c0f
-块 3/19 已推送：11 个文件，commit SHA 前16位 0ec4c6a043b57277
-块 4/19 已推送：2 个文件，commit SHA 前16位 27d6a5786ea3db80
-块 5/19 已推送：2 个文件，commit SHA 前16位 d25e7891934a5c0d
-块 6/19 已推送：11 个文件，commit SHA 前16位 78e7800eebfc57b4
-块 7/19 已推送：2 个文件，commit SHA 前16位 5b94e37ebb7f4d09
-块 8/19 已推送：2 个文件，commit SHA 前16位 6c7164b4ec246f19
-块 9/19 已推送：2 个文件，commit SHA 前16位 19a08e78a5cb0c0b
-块 10/19 已推送：2 个文件，commit SHA 前16位 2db8f3801ee39401
-块 11/19 已推送：2 个文件，commit SHA 前16位 ca0fb188513443eb
-块 12/19 已推送：2 个文件，commit SHA 前16位 993c5adffb4adc6d
-块 13/19 已推送：11 个文件，commit SHA 前16位 a6c5a624d6ee46f7
-块 14/19 已推送：2 个文件，commit SHA 前16位 1ce35867ed7232b7
-块 15/19 已推送：2 个文件，commit SHA 前16位 48c8f0c24cb900b3
-块 16/19 已推送：16 个文件，commit SHA 前16位 258eb19a4d0e17ad
-块 17/19 已推送：2 个文件，commit SHA 前16位 9963657b54e80f96
-块 18/19 已推送：26 个文件，commit SHA 前16位 7a936f777fd45a34
-块 19/19 已推送：10 个文件，commit SHA 前16位 8d14b09833da1aaf
-完成：共推送 458 个文件，19 块。
+比对：已同步状态 1606 条（引导 0 条）；待推送 189 个文件，1 块；本地已删除、不推送删除 311 个路径
+  块 1/1：189 个文件，2917561 字节
+块 1/1 已推送：189 个文件，commit SHA 前16位 2135e56ad43a9daa
+完成：共推送 189 个文件，1 块。

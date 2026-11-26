@@ -1,7 +1,7 @@
 ---
 objective_id: goals_bookkeeping
-run_id: sirun_84c9cf09529c4a57a0006e30d09acd7b
-created_at: 2026-11-25T09:41:43.506121051+00:00
+run_id: sirun_10fd2eac116e41e99e5e27f9a6384445
+created_at: 2026-11-26T15:41:17.405522897+00:00
 card_id: goals_bookkeeping
 worker_outcome: insufficient
 ---
@@ -18,4 +18,4 @@ is a framework-owned projection only.
 - Request origin: internal.self_improvement
 - Cadence: 6h
 - Worker outcome: insufficient
-- Subagents spawned: 4
+- Subagents spawned: 1
