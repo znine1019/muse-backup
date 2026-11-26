@@ -848,11 +848,30 @@ button::after { border: none; }
 }
 .jg-swipe-fg { position: relative; z-index: 2; background: var(--jg-surface, #0B1219); transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1); }
 
-/* 12. 减弱动效静态降级（无障碍红线） */
+/* 12. 减弱动效静态降级（无障碍红线；WXSS 禁止通配符 *，显式列举动效类） */
 @media (prefers-reduced-motion: reduce) {
-  .jg-page *,
-  .jg-page *::before,
-  .jg-page *::after {
+  .jg-enter-fwd,
+  .jg-enter-back,
+  .jg-rise,
+  .jg-stagger,
+  .jg-num-roll,
+  .jg-skeleton::after,
+  .jg-skel-shimmer::after,
+  .jg-reveal.is-revealing .jg-reveal-mask,
+  .jg-scan.is-scanning .jg-scan-beam,
+  .jg-flip-inner,
+  .jg-flip-back,
+  .jg-shake,
+  .jg-spin-ring,
+  .jg-ptr-ring,
+  .jg-check-pop,
+  .jg-pulse-ring,
+  .jg-drawer-mask,
+  .jg-drawer-sheet,
+  .jg-swipe-fg,
+  .jg-btn,
+  .jg-tile-in,
+  .jg-jump-chip {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

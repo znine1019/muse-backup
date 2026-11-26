@@ -141,6 +141,7 @@ test('V1.6.5 动效类齐全、曲线统一、禁用 CSS 清零、含减弱动�
     const clean = read(rel).replace(/\/\*[\s\S]*?\*\//g, '');
     assert.doesNotMatch(clean, /display\s*:\s*(inline-)?grid\b/i, `${rel} 禁止 CSS Grid`);
     assert.doesNotMatch(clean, /backdrop-filter|filter\s*:\s*blur|position\s*:\s*sticky/i, `${rel} 禁止 backdrop-filter/blur/sticky`);
+    assert.doesNotMatch(clean, /\*/, `${rel} 禁止 WXSS 通配符选择器 *`);
   }
 });
 

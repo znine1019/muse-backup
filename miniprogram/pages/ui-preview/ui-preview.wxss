@@ -698,9 +698,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pv-page *,
-  .pv-page *::before,
-  .pv-page *::after {
+  .pv-num,
+  .pv-stagger,
+  .pv-skel::after,
+  .pv-reveal,
+  .pv-spinner,
+  .pv-check-ring,
+  .pv-pulse-ring,
+  .pv-flip-card,
+  .pv-flip-back,
+  .pv-raster-beam,
+  .pv-rank-row,
+  .pv-bar-fill,
+  .pv-cta {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
