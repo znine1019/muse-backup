@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="亲子关联"
     meta="生成一次性凭证供家长申请关联；关联需您确认与俱乐部核验"

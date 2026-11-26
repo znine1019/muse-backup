@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="赛事管理"
     meta="记录参赛意向、核对资料和教练办理进度；官方报名由教练在外部赛事平台完成。"

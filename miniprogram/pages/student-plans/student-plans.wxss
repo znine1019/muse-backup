@@ -1,6 +1,6 @@
-/* 学生训练计划（F1-B1）：复用 jg- 设计系统，本文件只保留展开详情的分隔样式 */
+/* 学生训练计划（V1.6.5 黑底白字 + 品牌深蓝） */
 .plan-detail {
   margin-top: 24rpx;
   padding-top: 8rpx;
-  border-top: 2rpx solid #EDF1F6;
+  border-top: 2rpx solid var(--jg-line, #1E2C3A);
 }

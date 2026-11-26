@@ -1,8 +1,8 @@
-/* 考勤管理（F1-C1a）：复用 jg- 设计系统，本文件只保留名单操作布局 */
+/* 考勤管理（V1.6.5 黑底白字 + 品牌深蓝） */
 .attendance-detail {
   margin-top: 24rpx;
   padding-top: 8rpx;
-  border-top: 2rpx solid #EDF1F6;
+  border-top: 2rpx solid var(--jg-line, #1E2C3A);
 }
 
 .roster-row,

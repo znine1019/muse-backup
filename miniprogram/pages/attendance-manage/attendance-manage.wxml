@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="考勤管理"
     meta="管理本人负责训练组的考勤场次与请假审批；定位距离与考勤状态均由服务端计算。"

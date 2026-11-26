@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="选择身份"
     meta="这里只显示服务端会话中已经授权的角色，不提供自行申请或切换未授权角色的入口。"

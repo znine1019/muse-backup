@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="家长注册"
     meta="只需姓名与监护人关系；学生专属资料不需要填写"

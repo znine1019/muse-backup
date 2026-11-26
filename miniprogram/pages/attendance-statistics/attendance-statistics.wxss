@@ -1,4 +1,4 @@
-/* 训练考勤统计与排行（F1-B2）：复用 jg- 设计系统，本文件只保留名次徽标与“本人”高亮 */
+/* 训练考勤统计与排行（V1.6.5 黑底白字 + 品牌深蓝，零橙色残留） */
 
 /* 考勤榜的名次可能是“第 1 名”或“样本不足”，因此徽标用最小宽度而非定宽 */
 .rank-badge {
@@ -8,23 +8,29 @@
   padding: 0 12rpx;
   box-sizing: border-box;
   border-radius: 22rpx;
-  background: #E9F1FB;
-  color: #103A6B;
+  background: var(--jg-brand, #132D49);
+  border: 2rpx solid var(--jg-line, #1E2C3A);
+  color: #FFFFFF;
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   font-size: 24rpx;
   font-weight: 700;
-  line-height: 72rpx;
+  line-height: 68rpx;
   text-align: center;
   margin-right: 20rpx;
 }
 
 .rank-badge-self {
-  background: #FDEDE2;
-  color: #B54A07;
+  background: var(--jg-accent, #2F6FBF);
+  border-color: var(--jg-accent-hi, #7FB2FF);
+  color: #FFFFFF;
 }
 
 .ranking-self {
-  background: #F4F8FE;
+  background: var(--jg-brand, #132D49);
+}
+
+.jg-page.jg-daylight .ranking-self {
+  background: #EDF3F9;
 }

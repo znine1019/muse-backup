@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="统计工作台"
     meta="汇总当前授权范围的成绩、考勤和训练反馈，并导出标准 XLSX 报表。"

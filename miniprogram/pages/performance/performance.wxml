@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="个人最好成绩"
     meta="学生提交后先进入待审核状态，未经教练审核的成绩不会成为正式成绩或进入排行榜。"

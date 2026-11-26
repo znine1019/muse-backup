@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="赛事报名意向"
     meta="小程序仅收集参赛意向和教练办理进度；官方报名由教练在赛事官方平台完成，登记意向不等于官方报名成功。"

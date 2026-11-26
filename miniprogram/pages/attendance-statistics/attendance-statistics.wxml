@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="训练考勤统计与排行"
     meta="出勤率仅基于已结束的有效训练场次；未签到不等同于已核实无故缺勤。"

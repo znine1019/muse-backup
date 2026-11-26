@@ -1,4 +1,4 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="学生首次注册"
     meta="提交后账号进入待审核状态，审核通过前不能访问内部业务功能。"

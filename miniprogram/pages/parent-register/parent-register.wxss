@@ -1,3 +1,3 @@
-/* 家长注册（F1-B3）：复用 jg- 设计系统，仅保留必填标识 */
-.form-req { color: #C0392B; font-weight: 700; }
-.form-opt { color: #94A3B8; font-size: 22rpx; }
+/* 家长注册（V1.6.5 黑底白字 + 品牌深蓝） */
+.form-req { color: var(--jg-danger, #FF6B6B); font-weight: 700; }
+.form-opt { color: var(--jg-text-mid, #B9C6D4); font-size: 22rpx; }
