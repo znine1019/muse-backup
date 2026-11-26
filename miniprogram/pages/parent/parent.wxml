@@ -1,12 +1,15 @@
-<view class="jg-page jg-safe-bottom" scroll-into-view="{{scrollIntoView}}">
+<view class="jg-page jg-dock-pad jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}" scroll-into-view="{{scrollIntoView}}">
   <jg-page-head
     title="家长工作台"
     meta="仅可查看已授权关联学生的训练情况（只读）"
     role-label="家长"
     role-tone="accent"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
-  <view wx:if="{{error}}" class="jg-state-err">
+  <view wx:if="{{error}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">加载未完成</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>
@@ -35,7 +38,7 @@
   </block>
 
   <block wx:if="{{!loading && students.length}}">
-    <view class="jg-card" id="sec-overview">
+    <view class="jg-card jg-stagger jg-stagger-0" id="sec-overview">
       <view class="jg-card-h"><text class="jg-card-t">关联学生</text><text class="jg-card-c">共 {{students.length}} 人</text></view>
       <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="onStudentChange">
         <view class="jg-input jg-picker">{{students[studentIndex].name}}</view>
@@ -43,76 +46,107 @@
       <view class="jg-sub jg-mt-8">{{students[studentIndex].primaryEventName || '未填写主项'}} · 训练组：{{students[studentIndex].trainingGroupNames.length ? students[studentIndex].trainingGroupNames[0] : '未标注'}}</view>
     </view>
 
-    <view wx:if="{{overview}}" class="jg-data-card">
+    <!-- V2 区块遮罩揭示：切换关联学生时局部揭示，严格只读 -->
+    <view class="jg-reveal {{scopeRevealing ? 'is-revealing' : ''}}">
+      <view class="jg-reveal-mask"></view>
+      <view wx:if="{{overview}}" class="jg-stagger jg-stagger-1">
+        <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看出勤摘要" back-action-text="翻回 PB 结论">
+          <view slot="front">
+            <view class="jg-flex-between">
+              <view class="jg-flex-1">
+                <view class="jg-data-k">个人最好成绩 PB（只读）</view>
+                <block wx:if="{{overview.performance.personalBests.length}}">
+                  <view class="jg-data-v">
+                    <text class="jg-data-num jg-num-roll">{{overview.performance.personalBests[0].value}}</text>
+                    <text class="jg-data-unit">{{overview.performance.personalBests[0].unit}}</text>
+                  </view>
+                  <view class="jg-data-meta">{{overview.performance.personalBests[0].eventName}} · 教练已审核的正式成绩</view>
+                </block>
+                <view wx:else class="jg-data-meta">暂无已审核的正式成绩</view>
+              </view>
+              <view class="jg-ml-16">
+                <jg-stat-ring
+                  percent="{{attendanceRatePercent}}"
+                  value-text="{{attendanceRateText}}"
+                  label="本月出勤"
+                  empty="{{overview.attendance.actualExpected === 0}}"
+                  daylight="{{uiDaylight}}"
+                />
+              </view>
+            </view>
+            <view class="jg-data-foot">
+              <text class="jg-data-chip">已审核成绩 {{overview.performance.approvedCount}} 条</text>
+            </view>
+          </view>
+          <view slot="back">
+            <view class="jg-data-k">本月训练出勤摘要（只读）</view>
+            <view class="jg-data-meta jg-mt-8">有效出勤 {{overview.attendance.validAttendance}} / 应签到 {{overview.attendance.actualExpected}}</view>
+            <view class="jg-data-meta">迟到 {{overview.attendance.late}} · 未签到 {{overview.attendance.absent}} · 已批准请假 {{overview.attendance.approvedLeave}}</view>
+            <view class="jg-data-meta">待核实 {{overview.attendance.pendingVerification}} · 仅展示教练审核通过的正式记录</view>
+          </view>
+        </jg-flip-card>
+      </view>
 
-      <view class="jg-data-k">个人最好成绩 PB</view>
-      <block wx:if="{{overview.performance.personalBests.length}}">
-        <view class="jg-data-v">
-          <text class="jg-data-num">{{overview.performance.personalBests[0].value}}</text>
-          <text class="jg-data-unit">{{overview.performance.personalBests[0].unit}}</text>
+      <view wx:if="{{overview}}" class="jg-kpi-row">
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">本月有效出勤</view>
+          <view class="jg-kpi-v jg-num-roll">{{overview.attendance.validAttendance}}</view>
+          <view class="jg-kpi-s">应签到 {{overview.attendance.actualExpected}} · 迟到 {{overview.attendance.late}} · 未签到 {{overview.attendance.absent}}</view>
         </view>
-        <view class="jg-data-meta">{{overview.performance.personalBests[0].eventName}} · 教练已审核的正式成绩</view>
-      </block>
-      <view wx:else class="jg-data-meta">暂无已审核的正式成绩</view>
-      <view class="jg-data-foot">
-        <text class="jg-data-chip">已审核成绩 {{overview.performance.approvedCount}} 条</text>
-      </view>
-    </view>
-
-    <view wx:if="{{overview}}" class="jg-kpi-row">
-      <view class="jg-kpi">
-        <view class="jg-kpi-l">本月有效出勤</view>
-        <view class="jg-kpi-v">{{overview.attendance.validAttendance}}</view>
-        <view class="jg-kpi-s">应签到 {{overview.attendance.actualExpected}} · 迟到 {{overview.attendance.late}} · 未签到 {{overview.attendance.absent}}</view>
-      </view>
-      <view class="jg-kpi">
-        <view class="jg-kpi-l">已批准请假</view>
-        <view class="jg-kpi-v">{{overview.attendance.approvedLeave}}</view>
-        <view class="jg-kpi-s">待核实 {{overview.attendance.pendingVerification}}</view>
+        <view class="jg-kpi">
+          <view class="jg-kpi-l">已批准请假</view>
+          <view class="jg-kpi-v jg-num-roll">{{overview.attendance.approvedLeave}}</view>
+          <view class="jg-kpi-s">待核实 {{overview.attendance.pendingVerification}}</view>
+        </view>
       </view>
     </view>
 
     <view class="jg-sect" id="sec-plans">
       <view class="jg-sect-h"><text class="jg-sect-t">训练计划（本月）</text><text class="jg-sect-c">{{planItems.length}} 份</text></view>
       <jg-empty wx:if="{{!planItems.length}}" title="暂无训练安排" message="教练发布训练计划后会显示在这里。" />
-      <view wx:else class="jg-list">
-        <view wx:for="{{planItems}}" wx:key="planId" class="plan-block">
-          <view
-            class="jg-row plan-row"
-            hover-class="jg-row-hover"
-            data-plan-id="{{item.planId}}"
-            bindtap="togglePlanDetail"
-          >
-            <view class="jg-row-main">
-              <view class="jg-row-t">{{item.title}}</view>
-              <view class="jg-row-m">{{item.startDate}} 至 {{item.endDate}} · {{item.itemCount}} 项内容</view>
-            </view>
-            <view class="jg-row-e">
-              <text class="plan-toggle">{{expandedPlanId === item.planId ? '收起' : '查看'}}</text>
-              <text class="jg-chev">{{expandedPlanId === item.planId ? '▾' : '›'}}</text>
-            </view>
-          </view>
-
-          <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
-            <view wx:if="{{item.items.length}}">
+      <view wx:else class="jg-timeline">
+        <view wx:for="{{planItems}}" wx:key="planId" class="jg-tl-item">
+          <view class="jg-tl-dot"></view>
+          <view class="jg-list">
+            <view class="plan-block">
               <view
-                wx:for="{{item.items}}"
-                wx:for-item="trainingItem"
-                wx:key="key"
-                class="jg-row plan-item"
+                class="jg-row plan-row"
+                hover-class="jg-row-hover"
+                data-plan-id="{{item.planId}}"
+                bindtap="togglePlanDetail"
               >
-                <view class="jg-row-ic jg-row-ic-brand">{{index + 1}}</view>
                 <view class="jg-row-main">
-                  <view class="jg-row-t">{{trainingItem.name}}</view>
-                  <view wx:if="{{trainingItem.requirementText}}" class="jg-row-m">{{trainingItem.requirementText}}</view>
+                  <view class="jg-row-t">{{item.title}}</view>
+                  <view class="jg-row-m">{{item.startDate}} 至 {{item.endDate}} · {{item.itemCount}} 项内容</view>
+                </view>
+                <view class="jg-row-e">
+                  <text class="plan-toggle">{{expandedPlanId === item.planId ? '收起' : '查看'}}</text>
+                  <text class="jg-chev">{{expandedPlanId === item.planId ? '▾' : '›'}}</text>
                 </view>
               </view>
-            </view>
-            <view wx:else class="jg-sub">当前接口未返回可展示的训练明细。</view>
 
-            <view wx:if="{{item.hasTruncatedItems}}" class="jg-note jg-note-warn">
-              <view>
-                <view class="jg-note-m">当前仅展示前 {{item.items.length}} 项，共 {{item.itemCount}} 项；这不是完整详情。</view>
+              <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
+                <view wx:if="{{item.items.length}}">
+                  <view
+                    wx:for="{{item.items}}"
+                    wx:for-item="trainingItem"
+                    wx:key="key"
+                    class="jg-row plan-item"
+                  >
+                    <view class="jg-row-ic jg-row-ic-brand">{{index + 1}}</view>
+                    <view class="jg-row-main">
+                      <view class="jg-row-t">{{trainingItem.name}}</view>
+                      <view wx:if="{{trainingItem.requirementText}}" class="jg-row-m">{{trainingItem.requirementText}}</view>
+                    </view>
+                  </view>
+                </view>
+                <view wx:else class="jg-sub">当前接口未返回可展示的训练明细。</view>
+
+                <view wx:if="{{item.hasTruncatedItems}}" class="jg-note jg-note-warn">
+                  <view>
+                    <view class="jg-note-m">当前仅展示前 {{item.items.length}} 项，共 {{item.itemCount}} 项；这不是完整详情。</view>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
@@ -211,4 +245,12 @@
       </view>
     </view>
   </view>
+
+  <!-- V1.6.5 单排 5 项页内跳转坞（只读跳转） -->
+  <jg-action-dock
+    items="{{dockItems}}"
+    active-key="{{activeSection || 'overview'}}"
+    daylight="{{uiDaylight}}"
+    bind:select="onDockSelect"
+  />
 </view>

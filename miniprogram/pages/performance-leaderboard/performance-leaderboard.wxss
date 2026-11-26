@@ -1,28 +1,35 @@
-/* 正式成绩排行榜（F1-B2）：复用 jg- 设计系统，本文件只保留名次徽标与“本人”高亮 */
+/* 正式成绩排行榜（V1.6.5 黑底白字 + 品牌深蓝，零橙色残留） */
 
 .rank-badge {
   flex: 0 0 auto;
   width: 72rpx;
   height: 72rpx;
   border-radius: 22rpx;
-  background: #E9F1FB;
-  color: #103A6B;
+  background: var(--jg-brand, #132D49);
+  border: 2rpx solid var(--jg-line, #1E2C3A);
+  color: #FFFFFF;
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   font-size: 28rpx;
   font-weight: 700;
-  line-height: 72rpx;
+  line-height: 68rpx;
   text-align: center;
   margin-right: 20rpx;
+  box-sizing: border-box;
 }
 
 .rank-badge-self {
-  background: #FDEDE2;
-  color: #B54A07;
+  background: var(--jg-accent, #2F6FBF);
+  border-color: var(--jg-accent-hi, #7FB2FF);
+  color: #FFFFFF;
 }
 
-/* 本人所在行：浅蓝底高亮（位于页面样式，晚于 app.wxss 生效） */
+/* 本人所在行：品牌深蓝底高亮 */
 .ranking-self {
-  background: #F4F8FE;
+  background: var(--jg-brand, #132D49);
+}
+
+.jg-page.jg-daylight .ranking-self {
+  background: #EDF3F9;
 }

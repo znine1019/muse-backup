@@ -357,7 +357,7 @@ test('F1-A 学生首页保留原有 6 个常用入口且路由处理器不变', 
 
   const tiles = wxml.match(/class="jg-tile jg-tile-[a-z]+"/g) || [];
   assert.equal(tiles.length, 6, `学生常用入口应保持 6 个（实际 ${tiles.length}）`);
-  assert.match(wxml, /class="jg-tiles-3"/, '学生首页应采用两行三列布局');
+  assert.match(wxml, /class="jg-tiles"/, '学生首页应采用 V1 双列快捷面板布局');
 
   /* 6 个入口之外，"全部功能"与退出必须仍在 */
   assert.match(wxml, /bindtap="goAllFeatures"/, '学生首页应保留全部功能入口');

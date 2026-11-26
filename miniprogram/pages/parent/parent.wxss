@@ -1,8 +1,8 @@
-/* 家长工作台（V1.6 功能补全）：复用阶段7-1 jg- 设计系统 */
+/* 家长工作台（V1.6.5 黑底白字 + 品牌深蓝，严格只读） */
 .jg-page .jg-card-t { word-break: break-all; }
 
 .plan-block {
-  border-bottom: 2rpx solid #EDF1F6;
+  border-bottom: 2rpx solid var(--jg-line, #1E2C3A);
 }
 
 .plan-block:last-child {
@@ -14,14 +14,14 @@
 }
 
 .plan-toggle {
-  color: #17509E;
+  color: var(--jg-accent-hi, #7FB2FF);
   font-size: 24rpx;
   font-weight: 700;
 }
 
 .plan-detail {
   padding: 0 28rpx 24rpx;
-  background: #F7F9FC;
+  background: var(--jg-surface-2, #101A24);
 }
 
 .plan-item {

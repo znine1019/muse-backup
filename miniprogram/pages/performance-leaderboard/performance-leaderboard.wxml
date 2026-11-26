@@ -1,12 +1,15 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="正式成绩排行榜"
     meta="只使用审核通过的正式成绩，按实际成绩发生日期归属统计周期。"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">排行榜加载失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>
@@ -96,12 +99,13 @@
         message="只有教练审核通过的成绩才会进入排行榜。"
       />
 
-      <view wx:else class="jg-list">
-        <view wx:for="{{rows}}" wx:key="studentUserId" class="jg-row {{item.isSelf ? 'ranking-self' : ''}}">
+      <view wx:else class="jg-list jg-scan {{rankScanning ? 'is-scanning' : ''}}">
+        <view class="jg-scan-beam"></view>
+        <view wx:for="{{rows}}" wx:key="studentUserId" class="jg-row jg-stagger {{item.isSelf ? 'ranking-self' : ''}}">
           <view class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">{{item.rank}}</view>
           <view class="jg-row-main">
             <view class="jg-row-t">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
-            <view class="jg-row-m">周期最好成绩：{{item.valueText}} · {{item.achievedAt}}</view>
+            <view class="jg-row-m">周期最好成绩：<text class="jg-num-roll">{{item.valueText}}</text> · {{item.achievedAt}}</view>
             <view class="jg-row-m">训练组：{{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}} · 教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}}</view>
             <view class="jg-row-m">历史PB（不参与本周期排名）：{{item.historicalText}}</view>
           </view>

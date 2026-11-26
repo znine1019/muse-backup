@@ -52,12 +52,27 @@ Page({
     categories: [],
     groups: [],
     groupIndex: 0,
-    items: []
+    items: [],
+    uiDaylight: false,
+    focusedField: ''
   },
 
   onLoad(options) {
     this.setData({ planId: options.planId || '' });
     this.loadPage();
+  },
+
+  onToggleDaylight() {
+    this.setData({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onFieldFocus(event) {
+    const field = (event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.field) || '';
+    this.setData({ focusedField: field });
+  },
+
+  onFieldBlur() {
+    this.setData({ focusedField: '' });
   },
 
   async loadPage() {

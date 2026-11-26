@@ -203,7 +203,15 @@ Page({
     deletingGroupId: '',
     actionError: '',
     demoAvailable: false,
-    canSwitchCoach: false
+    canSwitchCoach: false,
+    uiDaylight: false,
+    dockItems: [
+      { key: 'home', label: '概览' },
+      { key: 'review', label: '审绩' },
+      { key: 'attendance', label: '考勤' },
+      { key: 'stats', label: '统计' },
+      { key: 'all', label: '全部' }
+    ]
   },
 
   onShow() {
@@ -1261,6 +1269,29 @@ Page({
       this.decorateGroupCoachNames();
     } catch (error) {
       this.controllerSetIfChanged({ actionError: error.message || '教练范围设置失败。' });
+    }
+  },
+
+  onToggleDaylight() {
+    this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onDockSelect(event) {
+    const key = event && event.detail && event.detail.key;
+    if (key === 'home') {
+      if (typeof wx.pageScrollTo === 'function') {
+        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
+      }
+      return;
+    }
+    if (key === 'review') {
+      this.goPerformanceReview();
+    } else if (key === 'attendance') {
+      this.goAttendanceManage();
+    } else if (key === 'stats') {
+      this.goStatsWorkbench();
+    } else if (key === 'all') {
+      this.goAllFeatures();
     }
   },
 

@@ -122,7 +122,15 @@ Page({
       error: '',
       notice: '',
       actionLabel: '完善实名资料'
-    }
+    },
+    uiDaylight: false,
+    dockItems: [
+      { key: 'home', label: '工作台' },
+      { key: 'attendance', label: '考勤' },
+      { key: 'plans', label: '计划' },
+      { key: 'review', label: '审核' },
+      { key: 'stats', label: '统计' }
+    ]
   },
 
   onShow() {
@@ -436,14 +444,20 @@ Page({
       () => api.getAttendanceRoster(sessionId),
       (result) => {
         const summary = result.summary || {};
+        const expected = Number(summary.expected) || 0;
+        const checkedIn = Number(summary.checkedIn) || 0;
+        const late = Number(summary.late) || 0;
+        const ratePercent = expected > 0 ? Math.min(100, Math.round(((checkedIn + late) / expected) * 100)) : 0;
         this.controllerSetIfChanged({
           rosterSummary: {
-            expected: Number(summary.expected) || 0,
-            checkedIn: Number(summary.checkedIn) || 0,
-            late: Number(summary.late) || 0,
+            expected,
+            checkedIn,
+            late,
             leaveApproved: Number(summary.leaveApproved) || 0,
             pendingVerification: Number(summary.pendingVerification) || 0,
-            pending: Number(summary.pending) || 0
+            pending: Number(summary.pending) || 0,
+            ratePercent,
+            rateText: expected > 0 ? `${ratePercent}%` : '—'
           }
         });
       }
@@ -618,6 +632,29 @@ Page({
 
   retryCompetitions() {
     return this.loadAll({ silent: true, force: true });
+  },
+
+  onToggleDaylight() {
+    this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onDockSelect(event) {
+    const key = event && event.detail && event.detail.key;
+    if (key === 'home') {
+      if (typeof wx.pageScrollTo === 'function') {
+        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
+      }
+      return;
+    }
+    if (key === 'attendance') {
+      this.goAttendanceManage();
+    } else if (key === 'plans') {
+      this.goPlans();
+    } else if (key === 'review') {
+      this.goPerformanceReview();
+    } else if (key === 'stats') {
+      this.goStatsWorkbench();
+    }
   },
 
   /* 待办行只做跳转，不做写入；跳转前标记返回时刷新待办 */

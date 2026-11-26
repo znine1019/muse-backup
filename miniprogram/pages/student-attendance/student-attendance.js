@@ -53,11 +53,47 @@ Page({
     leaveReason: '',
     submitting: false,
     busySessionId: '',
-    busyLeaveId: ''
+    busyLeaveId: '',
+    uiDaylight: false,
+    checkInPulsing: false
   },
 
   onShow() {
     this.loadPage();
+  },
+
+  onHide() {
+    this.clearPulseTimer();
+  },
+
+  onUnload() {
+    this.clearPulseTimer();
+  },
+
+  clearPulseTimer() {
+    if (this._pulseTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._pulseTimer);
+      }
+      this._pulseTimer = null;
+    }
+  },
+
+  triggerPulse() {
+    this.clearPulseTimer();
+    this.setData({ checkInPulsing: true });
+    if (typeof setTimeout === 'function') {
+      this._pulseTimer = setTimeout(() => {
+        this._pulseTimer = null;
+        this.setData({ checkInPulsing: false });
+      }, 640);
+    } else {
+      this.setData({ checkInPulsing: false });
+    }
+  },
+
+  onToggleDaylight() {
+    this.setData({ uiDaylight: !this.data.uiDaylight });
   },
 
   async loadPage() {
@@ -157,6 +193,7 @@ Page({
           ? `已存在签到记录：${statusLabel}`
           : `签到结果：${statusLabel}`
       });
+      this.triggerPulse();
     } catch (error) {
       this.setData({
         busySessionId: '',

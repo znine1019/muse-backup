@@ -3,6 +3,8 @@
   "enablePullDownRefresh": true,
   "usingComponents": {
     "jg-page-head": "/components/jg-page-head/jg-page-head",
-    "jg-empty": "/components/jg-empty/jg-empty"
+    "jg-empty": "/components/jg-empty/jg-empty",
+    "jg-stat-ring": "/components/jg-stat-ring/jg-stat-ring",
+    "jg-action-dock": "/components/jg-action-dock/jg-action-dock"
   }
 }

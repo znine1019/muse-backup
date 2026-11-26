@@ -121,7 +121,16 @@ Page({
     notices: [],
     unreadCount: 0,
     noticeMeta: '',
-    noticeActionText: '查看全部'
+    noticeActionText: '查看全部',
+
+    uiDaylight: false,
+    dockItems: [
+      { key: 'home', label: '首页' },
+      { key: 'attendance', label: '签到' },
+      { key: 'plans', label: '计划' },
+      { key: 'performance', label: '成绩' },
+      { key: 'rank', label: '排行' }
+    ]
   },
 
   onShow() {
@@ -543,6 +552,29 @@ Page({
 
   retryNotices() {
     return this.loadAll({ silent: true, force: true });
+  },
+
+  onToggleDaylight() {
+    this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onDockSelect(event) {
+    const key = event && event.detail && event.detail.key;
+    if (key === 'home') {
+      if (typeof wx.pageScrollTo === 'function') {
+        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
+      }
+      return;
+    }
+    if (key === 'attendance') {
+      this.goAttendance();
+    } else if (key === 'plans') {
+      this.goPlans();
+    } else if (key === 'performance') {
+      this.goPerformance();
+    } else if (key === 'rank') {
+      this.goPerformanceLeaderboard();
+    }
   },
 
   /* 跳转前标记需要刷新：审批/申报等业务完成后返回工作台会强制静默刷新 */

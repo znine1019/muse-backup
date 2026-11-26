@@ -93,7 +93,18 @@ Page({
     expandedPlanId: '',
     jumpItems: [],
     activeSection: '',
-    scrollIntoView: ''
+    scrollIntoView: '',
+    uiDaylight: false,
+    scopeRevealing: false,
+    attendanceRatePercent: 0,
+    attendanceRateText: '—',
+    dockItems: [
+      { key: 'overview', label: '概览' },
+      { key: 'plans', label: '计划' },
+      { key: 'performance', label: '成绩' },
+      { key: 'attendance', label: '考勤' },
+      { key: 'bind', label: '关联' }
+    ]
   },
 
   /* 支持从「全部功能」目录以 ?section=plans 直接定位到对应分区 */
@@ -106,6 +117,39 @@ Page({
 
   onShow() {
     this.loadPage();
+  },
+
+  onHide() {
+    this.clearUiTimers();
+  },
+
+  onUnload() {
+    this.clearUiTimers();
+  },
+
+  clearUiTimers() {
+    if (this._revealTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._revealTimer);
+      }
+      this._revealTimer = null;
+    }
+  },
+
+  onToggleDaylight() {
+    this.setData({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onDockSelect(event) {
+    const key = event && event.detail && event.detail.key;
+    if (key === 'bind') {
+      this.goBind();
+      return;
+    }
+    if (JUMP_KEYS.includes(key)) {
+      this.setData({ activeSection: key });
+      this.scrollToSection(key);
+    }
   },
 
   onPullDownRefresh() {
@@ -161,10 +205,16 @@ Page({
     const expandedPlanId = plans.some((plan) => plan.planId === this.data.expandedPlanId)
       ? this.data.expandedPlanId
       : '';
+    const att = overview.attendance || {};
+    const expected = Number(att.actualExpected) || 0;
+    const valid = Number(att.validAttendance) || 0;
+    const attendanceRatePercent = expected > 0 ? Math.min(100, Math.round((valid / expected) * 100)) : 0;
     this.setData({
       loading: false,
       error: '',
       overview,
+      attendanceRatePercent,
+      attendanceRateText: expected > 0 ? `${attendanceRatePercent}%` : '—',
       planItems: plans,
       performanceRows: ((overview.performance && overview.performance.personalBests) || []).map(
         (item) => ({
@@ -249,7 +299,16 @@ Page({
     if (!student) {
       return;
     }
-    this.setData({ studentIndex: index, expandedPlanId: '' });
+    this.clearUiTimers();
+    this.setData({ studentIndex: index, expandedPlanId: '', scopeRevealing: true });
+    if (typeof setTimeout === 'function') {
+      this._revealTimer = setTimeout(() => {
+        this._revealTimer = null;
+        this.setData({ scopeRevealing: false });
+      }, 300);
+    } else {
+      this.setData({ scopeRevealing: false });
+    }
     this.loadOverview(student.studentUserId);
   },
 

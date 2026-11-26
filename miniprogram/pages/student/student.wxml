@@ -1,24 +1,30 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-dock-pad jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="学生工作台"
     meta="{{headMeta}}"
     role-label="学生"
     role-tone="brand"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
   <!-- 刷新状态条：返回工作台时保留内容并静默刷新，仅在已有数据时显示 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
-    <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    <view class="jg-flex-row">
+      <view wx:if="{{refreshing}}" class="jg-ptr-ring"></view>
+      <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    </view>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
-  <view wx:if="{{sessionError}}" class="jg-state-err">
+  <view wx:if="{{sessionError}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">身份校验未通过</view>
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <!-- 1. 今日训练：进入页面首先回答「今天要做什么」 -->
-  <view class="jg-sect">
+  <!-- 1. 今日训练：进入页面首先回答「今天要做什么」（局部时间轴仅用于今日训练） -->
+  <view class="jg-sect jg-stagger jg-stagger-0">
     <view class="jg-sect-h">
       <text class="jg-sect-t">今日训练</text>
       <text class="jg-sect-c">{{todayDate}}</text>
@@ -40,8 +46,9 @@
       message="教练创建考勤场次并发布训练计划后，会显示在这里。"
     />
 
-    <block wx:else>
-      <block wx:for="{{todaySessions}}" wx:key="sessionId">
+    <view wx:else class="jg-timeline">
+      <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-tl-item {{item.canCheckIn ? 'jg-tl-item-now' : ''}}">
+        <view class="jg-tl-dot"></view>
         <view class="jg-card">
           <view class="jg-card-h">
             <text class="jg-card-t">{{item.title}}</text>
@@ -57,11 +64,11 @@
             bindtap="goAttendance"
           >{{item.canCheckIn ? '去签到' : '查看考勤详情'}}</button>
         </view>
-      </block>
-    </block>
+      </view>
+    </view>
   </view>
 
-  <!-- 2. 个人最好成绩（A1 深蓝竞技数据卡） -->
+  <!-- 2. 个人最好成绩（V1 结论先行 + V2 3D 翻面查看明细，自动降级 2D） -->
   <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
@@ -71,21 +78,45 @@
   </view>
 
   <block wx:else>
-    <view wx:if="{{stats.hasPb}}" class="jg-data-card">
-      <view class="jg-data-k">{{stats.pbEventName}} · 个人最好成绩 PB</view>
-      <view class="jg-data-v">
-        <text class="jg-data-num">{{stats.pbRawValue}}</text>
-        <text wx:if="{{stats.pbUnit}}" class="jg-data-unit">{{stats.pbUnit}}</text>
-      </view>
-      <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核的正式成绩</view>
-      <view class="jg-data-foot">
-        <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
-        <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达到目标</text>
-        <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">已审核成绩 {{stats.approvedCount}} 条</text>
-      </view>
+    <view wx:if="{{stats.hasPb}}" class="jg-stagger jg-stagger-1">
+      <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看成绩明细" back-action-text="翻回 PB 结论">
+        <view slot="front">
+          <view class="jg-flex-between">
+            <view class="jg-flex-1">
+              <view class="jg-data-k">{{stats.pbEventName}} · 个人最好成绩 PB</view>
+              <view class="jg-data-v">
+                <text class="jg-data-num jg-num-roll">{{stats.pbRawValue}}</text>
+                <text wx:if="{{stats.pbUnit}}" class="jg-data-unit">{{stats.pbUnit}}</text>
+              </view>
+              <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核的正式成绩</view>
+            </view>
+            <view class="jg-ml-16">
+              <jg-stat-ring
+                percent="{{stats.attendanceRatePercent}}"
+                value-text="{{stats.attendanceRateText || '暂无'}}"
+                label="本月出勤"
+                empty="{{!stats.attendanceRateText}}"
+                daylight="{{uiDaylight}}"
+              />
+            </view>
+          </view>
+          <view class="jg-data-foot">
+            <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
+            <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达到目标</text>
+            <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">已审核成绩 {{stats.approvedCount}} 条</text>
+          </view>
+        </view>
+        <view slot="back">
+          <view class="jg-data-k">{{stats.pbEventName}} · 正式成绩与出勤明细</view>
+          <view class="jg-data-meta jg-mt-8">取得日期：{{stats.pbDate || '未标注'}} · 统计周期：{{stats.periodLabel || '本月'}}</view>
+          <view class="jg-data-meta">有效出勤 {{stats.validAttendance}} / 应签到 {{stats.actualExpected}} · 迟到 {{stats.late}} · 未签到 {{stats.absent}}</view>
+          <view wx:if="{{stats.targetValueText}}" class="jg-data-meta">体考目标：{{stats.targetValueText}}（{{stats.targetAchieved ? '已达标' : '推进中'}}）</view>
+          <view class="jg-data-meta">仅教练审核通过的正式成绩计入 PB 与排行榜。</view>
+        </view>
+      </jg-flip-card>
     </view>
 
-    <view wx:else class="jg-card">
+    <view wx:else class="jg-card jg-stagger jg-stagger-1">
       <view class="jg-card-h">
         <text class="jg-card-t">个人最好成绩</text>
         <text class="jg-card-c">{{stats.periodLabel}}</text>
@@ -194,8 +225,8 @@
       <text class="jg-sect-t">常用功能</text>
       <text class="jg-sect-c">{{noticeMeta}}</text>
     </view>
-    <!-- 学生常用入口：保留原有 6 项，改为两行 × 三列 -->
-    <view class="jg-tiles-3">
+    <!-- 学生常用入口：V1 双列快捷面板（保留原有 6 项入口） -->
+    <view class="jg-tiles">
       <view class="jg-tile jg-tile-brand">
         <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goPlans">
           <view class="jg-tile-ic">计</view>
@@ -305,4 +336,12 @@
       </view>
     </view>
   </view>
+
+  <!-- V1.6.5 单排 5 项页内跳转坞 -->
+  <jg-action-dock
+    items="{{dockItems}}"
+    active-key="home"
+    daylight="{{uiDaylight}}"
+    bind:select="onDockSelect"
+  />
 </view>

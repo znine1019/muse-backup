@@ -1,29 +1,36 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="今日签到"
     meta="仅在主动签到时获取一次位置，用于判断是否在教练设置的训练地点范围内；不做持续定位。"
     role-label="学生"
     role-tone="brand"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">考勤信息加载失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
-  <view wx:if="{{checkInMessage}}" class="jg-note">
-    <view>
+  <view wx:if="{{checkInMessage}}" class="jg-note jg-pulse-wrap {{checkInPulsing ? 'is-pulsing' : ''}}">
+    <view class="jg-pulse-ring jg-pulse-1"></view>
+    <view class="jg-pulse-ring jg-pulse-2"></view>
+    <view class="jg-pulse-ring jg-pulse-3"></view>
+    <view class="jg-check-pop">✓</view>
+    <view class="jg-flex-1">
       <view class="jg-note-t">签到结果</view>
       <view class="jg-note-m">{{checkInMessage}}</view>
     </view>
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 今日考勤 -->
-    <view class="jg-sect">
+    <!-- 今日考勤（局部时间轴仅用于今日训练区块） -->
+    <view class="jg-sect jg-stagger jg-stagger-0">
       <view class="jg-sect-h">
         <text class="jg-sect-t">今日考勤</text>
         <text class="jg-sect-c">{{todayDate}}</text>
@@ -35,31 +42,34 @@
         message="教练创建考勤场次后会显示在这里。"
       />
 
-      <block wx:else>
-        <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-card">
-          <view class="jg-card-h">
-            <text class="jg-card-t">{{item.session.title || item.session.locationName}}</text>
-            <text
-              class="jg-chip {{item.status === 'checked_in' ? 'jg-chip-ok' : item.status === 'late' || item.status === 'pending_verification' ? 'jg-chip-warn' : item.status === 'absent' ? 'jg-chip-danger' : item.status === 'leave_approved' ? 'jg-chip-brand' : ''}}"
-            >{{item.statusLabel}}</text>
+      <view wx:else class="jg-timeline">
+        <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-tl-item {{item.canCheckIn ? 'jg-tl-item-now' : ''}}">
+          <view class="jg-tl-dot"></view>
+          <view class="jg-card">
+            <view class="jg-card-h">
+              <text class="jg-card-t">{{item.session.title || item.session.locationName}}</text>
+              <text
+                class="jg-chip {{item.status === 'checked_in' ? 'jg-chip-ok' : item.status === 'late' || item.status === 'pending_verification' ? 'jg-chip-warn' : item.status === 'absent' ? 'jg-chip-danger' : item.status === 'leave_approved' ? 'jg-chip-brand' : ''}}"
+              >{{item.statusLabel}}</text>
+            </view>
+
+            <view class="jg-body-s">训练组：{{item.session.trainingGroupName || '未标注'}}</view>
+            <view class="jg-body-s jg-mt-8">训练地点：{{item.session.locationName}}</view>
+            <view class="jg-body-s jg-mt-8">签到时间：{{item.session.checkInOpenTime}} - {{item.session.checkInCloseTime}}，{{item.session.lateAfterTime}} 后为迟到</view>
+            <view class="jg-body-s jg-mt-8">签到范围：{{item.session.radiusMeters}} 米</view>
+            <view wx:if="{{item.leaveStatusLabel}}" class="jg-body-s jg-mt-8">请假状态：{{item.leaveStatusLabel}}</view>
+
+            <button
+              wx:if="{{item.canCheckIn}}"
+              class="jg-btn jg-btn-block jg-mt-12"
+              data-session-id="{{item.session.sessionId}}"
+              bindtap="checkIn"
+              loading="{{busySessionId === item.session.sessionId}}"
+              disabled="{{busySessionId !== ''}}"
+            >定位并签到</button>
           </view>
-
-          <view class="jg-body-s">训练组：{{item.session.trainingGroupName || '未标注'}}</view>
-          <view class="jg-body-s jg-mt-8">训练地点：{{item.session.locationName}}</view>
-          <view class="jg-body-s jg-mt-8">签到时间：{{item.session.checkInOpenTime}} - {{item.session.checkInCloseTime}}，{{item.session.lateAfterTime}} 后为迟到</view>
-          <view class="jg-body-s jg-mt-8">签到范围：{{item.session.radiusMeters}} 米</view>
-          <view wx:if="{{item.leaveStatusLabel}}" class="jg-body-s jg-mt-8">请假状态：{{item.leaveStatusLabel}}</view>
-
-          <button
-            wx:if="{{item.canCheckIn}}"
-            class="jg-btn jg-btn-block jg-mt-12"
-            data-session-id="{{item.session.sessionId}}"
-            bindtap="checkIn"
-            loading="{{busySessionId === item.session.sessionId}}"
-            disabled="{{busySessionId !== ''}}"
-          >定位并签到</button>
         </view>
-      </block>
+      </view>
     </view>
 
     <!-- 申请请假 -->

@@ -1,23 +1,29 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-dock-pad jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="开发者工作台"
     meta="{{headMeta}}"
     role-label="开发者"
     role-tone="accent"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
   <!-- 刷新状态条：返回工作台时保留内容并静默刷新 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
-    <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    <view class="jg-flex-row">
+      <view wx:if="{{refreshing}}" class="jg-ptr-ring"></view>
+      <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
+    </view>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
-  <view wx:if="{{sessionError}}" class="jg-state-err">
+  <view wx:if="{{sessionError}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">身份校验未通过</view>
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <!-- 1. 系统运行状态（A1 深蓝竞技数据卡，全部为真实接口数据） -->
+  <!-- 1. 系统运行状态（深蓝竞技数据卡，全部为真实接口数据） -->
   <view wx:if="{{systemState.loading && !systemState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <view wx:elif="{{systemState.error && !systemState.ready}}" class="jg-state-err">
@@ -26,7 +32,7 @@
     <view class="jg-retry" bindtap="retrySystem">重新检查</view>
   </view>
 
-  <view wx:else class="jg-data-card">
+  <view wx:else class="jg-data-card jg-stagger jg-stagger-0">
     <view class="jg-data-k">系统运行状态</view>
     <view class="jg-data-v">
       <text class="jg-data-num jg-data-num-sm">{{system.overallText}}</text>
@@ -37,15 +43,15 @@
     <view class="jg-data-cols">
       <view class="jg-data-col">
         <view class="jg-data-col-l">账号总数</view>
-        <view class="jg-data-col-v">{{accountSummary.total}}</view>
+        <view class="jg-data-col-v jg-num-roll">{{accountSummary.total}}</view>
       </view>
       <view class="jg-data-col">
         <view class="jg-data-col-l">训练组</view>
-        <view class="jg-data-col-v">{{groupSummary.total}}</view>
+        <view class="jg-data-col-v jg-num-roll">{{groupSummary.total}}</view>
       </view>
       <view class="jg-data-col">
         <view class="jg-data-col-l">待处理</view>
-        <view class="jg-data-col-v jg-data-col-v-warn">{{pendingTotal}}</view>
+        <view class="jg-data-col-v jg-data-col-v-warn jg-num-roll">{{pendingTotal}}</view>
       </view>
     </view>
     <view wx:if="{{system.serverTimeText}}" class="jg-data-meta jg-mt-8">服务器时间 {{system.serverTimeText}}</view>
@@ -506,8 +512,16 @@
     </view>
   </view>
 
-  <view wx:if="{{actionError}}" class="jg-state-err jg-mt-12">
+  <view wx:if="{{actionError}}" class="jg-state-err jg-mt-12 jg-shake">
     <view class="jg-state-err-t">操作未完成</view>
     <view class="jg-state-err-m">{{actionError}}</view>
   </view>
+
+  <!-- V1.6.5 单排 5 项页内跳转坞 -->
+  <jg-action-dock
+    items="{{dockItems}}"
+    active-key="home"
+    daylight="{{uiDaylight}}"
+    bind:select="onDockSelect"
+  />
 </view>

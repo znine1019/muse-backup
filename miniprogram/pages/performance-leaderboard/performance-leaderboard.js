@@ -53,11 +53,47 @@ Page({
     monthIndex: new Date().getMonth(),
     quarterIndex: Math.floor(new Date().getMonth() / 3),
     leaderboard: null,
-    rows: []
+    rows: [],
+    uiDaylight: false,
+    rankScanning: false
   },
 
   onShow() {
     this.loadPage();
+  },
+
+  onHide() {
+    this.clearScanTimer();
+  },
+
+  onUnload() {
+    this.clearScanTimer();
+  },
+
+  clearScanTimer() {
+    if (this._scanTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._scanTimer);
+      }
+      this._scanTimer = null;
+    }
+  },
+
+  triggerScan() {
+    this.clearScanTimer();
+    this.setData({ rankScanning: true });
+    if (typeof setTimeout === 'function') {
+      this._scanTimer = setTimeout(() => {
+        this._scanTimer = null;
+        this.setData({ rankScanning: false });
+      }, 560);
+    } else {
+      this.setData({ rankScanning: false });
+    }
+  },
+
+  onToggleDaylight() {
+    this.setData({ uiDaylight: !this.data.uiDaylight });
   },
 
   async loadPage() {
@@ -137,36 +173,42 @@ Page({
 
   onEventChange(event) {
     this.setData({ eventIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },
 
   onGroupChange(event) {
     this.setData({ groupIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },
 
   onPeriodTypeChange(event) {
     this.setData({ periodTypeIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },
 
   onYearChange(event) {
     this.setData({ yearIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },
 
   onMonthChange(event) {
     this.setData({ monthIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },
 
   onQuarterChange(event) {
     this.setData({ quarterIndex: Number(event.detail.value) }, () => {
+      this.triggerScan();
       this.loadLeaderboard();
     });
   },

@@ -1,27 +1,30 @@
-<view class="jg-page jg-safe-bottom">
+<view class="jg-page jg-safe-bottom jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="{{planId ? '编辑训练计划' : '新建训练计划'}}"
     meta="草稿仅教练可见；发布后所属训练组学生可以查看。"
     role-label="计划编辑"
     role-tone="brand"
+    daylight="{{uiDaylight}}"
+    show-daylight-toggle="{{true}}"
+    bind:toggledaylight="onToggleDaylight"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">训练计划操作失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="loadPage">重新加载</view>
   </view>
 
   <block wx:if="{{!loading}}">
-    <view class="jg-card">
+    <view class="jg-card jg-stagger jg-stagger-0">
       <view class="jg-card-h"><text class="jg-card-t">计划信息</text></view>
 
       <view class="jg-field-row">
         <view class="jg-field-label">计划名称</view>
         <view class="jg-field-body">
-          <input class="jg-input" value="{{title}}" data-field="title" bindinput="onFieldInput" maxlength="60" placeholder="例如 第1周速度训练" />
+          <input class="jg-input {{focusedField === 'title' ? 'jg-input-focus' : ''}}" value="{{title}}" data-field="title" bindinput="onFieldInput" bindfocus="onFieldFocus" bindblur="onFieldBlur" maxlength="60" placeholder="例如 第1周速度训练" />
         </view>
       </view>
 
@@ -60,14 +63,18 @@
       </view>
     </view>
 
-    <view class="jg-sect">
+    <view class="jg-sect jg-stagger jg-stagger-1">
       <view class="jg-sect-h">
         <text class="jg-sect-t">训练内容</text>
         <text class="jg-sect-c">{{items.length}} 项</text>
       </view>
 
-      <view wx:for="{{items}}" wx:key="order" class="jg-card">
-        <view class="jg-card-h"><text class="jg-card-t">第 {{index + 1}} 项</text></view>
+      <!-- 局部时间轴仅用于训练计划区块 -->
+      <view class="jg-timeline">
+        <view wx:for="{{items}}" wx:key="order" class="jg-tl-item">
+          <view class="jg-tl-dot"></view>
+          <view class="jg-card">
+            <view class="jg-card-h"><text class="jg-card-t">第 {{index + 1}} 项</text></view>
 
         <view class="jg-field-row">
           <view class="jg-field-label">运动专项</view>
@@ -141,7 +148,9 @@
           </view>
         </view>
 
-        <button class="jg-btn jg-btn-danger jg-btn-sm jg-btn-block jg-mt-12" data-index="{{index}}" bindtap="removeItem">删除该项</button>
+            <button class="jg-btn jg-btn-danger jg-btn-sm jg-btn-block jg-mt-12" data-index="{{index}}" bindtap="removeItem">删除该项</button>
+          </view>
+        </view>
       </view>
 
       <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="addItem">添加训练内容</button>
