@@ -1,48 +1,46 @@
-/* 乔格训迹系统 V1.6.5 品牌色阶与微信小程序可落地基础层
+/* 乔格训迹系统 V1.6.5 黑底白字 + 深蓝品牌色阶与微信小程序可落地基础层
+ * 严格移除任何橙色残留（#EE8300 / #FF9E2C 等已彻底清空）。
  * 仅使用允许属性：flex、绝对定位、transform(2D/3D)、opacity、transition、@keyframes、
  * linear/radial/conic-gradient、border、box-shadow(<=2层)、CSS变量、系统字体。
- * 严格禁止：CSS Grid、backdrop-filter、filter:blur()、position:sticky、外部字体、will-change滥用。
  */
 :root {
-  --void: #060E18;
-  --deep: #0B1728;
-  --surface: #132D49;
-  --surface-2: #1A3A5C;
-  --line: #2A4A6B;
-  --text-hi: #EAF2FB;
-  --text-mid: #9DB2C9;
-  --orange: #EE8300;
-  --orange-glow: #FF9E2C;
-  --on-orange: #060E18;
-  --success: #2FBF8F;
-  --warning: #F2B233;
-  --danger: #E5484D;
-  --danger-text: #FF8A8E;
-  --badge-bg: #0B1728;
-  --input-bg: #0B1728;
+  --void: #05070A;
+  --deep: #05070A;
+  --surface: #0B1219;
+  --surface-2: #101A24;
+  --brand: #132D49;
+  --accent: #2F6FBF;
+  --accent-hi: #7FB2FF;
+  --line: #1E2C3A;
+  --text-hi: #FFFFFF;
+  --text-mid: #B9C6D4;
+  --cta-bg: #FFFFFF;
+  --cta-text: #05070A;
+  --danger: #FF6B6B;
+  --badge-bg: #101A24;
+  --input-bg: #05070A;
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-slow: 320ms;
   --ease-main: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 日光高对比模式：浅底深字 + 品牌橙同步加深至 #A84E00 (对比度 >= 5.3:1) */
+/* 日光高对比模式：白底黑字 + 品牌深蓝 #132D49 / 强调蓝 #2F6FBF */
 body.is-daylight {
-  --void: #E6EEF7;
-  --deep: #F3F7FC;
+  --void: #F7FAFC;
+  --deep: #F7FAFC;
   --surface: #FFFFFF;
-  --surface-2: #E2ECF6;
-  --line: #8FA9C4;
-  --text-hi: #0B1728;
-  --text-mid: #28415C;
-  --orange: #A84E00;
-  --orange-glow: #8C3F00;
-  --on-orange: #FFFFFF;
-  --success: #0F7A57;
-  --warning: #8C5200;
-  --danger: #B91C1C;
-  --danger-text: #B91C1C;
-  --badge-bg: #E2ECF6;
+  --surface-2: #EDF3F9;
+  --brand: #132D49;
+  --accent: #2F6FBF;
+  --accent-hi: #1D4E89;
+  --line: #C9D6E3;
+  --text-hi: #05070A;
+  --text-mid: #33485E;
+  --cta-bg: #132D49;
+  --cta-text: #FFFFFF;
+  --danger: #C53030;
+  --badge-bg: #EDF3F9;
   --input-bg: #FFFFFF;
 }
 
@@ -85,9 +83,9 @@ button, input, select, textarea {
   font-variant-numeric: tabular-nums;
 }
 
-/* 顶部统一品牌条 + 日光开关 + 状态切换 */
+/* 顶部品牌深蓝页头 + 日光开关 + 状态切换 */
 .jg-top {
-  background: var(--void);
+  background: var(--brand);
   border-bottom: 1px solid var(--line);
   padding: 10px 12px 10px;
   display: flex;
@@ -95,6 +93,11 @@ button, input, select, textarea {
   gap: 8px;
   position: relative;
   z-index: 10;
+}
+
+body.is-daylight .jg-top {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
 .jg-top-bar {
@@ -112,7 +115,7 @@ button, input, select, textarea {
 .jg-brand-k {
   font-size: 12px;
   font-weight: 800;
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   letter-spacing: 0.4px;
 }
 
@@ -135,9 +138,9 @@ button, input, select, textarea {
   min-height: 44px;
   padding: 6px 10px;
   border-radius: 8px;
-  border: 1px solid var(--orange);
+  border: 1px solid var(--accent);
   background: var(--surface);
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -148,8 +151,9 @@ button, input, select, textarea {
 }
 
 .jg-daylight-btn.is-on {
-  background: var(--orange);
-  color: var(--on-orange);
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #FFFFFF;
 }
 
 .jg-daylight-btn:active {
@@ -159,7 +163,7 @@ button, input, select, textarea {
 .jg-role-chip {
   padding: 4px 8px;
   border-radius: 6px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--accent);
   background: var(--surface);
   color: var(--text-hi);
   font-size: 12px;
@@ -170,7 +174,7 @@ button, input, select, textarea {
 .jg-demo-strip {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--orange);
+  border-left: 3px solid var(--accent);
   border-radius: 6px;
   padding: 5px 10px;
   font-size: 12px;
@@ -183,7 +187,7 @@ button, input, select, textarea {
 }
 
 .jg-demo-tag {
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -211,12 +215,12 @@ button, input, select, textarea {
 }
 
 .jg-state-btn.is-active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--on-orange);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
 }
 
-/* 自定义下拉刷新指示器（交互 #10，仅使用 transform + opacity，不触发布局重排） */
+/* 自定义下拉刷新指示器（交互 #10，仅使用 transform + opacity） */
 .jg-ptr-wrap {
   position: fixed;
   top: 12px;
@@ -228,9 +232,9 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--void);
-  border: 1.5px solid var(--orange);
-  box-shadow: 0 6px 18px rgba(6, 14, 24, 0.48);
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 6px 18px rgba(5, 7, 10, 0.55);
   transition: transform var(--dur-base) var(--ease-main), opacity var(--dur-base) var(--ease-main);
   opacity: 0;
   pointer-events: none;
@@ -247,14 +251,14 @@ button, input, select, textarea {
   height: 20px;
   border-radius: 50%;
   border: 2.5px solid var(--line);
-  border-top-color: var(--orange);
+  border-top-color: var(--accent-hi);
   animation: jg-spin 700ms linear infinite;
 }
 
 .jg-ptr-text {
   font-size: 12px;
   font-weight: 700;
-  color: var(--orange-glow);
+  color: var(--accent-hi);
 }
 
 /* 主视图容器 */
@@ -267,7 +271,7 @@ button, input, select, textarea {
   position: relative;
 }
 
-/* 列表 Stagger 入场（交互 #2：位移 <= 12px，间隔 32-40ms） */
+/* 列表 Stagger 入场（交互 #2：位移 <= 12px，间隔 34-40ms） */
 .jg-stagger {
   opacity: 0;
   transform: translateY(10px);
@@ -354,7 +358,7 @@ button, input, select, textarea {
 .jg-val-accent {
   font-size: 16px;
   font-weight: 800;
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -373,25 +377,26 @@ button, input, select, textarea {
   flex-shrink: 0;
 }
 
-.jg-pill-orange {
-  border-color: var(--orange);
-  color: var(--orange-glow);
+.jg-pill-accent {
+  border-color: var(--accent);
+  color: var(--accent-hi);
 }
 
 .jg-pill-ok {
-  border-color: var(--success);
-  color: var(--success);
+  border-color: var(--accent);
+  background: var(--brand);
+  color: #FFFFFF;
 }
 
 .jg-pill-danger {
   border-color: var(--danger);
-  color: var(--danger-text);
+  color: var(--danger);
 }
 
 .jg-note {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-left: 4px solid var(--orange);
+  border-left: 4px solid var(--accent);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
@@ -399,10 +404,10 @@ button, input, select, textarea {
 }
 
 .jg-note-warn {
-  border-left-color: var(--warning);
+  border-left-color: var(--accent-hi);
 }
 
-/* 按钮与提交变形进度环（交互 #7） */
+/* 按钮与提交变形进度环（主按钮：白底黑字 / 日光深蓝底白字；选中态：强调蓝） */
 .jg-btn-row {
   display: flex;
   flex-wrap: wrap;
@@ -442,28 +447,28 @@ button, input, select, textarea {
 }
 
 .jg-btn-primary {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--on-orange);
+  background: var(--cta-bg);
+  border-color: var(--cta-bg);
+  color: var(--cta-text);
 }
 
 .jg-btn.is-active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--on-orange);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
 }
 
 .jg-btn-danger {
-  background: var(--void);
-  border-color: var(--danger);
-  color: var(--danger-text);
+  background: var(--surface-2);
+  border-color: var(--line);
+  color: var(--danger);
 }
 
 .jg-btn-spinner {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2.5px solid var(--on-orange);
+  border: 2.5px solid var(--cta-text);
   border-top-color: transparent;
   animation: jg-spin 650ms linear infinite;
 }
@@ -472,7 +477,7 @@ button, input, select, textarea {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid var(--on-orange);
+  border: 2px solid var(--cta-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -491,7 +496,7 @@ button, input, select, textarea {
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* 表单聚焦流光 + 校验失败单次抖动（交互 #6） */
+/* 表单聚焦流光（高亮蓝）+ 校验失败单次抖动（错误红） */
 .jg-field {
   display: flex;
   flex-direction: column;
@@ -529,7 +534,7 @@ button, input, select, textarea {
   right: 0;
   bottom: 0;
   height: 2.5px;
-  background: linear-gradient(90deg, var(--orange), var(--orange-glow), var(--orange));
+  background: linear-gradient(90deg, var(--accent), var(--accent-hi), var(--accent));
   transform: scaleX(0);
   transform-origin: center;
   opacity: 0;
@@ -556,10 +561,10 @@ button, input, select, textarea {
 .jg-field-err {
   font-size: 12px;
   font-weight: 700;
-  color: var(--danger-text);
+  color: var(--danger);
 }
 
-/* 骨架屏 Shimmer 扫光 1.2s（仅用 transform，不重排）（交互 #4） */
+/* 骨架屏 Shimmer 扫光 1.2s（深蓝/高亮蓝流光，仅用 transform） */
 .jg-skel-card {
   height: 76px;
   border-radius: 12px;
@@ -576,7 +581,7 @@ button, input, select, textarea {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(238, 131, 0, 0.22) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(127, 178, 255, 0.22) 50%, transparent 100%);
   transform: translateX(-100%);
   animation: jg-shimmer 1.2s linear infinite;
 }
@@ -594,7 +599,7 @@ button, input, select, textarea {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 空态插画淡出（交互 #11） */
+/* 空态插画淡出 */
 .jg-empty-box {
   background: var(--surface);
   border: 1px dashed var(--line);
@@ -624,7 +629,7 @@ button, input, select, textarea {
   gap: 10px;
 }
 
-/* 左滑审批 + 长按多选待办项（交互 #12） */
+/* 左滑审批 + 长按多选待办项 */
 .jg-swipe-wrap {
   position: relative;
   overflow: hidden;
@@ -655,13 +660,13 @@ button, input, select, textarea {
 }
 
 .jg-swipe-approve {
-  background: var(--orange);
-  color: var(--on-orange);
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 .jg-swipe-reject {
   background: var(--surface-2);
-  color: var(--danger-text);
+  color: var(--danger);
   border-left: 1px solid var(--line);
 }
 
@@ -683,22 +688,22 @@ button, input, select, textarea {
 }
 
 .jg-swipe-wrap.is-selected {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 1px var(--orange);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .jg-swipe-wrap.is-done {
   opacity: 0.62;
 }
 
-/* 底部抽屉（弹性打开、遮罩 200ms 渐入、下滑关闭）（交互 #5） */
+/* 底部抽屉（弹性打开、遮罩 200ms 渐入、下滑关闭） */
 .jg-drawer-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(6, 14, 24, 0.72);
+  background: rgba(5, 7, 10, 0.76);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -717,7 +722,7 @@ button, input, select, textarea {
   width: 100%;
   max-width: 430px;
   background: var(--surface);
-  border-top: 2px solid var(--orange);
+  border-top: 2px solid var(--accent);
   border-radius: 16px 16px 0 0;
   padding: 12px 16px 24px;
   display: flex;
@@ -725,7 +730,7 @@ button, input, select, textarea {
   gap: 12px;
   transform: translateY(100%);
   transition: transform 300ms cubic-bezier(0.34, 1.24, 0.64, 1);
-  box-shadow: 0 -8px 24px rgba(6, 14, 24, 0.45);
+  box-shadow: 0 -8px 24px rgba(5, 7, 10, 0.55);
 }
 
 .jg-drawer-backdrop.is-open .jg-drawer-panel {
@@ -745,7 +750,7 @@ button, input, select, textarea {
   width: 100%;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: var(--deep);
+  background: var(--void);
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -781,7 +786,7 @@ button, input, select, textarea {
 }
 
 .jg-rank-item {
-  background: var(--deep);
+  background: var(--surface-2);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 10px 12px;
@@ -802,13 +807,13 @@ button, input, select, textarea {
   width: 100%;
   height: 6px;
   border-radius: 999px;
-  background: var(--surface-2);
+  background: var(--line);
   overflow: hidden;
 }
 
 .jg-rank-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--orange), var(--orange-glow));
+  background: linear-gradient(90deg, var(--accent), var(--accent-hi));
   transform-origin: left center;
   transition: transform 320ms var(--ease-main);
 }
@@ -819,7 +824,7 @@ button, input, select, textarea {
   height: 146px;
   border-radius: 10px;
   border: 1px solid var(--line);
-  background: radial-gradient(circle at center, var(--surface-2) 0%, var(--void) 100%);
+  background: radial-gradient(circle at center, var(--brand) 0%, var(--void) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -829,12 +834,16 @@ button, input, select, textarea {
   overflow: hidden;
 }
 
+body.is-daylight .jg-map-box {
+  background: radial-gradient(circle at center, #DCE8F6 0%, #F7FAFC 100%);
+}
+
 .jg-map-ring {
   padding: 6px 14px;
   border-radius: 999px;
-  border: 2px dashed var(--orange);
+  border: 2px dashed var(--accent-hi);
   background: var(--surface);
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   font-size: 13px;
   font-weight: 800;
   position: relative;
@@ -850,7 +859,7 @@ button, input, select, textarea {
   text-align: center;
 }
 
-/* 角色/学生局部遮罩揭示（交互 #8） */
+/* 角色/学生局部遮罩揭示 */
 .jg-scope-stage {
   position: relative;
   overflow: hidden;
@@ -863,7 +872,7 @@ button, input, select, textarea {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  background: linear-gradient(90deg, transparent, rgba(127, 178, 255, 0.55), transparent);
   opacity: 0;
   pointer-events: none;
   z-index: 8;
@@ -874,7 +883,7 @@ button, input, select, textarea {
 }
 
 @keyframes jg-wipe-sweep {
-  0% { opacity: 0.7; transform: translateX(-100%); }
+  0% { opacity: 0.78; transform: translateX(-100%); }
   100% { opacity: 0; transform: translateX(100%); }
 }
 
@@ -893,11 +902,11 @@ button, input, select, textarea {
 .jg-lab-log {
   background: var(--void);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--orange);
+  border-left: 3px solid var(--accent);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 12px;
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   font-weight: 700;
 }
 
@@ -907,9 +916,9 @@ button, input, select, textarea {
   left: 50%;
   bottom: 92px;
   transform: translate(-50%, 16px);
-  background: var(--void);
-  border: 1px solid var(--orange);
-  color: var(--text-hi);
+  background: var(--brand);
+  border: 1px solid var(--accent);
+  color: #FFFFFF;
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 13px;

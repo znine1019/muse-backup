@@ -223,7 +223,7 @@ test('V1.6.2 UX 首页移除连接测试入口，但 healthCheck 能力保留', 
 
 test('V1.6.2 UX 全部页面具备基础加载和保护界面', () => {
   const pages = JSON.parse(read('miniprogram/app.json')).pages;
-  assert.equal(pages.length, 36);
+  assert.equal(pages.length, 37);
   for (const route of pages) {
     const js = read(`miniprogram/${route}.js`);
     const wxml = read(`miniprogram/${route}.wxml`);

@@ -141,7 +141,7 @@ window.createV165Prototype = function (variantCfg) {
     return `
       <svg width="72" height="54" viewBox="0 0 72 54" aria-hidden="true">
         <rect x="6" y="10" width="60" height="34" rx="17" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="5 4" />
-        <circle cx="36" cy="27" r="7" fill="none" stroke="#EE8300" stroke-width="2.5" />
+        <circle cx="36" cy="27" r="7" fill="none" stroke="#2F6FBF" stroke-width="2.5" />
       </svg>`;
   }
 
@@ -182,7 +182,7 @@ window.createV165Prototype = function (variantCfg) {
         <section class="v1-cockpit jg-stagger jg-stagger-0">
           <div class="jg-card-head">
             <span class="jg-brand-k">今日训练结论 · ${esc(s.group)}</span>
-            <span class="jg-pill jg-pill-orange">${esc(s.todaySession.status)}</span>
+            <span class="jg-pill jg-pill-accent">${esc(s.todaySession.status)}</span>
           </div>
           <div class="jg-ring-row">
             <canvas class="jg-ring-canvas" id="studentRingCanvas" width="108" height="108"></canvas>
@@ -201,7 +201,7 @@ window.createV165Prototype = function (variantCfg) {
         <section class="v1-quick-grid jg-stagger jg-stagger-1">
           ${s.quickEntries
             .map(
-              (e) => `<button type="button" class="v1-quick-btn" data-screen="${e.screen}"><span>${esc(e.label)}</span><span class="jg-pill jg-pill-orange">${esc(e.tag)}</span></button>`
+              (e) => `<button type="button" class="v1-quick-btn" data-screen="${e.screen}"><span>${esc(e.label)}</span><span class="jg-pill jg-pill-accent">${esc(e.tag)}</span></button>`
             )
             .join('')}
         </section>
@@ -219,7 +219,7 @@ window.createV165Prototype = function (variantCfg) {
                 <div class="jg-row-t">${esc(n.title)}</div>
                 <div class="jg-row-m">${esc(n.date)} · ${n.unread ? '未读' : '已读'}</div>
               </div>
-              <span class="jg-pill ${n.priority === '重要' ? 'jg-pill-orange' : ''}">${esc(n.priority)}</span>
+              <span class="jg-pill ${n.priority === '重要' ? 'jg-pill-accent' : ''}">${esc(n.priority)}</span>
             </div>`
             )
             .join('')}
@@ -237,7 +237,7 @@ window.createV165Prototype = function (variantCfg) {
               </div>
               <div class="v2-pb-row">
                 <span class="v2-big-num jg-num" data-countup="${s.pb.numeric}" data-decimals="2" data-suffix="${esc(s.pb.unit)}">${s.pb.numeric}${esc(s.pb.unit)}</span>
-                <span class="jg-pill jg-pill-orange">较上次 ${esc(s.pb.delta)}</span>
+                <span class="jg-pill jg-pill-accent">较上次 ${esc(s.pb.delta)}</span>
               </div>
               <div class="jg-row-m">${esc(s.name)} · ${esc(s.group)} · 本月出勤 <strong class="jg-num" data-countup="${s.monthlyAttendance.rateNumeric}" data-decimals="1" data-suffix="%">${s.monthlyAttendance.rateNumeric}%</strong></div>
               <button type="button" class="jg-btn jg-btn-primary jg-btn-block" data-action="flip-pb-card">翻转查看审核溯源（3D 形变）</button>
@@ -245,7 +245,7 @@ window.createV165Prototype = function (variantCfg) {
             <div class="v2-flip-face v2-flip-back">
               <div class="jg-card-head">
                 <span class="jg-brand-k">审核溯源背面</span>
-                <span class="jg-pill jg-pill-orange">${esc(s.pb.date)}</span>
+                <span class="jg-pill jg-pill-accent">${esc(s.pb.date)}</span>
               </div>
               <div class="jg-row-m">复核教练：${esc(s.pb.reviewer)} · 原纪录：${esc(s.pb.prevValue)}</div>
               <div class="jg-row-m">规则：仅教练审核通过的实测 PB 可进入正式成绩排行。</div>
@@ -268,7 +268,7 @@ window.createV165Prototype = function (variantCfg) {
                 <div class="v2-tl-body">
                   <div class="jg-card-head">
                     <span class="jg-row-t">${esc(t.time)} · ${esc(t.title)}</span>
-                    <span class="jg-pill ${idx === 0 ? 'jg-pill-orange' : ''}">${esc(t.status)}</span>
+                    <span class="jg-pill ${idx === 0 ? 'jg-pill-accent' : ''}">${esc(t.status)}</span>
                   </div>
                   <div class="jg-row-m">${esc(t.meta)}</div>
                 </div>
@@ -291,10 +291,10 @@ window.createV165Prototype = function (variantCfg) {
         <div class="v3-step"><span class="jg-num">03</span><span>提交反馈</span></div>
       </section>
 
-      <section class="v3-stream-card v3-rail-orange jg-stagger jg-stagger-1">
+      <section class="v3-stream-card v3-rail-accent jg-stagger jg-stagger-1">
         <div class="jg-card-head">
           <div class="jg-card-title">当前任务 · ${esc(s.todaySession.title)}</div>
-          <span class="jg-pill jg-pill-orange">${esc(s.todaySession.status)}</span>
+          <span class="jg-pill jg-pill-accent">${esc(s.todaySession.status)}</span>
         </div>
         <div class="jg-row-m">${esc(s.todaySession.time)} · ${esc(s.todaySession.location)}</div>
         <div class="jg-btn-row">
@@ -328,7 +328,7 @@ window.createV165Prototype = function (variantCfg) {
       <section class="jg-card jg-stagger jg-stagger-0">
         <div class="jg-card-head">
           <div class="jg-card-title">今日考勤焦点 · ${esc(f.window)}</div>
-          <span class="jg-pill jg-pill-orange">待办 <span class="jg-num" data-countup="${pendingCount}">${pendingCount}</span></span>
+          <span class="jg-pill jg-pill-accent">待办 <span class="jg-num" data-countup="${pendingCount}">${pendingCount}</span></span>
         </div>
         <div class="jg-ring-row">
           <canvas class="jg-ring-canvas" id="coachRingCanvas" width="108" height="108"></canvas>
@@ -386,7 +386,7 @@ window.createV165Prototype = function (variantCfg) {
               <div class="jg-row-t">${esc(item.title)}</div>
               <div class="jg-row-m">意向 ${item.intentCount} 人 · 材料 ${item.materialCount} 份 · ${esc(item.status)}</div>
             </div>
-            <span class="jg-pill jg-pill-orange">${item.materialCount}/${item.intentCount}</span>
+            <span class="jg-pill jg-pill-accent">${item.materialCount}/${item.intentCount}</span>
           </div>`
           )
           .join('')}
@@ -428,7 +428,7 @@ window.createV165Prototype = function (variantCfg) {
         <section class="jg-card">
           <div class="jg-card-head">
             <div class="jg-card-title">${esc(stu.name)} · ${esc(secLabel)}</div>
-            <span class="jg-pill jg-pill-orange">${esc(stu.group)}</span>
+            <span class="jg-pill jg-pill-accent">${esc(stu.group)}</span>
           </div>
           <div class="jg-ring-row">
             <canvas class="jg-ring-canvas" id="parentRingCanvas" width="108" height="108"></canvas>
@@ -456,7 +456,7 @@ window.createV165Prototype = function (variantCfg) {
                   .map((f) => `<div class="jg-row"><div class="jg-row-main"><div class="jg-row-t">${esc(f.date)} · ${esc(f.completion)}</div><div class="jg-row-m">自评强度 RPE ${esc(f.rpe)}</div></div></div>`)
                   .join('')
               : stu.events
-                  .map((e) => `<div class="jg-row"><div class="jg-row-main"><div class="jg-row-t">${esc(e.title)}</div><div class="jg-row-m">${esc(e.type)}</div></div><span class="jg-pill jg-pill-orange">${esc(e.badge)}</span></div>`)
+                  .map((e) => `<div class="jg-row"><div class="jg-row-main"><div class="jg-row-t">${esc(e.title)}</div><div class="jg-row-m">${esc(e.type)}</div></div><span class="jg-pill jg-pill-accent">${esc(e.badge)}</span></div>`)
                   .join('')
           }
         </section>
@@ -484,7 +484,7 @@ window.createV165Prototype = function (variantCfg) {
       <section class="jg-card jg-stagger jg-stagger-1">
         <div class="jg-card-head">
           <div class="jg-card-title">账号与角色审批队列</div>
-          <span class="jg-pill jg-pill-orange">${d.approvals.length} 待审</span>
+          <span class="jg-pill jg-pill-accent">${d.approvals.length} 待审</span>
         </div>
         ${d.approvals
           .map(
@@ -494,7 +494,7 @@ window.createV165Prototype = function (variantCfg) {
               <div class="jg-row-t">${esc(a.name)} · ${esc(a.roleType)}</div>
               <div class="jg-row-m">${esc(a.detail)} · ${esc(a.time)}</div>
             </div>
-            <span class="jg-pill jg-pill-orange">待审</span>
+            <span class="jg-pill jg-pill-accent">待审</span>
           </div>`
           )
           .join('')}
@@ -619,7 +619,7 @@ window.createV165Prototype = function (variantCfg) {
       <section class="jg-card jg-stagger jg-stagger-1">
         <div class="jg-card-head">
           <div class="jg-card-title">静态围栏选点区（无地图 SDK）</div>
-          <span class="jg-pill jg-pill-orange">半径 ${esc(spot.radius)}</span>
+          <span class="jg-pill jg-pill-accent">半径 ${esc(spot.radius)}</span>
         </div>
         <div class="jg-map-box ${state.pulseActive ? 'is-pulsing' : ''}" id="checkinMapBox">
           <div class="v1-pulse-ring v1-pulse-1"></div>
@@ -757,7 +757,7 @@ window.createV165Prototype = function (variantCfg) {
       <section class="jg-card jg-stagger jg-stagger-0">
         <div class="jg-card-head">
           <div class="jg-card-title">${esc(variantCfg.name)} · 动效实验室</div>
-          <span class="jg-pill jg-pill-orange">${esc(variantCfg.grammar)}</span>
+          <span class="jg-pill jg-pill-accent">${esc(variantCfg.grammar)}</span>
         </div>
         <div class="jg-lab-log" id="labLogBox">${esc(state.labLog)}</div>
         <div class="jg-row">
@@ -1029,7 +1029,7 @@ window.createV165Prototype = function (variantCfg) {
       return;
     }
     if (id === 'm10') {
-      state.labLog = '已触发 #10 自定义品牌橙下拉刷新指示器';
+      state.labLog = '已触发 #10 自定义深蓝赛道下拉刷新指示器';
       const log = document.getElementById('labLogBox');
       if (log) log.textContent = state.labLog;
       triggerPullRefresh();
@@ -1086,7 +1086,7 @@ window.createV165Prototype = function (variantCfg) {
     if (btn.id === 'daylightBtn') {
       state.daylight = !state.daylight;
       render();
-      showToast(state.daylight ? '已切换日光高对比模式' : '已返回蓝黑标准模式');
+      showToast(state.daylight ? '已切换日光高对比模式' : '已返回黑底深蓝标准模式');
       return;
     }
     if (btn.dataset.screen) {

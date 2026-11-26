@@ -919,6 +919,14 @@ Page({
     wx.navigateTo({ url: `/pages/demo/demo?role=${role}` });
   },
 
+  /* V1.6.5 界面试穿入口：沿用同套开发/体验版 + 真实开发者守卫，正式环境隐藏 */
+  goUiPreview() {
+    if (!this.data.demoAvailable) {
+      return;
+    }
+    wx.navigateTo({ url: '/pages/ui-preview/ui-preview' });
+  },
+
   async review(event) {
     const userId = event.currentTarget.dataset.userId;
     const decision = event.currentTarget.dataset.decision;

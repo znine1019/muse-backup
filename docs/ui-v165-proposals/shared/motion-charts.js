@@ -59,30 +59,30 @@ window.JOGER_V165_MOTION = (function () {
     if (isDaylight) {
       return {
         bg: '#FFFFFF',
-        grid: '#CBD8E6',
-        axis: '#2C4663',
-        line: '#A84E00',
-        fillTop: 'rgba(168, 78, 0, 0.22)',
-        fillBot: 'rgba(168, 78, 0, 0.02)',
-        dot: '#0B1728',
-        label: '#0B1728',
+        grid: '#C9D6E3',
+        axis: '#33485E',
+        line: '#2F6FBF',
+        fillTop: 'rgba(47, 111, 191, 0.22)',
+        fillBot: 'rgba(47, 111, 191, 0.02)',
+        dot: '#132D49',
+        label: '#05070A',
         ringTrack: '#DCE6F0',
-        ringFill: '#A84E00',
-        ringWarn: '#925600'
+        ringFill: '#2F6FBF',
+        ringWarn: '#132D49'
       };
     }
     return {
-      bg: '#0B1728',
-      grid: '#233F5E',
-      axis: '#9DB2C9',
-      line: '#EE8300',
-      fillTop: 'rgba(238, 131, 0, 0.30)',
-      fillBot: 'rgba(238, 131, 0, 0.02)',
-      dot: '#FF9E2C',
-      label: '#EAF2FB',
-      ringTrack: '#1A3A5C',
-      ringFill: '#EE8300',
-      ringWarn: '#F2B233'
+      bg: '#05070A',
+      grid: '#1E2C3A',
+      axis: '#B9C6D4',
+      line: '#2F6FBF',
+      fillTop: 'rgba(47, 111, 191, 0.34)',
+      fillBot: 'rgba(47, 111, 191, 0.03)',
+      dot: '#7FB2FF',
+      label: '#FFFFFF',
+      ringTrack: '#1E2C3A',
+      ringFill: '#2F6FBF',
+      ringWarn: '#7FB2FF'
     };
   }
 

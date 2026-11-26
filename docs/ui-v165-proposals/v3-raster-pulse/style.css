@@ -1,6 +1,6 @@
-/* V3 光栅脉动（Raster Pulse）
+/* V3 光栅脉动（Raster Pulse）— 黑底白字 + 深蓝版
  * 运动语法：光栅扫描主导 | 信息节奏：任务推进 | 数据呈现：卡片流
- * 动效令牌：120ms / 200ms / 320ms；缓动 cubic-bezier(0.16, 1, 0.3, 1)；stagger 40ms
+ * 动效令牌：120ms / 200ms / 320ms；缓动 cubic-bezier(0.16, 1, 0.3, 1)；stagger 40ms（结构与参数不变）
  */
 :root {
   --ease-main: cubic-bezier(0.16, 1, 0.3, 1);
@@ -11,7 +11,7 @@
 .jg-stagger-3 { animation-delay: 120ms; }
 .jg-stagger-4 { animation-delay: 160ms; }
 
-/* 光栅扫描全屏水平光带（页面切换时触发，280ms） */
+/* 光栅扫描全屏水平蓝白光带（页面切换时触发，280ms） */
 .v3-scan-overlay {
   position: fixed;
   top: 0;
@@ -19,7 +19,7 @@
   left: 50%;
   width: 64px;
   margin-left: -215px;
-  background: linear-gradient(90deg, transparent, rgba(238, 131, 0, 0.42), transparent);
+  background: linear-gradient(90deg, transparent, rgba(127, 178, 255, 0.45), transparent);
   opacity: 0;
   pointer-events: none;
   z-index: 40;
@@ -83,9 +83,9 @@
 }
 
 .v3-nav-btn.is-active {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--on-orange);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #FFFFFF;
 }
 
 /* 任务推进三段进度槽 */
@@ -111,12 +111,17 @@
 }
 
 .v3-step.is-now {
-  border-color: var(--orange);
-  background: var(--surface-2);
-  color: var(--orange-glow);
+  border-color: var(--accent);
+  background: var(--brand);
+  color: #FFFFFF;
 }
 
-/* 卡片流（4px 左侧语义轨道） */
+body.is-daylight .v3-step.is-now {
+  background: var(--brand);
+  color: #FFFFFF;
+}
+
+/* 卡片流（4px 左侧深蓝/强调蓝语义轨道） */
 .v3-stream-card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -128,25 +133,33 @@
   gap: 10px;
 }
 
-.v3-rail-orange {
-  border-left-color: var(--orange);
+.v3-rail-accent {
+  background: var(--brand);
+  border-color: var(--accent);
+  border-left-color: var(--accent-hi);
+}
+
+body.is-daylight .v3-rail-accent {
+  background: var(--surface);
+  border-color: var(--line);
+  border-left-color: var(--brand);
 }
 
 .v3-big-num {
   font-size: 30px;
   font-weight: 900;
-  color: var(--orange-glow);
+  color: var(--accent-hi);
   line-height: 1.1;
 }
 
-/* V3 招牌动效：排行榜垂直橙色光栅扫描 + FLIP 名次置换（540ms） */
+/* V3 招牌动效：排行榜垂直蓝白光栅扫描 + FLIP 名次置换（540ms） */
 .v3-raster-beam {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   width: 56px;
-  background: linear-gradient(90deg, transparent, rgba(238, 131, 0, 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(127, 178, 255, 0.58), transparent);
   opacity: 0;
   pointer-events: none;
   z-index: 6;
@@ -166,7 +179,7 @@
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  border: 2px solid var(--orange);
+  border: 2px solid var(--accent-hi);
   opacity: 0;
   pointer-events: none;
 }

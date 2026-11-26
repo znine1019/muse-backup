@@ -465,6 +465,19 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
+      <view
+        wx:if="{{demoAvailable}}"
+        class="jg-row"
+        hover-class="jg-row-hover"
+        bindtap="goUiPreview"
+      >
+        <view class="jg-row-ic jg-row-ic-brand">新</view>
+        <view class="jg-row-main">
+          <view class="jg-row-t">V1.6.5 界面试穿</view>
+          <view class="jg-row-m">仅开发/体验版可用，三方向两屏本地动效预览（不写入数据）</view>
+        </view>
+        <view class="jg-row-e"><text class="jg-chev">›</text></view>
+      </view>
     </view>
   </view>
 

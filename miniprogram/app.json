@@ -35,6 +35,7 @@
     "pages/stats-workbench/stats-workbench",
     "pages/admin/admin",
     "pages/demo/demo",
+    "pages/ui-preview/ui-preview",
     "pages/bootstrap/bootstrap"
   ],
   "window": {

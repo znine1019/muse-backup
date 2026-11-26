@@ -1,0 +1,263 @@
+<view class="pv-page {{daylight ? 'is-daylight' : ''}} dir-{{activeDir}}">
+  <!-- 顶部固定标注 -->
+  <view class="pv-header">
+    <view class="pv-head-top">
+      <view class="pv-head-main">
+        <view class="pv-kicker">V1.6.5 试穿 · 演示数据</view>
+        <view class="pv-title">{{activeDirMeta.label}}</view>
+      </view>
+      <button class="pv-daylight-btn {{daylight ? 'is-on' : ''}}" bindtap="onToggleDaylight">
+        {{daylight ? '日光:开' : '日光模式'}}
+      </button>
+    </view>
+    <view class="pv-meta">{{activeDirMeta.grammar}} · 招牌：{{activeDirMeta.sigName}}</view>
+  </view>
+
+  <!-- 守卫拒绝态 -->
+  <view wx:if="{{denied}}" class="pv-card pv-err-card">
+    <view class="pv-card-t">无法进入 V1.6.5 界面试穿</view>
+    <view class="pv-err-text">{{error}}</view>
+    <button class="pv-cta" bindtap="onBackFallback">返回首页</button>
+  </view>
+
+  <!-- 初始化加载 -->
+  <view wx:elif="{{loading}}" class="pv-stack">
+    <view class="pv-skel"></view>
+    <view class="pv-skel"></view>
+  </view>
+
+  <!-- 主试穿区（仅通过守卫后渲染） -->
+  <view wx:elif="{{ready}}" class="pv-body">
+    <!-- 方向切换（3 方向） -->
+    <view class="pv-seg-row">
+      <button
+        wx:for="{{directions}}"
+        wx:key="id"
+        class="pv-seg-btn {{activeDir === item.id ? 'is-active' : ''}}"
+        data-dir="{{item.id}}"
+        bindtap="onSelectDir"
+      >{{item.label}}</button>
+    </view>
+
+    <!-- 业务屏切换（2 屏：学生首页 / 教练工作台） + 骨架屏演示 -->
+    <view class="pv-seg-row">
+      <button
+        wx:for="{{screens}}"
+        wx:key="id"
+        class="pv-seg-btn {{activeScreen === item.id ? 'is-active' : ''}}"
+        data-screen="{{item.id}}"
+        bindtap="onSelectScreen"
+      >{{item.label}}</button>
+      <button class="pv-seg-btn" bindtap="onDemoSkeleton">骨架屏1.2s</button>
+    </view>
+
+    <view wx:if="{{feedbackTip}}" class="pv-tip">{{feedbackTip}}</view>
+
+    <!-- 骨架屏 1.2s shimmer 扫光 -->
+    <view wx:if="{{skeletonActive}}" class="pv-stack">
+      <view class="pv-skel"></view>
+      <view class="pv-skel"></view>
+      <view class="pv-skel"></view>
+    </view>
+
+    <!-- ==================== 视图 A：学生首页（V1/V2/V3 差异化） ==================== -->
+    <view wx:elif="{{activeScreen === 'student'}}" class="pv-stack {{revealFade ? 'pv-reveal' : ''}}">
+      <!-- V1 矢量竞速 · 驾驶舱仪表盘 + 三层光环扩散 -->
+      <view wx:if="{{activeDir === 'v1'}}" class="pv-stack">
+        <view class="pv-brand-card {{staggerReady ? 'pv-stagger pv-s0' : ''}}">
+          <view class="pv-card-head">
+            <text class="pv-kicker">今日训练结论 · {{studentInfo.group}}</text>
+            <text class="pv-badge">演示数据</text>
+          </view>
+          <view class="pv-cockpit-row">
+            <view class="pv-ring-wrap">
+              <view class="pv-ring-inner">
+                <text class="pv-ring-num pv-num">{{rateDisplay}}%</text>
+                <text class="pv-ring-sub">本月出勤</text>
+              </view>
+            </view>
+            <view class="pv-cockpit-main">
+              <view class="pv-sub">{{studentInfo.pbEvent}} 审核 PB</view>
+              <view class="pv-big-num pv-num">{{pbDisplay}}{{studentInfo.pbUnit}}</view>
+              <view class="pv-sub">{{studentInfo.name}} · {{studentInfo.validText}}</view>
+            </view>
+          </view>
+          <view class="pv-pulse-stage {{pulseActive ? 'is-pulsing' : ''}}">
+            <view class="pv-pulse-ring pv-pr-1"></view>
+            <view class="pv-pulse-ring pv-pr-2"></view>
+            <view class="pv-pulse-ring pv-pr-3"></view>
+            <button class="pv-cta" bindtap="onDemoSubmit">
+              <view wx:if="{{submitPhase === 'submitting'}}" class="pv-btn-flex">
+                <view class="pv-spinner"></view>
+                <text>测距核验中…</text>
+              </view>
+              <view wx:elif="{{submitPhase === 'success'}}" class="pv-btn-flex">
+                <view class="pv-check-ring">✓</view>
+                <text>签到成功（光环扩散）</text>
+              </view>
+              <text wx:else>发起模拟签到（进度环 + V1 光环）</text>
+            </button>
+          </view>
+        </view>
+      </view>
+
+      <!-- V2 态变遥测 · PB 遥测卡 3D Y 轴翻面 + 时间轴 -->
+      <view wx:elif="{{activeDir === 'v2'}}" class="pv-stack">
+        <view class="pv-flip-scene {{staggerReady ? 'pv-stagger pv-s0' : ''}}">
+          <view class="pv-flip-card {{cardFlipped ? 'is-flipped' : ''}}">
+            <view class="pv-flip-face pv-flip-front">
+              <view class="pv-card-head">
+                <text class="pv-kicker">PB 遥测卡 · V2 招牌 3D 翻面</text>
+                <text class="pv-badge">已审核</text>
+              </view>
+              <view class="pv-big-num pv-num">{{pbDisplay}}{{studentInfo.pbUnit}}</view>
+              <view class="pv-sub">{{studentInfo.name}} · 出勤率 {{rateDisplay}}% · {{studentInfo.goalText}}</view>
+              <button class="pv-cta" bindtap="onFlipCard">点击 3D 翻面查看审核溯源</button>
+            </view>
+            <view class="pv-flip-face pv-flip-back">
+              <view class="pv-card-head">
+                <text class="pv-kicker">审核溯源背面（3D 翻转）</text>
+                <text class="pv-badge">{{studentInfo.pbDate}}</text>
+              </view>
+              <view class="pv-sub">所属组：{{studentInfo.group}} · 教练人工核验入榜</view>
+              <view class="pv-sub">注：本地虚构数据，不访问云端与数据库。</view>
+              <button class="pv-cta" bindtap="onFlipCard">翻回正面指标</button>
+            </view>
+          </view>
+        </view>
+        <view class="pv-card {{staggerReady ? 'pv-stagger pv-s1' : ''}}">
+          <view class="pv-card-t">模拟定位签到按钮（进度环 + 400ms 确认）</view>
+          <button class="pv-cta" bindtap="onDemoSubmit">
+            <view wx:if="{{submitPhase === 'submitting'}}" class="pv-btn-flex">
+              <view class="pv-spinner"></view>
+              <text>核验中…</text>
+            </view>
+            <view wx:elif="{{submitPhase === 'success'}}" class="pv-btn-flex">
+              <view class="pv-check-ring">✓</view>
+              <text>模拟签到完成</text>
+            </view>
+            <text wx:else>触发进度环与成功确认</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- V3 光栅脉动 · 任务推进进度槽 + 卡片流 -->
+      <view wx:else class="pv-stack">
+        <view class="pv-mission-bar {{staggerReady ? 'pv-stagger pv-s0' : ''}}">
+          <view class="pv-step is-now">01 定位签到</view>
+          <view class="pv-step">02 执行计划</view>
+          <view class="pv-step">03 提交反馈</view>
+        </view>
+        <view class="pv-brand-card {{staggerReady ? 'pv-stagger pv-s1' : ''}}">
+          <view class="pv-card-head">
+            <text class="pv-card-t">当前任务 · {{studentInfo.pbEvent}} 冲刺</text>
+            <text class="pv-badge">出勤 {{rateDisplay}}%</text>
+          </view>
+          <view class="pv-big-num pv-num">{{pbDisplay}}{{studentInfo.pbUnit}}</view>
+          <button class="pv-cta" bindtap="onDemoSubmit">
+            <view wx:if="{{submitPhase === 'submitting'}}" class="pv-btn-flex">
+              <view class="pv-spinner"></view>
+              <text>测距核验中…</text>
+            </view>
+            <view wx:elif="{{submitPhase === 'success'}}" class="pv-btn-flex">
+              <view class="pv-check-ring">✓</view>
+              <text>签到成功（演示）</text>
+            </view>
+            <text wx:else>执行模拟定位签到（无签退）</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 公共学生场次与通知（列表 Stagger 入场） -->
+      <view class="pv-card {{staggerReady ? 'pv-stagger pv-s2' : ''}}">
+        <view class="pv-card-head">
+          <text class="pv-card-t">今日训练安排（虚构）</text>
+          <text class="pv-sub">{{todaySessions.length}} 场</text>
+        </view>
+        <view wx:for="{{todaySessions}}" wx:key="sessionId" class="pv-row">
+          <view class="pv-row-main">
+            <view class="pv-row-t">{{item.title}}</view>
+            <view class="pv-sub">{{item.windowText}} · {{item.locationName}}</view>
+          </view>
+          <text class="pv-badge">{{item.phaseLabel}}</text>
+        </view>
+      </view>
+
+      <view class="pv-card {{staggerReady ? 'pv-stagger pv-s3' : ''}}">
+        <view class="pv-card-head">
+          <text class="pv-card-t">俱乐部通知（虚构）</text>
+          <text class="pv-sub">{{notices.length}} 条</text>
+        </view>
+        <view wx:for="{{notices}}" wx:key="id" class="pv-row">
+          <view class="pv-row-main">
+            <view class="pv-row-t">{{item.title}}</view>
+            <view class="pv-sub">{{item.preview}}</view>
+          </view>
+          <text class="pv-badge">{{item.categoryLabel}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ==================== 视图 B：教练工作台（含待办与 V3 光栅名次置换） ==================== -->
+    <view wx:else class="pv-stack {{revealFade ? 'pv-reveal' : ''}}">
+      <view class="pv-brand-card {{staggerReady ? 'pv-stagger pv-s0' : ''}}">
+        <view class="pv-card-head">
+          <text class="pv-kicker">教练工作台 · {{studentInfo.group}}</text>
+          <text class="pv-badge">待办 {{pendingDisplay}}</text>
+        </view>
+        <view class="pv-cockpit-row">
+          <view class="pv-ring-wrap">
+            <view class="pv-ring-inner">
+              <text class="pv-ring-num pv-num">{{rateDisplay}}%</text>
+              <text class="pv-ring-sub">本场签到</text>
+            </view>
+          </view>
+          <view class="pv-cockpit-main">
+            <view class="pv-card-t">速度课 · 60米加速跑</view>
+            <view class="pv-sub">已签 {{coachCheckedDisplay}} · 待审 {{pendingDisplay}} 项 · 无签退</view>
+            <view class="pv-sub">右上角可切换白底黑字日光模式</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 待办审批队列（stagger + 本地模拟通过） -->
+      <view class="pv-card {{staggerReady ? 'pv-stagger pv-s1' : ''}}">
+        <view class="pv-card-head">
+          <text class="pv-card-t">待办审批队列（本地模拟）</text>
+          <text class="pv-sub">不写库</text>
+        </view>
+        <view wx:for="{{coachTodos}}" wx:key="id" class="pv-row {{item.done ? 'is-done' : ''}}">
+          <view class="pv-row-main">
+            <view class="pv-row-t">{{item.type}} · {{item.student}}</view>
+            <view class="pv-sub">{{item.detail}}</view>
+          </view>
+          <button
+            class="pv-mini-btn {{item.done ? 'is-muted' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="onApproveTodo"
+          >{{item.done ? '已审' : '通过'}}</button>
+        </view>
+      </view>
+
+      <!-- V3 招牌光栅扫描 + 名次置换（三方向均可在教练屏体验，V3 主打） -->
+      <view class="pv-card {{staggerReady ? 'pv-stagger pv-s2' : ''}}">
+        <view class="pv-card-head">
+          <text class="pv-card-t">100米 排行榜（V3 招牌光栅置换）</text>
+          <button class="pv-mini-btn" bindtap="onTriggerRasterSwap">光栅置换</button>
+        </view>
+        <view class="pv-rank-box {{rasterScanning ? 'is-scanning' : ''}}">
+          <view class="pv-raster-beam"></view>
+          <view wx:for="{{rankRows}}" wx:key="id" class="pv-rank-row {{rankSwapped ? 'is-swapped' : ''}}">
+            <view class="pv-card-head">
+              <text class="pv-row-t">#{{item.rank}} {{item.name}}</text>
+              <text class="pv-accent-val pv-num">{{item.value}}</text>
+            </view>
+            <view class="pv-bar-track">
+              <view class="pv-bar-fill" style="transform: scaleX({{item.pct / 100}});"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
