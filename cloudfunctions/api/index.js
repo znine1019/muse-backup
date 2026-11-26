@@ -5,6 +5,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 const { createRepository } = require('./lib/repository');
+const { createStorage } = require('./lib/storage');
 const { fail, toPublicError } = require('./lib/errors');
 const createAuthActions = require('./actions/auth');
 const createAttendanceActions = require('./actions/attendance');
@@ -24,10 +25,11 @@ const createStatisticsActions = require('./actions/statistics');
 const createUserAdminActions = require('./actions/users');
 
 const repository = createRepository(db);
+const storage = createStorage(cloud);
 const actions = Object.freeze({
   ...createAuthActions({ repository }),
   ...createAttendanceActions({ repository }),
-  ...createCompetitionActions({ repository }),
+  ...createCompetitionActions({ repository, storage }),
   ...createCoachActions({ repository }),
   ...createDirectoryActions({ repository }),
   ...createFeedbackActions({ repository }),

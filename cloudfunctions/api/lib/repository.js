@@ -61,6 +61,9 @@ function createRepository(db) {
   const competitionRegistrationCollection = db.collection(
     COLLECTIONS.COMPETITION_REGISTRATIONS
   );
+  const competitionAttachmentCollection = db.collection(
+    COLLECTIONS.COMPETITION_ATTACHMENTS
+  );
   const clubNoticeCollection = db.collection(COLLECTIONS.CLUB_NOTICES);
   const noticeReadCollection = db.collection(COLLECTIONS.NOTICE_READS);
   const trainingFeedbackCollection = db.collection(COLLECTIONS.TRAINING_FEEDBACK);
@@ -169,6 +172,10 @@ function createRepository(db) {
 
   function registrationIdForStudentCompetition(studentUserId, competitionId) {
     return deterministicId('compreg', studentUserId, competitionId);
+  }
+
+  function competitionAttachmentIdForRequest(registrationId, clientRequestId) {
+    return deterministicId('competition_attachment', registrationId, clientRequestId);
   }
 
   function noticeIdForRequest(actorUserId, clientRequestId) {
@@ -702,6 +709,41 @@ function createRepository(db) {
     return countWhere(competitionRegistrationCollection, where);
   }
 
+  async function getCompetitionAttachment(attachmentId) {
+    return getDoc(competitionAttachmentCollection, attachmentId);
+  }
+
+  async function listCompetitionAttachments(options = {}) {
+    const where = {};
+    if (options.competitionId) {
+      where.competitionId = options.competitionId;
+    }
+    if (options.registrationId) {
+      where.registrationId = options.registrationId;
+    }
+    if (options.studentUserId) {
+      where.studentUserId = options.studentUserId;
+    }
+    if (options.status) {
+      where.status = options.status;
+    } else if (Array.isArray(options.statuses) && options.statuses.length) {
+      where.status = db.command.in(options.statuses);
+    }
+    return fetchAllOrdered(
+      competitionAttachmentCollection,
+      where,
+      [
+        { field: 'createdAt', direction: 'desc' },
+        { field: '_id', direction: 'asc' }
+      ],
+      { maxRecords: options.maxRecords || 300 }
+    );
+  }
+
+  async function countCompetitionAttachments(where) {
+    return countWhere(competitionAttachmentCollection, where);
+  }
+
   async function getClubNotice(noticeId) {
     return getDoc(clubNoticeCollection, noticeId);
   }
@@ -1197,12 +1239,14 @@ function createRepository(db) {
     attendanceSessionCollection,
     attendanceSessionIdForRequest,
     competitionIdForRequest,
+    competitionAttachmentIdForRequest,
     feedbackIdForStudentSession,
     noticeIdForRequest,
     noticeReadId,
     registrationIdForStudentCompetition,
     auditCollection,
     clubNoticeCollection,
+    competitionAttachmentCollection,
     competitionCollection,
     competitionRegistrationCollection,
     noticeReadCollection,
@@ -1215,6 +1259,9 @@ function createRepository(db) {
     getPerformanceRecord,
     getCoachGroupIds,
     countRegistrations,
+    countCompetitionAttachments,
+    getCompetitionAttachment,
+    listCompetitionAttachments,
     getClubNotice,
     getCompetition,
     getNoticeRead,

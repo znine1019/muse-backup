@@ -3,6 +3,7 @@
 const {
   ATTENDANCE_RECORD_STATUS,
   ATTENDANCE_SESSION_STATUS,
+  COMPETITION_MATERIAL_POLICY,
   COMPETITION_REGISTRATION_STATUS,
   COMPETITION_STATUS,
   FEEDBACK_COMPLETION,
@@ -1301,7 +1302,153 @@ function validateParentStudentQueryPayload(payload) {
   };
 }
 
+function sanitizeAttachmentFileName(rawName) {
+  if (typeof rawName !== 'string') {
+    fail('INVALID_FILE_NAME', '材料文件名不能为空。');
+  }
+  const withoutControl = rawName.replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  const normalized = withoutControl.replace(/\\/g, '/');
+  const segments = normalized
+    .split('/')
+    .map((part) => part.trim())
+    .filter((part) => part && part !== '.' && part !== '..');
+  const baseName = (segments[segments.length - 1] || '')
+    .replace(/\.\.+/g, '.')
+    .replace(/^\.+/, '')
+    .trim();
+  if (!baseName) {
+    fail('INVALID_FILE_NAME', '材料文件名不合法。');
+  }
+  const maxLength = COMPETITION_MATERIAL_POLICY.FILE_NAME_MAX_LENGTH;
+  if (baseName.length <= maxLength) {
+    return baseName;
+  }
+  const dotIndex = baseName.lastIndexOf('.');
+  if (dotIndex > 0 && dotIndex < baseName.length - 1) {
+    const ext = baseName.slice(dotIndex);
+    const stemMax = Math.max(1, maxLength - ext.length);
+    return `${baseName.slice(0, stemMax)}${ext}`;
+  }
+  return baseName.slice(0, maxLength);
+}
+
+function extractExtension(name) {
+  const text = String(name || '');
+  const dotIndex = text.lastIndexOf('.');
+  if (dotIndex <= 0 || dotIndex >= text.length - 1) {
+    return '';
+  }
+  return text.slice(dotIndex + 1).toLowerCase();
+}
+
+function validateMaterialPolicyPayload(payload) {
+  const input = asObject(payload);
+  return {
+    competitionId: safeId(input.competitionId, '赛事')
+  };
+}
+
+function validateRegisterMaterialPayload(payload) {
+  const input = asObject(payload);
+  const competitionId = safeId(input.competitionId, '赛事');
+  const registrationId = safeId(input.registrationId, '报名记录');
+  const clientRequestId = safeId(input.clientRequestId, '请求标识');
+
+  if (typeof input.cloudPath !== 'string' || !input.cloudPath.trim()) {
+    fail('INVALID_CLOUD_PATH', '材料存储路径不能为空。');
+  }
+  const cloudPath = input.cloudPath.trim();
+  if (
+    cloudPath.length > 300 ||
+    /[\u0000-\u001f\u007f\\]/.test(cloudPath) ||
+    cloudPath.includes('..') ||
+    cloudPath.startsWith('/')
+  ) {
+    fail('INVALID_CLOUD_PATH', '材料存储路径不合法。');
+  }
+
+  if (typeof input.fileId !== 'string' || !input.fileId.trim()) {
+    fail('INVALID_FILE_ID', '材料文件标识不能为空。');
+  }
+  const fileId = input.fileId.trim();
+  if (fileId.length > 500 || /[\u0000-\u001f\u007f]/.test(fileId)) {
+    fail('INVALID_FILE_ID', '材料文件标识不合法。');
+  }
+
+  const fileName = sanitizeAttachmentFileName(input.fileName);
+  const fileExt = extractExtension(fileName);
+  const pathExt = extractExtension(cloudPath);
+  if (
+    !fileExt ||
+    !pathExt ||
+    !COMPETITION_MATERIAL_POLICY.ALLOWED_EXTENSIONS.includes(fileExt) ||
+    !COMPETITION_MATERIAL_POLICY.ALLOWED_EXTENSIONS.includes(pathExt) ||
+    fileExt !== pathExt
+  ) {
+    fail(
+      'INVALID_FILE_TYPE',
+      '仅支持上传 jpg、jpeg、png、pdf 格式的材料文件。'
+    );
+  }
+
+  if (
+    typeof input.sizeBytes !== 'number' ||
+    !Number.isFinite(input.sizeBytes) ||
+    input.sizeBytes <= 0 ||
+    input.sizeBytes > COMPETITION_MATERIAL_POLICY.MAX_SIZE_BYTES
+  ) {
+    fail('INVALID_FILE_SIZE', '材料文件大小必须在 1 字节至 10MB 之间。');
+  }
+
+  return {
+    competitionId,
+    registrationId,
+    clientRequestId,
+    cloudPath,
+    fileId,
+    fileName,
+    extension: fileExt,
+    contentType: COMPETITION_MATERIAL_POLICY.CONTENT_TYPES[fileExt],
+    sizeBytes: Math.floor(input.sizeBytes)
+  };
+}
+
+function validateRemoveMaterialPayload(payload) {
+  const input = asObject(payload);
+  return {
+    attachmentId: safeId(input.attachmentId, '材料记录')
+  };
+}
+
+function validateListMyMaterialsPayload(payload) {
+  const input = asObject(payload);
+  return {
+    competitionId: safeId(input.competitionId, '赛事')
+  };
+}
+
+function validateListRegistrationMaterialsPayload(payload) {
+  const input = asObject(payload);
+  return {
+    competitionId: safeId(input.competitionId, '赛事')
+  };
+}
+
+function validateGetMaterialUrlPayload(payload) {
+  const input = asObject(payload);
+  return {
+    attachmentId: safeId(input.attachmentId, '材料记录')
+  };
+}
+
 module.exports = {
+  sanitizeAttachmentFileName,
+  validateGetMaterialUrlPayload,
+  validateListMyMaterialsPayload,
+  validateListRegistrationMaterialsPayload,
+  validateMaterialPolicyPayload,
+  validateRegisterMaterialPayload,
+  validateRemoveMaterialPayload,
   validateStatisticsPeriodPayload,
   normalizeInviteCode,
   validateParentProfilePayload,

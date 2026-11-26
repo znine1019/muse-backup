@@ -195,6 +195,18 @@ module.exports = {
     callApi('competition.update_registration_status', payload),
   exportRegistrationRows: (payload = {}) =>
     callApi('competition.export_rows', payload),
+  getCompetitionMaterialPolicy: (payload = {}) =>
+    callApi('competition.get_material_policy', payload),
+  registerCompetitionMaterial: (payload) =>
+    callApi('competition.register_material', payload),
+  removeCompetitionMaterial: (payload) =>
+    callApi('competition.remove_material', payload),
+  listMyCompetitionMaterials: (payload = {}) =>
+    callApi('competition.list_my_materials', payload),
+  listRegistrationMaterials: (payload = {}) =>
+    callApi('competition.list_registration_materials', payload),
+  getCompetitionMaterialUrl: (payload) =>
+    callApi('competition.get_material_url', payload),
   listManageNotices: (payload = {}) => callApi('notice.list_manage', payload),
   getManageNotice: (noticeId) =>
     callApi('notice.get_manage_detail', { noticeId }),

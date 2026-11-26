@@ -177,6 +177,39 @@
                 <view class="jg-row-m">项目：{{registration.itemsText}}</view>
                 <view wx:if="{{registration.contactNote}}" class="jg-row-m">补充说明：{{registration.contactNote}}</view>
                 <view wx:if="{{registration.reviewNote}}" class="jg-row-m">处理说明：{{registration.reviewNote}}</view>
+                <view class="jg-mt-8">
+                  <button
+                    class="jg-btn jg-btn-sm jg-btn-ghost"
+                    data-competition-id="{{item.competitionId}}"
+                    data-registration-id="{{registration.registrationId}}"
+                    loading="{{busyId === 'mat_' + registration.registrationId}}"
+                    bindtap="toggleRegistrationMaterials"
+                  >{{expandedMaterialRegistrationId === registration.registrationId ? '收起材料' : '材料'}}</button>
+                </view>
+                <view wx:if="{{expandedMaterialRegistrationId === registration.registrationId}}" class="material-panel jg-mt-8">
+                  <jg-empty
+                    wx:if="{{!materialsByRegistration[registration.registrationId] || !materialsByRegistration[registration.registrationId].length}}"
+                    title="暂无报名材料"
+                    message="该学生尚未上传此赛事的报名材料。"
+                  />
+                  <block wx:else>
+                    <view
+                      wx:for="{{materialsByRegistration[registration.registrationId]}}"
+                      wx:for-item="material"
+                      wx:key="attachmentId"
+                      class="material-item jg-mt-8"
+                    >
+                      <view class="jg-body-s">{{material.fileName}}</view>
+                      <view class="jg-sub">{{material.sizeText}} · 上传于 {{material.createdAtText || '刚刚'}}</view>
+                      <button
+                        class="jg-btn jg-btn-sm jg-btn-ghost jg-mt-8"
+                        data-attachment-id="{{material.attachmentId}}"
+                        loading="{{downloadingAttachmentId === material.attachmentId}}"
+                        bindtap="downloadMaterial"
+                      >查看/下载</button>
+                    </view>
+                  </block>
+                </view>
               </view>
             </view>
           </view>

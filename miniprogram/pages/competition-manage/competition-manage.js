@@ -32,6 +32,29 @@ function todayIso() {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+function formatMaterialSize(sizeBytes) {
+  const bytes = Number(sizeBytes) || 0;
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }
+  if (bytes >= 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+  return `${bytes} B`;
+}
+
+function formatMaterialTime(value) {
+  if (!value) {
+    return '';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  const pad = (num) => String(num).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 function decorateCompetition(competition) {
   return {
     ...competition,
@@ -73,6 +96,9 @@ Page({
     selectedCompetitionId: '',
     registrations: [],
     registrationStatusFilter: '',
+    materialsByRegistration: {},
+    expandedMaterialRegistrationId: '',
+    downloadingAttachmentId: '',
     exporting: false,
     busyId: ''
   },
@@ -221,7 +247,12 @@ Page({
       return;
     }
     if (this.data.selectedCompetitionId === competitionId) {
-      this.setData({ selectedCompetitionId: '', registrations: [] });
+      this.setData({
+        selectedCompetitionId: '',
+        registrations: [],
+        materialsByRegistration: {},
+        expandedMaterialRegistrationId: ''
+      });
       return;
     }
     this.setData({ busyId: competitionId, error: '' });
@@ -232,6 +263,8 @@ Page({
       });
       this.setData({
         selectedCompetitionId: competitionId,
+        materialsByRegistration: {},
+        expandedMaterialRegistrationId: '',
         registrations: (result.registrations || []).map((item) => ({
           ...item,
           statusLabel: STATUS_LABELS[item.status] || item.status,
@@ -352,6 +385,86 @@ Page({
       this.setData({ error: error.message || '报名名单导出失败。' });
     } finally {
       this.setData({ exporting: false });
+    }
+  },
+
+  async toggleRegistrationMaterials(event) {
+    const competitionId =
+      event.currentTarget.dataset.competitionId ||
+      this.data.selectedCompetitionId;
+    const registrationId = event.currentTarget.dataset.registrationId;
+    if (!competitionId || !registrationId) {
+      return;
+    }
+    if (this.data.expandedMaterialRegistrationId === registrationId) {
+      this.setData({ expandedMaterialRegistrationId: '' });
+      return;
+    }
+    this.setData({ busyId: `mat_${registrationId}`, error: '' });
+    try {
+      const result = await api.listRegistrationMaterials({ competitionId });
+      const rawByReg = (result && result.byRegistration) || {};
+      const formattedByReg = {};
+      for (const [regId, list] of Object.entries(rawByReg)) {
+        formattedByReg[regId] = (list || []).map((item) => ({
+          ...item,
+          sizeText: formatMaterialSize(item.sizeBytes),
+          createdAtText: formatMaterialTime(item.createdAt)
+        }));
+      }
+      this.setData({
+        materialsByRegistration: formattedByReg,
+        expandedMaterialRegistrationId: registrationId
+      });
+    } catch (error) {
+      this.setData({
+        error: (error && error.message) || '报名材料列表加载失败。'
+      });
+    } finally {
+      this.setData({ busyId: '' });
+    }
+  },
+
+  async downloadMaterial(event) {
+    const attachmentId = event.currentTarget.dataset.attachmentId;
+    if (!attachmentId || this.data.downloadingAttachmentId) {
+      return;
+    }
+    this.setData({ downloadingAttachmentId: attachmentId, error: '' });
+    try {
+      const result = await api.getCompetitionMaterialUrl({ attachmentId });
+      if (!result || !result.tempFileURL) {
+        throw new Error('未能获取临时下载链接，请稍后重试。');
+      }
+      const downloadRes = await new Promise((resolve, reject) => {
+        wx.downloadFile({
+          url: result.tempFileURL,
+          success: resolve,
+          fail: reject
+        });
+      });
+      if (
+        !downloadRes ||
+        downloadRes.statusCode !== 200 ||
+        !downloadRes.tempFilePath
+      ) {
+        throw new Error('材料文件下载失败，请稍后重试。');
+      }
+      await new Promise((resolve, reject) => {
+        wx.openDocument({
+          filePath: downloadRes.tempFilePath,
+          fileType: result.extension || undefined,
+          showMenu: true,
+          success: resolve,
+          fail: reject
+        });
+      });
+    } catch (error) {
+      this.setData({
+        error: (error && error.message) || '材料查看或下载失败。'
+      });
+    } finally {
+      this.setData({ downloadingAttachmentId: '' });
     }
   },
 

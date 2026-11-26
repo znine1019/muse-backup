@@ -3,6 +3,8 @@
 const {
   AUDIT_ACTIONS,
   COLLECTIONS,
+  COMPETITION_ATTACHMENT_STATUS,
+  COMPETITION_MATERIAL_POLICY,
   COMPETITION_REGISTRATION_STATUS,
   COMPETITION_STATUS,
   ROLES
@@ -15,7 +17,9 @@ const {
   isDeveloperActor
 } = require('../lib/management-scope');
 const { listPerformanceEvents } = require('../lib/performance-events');
+const { deterministicId } = require('../lib/repository');
 const { loadActiveActor } = require('../lib/session');
+const defaultStorage = require('../lib/storage');
 const { getDocumentOrNull } = require('../lib/transaction');
 const {
   safeId,
@@ -23,10 +27,16 @@ const {
   validateCompetitionCreatePayload,
   validateCompetitionQueryPayload,
   validateCompetitionUpdatePayload,
+  validateGetMaterialUrlPayload,
   validateIntentCancelPayload,
   validateIntentSubmitPayload,
+  validateListMyMaterialsPayload,
+  validateListRegistrationMaterialsPayload,
+  validateMaterialPolicyPayload,
+  validateRegisterMaterialPayload,
   validateRegistrationQueryPayload,
-  validateRegistrationStatusPayload
+  validateRegistrationStatusPayload,
+  validateRemoveMaterialPayload
 } = require('../lib/validation');
 
 const ACTIVE_REGISTRATION_STATUSES = Object.freeze([
@@ -132,7 +142,25 @@ function itemKey(eventCode, category) {
   return `${eventCode}|${category}`;
 }
 
-function createCompetitionActions({ repository }) {
+function readableAttachment(attachment) {
+  return {
+    id: attachment._id,
+    attachmentId: attachment._id,
+    competitionId: attachment.competitionId,
+    registrationId: attachment.registrationId,
+    studentUserId: attachment.studentUserId,
+    fileName: attachment.fileName,
+    extension: attachment.extension,
+    contentType: attachment.contentType,
+    sizeBytes: Number(attachment.sizeBytes) || 0,
+    status: attachment.status,
+    createdAt: attachment.createdAt || null,
+    updatedAt: attachment.updatedAt || null,
+    removedAt: attachment.removedAt || null
+  };
+}
+
+function createCompetitionActions({ repository, storage = defaultStorage }) {
   async function loadManageActor(identity) {
     return loadActiveActor(repository, identity, [
       ROLES.COACH,
@@ -1100,6 +1128,447 @@ function createCompetitionActions({ repository }) {
     };
   }
 
+  function attachmentIdFor(registrationId, clientRequestId) {
+    if (typeof repository.competitionAttachmentIdForRequest === 'function') {
+      return repository.competitionAttachmentIdForRequest(
+        registrationId,
+        clientRequestId
+      );
+    }
+    return deterministicId(
+      'competition_attachment',
+      registrationId,
+      clientRequestId
+    );
+  }
+
+  async function listAttachmentsByFilter(filter) {
+    if (typeof repository.listCompetitionAttachments === 'function') {
+      const result = await repository.listCompetitionAttachments(filter);
+      return result.records || [];
+    }
+    const where = {};
+    if (filter.competitionId) {
+      where.competitionId = filter.competitionId;
+    }
+    if (filter.registrationId) {
+      where.registrationId = filter.registrationId;
+    }
+    if (filter.studentUserId) {
+      where.studentUserId = filter.studentUserId;
+    }
+    if (filter.status) {
+      where.status = filter.status;
+    }
+    const records = await repository.queryAll(
+      repository.competitionAttachmentCollection,
+      where,
+      300
+    );
+    return records.sort(
+      (left, right) =>
+        new Date(right.createdAt || 0).getTime() -
+        new Date(left.createdAt || 0).getTime()
+    );
+  }
+
+  async function getAttachmentById(attachmentId) {
+    if (typeof repository.getCompetitionAttachment === 'function') {
+      return repository.getCompetitionAttachment(attachmentId);
+    }
+    const list = await repository.queryAll(
+      repository.competitionAttachmentCollection,
+      { _id: attachmentId },
+      1
+    );
+    return list[0] || null;
+  }
+
+  async function getMaterialPolicy({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const input = validateMaterialPolicyPayload(payload);
+    const competition = await repository.getCompetition(input.competitionId);
+    if (!competition || competition.status === COMPETITION_STATUS.DRAFT) {
+      fail('COMPETITION_NOT_FOUND', '赛事不存在。');
+    }
+    const studentGroupIds = await repository.getStudentGroupIds(actor._id);
+    if (!competitionVisibleToGroups(competition, studentGroupIds)) {
+      fail('OUT_OF_SCOPE', '该赛事不在本人训练组可见范围内。');
+    }
+    const activeAttachments = await listAttachmentsByFilter({
+      competitionId: input.competitionId,
+      studentUserId: actor._id,
+      status: COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    });
+    const uploadedCount = activeAttachments.length;
+    const maxFiles = COMPETITION_MATERIAL_POLICY.MAX_FILES_PER_COMPETITION;
+    return {
+      competitionId: input.competitionId,
+      allowedExtensions: [...COMPETITION_MATERIAL_POLICY.ALLOWED_EXTENSIONS],
+      maxSizeBytes: COMPETITION_MATERIAL_POLICY.MAX_SIZE_BYTES,
+      maxFilesPerCompetition: maxFiles,
+      uploadedCount,
+      remainingCount: Math.max(0, maxFiles - uploadedCount)
+    };
+  }
+
+  async function registerMaterial({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const input = validateRegisterMaterialPayload(payload);
+
+    const expectedPrefix = `${COMPETITION_MATERIAL_POLICY.STORAGE_PREFIX}/${input.competitionId}/${actor._id}/`;
+    if (!input.cloudPath.startsWith(expectedPrefix)) {
+      fail('INVALID_CLOUD_PATH', '材料存储路径必须归属于当前学生与目标赛事。');
+    }
+    const relativeSegment = input.cloudPath.slice(expectedPrefix.length);
+    if (!relativeSegment || relativeSegment.includes('/')) {
+      fail('INVALID_CLOUD_PATH', '材料存储路径不合法。');
+    }
+
+    const competition = await repository.getCompetition(input.competitionId);
+    if (!competition) {
+      fail('COMPETITION_NOT_FOUND', '赛事不存在。');
+    }
+    if (competition.status !== COMPETITION_STATUS.PUBLISHED) {
+      fail('COMPETITION_NOT_OPEN', '当前赛事状态不允许上传报名材料。');
+    }
+
+    const registration = await repository.getRegistration(input.registrationId);
+    if (
+      !registration ||
+      registration.competitionId !== input.competitionId ||
+      registration.studentUserId !== actor._id ||
+      !ACTIVE_REGISTRATION_STATUSES.includes(registration.status)
+    ) {
+      fail(
+        'REGISTRATION_REQUIRED',
+        '请先提交该赛事的有效参赛意向后再上传材料。'
+      );
+    }
+
+    const attachmentId = attachmentIdFor(
+      input.registrationId,
+      input.clientRequestId
+    );
+    const existing = await getAttachmentById(attachmentId);
+    if (
+      existing &&
+      existing.studentUserId === actor._id &&
+      existing.competitionId === input.competitionId
+    ) {
+      return {
+        attachment: readableAttachment(existing),
+        duplicate: true
+      };
+    }
+
+    const fileStat = await storage.statFile(input.fileId);
+    if (
+      !fileStat ||
+      typeof fileStat.sizeBytes !== 'number' ||
+      !Number.isFinite(fileStat.sizeBytes)
+    ) {
+      fail(
+        'FILE_NOT_FOUND_IN_STORAGE',
+        '未在云存储中校验到已上传的材料文件，请重新上传。'
+      );
+    }
+    if (
+      fileStat.sizeBytes <= 0 ||
+      fileStat.sizeBytes > COMPETITION_MATERIAL_POLICY.MAX_SIZE_BYTES
+    ) {
+      fail('INVALID_FILE_SIZE', '材料文件实际大小超出允许范围（最大 10MB）。');
+    }
+
+    const verifiedSizeBytes = Math.floor(fileStat.sizeBytes);
+    const now = new Date();
+    const txResult = await repository.db.runTransaction(async (transaction) => {
+      const attachmentReference = transaction
+        .collection(COLLECTIONS.COMPETITION_ATTACHMENTS)
+        .doc(attachmentId);
+      const current = await getDocumentOrNull(attachmentReference);
+      if (current) {
+        if (
+          current.studentUserId !== actor._id ||
+          current.competitionId !== input.competitionId
+        ) {
+          fail('OUT_OF_SCOPE', '材料请求标识与当前学生或赛事不匹配。');
+        }
+        return { attachment: current, duplicate: true };
+      }
+
+      const activeQuery = await transaction
+        .collection(COLLECTIONS.COMPETITION_ATTACHMENTS)
+        .where({
+          competitionId: input.competitionId,
+          studentUserId: actor._id,
+          status: COMPETITION_ATTACHMENT_STATUS.ACTIVE
+        })
+        .limit(COMPETITION_MATERIAL_POLICY.MAX_FILES_PER_COMPETITION)
+        .get();
+      if (
+        (activeQuery.data || []).length >=
+        COMPETITION_MATERIAL_POLICY.MAX_FILES_PER_COMPETITION
+      ) {
+        fail(
+          'MATERIAL_LIMIT_EXCEEDED',
+          `每人每场赛事最多上传 ${COMPETITION_MATERIAL_POLICY.MAX_FILES_PER_COMPETITION} 份材料。`
+        );
+      }
+
+      const recordData = {
+        competitionId: input.competitionId,
+        registrationId: input.registrationId,
+        studentUserId: actor._id,
+        cloudPath: input.cloudPath,
+        fileId: input.fileId,
+        fileName: input.fileName,
+        extension: input.extension,
+        contentType: input.contentType,
+        sizeBytes: verifiedSizeBytes,
+        status: COMPETITION_ATTACHMENT_STATUS.ACTIVE,
+        createdAt: now,
+        updatedAt: now,
+        removedAt: null,
+        removedBy: '',
+        uploadedBy: actor._id,
+        schemaVersion: 1
+      };
+      await attachmentReference.set({ data: recordData });
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(
+          deterministicId(
+            'audit_competition_material_reg',
+            attachmentId,
+            actor._id
+          )
+        )
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: AUDIT_ACTIONS.COMPETITION_MATERIAL_REGISTERED,
+            targetType: 'competition_attachment',
+            targetId: attachmentId,
+            result: 'success',
+            metadata: {
+              attachmentId,
+              competitionId: input.competitionId,
+              registrationId: input.registrationId,
+              extension: input.extension,
+              sizeBytes: verifiedSizeBytes
+            },
+            createdAt: now
+          }
+        });
+      return {
+        attachment: { _id: attachmentId, ...recordData },
+        duplicate: false
+      };
+    });
+
+    return {
+      attachment: readableAttachment(txResult.attachment),
+      duplicate: txResult.duplicate
+    };
+  }
+
+  async function removeMaterial({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const input = validateRemoveMaterialPayload(payload);
+    const existing = await getAttachmentById(input.attachmentId);
+    if (!existing) {
+      fail('ATTACHMENT_NOT_FOUND', '材料记录不存在。');
+    }
+    if (existing.studentUserId !== actor._id) {
+      fail('OUT_OF_SCOPE', '只能删除本人上传的赛事材料。');
+    }
+    if (existing.status === COMPETITION_ATTACHMENT_STATUS.REMOVED) {
+      return {
+        attachment: readableAttachment(existing),
+        alreadyRemoved: true
+      };
+    }
+
+    /* Delete cloud storage file first; if storage deletion fails, keep DB record active so caller can retry cleanly. */
+    await storage.deleteFile(existing.fileId);
+
+    const now = new Date();
+    const txResult = await repository.db.runTransaction(async (transaction) => {
+      const attachmentReference = transaction
+        .collection(COLLECTIONS.COMPETITION_ATTACHMENTS)
+        .doc(existing._id);
+      const current = await getDocumentOrNull(attachmentReference);
+      if (!current) {
+        fail('ATTACHMENT_NOT_FOUND', '材料记录不存在。');
+      }
+      if (current.studentUserId !== actor._id) {
+        fail('OUT_OF_SCOPE', '只能删除本人上传的赛事材料。');
+      }
+      if (current.status === COMPETITION_ATTACHMENT_STATUS.REMOVED) {
+        return { attachment: current, alreadyRemoved: true };
+      }
+      await attachmentReference.update({
+        data: {
+          status: COMPETITION_ATTACHMENT_STATUS.REMOVED,
+          removedAt: now,
+          removedBy: actor._id,
+          updatedAt: now
+        }
+      });
+      await transaction
+        .collection(COLLECTIONS.AUDIT_LOGS)
+        .doc(
+          deterministicId(
+            'audit_competition_material_rm',
+            existing._id,
+            actor._id
+          )
+        )
+        .set({
+          data: {
+            actorUserId: actor._id,
+            action: AUDIT_ACTIONS.COMPETITION_MATERIAL_REMOVED,
+            targetType: 'competition_attachment',
+            targetId: existing._id,
+            result: 'success',
+            metadata: {
+              attachmentId: existing._id,
+              competitionId: current.competitionId,
+              registrationId: current.registrationId
+            },
+            createdAt: now
+          }
+        });
+      return {
+        attachment: {
+          ...current,
+          status: COMPETITION_ATTACHMENT_STATUS.REMOVED,
+          removedAt: now,
+          removedBy: actor._id,
+          updatedAt: now
+        },
+        alreadyRemoved: false
+      };
+    });
+
+    return {
+      attachment: readableAttachment(txResult.attachment),
+      alreadyRemoved: txResult.alreadyRemoved
+    };
+  }
+
+  async function listMyMaterials({ identity, payload }) {
+    const actor = await loadActiveActor(repository, identity, [ROLES.STUDENT]);
+    const input = validateListMyMaterialsPayload(payload);
+    const records = await listAttachmentsByFilter({
+      competitionId: input.competitionId,
+      studentUserId: actor._id,
+      status: COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    });
+    const activeOnly = records.filter(
+      (record) => record.status === COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    );
+    const maxFiles = COMPETITION_MATERIAL_POLICY.MAX_FILES_PER_COMPETITION;
+    return {
+      competitionId: input.competitionId,
+      materials: activeOnly.map(readableAttachment),
+      uploadedCount: activeOnly.length,
+      maxFilesPerCompetition: maxFiles,
+      remainingCount: Math.max(0, maxFiles - activeOnly.length)
+    };
+  }
+
+  async function listRegistrationMaterials({ identity, payload }) {
+    const actor = await loadManageActor(identity);
+    const input = validateListRegistrationMaterialsPayload(payload);
+    const competition = await repository.getCompetition(input.competitionId);
+    if (!competition) {
+      fail('COMPETITION_NOT_FOUND', '赛事不存在。');
+    }
+    await assertCompetitionManageable(actor, competition);
+
+    const records = await listAttachmentsByFilter({
+      competitionId: input.competitionId,
+      status: COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    });
+    const activeOnly = records.filter(
+      (record) => record.status === COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    );
+    const byRegistration = {};
+    const groupMap = new Map();
+    for (const record of activeOnly) {
+      const item = readableAttachment(record);
+      if (!byRegistration[record.registrationId]) {
+        byRegistration[record.registrationId] = [];
+      }
+      byRegistration[record.registrationId].push(item);
+      if (!groupMap.has(record.registrationId)) {
+        groupMap.set(record.registrationId, {
+          registrationId: record.registrationId,
+          studentUserId: record.studentUserId,
+          materials: []
+        });
+      }
+      groupMap.get(record.registrationId).materials.push(item);
+    }
+
+    return {
+      competitionId: input.competitionId,
+      byRegistration,
+      groups: Array.from(groupMap.values()),
+      total: activeOnly.length
+    };
+  }
+
+  async function getMaterialUrl({ identity, payload }) {
+    const actor = await loadManageActor(identity);
+    const input = validateGetMaterialUrlPayload(payload);
+    const attachment = await getAttachmentById(input.attachmentId);
+    if (
+      !attachment ||
+      attachment.status !== COMPETITION_ATTACHMENT_STATUS.ACTIVE
+    ) {
+      fail('ATTACHMENT_NOT_FOUND', '材料记录不存在或已删除。');
+    }
+    const competition = await repository.getCompetition(attachment.competitionId);
+    if (!competition) {
+      fail('COMPETITION_NOT_FOUND', '赛事不存在。');
+    }
+    await assertCompetitionManageable(actor, competition);
+
+    const expiresInSeconds = COMPETITION_MATERIAL_POLICY.TEMP_URL_MAX_AGE_SECONDS;
+    const tempFileURL = await storage.getTempUrl(
+      attachment.fileId,
+      expiresInSeconds
+    );
+
+    await repository.writeAudit({
+      actorUserId: actor._id,
+      action: AUDIT_ACTIONS.COMPETITION_MATERIAL_DOWNLOADED,
+      targetType: 'competition_attachment',
+      targetId: attachment._id,
+      result: 'success',
+      metadata: {
+        attachmentId: attachment._id,
+        competitionId: attachment.competitionId,
+        registrationId: attachment.registrationId
+      }
+    });
+
+    return {
+      attachmentId: attachment._id,
+      competitionId: attachment.competitionId,
+      registrationId: attachment.registrationId,
+      fileName: attachment.fileName,
+      extension: attachment.extension,
+      contentType: attachment.contentType,
+      sizeBytes: Number(attachment.sizeBytes) || 0,
+      tempFileURL,
+      expiresInSeconds
+    };
+  }
+
   return {
     'competition.list_meta': listMeta,
     'competition.list_manage': listManageCompetitions,
@@ -1117,7 +1586,13 @@ function createCompetitionActions({ repository }) {
     'competition.list_registrations': listManagedRegistrations,
     'competition.get_registration_detail': getManagedRegistrationDetail,
     'competition.update_registration_status': updateRegistrationStatus,
-    'competition.export_rows': exportRegistrationRows
+    'competition.export_rows': exportRegistrationRows,
+    'competition.get_material_policy': getMaterialPolicy,
+    'competition.register_material': registerMaterial,
+    'competition.remove_material': removeMaterial,
+    'competition.list_my_materials': listMyMaterials,
+    'competition.list_registration_materials': listRegistrationMaterials,
+    'competition.get_material_url': getMaterialUrl
   };
 }
 

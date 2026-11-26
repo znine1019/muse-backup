@@ -16,6 +16,7 @@ const COLLECTIONS = Object.freeze({
   LEAVE_REQUESTS: 'leave_requests',
   COMPETITIONS: 'competitions',
   COMPETITION_REGISTRATIONS: 'competition_registrations',
+  COMPETITION_ATTACHMENTS: 'competition_attachments',
   CLUB_NOTICES: 'club_notices',
   NOTICE_READS: 'notice_reads',
   TRAINING_FEEDBACK: 'training_feedback',
@@ -123,6 +124,26 @@ const COMPETITION_REGISTRATION_STATUS = Object.freeze({
   CANCELLED: 'cancelled'
 });
 
+const COMPETITION_ATTACHMENT_STATUS = Object.freeze({
+  ACTIVE: 'active',
+  REMOVED: 'removed'
+});
+
+const COMPETITION_MATERIAL_POLICY = Object.freeze({
+  ALLOWED_EXTENSIONS: Object.freeze(['jpg', 'jpeg', 'png', 'pdf']),
+  MAX_SIZE_BYTES: 10 * 1024 * 1024,
+  MAX_FILES_PER_COMPETITION: 3,
+  TEMP_URL_MAX_AGE_SECONDS: 60,
+  FILE_NAME_MAX_LENGTH: 80,
+  STORAGE_PREFIX: 'competition-attachments',
+  CONTENT_TYPES: Object.freeze({
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    pdf: 'application/pdf'
+  })
+});
+
 const NOTICE_STATUS = Object.freeze({
   DRAFT: 'draft',
   PUBLISHED: 'published',
@@ -184,6 +205,9 @@ const AUDIT_ACTIONS = Object.freeze({
   REGISTRATION_SUBMITTED: 'student.competition.intent_submitted',
   REGISTRATION_STATUS_CHANGED: 'coach.competition.registration_status_changed',
   REGISTRATION_CANCELLED: 'student.competition.intent_cancelled',
+  COMPETITION_MATERIAL_REGISTERED: 'competition.material.registered',
+  COMPETITION_MATERIAL_REMOVED: 'competition.material.removed',
+  COMPETITION_MATERIAL_DOWNLOADED: 'competition.material.downloaded',
   NOTICE_CREATED: 'coach.notice.created',
   NOTICE_UPDATED: 'coach.notice.updated',
   NOTICE_PUBLISHED: 'coach.notice.published',
@@ -241,6 +265,8 @@ const LIMITS = Object.freeze({
 });
 
 module.exports = {
+  COMPETITION_ATTACHMENT_STATUS,
+  COMPETITION_MATERIAL_POLICY,
   COMPETITION_REGISTRATION_STATUS,
   COMPETITION_STATUS,
   FEEDBACK_COMPLETION,
