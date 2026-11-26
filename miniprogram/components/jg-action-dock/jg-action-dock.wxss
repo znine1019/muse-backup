@@ -1,0 +1,67 @@
+/* V1.6.5 自包含单排 5 项页内跳转坞（高度严格 <= 112rpx，固定在底部安全区之上，非原生 tabBar） */
+.ad-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: #0B1219;
+  border-top: 2rpx solid #1E2C3A;
+  padding: 10rpx 16rpx calc(10rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  animation: ad-up 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes ad-up {
+  from { opacity: 0; transform: translateY(36rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ad-row {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+  max-height: 112rpx;
+}
+.ad-item {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 88rpx;
+  border-radius: 16rpx;
+  background: #101A24;
+  border: 2rpx solid #1E2C3A;
+  color: #B9C6D4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8rpx;
+  box-sizing: border-box;
+  transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ad-item:last-child { margin-right: 0; }
+.ad-item:active { transform: scale(0.96); opacity: 0.85; }
+.ad-item.is-active {
+  background: #132D49;
+  border-color: #2F6FBF;
+  color: #FFFFFF;
+}
+.ad-label {
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ad-daylight {
+  background: #FFFFFF;
+  border-top-color: #C9D6E3;
+}
+.ad-daylight .ad-item {
+  background: #F7FAFC;
+  border-color: #C9D6E3;
+  color: #33485E;
+}
+.ad-daylight .ad-item.is-active {
+  background: #132D49;
+  border-color: #132D49;
+  color: #FFFFFF;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ad-dock { animation-duration: 0.01ms !important; }
+}

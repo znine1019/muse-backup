@@ -23,18 +23,18 @@ function read(relativePath) {
 const APP_JSON = JSON.parse(read('miniprogram/app.json'));
 const APP_WXSS = read('miniprogram/app.wxss');
 
-/* 本轮人工批准的十个核心色值 */
+/* V1.6.5 批准的黑底白字 + 深蓝核心色值（已移除全部橙色） */
 const APPROVED_COLORS = [
-  ['品牌深蓝', '#103A6B'],
-  ['辅助深蓝', '#17509E'],
-  ['竞技青', '#00A7C4'],
-  ['能量橙', '#F2711C'],
-  ['浅色底橙色文字', '#B54A07'],
-  ['页面背景', '#F2F5F9'],
-  ['主要文字', '#0E1A28'],
-  ['成功状态', '#0F7B5A'],
-  ['待处理状态', '#B45309'],
-  ['危险状态', '#C0392B']
+  ['页面底', '#05070A'],
+  ['卡片面', '#0B1219'],
+  ['次级面', '#101A24'],
+  ['品牌深蓝', '#132D49'],
+  ['强调蓝', '#2F6FBF'],
+  ['高亮蓝', '#7FB2FF'],
+  ['分割线', '#1E2C3A'],
+  ['主文字', '#FFFFFF'],
+  ['次文字', '#B9C6D4'],
+  ['错误红', '#FF6B6B']
 ];
 
 /* F1-A 范围内页面 */
@@ -113,11 +113,11 @@ function classTokens(source) {
 test('F1-A 全局导航栏与窗口背景统一为品牌色', () => {
   assert.equal(
     APP_JSON.window.navigationBarBackgroundColor,
-    '#103A6B',
-    '导航栏背景应为品牌深蓝 #103A6B'
+    '#132D49',
+    '导航栏背景应为 V1.6.5 品牌深蓝 #132D49'
   );
   assert.equal(APP_JSON.window.navigationBarTextStyle, 'white', '导航栏文字应为白色');
-  assert.equal(APP_JSON.window.backgroundColor, '#F2F5F9', '窗口背景应为 #F2F5F9');
+  assert.equal(APP_JSON.window.backgroundColor, '#05070A', '窗口背景应为 V1.6.5 深空黑 #05070A');
 });
 
 test('F1-A 不存在页面级导航栏/窗口覆盖（改动 app.json 即可全站统一）', () => {
@@ -146,16 +146,17 @@ test('F1-A 设计令牌包含本轮批准的全部核心色值', () => {
   }
 });
 
-test('F1-A 浅色背景橙色文字使用高对比 #B54A07，不再使用 #D95F0E', () => {
+test('F1-A V1.6.5 彻底清除橙色残留，使用高对比蓝白令牌', () => {
   assert.ok(
-    APP_WXSS.includes('--jg-accent-2-strong: #B54A07'),
-    'accent-2-strong 令牌应为 #B54A07'
+    APP_WXSS.includes('--jg-accent: #2F6FBF') && APP_WXSS.includes('--jg-accent-hi: #7FB2FF'),
+    '强调蓝与高亮蓝令牌必须为 #2F6FBF / #7FB2FF'
   );
   for (const file of [
     'miniprogram/app.wxss',
     'miniprogram/components/jg-page-head/jg-page-head.wxss'
   ]) {
-    assert.ok(!read(file).includes('#D95F0E'), `${file} 不应再使用低对比 #D95F0E`);
+    const css = read(file);
+    assert.ok(!/#D95F0E|#F2711C|#B54A07|#EE8300/i.test(css), `${file} 不应再残留任何橙色`);
   }
 });
 
@@ -178,18 +179,18 @@ function contrastRatio(foreground, background) {
 
 test('F1-A 文字对比度不低于 AA 4.5:1', () => {
   const pairs = [
-    ['橙色文字/浅橙底', '#B54A07', '#FDEDE2'],
-    ['橙色文字/白底', '#B54A07', '#FFFFFF'],
-    ['主文字/白底', '#0E1A28', '#FFFFFF'],
-    ['说明文字/白底', '#64748B', '#FFFFFF'],
-    ['品牌深蓝/白底', '#103A6B', '#FFFFFF'],
-    ['成功/成功底', '#0F7B5A', '#E8F6F0'],
-    ['待处理/待处理底', '#B45309', '#FEF6E7'],
-    ['危险/危险底', '#C0392B', '#FDEDEB'],
-    ['白字/主按钮', '#FFFFFF', '#103A6B'],
-    ['强调按钮文字/能量橙', '#08203F', '#F2711C'],
-    ['数据卡标签/深蓝卡', '#9FC0E4', '#0F3563'],
-    ['数据卡数值/深蓝卡', '#EAF3FF', '#0F3563']
+    ['主文字/页面底', '#FFFFFF', '#05070A'],
+    ['主文字/卡片面', '#FFFFFF', '#0B1219'],
+    ['次文字/卡片面', '#B9C6D4', '#0B1219'],
+    ['主按钮黑字/白底', '#05070A', '#FFFFFF'],
+    ['页头白字/品牌深蓝', '#FFFFFF', '#132D49'],
+    ['高亮蓝数值/卡片面', '#7FB2FF', '#0B1219'],
+    ['高亮蓝数值/品牌深蓝', '#7FB2FF', '#132D49'],
+    ['白字/强调蓝选中', '#FFFFFF', '#2F6FBF'],
+    ['错误红/卡片面', '#FF6B6B', '#0B1219'],
+    ['日光主文字/白卡', '#05070A', '#FFFFFF'],
+    ['日光主按钮/深蓝', '#FFFFFF', '#132D49'],
+    ['日光强调蓝/浅底', '#2F6FBF', '#F7FAFC']
   ];
   for (const [label, fg, bg] of pairs) {
     const ratio = contrastRatio(fg, bg);
@@ -197,12 +198,16 @@ test('F1-A 文字对比度不低于 AA 4.5:1', () => {
   }
 });
 
-test('F1-A 强调按钮不再使用低对比白字（白字在 #F2711C 上仅 2.94:1）', () => {
+test('F1-A 强调按钮使用高对比黑字白底（不再使用低对比橙底）', () => {
   const rule = APP_WXSS.match(/\.jg-btn-accent\s*\{[^}]*\}/);
   assert.ok(rule, '应存在 .jg-btn-accent 规则');
   assert.ok(
-    !/#FFFFFF/i.test(rule[0]),
-    '.jg-btn-accent 不得使用白色文字（在能量橙上对比度不足）'
+    !/#F2711C|#EE8300/i.test(rule[0]),
+    '.jg-btn-accent 不得使用旧橙色'
+  );
+  assert.ok(
+    rule[0].includes('--jg-cta-text'),
+    '.jg-btn-accent 应使用高对比主 CTA 令牌'
   );
 });
 

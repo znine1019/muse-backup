@@ -1,10 +1,11 @@
-<view class="head">
+<view class="head {{daylight ? 'head-daylight' : ''}}">
   <view class="head-main">
     <view class="head-title">{{title}}</view>
     <view class="head-meta" wx:if="{{meta}}">{{meta}}</view>
   </view>
   <view class="head-right">
     <text wx:if="{{roleLabel}}" class="role role-{{roleTone}}">{{roleLabel}}</text>
+    <view wx:if="{{showDaylightToggle}}" class="daylight-btn" bindtap="onToggleDaylight">{{daylight ? '日光:开' : '日光'}}</view>
     <slot></slot>
   </view>
 </view>

@@ -393,9 +393,9 @@ test('F1-B2 趋势图只改容器样式，Canvas 绘制逻辑未改动', () => {
   const wxss = read('miniprogram/components/trend-chart/trend-chart.wxss');
   const js = read('miniprogram/components/trend-chart/trend-chart.js');
 
-  /* 容器/文字已换到统一色板 */
+  /* 容器/文字已换到 V1.6.5 黑底白字+深蓝统一色板 */
   assert.ok(!/#123c4d|#10263c|#718096/i.test(wxss), '趋势图样式不应残留遗留色值');
-  assert.ok(wxss.includes('#0E1A28'), '趋势图标题应使用统一主文字色');
+  assert.ok(wxss.includes('#FFFFFF'), '趋势图标题应使用 V1.6.5 主文字色 #FFFFFF');
 
   /* 绘制逻辑仍在，且未引入样式类或接口调用 */
   assert.match(js, /createSelectorQuery/, 'Canvas 绘制逻辑不得丢失');

@@ -1,0 +1,16 @@
+<view class="fc-scene {{daylight ? 'fc-daylight' : ''}} {{(degrade2d || autoDegrade) ? 'fc-2d' : ''}} {{innerFlipped ? 'is-flipped' : ''}}">
+  <view class="fc-inner">
+    <view class="fc-face fc-front">
+      <slot name="front"></slot>
+      <view class="fc-bar">
+        <button class="fc-toggle" bindtap="onToggleFlip">{{frontActionText}}</button>
+      </view>
+    </view>
+    <view class="fc-face fc-back">
+      <slot name="back"></slot>
+      <view class="fc-bar">
+        <button class="fc-toggle" bindtap="onToggleFlip">{{backActionText}}</button>
+      </view>
+    </view>
+  </view>
+</view>

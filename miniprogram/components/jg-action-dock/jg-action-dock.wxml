@@ -1,0 +1,13 @@
+<view wx:if="{{!hidden && items.length > 0}}" class="ad-dock {{daylight ? 'ad-daylight' : ''}}">
+  <view class="ad-row">
+    <view
+      wx:for="{{items}}"
+      wx:key="key"
+      class="ad-item {{activeKey === item.key ? 'is-active' : ''}}"
+      data-item="{{item}}"
+      bindtap="onTapItem"
+    >
+      <text class="ad-label">{{item.label}}</text>
+    </view>
+  </view>
+</view>

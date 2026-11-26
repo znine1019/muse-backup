@@ -1,0 +1,6 @@
+<view class="sr-wrap {{daylight ? 'sr-daylight' : ''}}" style="{{ringStyle}}">
+  <view class="sr-core">
+    <text class="sr-val">{{displayText}}</text>
+    <text class="sr-lbl">{{empty ? '无数据' : (incomplete ? '估算口径' : label)}}</text>
+  </view>
+</view>

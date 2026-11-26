@@ -66,14 +66,14 @@ for (const file of [
 const appWxss = readText('miniprogram/app.wxss');
 
 for (const token of [
-  '#103A6B', // 品牌主色
-  '#00A7C4', // 竞技青
-  '#F2711C', // 能量橙
-  '#0F7B5A', // 成功
-  '#B45309', // 警告
-  '#C0392B', // 错误
-  '#F2F5F9', // 页面背景
-  '#0F3563' // 深蓝竞技数据卡
+  '#05070A', // V1.6.5 页面底
+  '#0B1219', // V1.6.5 卡片面
+  '#101A24', // V1.6.5 次级面
+  '#132D49', // V1.6.5 品牌深蓝
+  '#2F6FBF', // V1.6.5 强调蓝
+  '#7FB2FF', // V1.6.5 高亮蓝
+  '#1E2C3A', // V1.6.5 分割线
+  '#FF6B6B'  // V1.6.5 错误红
 ]) {
   check(appWxss.includes(token), `设计令牌已定义：${token}`);
 }
