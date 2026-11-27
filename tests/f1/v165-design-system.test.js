@@ -169,37 +169,49 @@ test('V1.6.5 三大自包含新组件与 WXS 手势层、Canvas DPR 限制符合
   assert.doesNotMatch(previewJs, /const\s+steps\s*=\s*20/, '试穿页不得使用 setData 逐帧循环');
 });
 
-test('V1.6.5 7 个核心页落地 V1 布局 + V2 形变动效，37 页全覆盖且入口版本为 V1.6.5', () => {
+test('V1.6.5 7 个核心页落地横向 Deck + 双栏表 + 底部抽屉 + 分步表单，37 页全覆盖且入口版本为 V1.6.5', () => {
   const studentWxml = read('miniprogram/pages/student/student.wxml');
   assert.match(studentWxml, /<jg-flip-card/, '学生首页 PB 卡应支持 3D 翻面');
   assert.match(studentWxml, /<jg-stat-ring/, '学生首页应包含环形出勤仪表');
   assert.match(studentWxml, /jg-timeline/, '学生首页今日训练应使用局部时间轴');
-  assert.match(studentWxml, /<jg-action-dock/, '学生首页应挂载单排 5 项操作坞');
+  assert.match(studentWxml, /<jg-deck-rail/, '学生首页应挂载顶部横向索引轨');
+  assert.match(studentWxml, /<swiper/, '学生首页应使用横向 Deck swiper');
+  assert.doesNotMatch(studentWxml, /<jg-action-dock/, '学生首页不得保留底部 5 项跳转坞');
 
   const coachWxml = read('miniprogram/pages/coach/coach.wxml');
   assert.match(coachWxml, /motion\.wxs/, '教练页应引入 WXS 手势层');
   assert.match(coachWxml, /jg-swipe-box/, '教练待办行应支持左滑手势');
   assert.match(coachWxml, /<jg-stat-ring/, '教练页应包含到课率环形仪表');
-  assert.match(coachWxml, /<jg-action-dock/, '教练页应挂载单排 5 项操作坞');
+  assert.match(coachWxml, /<jg-deck-rail/, '教练页应挂载顶部横向索引轨');
+  assert.match(coachWxml, /<swiper/, '教练页应使用横向 Deck swiper');
+  assert.doesNotMatch(coachWxml, /<jg-action-dock/, '教练页不得保留底部 5 项跳转坞');
 
   const parentWxml = read('miniprogram/pages/parent/parent.wxml');
   assert.match(parentWxml, /jg-reveal/, '家长页切换学生应使用遮罩揭示');
   assert.match(parentWxml, /<jg-flip-card/, '家长页 PB 卡应支持只读翻面');
-  assert.match(parentWxml, /<jg-action-dock/, '家长页应挂载只读 5 项操作坞');
+  assert.match(parentWxml, /<jg-deck-rail/, '家长页应挂载只读顶部横向索引轨');
+  assert.match(parentWxml, /<swiper/, '家长页应使用横向 Deck swiper');
+  assert.doesNotMatch(parentWxml, /<jg-action-dock/, '家长页不得保留底部 5 项跳转坞');
 
   const adminWxml = read('miniprogram/pages/admin/admin.wxml');
-  assert.match(adminWxml, /<jg-action-dock/, '开发者页应挂载单排 5 项操作坞');
+  assert.match(adminWxml, /<jg-deck-rail/, '开发者页应挂载顶部横向索引轨');
+  assert.match(adminWxml, /<swiper/, '开发者页应使用横向 Deck swiper');
+  assert.doesNotMatch(adminWxml, /<jg-action-dock/, '开发者页不得保留底部 5 项跳转坞');
   assert.match(adminWxml, /goUiPreview/, '开发者页必须保留 ui-preview 入口');
 
   const rankWxml = read('miniprogram/pages/performance-leaderboard/performance-leaderboard.wxml');
   assert.match(rankWxml, /jg-scan/, '排行榜切换条件应触发光栅扫描');
+  assert.match(rankWxml, /jg-tbl/, '排行榜应使用双栏连续粗野表格');
+  assert.match(rankWxml, /jg-drawer-sheet/, '排行榜应使用底部筛选与详情抽屉');
 
   const attWxml = read('miniprogram/pages/student-attendance/student-attendance.wxml');
   assert.match(attWxml, /jg-pulse-wrap/, '签到页结果应包含三层脉冲确认');
+  assert.match(attWxml, /<jg-deck-rail/, '签到页应使用 3 页横向 Deck');
   assert.doesNotMatch(attWxml, /<jg-action-dock/, '长表单页不得放置底栏操作坞');
 
   const planEditWxml = read('miniprogram/pages/coach-plan-edit/coach-plan-edit.wxml');
   assert.match(planEditWxml, /jg-timeline/, '计划编辑页训练内容应使用局部时间轴');
+  assert.match(planEditWxml, /<jg-deck-rail/, '计划编辑页应使用 3 步横向表单');
   assert.doesNotMatch(planEditWxml, /<jg-action-dock/, '计划编辑长表单页不得放置底栏操作坞');
 
   const indexWxml = read('miniprogram/pages/index/index.wxml');

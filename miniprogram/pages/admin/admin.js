@@ -205,13 +205,45 @@ Page({
     demoAvailable: false,
     canSwitchCoach: false,
     uiDaylight: false,
-    dockItems: [
-      { key: 'home', label: '概览' },
-      { key: 'review', label: '审绩' },
-      { key: 'attendance', label: '考勤' },
-      { key: 'stats', label: '统计' },
-      { key: 'all', label: '全部' }
-    ]
+    deckIndex: 0,
+    deckTabs: [
+      { key: 'status', idx: '01', label: '状态' },
+      { key: 'approval', idx: '02', label: '审批' },
+      { key: 'account', idx: '03', label: '账号' },
+      { key: 'group', idx: '04', label: '训练组' }
+    ],
+    drawerOpen: false,
+    drawerKind: '',
+    drawerData: null,
+    flashKey: ''
+  },
+
+  onHide() {
+    this.clearFlashTimer();
+  },
+
+  onUnload() {
+    this.clearFlashTimer();
+  },
+
+  clearFlashTimer() {
+    if (this._flashTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._flashTimer);
+      }
+      this._flashTimer = null;
+    }
+  },
+
+  triggerRowFlash(key) {
+    this.clearFlashTimer();
+    this.controllerSetIfChanged({ flashKey: key || '' });
+    if (typeof setTimeout === 'function') {
+      this._flashTimer = setTimeout(() => {
+        this._flashTimer = null;
+        this.controllerSetIfChanged({ flashKey: '' });
+      }, 360);
+    }
   },
 
   onShow() {
@@ -972,6 +1004,8 @@ Page({
         comment: modal.content || ''
       });
       wx.showToast({ title: '已处理', icon: 'success' });
+      this.onCloseDrawer();
+      this.triggerRowFlash(userId);
       await this.loadRegistrations();
       await this.loadUsers();
       this.markNeedsRefresh();
@@ -1276,24 +1310,42 @@ Page({
     this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
   },
 
-  onDockSelect(event) {
-    const key = event && event.detail && event.detail.key;
-    if (key === 'home') {
-      if (typeof wx.pageScrollTo === 'function') {
-        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
-      }
-      return;
-    }
-    if (key === 'review') {
-      this.goPerformanceReview();
-    } else if (key === 'attendance') {
-      this.goAttendanceManage();
-    } else if (key === 'stats') {
-      this.goStatsWorkbench();
-    } else if (key === 'all') {
-      this.goAllFeatures();
+  onDeckChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: current, drawerOpen: false, drawerKind: '', drawerData: null });
     }
   },
+
+  onDeckTabSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: index, drawerOpen: false, drawerKind: '', drawerData: null });
+    }
+  },
+
+  onOpenRegDrawer(event) {
+    const userId = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.userId;
+    const found = (this.data.registrations || []).find((item) => item.userId === userId);
+    if (!found) {
+      return;
+    }
+    this.controllerSetIfChanged({ drawerOpen: true, drawerKind: 'reg', drawerData: found });
+  },
+
+  onOpenFilterDrawer() {
+    this.controllerSetIfChanged({ drawerOpen: true, drawerKind: 'filter', drawerData: { open: true } });
+  },
+
+  onOpenGroupDrawer() {
+    this.controllerSetIfChanged({ drawerOpen: true, drawerKind: 'group', drawerData: { open: true } });
+  },
+
+  onCloseDrawer() {
+    this.controllerSetIfChanged({ drawerOpen: false, drawerKind: '', drawerData: null });
+  },
+
+  noop() {},
 
   goStudentProfile(event) {
     const userId = event.currentTarget.dataset.userId;

@@ -57,7 +57,13 @@ Page({
     uiDaylight: false,
     checkInPulsing: false,
     focusedField: '',
-    leaveError: ''
+    leaveError: '',
+    deckIndex: 0,
+    deckTabs: [
+      { key: 'checkin', idx: '01', label: '今日签到' },
+      { key: 'leave', idx: '02', label: '请假管理' },
+      { key: 'history', idx: '03', label: '历史考勤' }
+    ]
   },
 
   onShow() {
@@ -105,6 +111,20 @@ Page({
 
   onToggleDaylight() {
     this.setData({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onDeckChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.deckIndex) {
+      this.setData({ deckIndex: current });
+    }
+  },
+
+  onDeckTabSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.deckIndex) {
+      this.setData({ deckIndex: index });
+    }
   },
 
   async loadPage() {

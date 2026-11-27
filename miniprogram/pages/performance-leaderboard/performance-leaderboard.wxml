@@ -1,7 +1,9 @@
+<wxs src="../../utils/motion.wxs" module="motion" />
 <view class="jg-page jg-safe-bottom jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="正式成绩排行榜"
     meta="只使用审核通过的正式成绩，按实际成绩发生日期归属统计周期。"
+    compact="{{true}}"
     daylight="{{uiDaylight}}"
     show-daylight-toggle="{{true}}"
     bind:toggledaylight="onToggleDaylight"
@@ -16,14 +18,87 @@
   </view>
 
   <block wx:if="{{!loading && metaLoaded}}">
-    <!-- 01 // 紧凑双列筛选条（减少滚动，榜单直接上浮至首屏） -->
-    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
-      <view class="jg-band-head">
+    <!-- 顶部单行紧凑筛选条（条件收进底部抽屉，首屏直接展示双栏计时榜单） -->
+    <view class="jg-filter-bar jg-mb-12">
+      <text class="jg-filter-val">{{events[eventIndex].name}} · {{groupOptions[groupIndex].name}} · {{leaderboard ? leaderboard.period.label : periodTypeOptions[periodTypeIndex].label}}</text>
+      <text class="jg-filter-btn" bindtap="onOpenFilter">筛选 ▾</text>
+    </view>
+
+    <!-- 双栏连续粗野电子计时表（左窄栏名次 + 右选手与电光蓝成绩读数；点行展开详情抽屉） -->
+    <view wx:if="{{leaderboard}}" class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">01</text>
-          <text class="jg-band-title">赛道筛选</text>
+          <text class="jg-idx-tag">RANK</text>
+          <text class="jg-band-title">{{leaderboard.event.name}} · {{leaderboard.period.label}}</text>
         </view>
-        <text class="jg-band-meta">项目 · 训练组 · 周期</text>
+        <text class="jg-band-meta jg-mono">{{leaderboard.rows.length}} 人</text>
+      </view>
+
+      <view class="jg-body-s jg-mb-12">
+        {{leaderboard.event.comparison == 'lower' ? '计时项目 · 数值越低越好' : '远度/计分 · 数值越高越好'}} · 点击任意行查看完整明细
+      </view>
+
+      <jg-empty
+        wx:if="{{!rows.length}}"
+        title="该周期暂无正式成绩"
+        message="只有教练审核通过的成绩才会进入排行榜。"
+      />
+
+      <view wx:else class="jg-tbl jg-scan {{rankScanning ? 'is-scanning' : ''}}">
+        <view class="jg-scan-beam"></view>
+        <view class="jg-tbl-head">
+          <view class="jg-tbl-gutter">名次</view>
+          <view class="jg-tbl-body">选手 · 训练组</view>
+          <view class="jg-tbl-end">正式成绩</view>
+        </view>
+        <view
+          wx:for="{{rows}}"
+          wx:key="studentUserId"
+          class="jg-tbl-row {{item.isSelf ? 'ranking-self' : ''}}"
+          hover-class="jg-tbl-row-hover"
+          data-index="{{index}}"
+          bindtap="onOpenRowDrawer"
+        >
+          <view class="jg-tbl-gutter {{item.isSelf ? 'jg-tbl-gutter-tech' : ''}}">
+            <text class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">#{{item.rank}}</text>
+          </view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">
+              <text>{{item.studentName}}</text>
+              <text wx:if="{{item.isSelf}}" class="jg-chip jg-chip-brand">本人</text>
+            </view>
+            <view class="jg-tbl-m jg-mono">{{item.achievedAt}} · {{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}} · 教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}} · 历史PB：{{item.historicalText}}</view>
+          </view>
+          <view class="jg-tbl-end">
+            <text class="rank-val jg-num-roll">{{item.valueText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="jg-note">
+        <view>
+          <view class="jg-note-m">历史PB单独显示；周期榜只使用该周期内实际发生且审核通过的最好成绩。并列成绩使用相同名次，后续名次按标准竞赛排名规则跳号。</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 底部筛选抽屉 -->
+  <view wx:if="{{filterOpen}}" class="jg-drawer-mask" bindtap="onCloseFilter">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-idx-tag">FLT</text>
+          <text class="jg-drawer-title">赛道与周期筛选</text>
+        </view>
+        <text class="jg-drawer-close" bindtap="onCloseFilter">完成 ×</text>
       </view>
 
       <view class="jg-form-2col">
@@ -69,51 +144,49 @@
           </picker>
         </view>
       </view>
-    </view>
 
-    <!-- 02 // 电子计时成绩板（左方标排名 + 中部选手信息 + 右侧超大电光蓝成绩读数） -->
-    <view wx:if="{{leaderboard}}" class="jg-band jg-stagger jg-stagger-1">
-      <view class="jg-band-head">
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" bindtap="onCloseFilter">确定并查看榜单</button>
+    </view>
+  </view>
+
+  <!-- 底部选手成绩详情抽屉 -->
+  <view wx:if="{{drawerRow}}" class="jg-drawer-mask" bindtap="onCloseDrawer">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">02</text>
-          <text class="jg-band-title">{{leaderboard.event.name}} · {{leaderboard.period.label}}</text>
+          <text class="jg-idx-tag">#{{drawerRow.rank}}</text>
+          <text class="jg-drawer-title">{{drawerRow.studentName}}</text>
         </view>
-        <text class="jg-band-meta jg-mono">{{leaderboard.rows.length}} 人</text>
+        <text class="jg-drawer-close" bindtap="onCloseDrawer">关闭 ×</text>
       </view>
-
-      <view class="jg-body-s jg-mb-12">
-        排序规则：{{leaderboard.event.comparison == 'lower' ? '数值越低越好（计时）' : '数值越高越好（计分/远度）'}}
+      <view class="jg-data-v jg-mb-12">
+        <text class="jg-hero-num">{{drawerRow.valueText}}</text>
       </view>
-
-      <jg-empty
-        wx:if="{{!rows.length}}"
-        title="该周期暂无正式成绩"
-        message="只有教练审核通过的成绩才会进入排行榜。"
-      />
-
-      <view wx:else class="jg-list jg-scan {{rankScanning ? 'is-scanning' : ''}}">
-        <view class="jg-scan-beam"></view>
-        <view wx:for="{{rows}}" wx:key="studentUserId" class="jg-row jg-stagger {{item.isSelf ? 'ranking-self' : ''}}">
-          <view class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">{{item.rank}}</view>
-          <view class="jg-row-main">
-            <view class="jg-row-t">
-              <text>{{item.studentName}}</text>
-              <text wx:if="{{item.isSelf}}" class="jg-chip jg-chip-brand">本人</text>
-            </view>
-            <view class="jg-row-m">{{item.achievedAt}} · {{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}}</view>
-            <view class="jg-row-m">教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}} · 历史PB：{{item.historicalText}}</view>
-          </view>
-          <view class="jg-row-e">
-            <text class="rank-val jg-num-roll">{{item.valueText}}</text>
-          </view>
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">成绩发生日期</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.achievedAt || '未标注'}}</view>
         </view>
-      </view>
-
-      <view class="jg-note">
-        <view>
-          <view class="jg-note-m">历史PB单独显示；周期榜只使用该周期内实际发生且审核通过的最好成绩。并列成绩使用相同名次，后续名次按标准竞赛排名规则跳号。</view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">历史个人 PB</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.historicalText}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">所属训练组</view>
+          <view class="jg-kv-v">{{drawerRow.trainingGroupNames.length ? drawerRow.trainingGroupNames.join('、') : '未标注'}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">指导教练</view>
+          <view class="jg-kv-v">{{drawerRow.coachNames.length ? drawerRow.coachNames.join('、') : '未标注'}}</view>
         </view>
       </view>
     </view>
-  </block>
+  </view>
 </view>

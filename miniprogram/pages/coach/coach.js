@@ -124,13 +124,45 @@ Page({
       actionLabel: '完善实名资料'
     },
     uiDaylight: false,
-    dockItems: [
-      { key: 'home', label: '工作台' },
-      { key: 'attendance', label: '考勤' },
-      { key: 'plans', label: '计划' },
-      { key: 'review', label: '审核' },
-      { key: 'stats', label: '统计' }
-    ]
+    deckIndex: 0,
+    deckTabs: [
+      { key: 'today', idx: '01', label: '今日' },
+      { key: 'todo', idx: '02', label: '待办' },
+      { key: 'plan', idx: '03', label: '计划' },
+      { key: 'event', idx: '04', label: '赛事' }
+    ],
+    drawerOpen: false,
+    drawerKind: '',
+    drawerData: null,
+    flashKey: ''
+  },
+
+  onHide() {
+    this.clearFlashTimer();
+  },
+
+  onUnload() {
+    this.clearFlashTimer();
+  },
+
+  clearFlashTimer() {
+    if (this._flashTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._flashTimer);
+      }
+      this._flashTimer = null;
+    }
+  },
+
+  triggerRowFlash(key) {
+    this.clearFlashTimer();
+    this.controllerSetIfChanged({ flashKey: key || '' });
+    if (typeof setTimeout === 'function') {
+      this._flashTimer = setTimeout(() => {
+        this._flashTimer = null;
+        this.controllerSetIfChanged({ flashKey: '' });
+      }, 360);
+    }
   },
 
   onShow() {
@@ -638,24 +670,43 @@ Page({
     this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
   },
 
-  onDockSelect(event) {
-    const key = event && event.detail && event.detail.key;
-    if (key === 'home') {
-      if (typeof wx.pageScrollTo === 'function') {
-        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
-      }
-      return;
-    }
-    if (key === 'attendance') {
-      this.goAttendanceManage();
-    } else if (key === 'plans') {
-      this.goPlans();
-    } else if (key === 'review') {
-      this.goPerformanceReview();
-    } else if (key === 'stats') {
-      this.goStatsWorkbench();
+  onDeckChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: current, drawerOpen: false, drawerKind: '', drawerData: null });
     }
   },
+
+  onDeckTabSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: index, drawerOpen: false, drawerKind: '', drawerData: null });
+    }
+  },
+
+  onOpenTodoDrawer(event) {
+    const key = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.key;
+    const found = (this.data.todoVisible || []).find((item) => item.key === key);
+    if (!found) {
+      return;
+    }
+    this.controllerSetIfChanged({ drawerOpen: true, drawerKind: 'todo', drawerData: found });
+  },
+
+  onOpenRegDrawer(event) {
+    const userId = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.userId;
+    const found = (this.data.registrations || []).find((item) => item.userId === userId);
+    if (!found) {
+      return;
+    }
+    this.controllerSetIfChanged({ drawerOpen: true, drawerKind: 'reg', drawerData: found });
+  },
+
+  onCloseDrawer() {
+    this.controllerSetIfChanged({ drawerOpen: false, drawerKind: '', drawerData: null });
+  },
+
+  noop() {},
 
   /* 待办行只做跳转，不做写入；跳转前标记返回时刷新待办 */
   onTodoTap(event) {
@@ -749,6 +800,8 @@ Page({
         comment: modal.content || ''
       });
       wx.showToast({ title: '已处理', icon: 'success' });
+      this.onCloseDrawer();
+      this.triggerRowFlash(userId);
       await this.loadRegistrations();
       this.markNeedsRefresh();
     } catch (error) {

@@ -1,400 +1,515 @@
 <wxs src="../../utils/motion.wxs" module="motion" />
-<view class="jg-page jg-dock-pad jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
-  <jg-page-head
-    title="学生工作台"
-    meta="{{headMeta}}"
-    role-label="学生"
-    role-tone="brand"
-    daylight="{{uiDaylight}}"
-    show-daylight-toggle="{{true}}"
-    bind:toggledaylight="onToggleDaylight"
-  />
-
-  <!-- 无框细线同步条 -->
-  <view wx:if="{{hasData}}" class="jg-refbar">
-    <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
-    <text class="jg-refbar-t">{{refreshing ? 'SYNCING // 正在同步数据…' : lastUpdatedText}}</text>
-    <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
+<view class="jg-page jg-deck-page jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
+  <!-- 顶部固定区域：粗野页头 + 4页横向索引轨 -->
+  <view class="jg-deck-top">
+    <jg-page-head
+      title="学生工作台"
+      meta="{{headMeta}}"
+      role-label="学生"
+      role-tone="brand"
+      compact="{{true}}"
+      daylight="{{uiDaylight}}"
+      show-daylight-toggle="{{true}}"
+      bind:toggledaylight="onToggleDaylight"
+    />
+    <view wx:if="{{hasData}}" class="jg-deck-status">
+      <text class="jg-refbar-t">{{refreshing ? 'SYNCING // 正在同步…' : lastUpdatedText}}</text>
+      <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
+    </view>
+    <view wx:if="{{sessionError}}" class="jg-state-err jg-shake">
+      <view class="jg-state-err-t">身份校验未通过</view>
+      <view class="jg-state-err-m">{{sessionError}}</view>
+    </view>
+    <jg-deck-rail
+      items="{{deckTabs}}"
+      current="{{deckIndex}}"
+      daylight="{{uiDaylight}}"
+      bind:select="onDeckTabSelect"
+    />
+    <view class="jg-deck-track">
+      <view class="jg-deck-cursor" style="width:25%;transform:translateX({{deckIndex * 100}}%)"></view>
+    </view>
   </view>
 
-  <view wx:if="{{sessionError}}" class="jg-state-err jg-shake">
-    <view class="jg-state-err-t">身份校验未通过</view>
-    <view class="jg-state-err-m">{{sessionError}}</view>
-  </view>
+  <!-- 4 页横向分页 Deck：01 今日 / 02 成绩 / 03 出勤 / 04 通知（每页严格两层结构） -->
+  <swiper
+    class="jg-deck-swiper"
+    current="{{deckIndex}}"
+    duration="240"
+    data-count="4"
+    data-current="{{deckIndex}}"
+    bindchange="onDeckChange"
+    bindtransition="{{motion.onDeckTransition}}"
+    bindanimationfinish="{{motion.onDeckFinish}}"
+  >
+    <!-- SLIDE 01 // 今日 -->
+    <swiper-item class="jg-deck-pane">
+      <scroll-view class="jg-deck-scroll" scroll-y="{{true}}">
+        <!-- Layer 1：今日训练时间轴与签到主行动 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">01</text>
+              <text class="jg-band-title">今日训练</text>
+            </view>
+            <text class="jg-band-meta jg-mono">{{todayDate}}</text>
+          </view>
 
-  <!-- 00 // 英雄遥测带：PB 计时主焦点 + 本月出勤仪表（首屏核心视觉焦点） -->
-  <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
-
-  <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
-    <view class="jg-state-err-t">个人数据加载失败</view>
-    <view class="jg-state-err-m">{{statsState.error}}</view>
-    <view class="jg-retry" bindtap="retryStats">重新加载</view>
-  </view>
-
-  <block wx:else>
-    <view wx:if="{{stats.hasPb}}" class="jg-stagger jg-stagger-0 jg-mb-12">
-      <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看成绩与出勤明细" back-action-text="翻回 PB 计时结论">
-        <view slot="front">
-          <view class="jg-flex-between">
-            <view class="jg-flex-1">
-              <view class="jg-hero-k"><text class="jg-dot-live"></text>{{stats.pbEventName}} · 个人最好成绩 PB</view>
-              <view class="jg-data-v">
-                <text class="jg-hero-num jg-num-roll">{{stats.pbRawValue}}</text>
-                <text wx:if="{{stats.pbUnit}}" class="jg-hero-unit">{{stats.pbUnit}}</text>
+          <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-skeleton jg-skel-132"></view>
+          <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
+            <view class="jg-state-err-t">今日训练加载失败</view>
+            <view class="jg-state-err-m">{{todayState.error}}</view>
+            <view class="jg-retry" bindtap="retryToday">重新加载</view>
+          </view>
+          <jg-empty
+            wx:elif="{{todaySessions.length === 0}}"
+            title="今天没有训练安排"
+            message="教练创建考勤场次并发布训练计划后，会显示在这里。"
+            action-text="查看历史考勤"
+            bind:action="goAttendance"
+          />
+          <view wx:else class="jg-timeline">
+            <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-tl-item {{item.canCheckIn ? 'jg-tl-item-now' : ''}}">
+              <view class="jg-tl-dot"></view>
+              <view class="jg-card">
+                <view class="jg-card-h">
+                  <text class="jg-card-t">{{item.title}}</text>
+                  <text class="jg-chip {{item.isDone ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{item.statusLabel}}</text>
+                </view>
+                <view class="jg-kv-grid">
+                  <view class="jg-kv">
+                    <view class="jg-kv-l">训练地点</view>
+                    <view class="jg-kv-v">{{item.locationName || '未填写地点'}}</view>
+                  </view>
+                  <view class="jg-kv">
+                    <view class="jg-kv-l">训练组</view>
+                    <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
+                  </view>
+                  <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
+                    <view class="jg-kv-l">签到窗口</view>
+                    <view class="jg-kv-v jg-mono">{{item.checkInOpenTime}}–{{item.checkInCloseTime}}</view>
+                  </view>
+                  <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
+                    <view class="jg-kv-l">当前阶段</view>
+                    <view class="jg-kv-v">{{item.phaseLabel}}</view>
+                  </view>
+                </view>
+                <button
+                  class="jg-btn jg-btn-block jg-mt-12 {{item.canCheckIn ? 'jg-btn-accent' : 'jg-btn-ghost'}}"
+                  bindtap="goAttendance"
+                >{{item.canCheckIn ? '立即前往签到 →' : '查看考勤详情'}}</button>
               </view>
-              <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核正式成绩</view>
             </view>
-            <view class="jg-ml-16">
-              <jg-stat-ring
-                percent="{{stats.attendanceRatePercent}}"
-                value-text="{{stats.attendanceRateText || '暂无'}}"
-                label="本月出勤"
-                empty="{{!stats.attendanceRateText}}"
-                daylight="{{uiDaylight}}"
-              />
-            </view>
-          </view>
-          <view class="jg-data-prog">
-            <view class="jg-data-prog-in" style="width:{{stats.attendanceRatePercent}}%"></view>
-          </view>
-          <view class="jg-data-foot">
-            <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
-            <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达目标</text>
-            <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">正式成绩 {{stats.approvedCount}} 条</text>
           </view>
         </view>
-        <view slot="back">
-          <view class="jg-hero-k">{{stats.pbEventName}} · 正式成绩与出勤明细</view>
-          <view class="jg-kv-grid">
-            <view class="jg-kv">
-              <view class="jg-kv-l">取得日期</view>
-              <view class="jg-kv-v jg-mono">{{stats.pbDate || '未标注'}}</view>
-            </view>
-            <view class="jg-kv">
-              <view class="jg-kv-l">统计周期</view>
-              <view class="jg-kv-v">{{stats.periodLabel || '本月'}}</view>
-            </view>
-            <view class="jg-kv">
-              <view class="jg-kv-l">有效出勤 / 应签</view>
-              <view class="jg-kv-v jg-mono">{{stats.validAttendance}} / {{stats.actualExpected}}</view>
-            </view>
-            <view class="jg-kv">
-              <view class="jg-kv-l">迟到 / 未签</view>
-              <view class="jg-kv-v jg-mono">{{stats.late}} / {{stats.absent}}</view>
-            </view>
-          </view>
-          <view wx:if="{{stats.targetValueText}}" class="jg-data-meta">体考目标：{{stats.targetValueText}}（{{stats.targetAchieved ? '已达标' : '推进中'}}）</view>
-          <view class="jg-data-meta">仅教练审核通过的正式成绩计入 PB 与排行榜。</view>
-        </view>
-      </jg-flip-card>
-    </view>
 
-    <view wx:else class="jg-hero-band jg-stagger jg-stagger-0">
-      <view class="jg-band-head">
+        <!-- Layer 2：高频直达双栏表 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">GO</text>
+              <text class="jg-band-title">快捷通道</text>
+            </view>
+            <text class="jg-band-meta">左右滑动切页</text>
+          </view>
+          <view class="jg-tbl">
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goAttendance">
+              <view class="jg-tbl-gutter jg-tbl-gutter-tech">签到</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">考勤与请假</view>
+                <view class="jg-tbl-m">GPS 定位签到、提交请假与历史记录</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goPlans">
+              <view class="jg-tbl-gutter">计划</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">本周训练计划</view>
+                <view class="jg-tbl-m">查看教练发布的分组训练安排与要求</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goPerformance">
+              <view class="jg-tbl-gutter">申报</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">成绩申报</view>
+                <view class="jg-tbl-m">提交最新测试成绩，经教练审核后计入 PB</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- SLIDE 02 // 成绩 -->
+    <swiper-item class="jg-deck-pane">
+      <scroll-view class="jg-deck-scroll" scroll-y="{{true}}">
+        <!-- Layer 1：PB 3D 翻面计时卡 + 出勤环 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">02</text>
+              <text class="jg-band-title">个人最好成绩 PB</text>
+            </view>
+            <text class="jg-band-meta jg-mono">{{stats.periodLabel || '本月'}}</text>
+          </view>
+
+          <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
+          <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
+            <view class="jg-state-err-t">个人数据加载失败</view>
+            <view class="jg-state-err-m">{{statsState.error}}</view>
+            <view class="jg-retry" bindtap="retryStats">重新加载</view>
+          </view>
+          <block wx:else>
+            <view wx:if="{{stats.hasPb}}">
+              <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看成绩与出勤明细" back-action-text="翻回 PB 计时结论">
+                <view slot="front">
+                  <view class="jg-flex-between">
+                    <view class="jg-flex-1">
+                      <view class="jg-hero-k"><text class="jg-dot-live"></text>{{stats.pbEventName}} · PB</view>
+                      <view class="jg-data-v">
+                        <text class="jg-hero-num jg-num-roll">{{stats.pbRawValue}}</text>
+                        <text wx:if="{{stats.pbUnit}}" class="jg-hero-unit">{{stats.pbUnit}}</text>
+                      </view>
+                      <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核正式成绩</view>
+                    </view>
+                    <view class="jg-ml-16">
+                      <jg-stat-ring
+                        percent="{{stats.attendanceRatePercent}}"
+                        value-text="{{stats.attendanceRateText || '暂无'}}"
+                        label="本月出勤"
+                        empty="{{!stats.attendanceRateText}}"
+                        daylight="{{uiDaylight}}"
+                      />
+                    </view>
+                  </view>
+                  <view class="jg-data-prog">
+                    <view class="jg-data-prog-in" style="width:{{stats.attendanceRatePercent}}%"></view>
+                  </view>
+                  <view class="jg-data-foot">
+                    <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
+                    <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达目标</text>
+                    <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">正式成绩 {{stats.approvedCount}} 条</text>
+                  </view>
+                </view>
+                <view slot="back">
+                  <view class="jg-hero-k">{{stats.pbEventName}} · 正式成绩明细</view>
+                  <view class="jg-kv-grid">
+                    <view class="jg-kv">
+                      <view class="jg-kv-l">取得日期</view>
+                      <view class="jg-kv-v jg-mono">{{stats.pbDate || '未标注'}}</view>
+                    </view>
+                    <view class="jg-kv">
+                      <view class="jg-kv-l">统计周期</view>
+                      <view class="jg-kv-v">{{stats.periodLabel || '本月'}}</view>
+                    </view>
+                    <view class="jg-kv">
+                      <view class="jg-kv-l">有效出勤 / 应签</view>
+                      <view class="jg-kv-v jg-mono">{{stats.validAttendance}} / {{stats.actualExpected}}</view>
+                    </view>
+                    <view class="jg-kv">
+                      <view class="jg-kv-l">迟到 / 未签</view>
+                      <view class="jg-kv-v jg-mono">{{stats.late}} / {{stats.absent}}</view>
+                    </view>
+                  </view>
+                  <view wx:if="{{stats.targetValueText}}" class="jg-data-meta">体考目标：{{stats.targetValueText}}（{{stats.targetAchieved ? '已达标' : '推进中'}}）</view>
+                </view>
+              </jg-flip-card>
+            </view>
+            <view wx:else class="jg-hero-band">
+              <view class="jg-hero-k">PB // 暂无正式成绩</view>
+              <view class="jg-sub">教练审核通过后，这里会显示你的 PB 计时与目标差距。</view>
+            </view>
+          </block>
+        </view>
+
+        <!-- Layer 2：近期进步双栏表（点击展开底部详情抽屉） + 申报/排行双按钮 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">Δ</text>
+              <text class="jg-band-title">阶段进步</text>
+            </view>
+            <text class="jg-band-action" bindtap="goPerformanceLeaderboard">成绩排行 ›</text>
+          </view>
+
+          <view wx:if="{{stats && stats.changes.length}}" class="jg-tbl">
+            <view
+              wx:for="{{stats.changes}}"
+              wx:key="eventName"
+              class="jg-tbl-row"
+              hover-class="jg-tbl-row-hover"
+              data-index="{{index}}"
+              bindtap="onOpenChangeDrawer"
+            >
+              <view class="jg-tbl-gutter {{item.improved ? 'jg-tbl-gutter-tech' : ''}}">{{item.improved ? '↑' : '—'}}</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">{{item.eventName}}</view>
+                <view class="jg-tbl-m">{{item.metaText}}</view>
+              </view>
+              <view class="jg-tbl-end">
+                <text class="jg-tbl-val">{{item.changeText}}</text>
+              </view>
+            </view>
+          </view>
+          <view wx:else class="jg-note">
+            <view>
+              <view class="jg-note-t">暂无可比较的阶段变化</view>
+              <view class="jg-note-m">同一项目至少有两条已审核成绩后，才能计算阶段进步。</view>
+            </view>
+          </view>
+
+          <view class="jg-btn-row jg-mt-12">
+            <button class="jg-btn jg-btn-accent" bindtap="goPerformance">申报新成绩</button>
+            <button class="jg-btn jg-btn-secondary" bindtap="goReport">运动报告</button>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- SLIDE 03 // 出勤 -->
+    <swiper-item class="jg-deck-pane">
+      <scroll-view class="jg-deck-scroll" scroll-y="{{true}}">
+        <!-- Layer 1：4 列粗野出勤遥测矩阵 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">03</text>
+              <text class="jg-band-title">本月出勤遥测</text>
+            </view>
+            <text class="jg-band-meta jg-mono">{{stats.periodLabel || '本月'}}</text>
+          </view>
+
+          <view class="jg-matrix">
+            <view class="jg-mcell">
+              <view class="jg-mcell-l">有效出勤</view>
+              <view class="jg-mcell-v jg-mcell-v-tech jg-num-roll">{{stats.validAttendance}}</view>
+            </view>
+            <view class="jg-mcell">
+              <view class="jg-mcell-l">应签到</view>
+              <view class="jg-mcell-v jg-num-roll">{{stats.actualExpected}}</view>
+            </view>
+            <view class="jg-mcell">
+              <view class="jg-mcell-l">迟到</view>
+              <view class="jg-mcell-v">{{stats.late}}</view>
+            </view>
+            <view class="jg-mcell">
+              <view class="jg-mcell-l">待核实</view>
+              <view class="jg-mcell-v">{{stats.pendingVerification}}</view>
+            </view>
+          </view>
+
+          <view wx:if="{{stats.dataQualityNote}}" class="jg-note jg-note-warn">
+            <view>
+              <view class="jg-note-t">统计口径说明</view>
+              <view class="jg-note-m">{{stats.dataQualityNote}}出勤率仅以已结束场次计算，未签到不等同于无故缺勤。</view>
+            </view>
+          </view>
+        </view>
+
+        <!-- Layer 2：出勤与档案管理双栏表 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">IO</text>
+              <text class="jg-band-title">记录与档案</text>
+            </view>
+            <text class="jg-band-meta">学生端</text>
+          </view>
+          <view class="jg-tbl">
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goAttendanceStatistics">
+              <view class="jg-tbl-gutter">考勤</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">考勤统计与排行</view>
+                <view class="jg-tbl-m">出勤率与样本口径</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goFeedback">
+              <view class="jg-tbl-gutter">反馈</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">训练反馈</view>
+                <view class="jg-tbl-m">提交反馈与查看教练评价</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goEditProfile">
+              <view class="jg-tbl-gutter">档案</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">完善个人档案</view>
+                <view class="jg-tbl-m">身高体重、主项与体考目标</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goLinkManage">
+              <view class="jg-tbl-gutter">亲子</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">亲子关联</view>
+                <view class="jg-tbl-m">生成家长关联凭证、确认或解除关联</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goAllFeatures">
+              <view class="jg-tbl-gutter">全部</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">全部功能</view>
+                <view class="jg-tbl-m">按业务分类查看全部已实现的学生端功能</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+
+    <!-- SLIDE 04 // 通知与业务矩阵 -->
+    <swiper-item class="jg-deck-pane">
+      <scroll-view class="jg-deck-scroll" scroll-y="{{true}}">
+        <!-- Layer 1：俱乐部通知双栏表（点击展开底部详情抽屉） -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">04</text>
+              <text class="jg-band-title">俱乐部通知</text>
+            </view>
+            <text class="jg-band-action" bindtap="goNotices">{{noticeActionText}}</text>
+          </view>
+
+          <view wx:if="{{noticeState.loading && !noticeState.ready}}" class="jg-list">
+            <view class="jg-skeleton jg-skeleton-row"></view>
+            <view class="jg-skeleton jg-skeleton-row"></view>
+          </view>
+          <view wx:elif="{{noticeState.error && !noticeState.ready}}" class="jg-state-err">
+            <view class="jg-state-err-t">通知加载失败</view>
+            <view class="jg-state-err-m">{{noticeState.error}}</view>
+            <view class="jg-retry" bindtap="retryNotices">重新加载</view>
+          </view>
+          <jg-empty
+            wx:elif="{{notices.length === 0}}"
+            title="暂无通知"
+            message="教练发布训练安排或俱乐部公告后，会显示在这里。"
+          />
+          <view wx:else class="jg-tbl">
+            <view
+              wx:for="{{notices}}"
+              wx:key="noticeId"
+              class="jg-tbl-row"
+              hover-class="jg-tbl-row-hover"
+              data-notice-id="{{item.noticeId}}"
+              bindtap="onOpenNoticeDrawer"
+            >
+              <view class="jg-tbl-gutter {{item.isImportant ? 'jg-tbl-gutter-tech' : ''}}">
+                <text class="jg-tbl-gutter-sub">{{item.timeText || '通知'}}</text>
+              </view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">
+                  <text>{{item.title}}</text>
+                  <text wx:if="{{item.isImportant}}" class="jg-chip jg-chip-danger">重要</text>
+                  <text wx:if="{{!item.isRead}}" class="jg-chip jg-chip-brand">未读</text>
+                </view>
+                <view class="jg-tbl-m jg-truncate">{{item.content}}</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+          </view>
+        </view>
+
+        <!-- Layer 2：常用功能 6 项粗野矩阵 + 独立账户与安全条 -->
+        <view class="jg-deck-layer">
+          <view class="jg-deck-head">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">FN</text>
+              <text class="jg-band-title">常用功能</text>
+            </view>
+            <text class="jg-band-meta">{{noticeMeta}}</text>
+          </view>
+          <view class="jg-tiles">
+            <view class="jg-tile jg-tile-brand">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPlans">
+                <view class="jg-tile-ic">计</view>
+                <view class="jg-tile-t">训练计划</view>
+                <view class="jg-tile-d">本周安排</view>
+              </view>
+            </view>
+            <view class="jg-tile jg-tile-ok">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goReport">
+                <view class="jg-tile-ic">报</view>
+                <view class="jg-tile-t">运动报告</view>
+                <view class="jg-tile-d">PB 与趋势</view>
+              </view>
+            </view>
+            <view class="jg-tile jg-tile-accent">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformance">
+                <view class="jg-tile-ic">绩</view>
+                <view class="jg-tile-t">成绩申报</view>
+                <view class="jg-tile-d">提交成绩</view>
+              </view>
+            </view>
+            <view class="jg-tile jg-tile-brand">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goStatistics">
+                <view class="jg-tile-ic">统</view>
+                <view class="jg-tile-t">训练统计</view>
+                <view class="jg-tile-d">考勤与反馈</view>
+              </view>
+            </view>
+            <view class="jg-tile jg-tile-plain">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformanceLeaderboard">
+                <view class="jg-tile-ic">榜</view>
+                <view class="jg-tile-t">成绩排行</view>
+                <view class="jg-tile-d">正式排名</view>
+              </view>
+            </view>
+            <view class="jg-tile jg-tile-accent">
+              <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goCompetitions">
+                <view class="jg-tile-ic">赛</view>
+                <view class="jg-tile-t">赛事意向</view>
+                <view class="jg-tile-d">参赛报名</view>
+              </view>
+            </view>
+          </view>
+
+          <view class="jg-deck-head jg-mt-16">
+            <view class="jg-band-title-wrap">
+              <text class="jg-idx-tag">ID</text>
+              <text class="jg-band-title">账户与安全</text>
+            </view>
+          </view>
+          <view class="jg-tbl">
+            <view class="jg-tbl-row" hover-class="jg-tbl-row-hover" bindtap="goHome">
+              <view class="jg-tbl-gutter">退出</view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">退出当前会话</view>
+                <view class="jg-tbl-m">退出后需重新微信登录</view>
+              </view>
+              <view class="jg-tbl-end"><text class="jg-chev">›</text></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </swiper-item>
+  </swiper>
+
+  <!-- 底部详情抽屉（下滑关闭，替代不必要的整页跳转） -->
+  <view wx:if="{{drawerOpen && drawerItem}}" class="jg-drawer-mask" bindtap="onCloseDrawer">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">PB</text>
-          <text class="jg-band-title">个人最好成绩</text>
+          <text class="jg-idx-tag">{{drawerItem.tag}}</text>
+          <text class="jg-drawer-title">{{drawerItem.title}}</text>
         </view>
-        <text class="jg-band-meta jg-mono">{{stats.periodLabel}}</text>
+        <text class="jg-drawer-close" bindtap="onCloseDrawer">关闭 ×</text>
       </view>
-      <view class="jg-sub">暂无已审核的正式成绩。教练审核通过后，这里会显示你的 PB 计时与目标差距。</view>
-    </view>
-  </block>
-
-  <!-- 01 // 今日训练：局部时间轴 + 2列键值对遥测 + 单行全宽科技蓝主行动 -->
-  <view class="jg-band jg-stagger jg-stagger-1">
-    <view class="jg-band-head">
-      <view class="jg-band-title-wrap">
-        <text class="jg-band-idx">01</text>
-        <text class="jg-band-title">今日训练</text>
-      </view>
-      <text class="jg-band-meta jg-mono">{{todayDate}}</text>
-    </view>
-
-    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-skeleton jg-skel-132"></view>
-
-    <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
-      <view class="jg-state-err-t">今日训练加载失败</view>
-      <view class="jg-state-err-m">{{todayState.error}}</view>
-      <view class="jg-retry" bindtap="retryToday">重新加载</view>
-    </view>
-
-    <jg-empty
-      wx:elif="{{todaySessions.length === 0}}"
-      title="今天没有训练安排"
-      message="教练创建考勤场次并发布训练计划后，会显示在这里。"
-    />
-
-    <view wx:else class="jg-timeline">
-      <view wx:for="{{todaySessions}}" wx:key="sessionId" class="jg-tl-item {{item.canCheckIn ? 'jg-tl-item-now' : ''}}">
-        <view class="jg-tl-dot"></view>
-        <view class="jg-card">
-          <view class="jg-card-h">
-            <text class="jg-card-t">{{item.title}}</text>
-            <text class="jg-chip {{item.isDone ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{item.statusLabel}}</text>
-          </view>
-          <view class="jg-kv-grid">
-            <view class="jg-kv">
-              <view class="jg-kv-l">训练地点</view>
-              <view class="jg-kv-v">{{item.locationName || '未填写地点'}}</view>
-            </view>
-            <view class="jg-kv">
-              <view class="jg-kv-l">训练组</view>
-              <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
-            </view>
-            <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
-              <view class="jg-kv-l">签到窗口</view>
-              <view class="jg-kv-v jg-mono">{{item.checkInOpenTime}}–{{item.checkInCloseTime}}</view>
-            </view>
-            <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
-              <view class="jg-kv-l">当前阶段</view>
-              <view class="jg-kv-v">{{item.phaseLabel}}</view>
-            </view>
-          </view>
-          <button
-            class="jg-btn jg-btn-block jg-mt-12 {{item.canCheckIn ? 'jg-btn-accent' : 'jg-btn-ghost'}}"
-            bindtap="goAttendance"
-          >{{item.canCheckIn ? '立即前往签到 →' : '查看考勤详情'}}</button>
-        </view>
-      </view>
+      <view class="jg-body-s jg-mono jg-mb-12">{{drawerItem.meta}}</view>
+      <view class="jg-body jg-mb-16">{{drawerItem.body}}</view>
+      <button class="jg-btn jg-btn-accent jg-btn-block" bindtap="onDrawerAction">{{drawerItem.actionLabel}}</button>
     </view>
   </view>
-
-  <!-- 02 // 本月出勤矩阵与近期进步（发丝十字 4 列，不重复出勤率卡片） -->
-  <view wx:if="{{!statsState.loading || statsState.ready}}" class="jg-band jg-stagger jg-stagger-2">
-    <view class="jg-band-head">
-      <view class="jg-band-title-wrap">
-        <text class="jg-band-idx">02</text>
-        <text class="jg-band-title">本月出勤与进步</text>
-      </view>
-      <text class="jg-band-meta">{{stats.periodLabel || '本月'}}</text>
-    </view>
-
-    <view class="jg-matrix">
-      <view class="jg-mcell">
-        <view class="jg-mcell-l">有效出勤</view>
-        <view class="jg-mcell-v jg-mcell-v-tech jg-num-roll">{{stats.validAttendance}}</view>
-      </view>
-      <view class="jg-mcell">
-        <view class="jg-mcell-l">应签到</view>
-        <view class="jg-mcell-v jg-num-roll">{{stats.actualExpected}}</view>
-      </view>
-      <view class="jg-mcell">
-        <view class="jg-mcell-l">迟到</view>
-        <view class="jg-mcell-v">{{stats.late}}</view>
-      </view>
-      <view class="jg-mcell">
-        <view class="jg-mcell-l">待核实</view>
-        <view class="jg-mcell-v">{{stats.pendingVerification}}</view>
-      </view>
-    </view>
-
-    <view wx:if="{{stats.changes.length}}" class="jg-list">
-      <block wx:for="{{stats.changes}}" wx:key="eventName">
-        <view class="jg-row">
-          <view class="{{item.improved ? 'jg-row-ic jg-row-ic-ok' : 'jg-row-ic jg-row-ic-plain'}}">{{item.improved ? '↑' : '—'}}</view>
-          <view class="jg-row-main">
-            <view class="jg-row-t">{{item.eventName}}</view>
-            <view class="jg-row-m">{{item.metaText}}</view>
-          </view>
-          <view class="jg-row-e">
-            <text class="jg-row-v {{item.improved ? 'jg-row-v-ok' : ''}}">{{item.changeText}}</text>
-          </view>
-        </view>
-      </block>
-    </view>
-
-    <view wx:elif="{{stats.periodLabel}}" class="jg-note">
-      <view>
-        <view class="jg-note-t">暂无可比较的阶段变化</view>
-        <view class="jg-note-m">同一项目至少有两条已审核成绩后，才能计算阶段进步。</view>
-      </view>
-    </view>
-
-    <view wx:if="{{stats.dataQualityNote}}" class="jg-note jg-note-warn">
-      <view>
-        <view class="jg-note-t">统计口径说明</view>
-        <view class="jg-note-m">{{stats.dataQualityNote}}出勤率仅以已结束场次计算，未签到不等同于无故缺勤。</view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 03 // 俱乐部通知 -->
-  <view class="jg-band">
-    <view class="jg-band-head">
-      <view class="jg-band-title-wrap">
-        <text class="jg-band-idx">03</text>
-        <text class="jg-band-title">俱乐部通知</text>
-      </view>
-      <text class="jg-band-action" bindtap="goNotices">{{noticeActionText}}</text>
-    </view>
-
-    <view wx:if="{{noticeState.loading && !noticeState.ready}}" class="jg-list">
-      <view class="jg-skeleton jg-skeleton-row"></view>
-      <view class="jg-skeleton jg-skeleton-row"></view>
-    </view>
-
-    <view wx:elif="{{noticeState.error && !noticeState.ready}}" class="jg-state-err">
-      <view class="jg-state-err-t">通知加载失败</view>
-      <view class="jg-state-err-m">{{noticeState.error}}</view>
-      <view class="jg-retry" bindtap="retryNotices">重新加载</view>
-    </view>
-
-    <jg-empty
-      wx:elif="{{notices.length === 0}}"
-      title="暂无通知"
-      message="教练发布训练安排或俱乐部公告后，会显示在这里。"
-    />
-
-    <view wx:else class="jg-list">
-      <block wx:for="{{notices}}" wx:key="noticeId">
-        <view class="jg-row" hover-class="jg-row-hover" bindtap="goNotices">
-          <view class="jg-row-main">
-            <view class="jg-row-t">
-              <text>{{item.title}}</text>
-              <text wx:if="{{item.isImportant}}" class="jg-chip jg-chip-danger">重要</text>
-              <text wx:if="{{!item.isRead}}" class="jg-chip jg-chip-brand">未读</text>
-            </view>
-            <view class="jg-row-m">{{item.content}}</view>
-          </view>
-          <view class="jg-row-e"><text class="jg-chev">›</text></view>
-        </view>
-      </block>
-    </view>
-  </view>
-
-  <!-- 04 // 常用功能（锐利 2x3 发丝索引栅格 + 通栏列表） -->
-  <view class="jg-band">
-    <view class="jg-band-head">
-      <view class="jg-band-title-wrap">
-        <text class="jg-band-idx">04</text>
-        <text class="jg-band-title">常用功能</text>
-      </view>
-      <text class="jg-band-meta">{{noticeMeta}}</text>
-    </view>
-
-    <view class="jg-tiles">
-      <view class="jg-tile jg-tile-brand">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPlans">
-          <view class="jg-tile-ic">计</view>
-          <view class="jg-tile-t">训练计划</view>
-          <view class="jg-tile-d">本周安排</view>
-        </view>
-      </view>
-      <view class="jg-tile jg-tile-ok">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goReport">
-          <view class="jg-tile-ic">报</view>
-          <view class="jg-tile-t">运动报告</view>
-          <view class="jg-tile-d">PB 与趋势</view>
-        </view>
-      </view>
-      <view class="jg-tile jg-tile-accent">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformance">
-          <view class="jg-tile-ic">绩</view>
-          <view class="jg-tile-t">成绩申报</view>
-          <view class="jg-tile-d">提交成绩</view>
-        </view>
-      </view>
-      <view class="jg-tile jg-tile-brand">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goStatistics">
-          <view class="jg-tile-ic">统</view>
-          <view class="jg-tile-t">训练统计</view>
-          <view class="jg-tile-d">考勤与反馈</view>
-        </view>
-      </view>
-      <view class="jg-tile jg-tile-plain">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformanceLeaderboard">
-          <view class="jg-tile-ic">榜</view>
-          <view class="jg-tile-t">成绩排行</view>
-          <view class="jg-tile-d">正式排名</view>
-        </view>
-      </view>
-      <view class="jg-tile jg-tile-accent">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goCompetitions">
-          <view class="jg-tile-ic">赛</view>
-          <view class="jg-tile-t">赛事意向</view>
-          <view class="jg-tile-d">参赛报名</view>
-        </view>
-      </view>
-    </view>
-
-    <view class="jg-list jg-mt-12">
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAttendance">
-        <view class="jg-row-ic jg-row-ic-ok">勤</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">考勤与请假</view>
-          <view class="jg-row-m">签到、请假与历史记录</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAttendanceStatistics">
-        <view class="jg-row-ic jg-row-ic-brand">考</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">考勤统计与排行</view>
-          <view class="jg-row-m">出勤率与样本口径</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goFeedback">
-        <view class="jg-row-ic jg-row-ic-plain">馈</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">训练反馈</view>
-          <view class="jg-row-m">提交反馈与查看教练评价</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goEditProfile">
-        <view class="jg-row-ic jg-row-ic-brand">档</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">完善个人档案</view>
-          <view class="jg-row-m">身高体重、主项与体考目标</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goLinkManage">
-        <view class="jg-row-ic jg-row-ic-ok">亲</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">亲子关联</view>
-          <view class="jg-row-m">生成家长关联凭证、确认或解除关联</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goAllFeatures">
-        <view class="jg-row-ic jg-row-ic-brand">全</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">全部功能</view>
-          <view class="jg-row-m">按业务分类查看全部已实现的学生端功能</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 05 // 账户与安全 -->
-  <view class="jg-band jg-band-tight">
-    <view class="jg-band-head">
-      <view class="jg-band-title-wrap">
-        <text class="jg-band-idx">05</text>
-        <text class="jg-band-title">账户与安全</text>
-      </view>
-    </view>
-    <view class="jg-list">
-      <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
-        <view class="jg-row-ic jg-row-ic-plain">退</view>
-        <view class="jg-row-main">
-          <view class="jg-row-t">退出当前会话</view>
-          <view class="jg-row-m">退出后需重新微信登录</view>
-        </view>
-        <view class="jg-row-e"><text class="jg-chev">›</text></view>
-      </view>
-    </view>
-  </view>
-
-  <!-- V1.6.5 单排 5 项页内跳转坞 -->
-  <jg-action-dock
-    items="{{dockItems}}"
-    active-key="home"
-    daylight="{{uiDaylight}}"
-    bind:select="onDockSelect"
-  />
 </view>

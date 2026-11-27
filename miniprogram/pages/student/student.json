@@ -3,9 +3,9 @@
   "enablePullDownRefresh": true,
   "usingComponents": {
     "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-deck-rail": "/components/jg-deck-rail/jg-deck-rail",
     "jg-empty": "/components/jg-empty/jg-empty",
     "jg-flip-card": "/components/jg-flip-card/jg-flip-card",
-    "jg-stat-ring": "/components/jg-stat-ring/jg-stat-ring",
-    "jg-action-dock": "/components/jg-action-dock/jg-action-dock"
+    "jg-stat-ring": "/components/jg-stat-ring/jg-stat-ring"
   }
 }

@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "编辑训练计划",
   "usingComponents": {
-    "jg-page-head": "/components/jg-page-head/jg-page-head"
+    "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-deck-rail": "/components/jg-deck-rail/jg-deck-rail"
   }
 }

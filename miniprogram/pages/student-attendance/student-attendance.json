@@ -2,6 +2,7 @@
   "navigationBarTitleText": "今日签到",
   "usingComponents": {
     "jg-page-head": "/components/jg-page-head/jg-page-head",
+    "jg-deck-rail": "/components/jg-deck-rail/jg-deck-rail",
     "jg-empty": "/components/jg-empty/jg-empty"
   }
 }

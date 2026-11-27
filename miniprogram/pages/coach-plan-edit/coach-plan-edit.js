@@ -54,7 +54,13 @@ Page({
     groupIndex: 0,
     items: [],
     uiDaylight: false,
-    focusedField: ''
+    focusedField: '',
+    stepIndex: 0,
+    stepTabs: [
+      { key: 'base', idx: '01', label: '基础信息' },
+      { key: 'drills', idx: '02', label: '训练内容' },
+      { key: 'publish', idx: '03', label: '核对发布' }
+    ]
   },
 
   onLoad(options) {
@@ -64,6 +70,32 @@ Page({
 
   onToggleDaylight() {
     this.setData({ uiDaylight: !this.data.uiDaylight });
+  },
+
+  onStepChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.stepIndex) {
+      this.setData({ stepIndex: current });
+    }
+  },
+
+  onStepSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.stepIndex) {
+      this.setData({ stepIndex: index });
+    }
+  },
+
+  onPrevStep() {
+    if (this.data.stepIndex > 0) {
+      this.setData({ stepIndex: this.data.stepIndex - 1 });
+    }
+  },
+
+  onNextStep() {
+    if (this.data.stepIndex < 2) {
+      this.setData({ stepIndex: this.data.stepIndex + 1 });
+    }
   },
 
   onFieldFocus(event) {

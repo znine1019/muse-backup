@@ -1,8 +1,8 @@
-/* 家长工作台（V1.6.5 黑+白+科技蓝，严格只读） */
+/* 家长工作台（V1.6.5 R8 Neo-Brutalist Deck，严格只读） */
 .jg-page .jg-card-t { word-break: break-all; }
 
 .plan-block {
-  border-bottom: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
+  border-bottom: 4rpx solid var(--jg-line, rgba(255, 255, 255, 0.24));
 }
 
 .plan-block:last-child {
@@ -16,12 +16,13 @@
 .plan-toggle {
   color: var(--jg-accent-hi, #38BDF8);
   font-size: 24rpx;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .plan-detail {
-  padding: 0 24rpx 24rpx;
-  background: var(--jg-base, #0A0C10);
+  padding: 12rpx 24rpx 20rpx;
+  background: var(--jg-surface, #111419);
+  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.24));
 }
 
 .jg-page.jg-daylight .plan-detail {
@@ -32,4 +33,26 @@
   border-bottom: none;
   padding-left: 0;
   padding-right: 0;
+}
+
+.parent-sec-foot {
+  flex: 0 0 auto;
+  margin: 0;
+  border-top: 4rpx solid var(--jg-line-strong, #FFFFFF);
+  background: var(--jg-void, #000000);
+  padding: 0 24rpx env(safe-area-inset-bottom);
+  box-sizing: border-box;
+}
+
+.parent-foot-row {
+  display: flex;
+  align-items: center;
+  min-height: 84rpx;
+}
+
+.parent-foot-t {
+  flex: 1 1 0;
+  font-size: 26rpx;
+  font-weight: 800;
+  color: var(--jg-text-hi, #FFFFFF);
 }

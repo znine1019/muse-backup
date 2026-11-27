@@ -124,13 +124,15 @@ Page({
     noticeActionText: '查看全部',
 
     uiDaylight: false,
-    dockItems: [
-      { key: 'home', label: '首页' },
-      { key: 'attendance', label: '签到' },
-      { key: 'plans', label: '计划' },
-      { key: 'performance', label: '成绩' },
-      { key: 'rank', label: '排行' }
-    ]
+    deckIndex: 0,
+    deckTabs: [
+      { key: 'today', idx: '01', label: '今日' },
+      { key: 'score', idx: '02', label: '成绩' },
+      { key: 'attendance', idx: '03', label: '出勤' },
+      { key: 'notice', idx: '04', label: '通知' }
+    ],
+    drawerOpen: false,
+    drawerItem: null
   },
 
   onShow() {
@@ -558,24 +560,74 @@ Page({
     this.controllerSetIfChanged({ uiDaylight: !this.data.uiDaylight });
   },
 
-  onDockSelect(event) {
-    const key = event && event.detail && event.detail.key;
-    if (key === 'home') {
-      if (typeof wx.pageScrollTo === 'function') {
-        wx.pageScrollTo({ scrollTop: 0, duration: 200 });
-      }
-      return;
-    }
-    if (key === 'attendance') {
-      this.goAttendance();
-    } else if (key === 'plans') {
-      this.goPlans();
-    } else if (key === 'performance') {
-      this.goPerformance();
-    } else if (key === 'rank') {
-      this.goPerformanceLeaderboard();
+  onDeckChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: current, drawerOpen: false, drawerItem: null });
     }
   },
+
+  onDeckTabSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.deckIndex) {
+      this.controllerSetIfChanged({ deckIndex: index, drawerOpen: false, drawerItem: null });
+    }
+  },
+
+  onOpenNoticeDrawer(event) {
+    const noticeId = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.noticeId;
+    const found = (this.data.notices || []).find((item) => item.noticeId === noticeId);
+    if (!found) {
+      this.goNotices();
+      return;
+    }
+    this.controllerSetIfChanged({
+      drawerOpen: true,
+      drawerItem: {
+        kind: 'notice',
+        tag: found.isImportant ? '重要通知' : '俱乐部通知',
+        title: found.title,
+        meta: `${found.timeText || '近期'} · ${found.isRead ? '已读' : '未读'}`,
+        body: found.content || '暂无详细正文',
+        actionLabel: '进入通知中心 →'
+      }
+    });
+  },
+
+  onOpenChangeDrawer(event) {
+    const idx = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index);
+    const found = (this.data.stats && this.data.stats.changes && this.data.stats.changes[idx]) || null;
+    if (!found) {
+      return;
+    }
+    this.controllerSetIfChanged({
+      drawerOpen: true,
+      drawerItem: {
+        kind: 'change',
+        tag: found.improved ? '阶段进步' : '阶段对比',
+        title: found.eventName,
+        meta: found.metaText,
+        body: `起止成绩：${found.fromText} → ${found.toText}，变化幅度 ${found.changeText}。仅统计教练审核通过的正式成绩。`,
+        actionLabel: '查看完整运动报告 →'
+      }
+    });
+  },
+
+  onDrawerAction() {
+    const kind = this.data.drawerItem && this.data.drawerItem.kind;
+    this.onCloseDrawer();
+    if (kind === 'notice') {
+      this.goNotices();
+    } else if (kind === 'change') {
+      this.goReport();
+    }
+  },
+
+  onCloseDrawer() {
+    this.controllerSetIfChanged({ drawerOpen: false, drawerItem: null });
+  },
+
+  noop() {},
 
   /* 跳转前标记需要刷新：审批/申报等业务完成后返回工作台会强制静默刷新 */
   goPlans() {

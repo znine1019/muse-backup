@@ -1,27 +1,16 @@
-/* 正式成绩排行榜（V1.6.5 黑+白+科技蓝 电子计时板） */
+/* 正式成绩排行榜（V1.6.5 R8 Neo-Brutalist 电子计时双栏表） */
 
 .rank-badge {
-  flex: 0 0 auto;
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 4rpx;
-  background: var(--jg-base, #0A0C10);
-  border: 2rpx solid var(--jg-line-strong, rgba(255, 255, 255, 0.28));
-  color: var(--jg-text-hi, #FFFFFF);
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
-  font-size: 28rpx;
-  font-weight: 800;
-  line-height: 60rpx;
-  text-align: center;
-  margin-right: 18rpx;
-  box-sizing: border-box;
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--jg-text-hi, #FFFFFF);
 }
 
 .rank-badge-self {
-  background: var(--jg-accent, #00A6FF);
-  border-color: var(--jg-accent, #00A6FF);
   color: #000000;
 }
 
@@ -29,25 +18,20 @@
   color: #FFFFFF;
 }
 
-/* 本人所在行：电光蓝微晕 + 左侧 6rpx 高亮轨 */
 .ranking-self {
-  background: var(--jg-accent-tint, rgba(0, 166, 255, 0.10));
-  border-left: 6rpx solid var(--jg-accent, #00A6FF);
-  padding-left: 14rpx;
+  background: var(--jg-accent-tint, rgba(0, 166, 255, 0.14));
 }
 
 .jg-page.jg-daylight .ranking-self {
   background: #F4F6F8;
-  border-left-color: #006BB3;
 }
 
-/* 右侧超大电子计时成绩读数 */
 .rank-val {
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   font-size: 40rpx;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--jg-accent-hi, #38BDF8);
   letter-spacing: -0.5rpx;
 }

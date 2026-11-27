@@ -55,7 +55,9 @@ Page({
     leaderboard: null,
     rows: [],
     uiDaylight: false,
-    rankScanning: false
+    rankScanning: false,
+    filterOpen: false,
+    drawerRow: null
   },
 
   onShow() {
@@ -95,6 +97,29 @@ Page({
   onToggleDaylight() {
     this.setData({ uiDaylight: !this.data.uiDaylight });
   },
+
+  onOpenFilter() {
+    this.setData({ filterOpen: true, drawerRow: null });
+  },
+
+  onCloseFilter() {
+    this.setData({ filterOpen: false });
+  },
+
+  onOpenRowDrawer(event) {
+    const idx = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index);
+    const row = (this.data.rows || [])[idx] || null;
+    if (!row) {
+      return;
+    }
+    this.setData({ drawerRow: row, filterOpen: false });
+  },
+
+  onCloseDrawer() {
+    this.setData({ drawerRow: null, filterOpen: false });
+  },
+
+  noop() {},
 
   async loadPage() {
     this.setData({ loading: true, error: '' });

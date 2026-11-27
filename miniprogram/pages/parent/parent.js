@@ -98,12 +98,12 @@ Page({
     scopeRevealing: false,
     attendanceRatePercent: 0,
     attendanceRateText: '—',
-    dockItems: [
-      { key: 'overview', label: '概览' },
-      { key: 'plans', label: '计划' },
-      { key: 'performance', label: '成绩' },
-      { key: 'attendance', label: '考勤' },
-      { key: 'bind', label: '关联' }
+    deckIndex: 0,
+    deckTabs: [
+      { key: 'overview', idx: '01', label: '概览' },
+      { key: 'plans', idx: '02', label: '计划' },
+      { key: 'performance', idx: '03', label: '成绩' },
+      { key: 'attendance', idx: '04', label: '考勤' }
     ]
   },
 
@@ -140,15 +140,38 @@ Page({
     this.setData({ uiDaylight: !this.data.uiDaylight });
   },
 
-  onDockSelect(event) {
-    const key = event && event.detail && event.detail.key;
-    if (key === 'bind') {
-      this.goBind();
-      return;
+  sectionToDeckIndex(section) {
+    if (section === 'plans') {
+      return 1;
     }
-    if (JUMP_KEYS.includes(key)) {
-      this.setData({ activeSection: key });
-      this.scrollToSection(key);
+    if (section === 'performance' || section === 'feedback') {
+      return 2;
+    }
+    if (section === 'attendance' || section === 'events') {
+      return 3;
+    }
+    return 0;
+  },
+
+  onDeckChange(event) {
+    const current = Number(event && event.detail && event.detail.current);
+    if (Number.isFinite(current) && current !== this.data.deckIndex) {
+      const tab = (this.data.deckTabs || [])[current];
+      this.setData({
+        deckIndex: current,
+        activeSection: tab ? tab.key : 'overview'
+      });
+    }
+  },
+
+  onDeckTabSelect(event) {
+    const index = Number(event && event.detail && event.detail.index);
+    if (Number.isFinite(index) && index !== this.data.deckIndex) {
+      const tab = (this.data.deckTabs || [])[index];
+      this.setData({
+        deckIndex: index,
+        activeSection: tab ? tab.key : 'overview'
+      });
     }
   },
 
@@ -267,9 +290,10 @@ Page({
     this.scrollToSection(section);
   },
 
-  /* 页内分区跳转：先清空再赋值，保证连续点击同一分区仍会触发滚动 */
+  /* 页内分区跳转：先清空再赋值，保证连续点击同一分区仍会触发滚动，并同步切换横向 Deck 页 */
   scrollToSection(section) {
-    this.setData({ scrollIntoView: '' }, () => {
+    const deckIndex = this.sectionToDeckIndex(section);
+    this.setData({ scrollIntoView: '', deckIndex }, () => {
       this.setData({ scrollIntoView: `sec-${section}` });
     });
   },
