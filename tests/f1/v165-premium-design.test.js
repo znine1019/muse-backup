@@ -178,17 +178,18 @@ test('R5 37 页全覆盖、demo/ui-preview 守卫完好、无越权数据库直�
 
   for (const p of appJson.pages) {
     const js = read(`miniprogram/${p}.js`);
+    const jsClean = js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     const wxml = read(`miniprogram/${p}.wxml`);
-    assert.doesNotMatch(js, /wx\.cloud\.database\s*\(/, `${p} 不得绕过 services/api 直连数据库`);
-    assert.doesNotMatch(js, /wx\.cloud\.callFunction\s*\(/, `${p} 不得绕过 services/api 直接调用云函数`);
+    assert.doesNotMatch(jsClean, /wx\.cloud\.database\s*\(/, `${p} 不得绕过 services/api 直连数据库`);
+    assert.doesNotMatch(jsClean, /wx\.cloud\.callFunction\s*\(/, `${p} 不得绕过 services/api 直接调用云函数`);
     if (p === 'pages/ui-preview/ui-preview') {
       assert.match(wxml, /pv-page/);
-      assert.match(js, /checkDemoAccess/);
-      assert.doesNotMatch(js, /services\/api/);
+      assert.match(jsClean, /checkDemoAccess/);
+      assert.doesNotMatch(jsClean, /services\/api/);
     } else if (p === 'pages/demo/demo') {
       assert.match(wxml, /jg-page/);
-      assert.match(js, /checkDemoAccess/);
-      assert.doesNotMatch(js, /services\/api/);
+      assert.match(jsClean, /checkDemoAccess/);
+      assert.doesNotMatch(jsClean, /services\/api/);
     } else {
       assert.match(wxml, /jg-page/);
       assert.match(wxml, /jg-enter-fwd/);
