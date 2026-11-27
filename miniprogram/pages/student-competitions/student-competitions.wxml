@@ -8,7 +8,7 @@
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">赛事信息加载失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>

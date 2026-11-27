@@ -7,13 +7,13 @@
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <block wx:else>
-    <view wx:if="{{error}}" class="jg-state-err">
+    <view wx:if="{{error}}" class="jg-state-err jg-shake">
       <view class="jg-state-err-t">注册资料加载失败</view>
       <view class="jg-state-err-m">{{error}}</view>
     </view>
 
     <form wx:else bindsubmit="handleSubmit">
-      <view wx:if="{{formError}}" class="jg-state-err">
+      <view wx:if="{{formError}}" class="jg-state-err jg-shake">
         <view class="jg-state-err-t">提交前请检查</view>
         <view class="jg-state-err-m">{{formError}}</view>
       </view>

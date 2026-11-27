@@ -1,8 +1,8 @@
-/* 考勤管理（V1.6.5 黑底白字 + 品牌深蓝） */
+/* 考勤管理（V1.6.5 蓝黑白高级感） */
 .attendance-detail {
   margin-top: 24rpx;
   padding-top: 8rpx;
-  border-top: 2rpx solid var(--jg-line, #1E2C3A);
+  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
 }
 
 .roster-row,

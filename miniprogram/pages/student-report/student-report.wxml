@@ -14,7 +14,7 @@
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">报告生成失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="reload">重新加载</view>

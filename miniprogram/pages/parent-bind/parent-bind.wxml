@@ -6,7 +6,7 @@
     role-tone="accent"
   />
 
-  <view wx:if="{{error}}" class="jg-state-err">
+  <view wx:if="{{error}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">操作未完成</view>
     <view class="jg-state-err-m">{{error}}</view>
   </view>

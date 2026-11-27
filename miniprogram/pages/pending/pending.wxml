@@ -6,7 +6,7 @@
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{error && !loading}}" class="jg-state-err">
+  <view wx:if="{{error && !loading}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">账号状态加载失败</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="refresh">重新加载</view>
@@ -31,7 +31,7 @@
       <view wx:if="{{status === 'rejected'}}" class="jg-note jg-note-warn">
         <view><view class="jg-note-m">审核未通过{{reviewComment ? '：' + reviewComment : '，请修改资料后重新提交。'}}</view></view>
       </view>
-      <view wx:if="{{status === 'disabled'}}" class="jg-state-err jg-mt-12">
+      <view wx:if="{{status === 'disabled'}}" class="jg-state-err jg-mt-12 jg-shake">
         <view class="jg-state-err-t">账号已停用</view>
         <view class="jg-state-err-m">不能访问内部业务数据。</view>
       </view>

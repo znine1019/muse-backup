@@ -17,7 +17,7 @@
     </block>
   </view>
 
-  <view wx:if="{{error}}" class="jg-state-err">
+  <view wx:if="{{error}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">暂时无法查看功能目录</view>
     <view class="jg-state-err-m">{{error}}</view>
     <view class="jg-retry" bindtap="retry">重新加载</view>
