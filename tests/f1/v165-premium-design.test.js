@@ -214,4 +214,68 @@ test('R6 37 页全覆盖、demo/ui-preview 守卫完好、无越权数据库直�
   }
 
   assert.ok(fs.existsSync(path.join(ROOT, 'docs/V1.6.5_黑科技蓝设计规范.md')), '缺少黑科技蓝设计规范文档');
+  assert.ok(fs.existsSync(path.join(ROOT, 'docs/V1.6.5_新粗野横向Deck设计规范.md')), '缺少 R8 新粗野横向 Deck 设计规范文档');
+});
+
+test('R8 四大角色工作台全部采用 4 页横向 swiper Deck + 顶部 jg-deck-rail，全站零 jg-action-dock 残留', () => {
+  const appJson = JSON.parse(read('miniprogram/app.json'));
+  for (const p of appJson.pages) {
+    const wxml = read(`miniprogram/${p}.wxml`);
+    assert.doesNotMatch(wxml, /<jg-action-dock/, `${p} 不得再挂载旧版底部 5 项跳转坞 jg-action-dock`);
+  }
+
+  const workbenches = [
+    ['pages/student/student', 4],
+    ['pages/coach/coach', 4],
+    ['pages/admin/admin', 4],
+    ['pages/parent/parent', 4],
+    ['pages/student-attendance/student-attendance', 3],
+    ['pages/coach-plan-edit/coach-plan-edit', 3]
+  ];
+  for (const [p, expectedSlides] of workbenches) {
+    const wxml = read(`miniprogram/${p}.wxml`);
+    assert.match(wxml, /<jg-deck-rail/, `${p} 必须挂载顶部横向索引轨 <jg-deck-rail>`);
+    assert.match(wxml, /<swiper/, `${p} 必须使用原生 <swiper> 横向 Deck`);
+    const slides = (wxml.match(/<swiper-item\b/g) || []).length;
+    assert.equal(slides, expectedSlides, `${p} 横向分页数应为 ${expectedSlides}，实际为 ${slides}`);
+  }
+});
+
+test('R8 Neo-Brutalist 零圆角与双栏表格/底部抽屉/全屏图表舞台落地验证', () => {
+  const appWxss = read('miniprogram/app.wxss').replace(/\/\*[\s\S]*?\*\//g, '');
+  const nonZeroRadius = [...appWxss.matchAll(/border-radius\s*:\s*([^;]+);/gi)]
+    .map((m) => m[1].trim())
+    .filter((v) => v !== '0' && v !== '0px' && v !== '0rpx');
+  assert.deepEqual(nonZeroRadius, [], `app.wxss 应保持严格 0 圆角，发现：${nonZeroRadius.join(', ')}`);
+
+  const railWxss = read('miniprogram/components/jg-deck-rail/jg-deck-rail.wxss').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.doesNotMatch(railWxss, /border-radius\s*:\s*[1-9]/i, 'jg-deck-rail 不得使用非零圆角');
+
+  const motionWxs = read('miniprogram/utils/motion.wxs');
+  assert.match(motionWxs, /onDeckTransition/, 'motion.wxs 必须提供渲染层横向 Deck 游标跟手函数');
+  assert.match(motionWxs, /onDeckFinish/, 'motion.wxs 必须提供渲染层横向 Deck 结束对齐函数');
+
+  const tablePages = [
+    'pages/student/student',
+    'pages/coach/coach',
+    'pages/admin/admin',
+    'pages/parent/parent',
+    'pages/performance-leaderboard/performance-leaderboard',
+    'pages/attendance-statistics/attendance-statistics',
+    'pages/coach-performance-review/coach-performance-review'
+  ];
+  for (const p of tablePages) {
+    assert.match(read(`miniprogram/${p}.wxml`), /jg-tbl/, `${p} 必须采用双栏连续粗野表格 jg-tbl`);
+  }
+
+  for (const p of [
+    'pages/student-statistics/student-statistics',
+    'pages/student-report/student-report',
+    'pages/stats-workbench/stats-workbench'
+  ]) {
+    const wxml = read(`miniprogram/${p}.wxml`);
+    assert.match(wxml, /jg-filter-bar/, `${p} 筛选条件必须收敛为顶部紧凑筛选条`);
+    assert.match(wxml, /jg-drawer-sheet/, `${p} 筛选控件必须收进底部抽屉`);
+    assert.match(wxml, /jg-chart-stage/, `${p} 必须采用全屏图表/遥测舞台`);
+  }
 });

@@ -92,7 +92,7 @@
   padding: 0 22rpx;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 6rpx;
+  border-radius: 0;
   border: 2rpx solid rgba(255, 255, 255, 0.28);
   background: #0A0C10;
   color: #FFFFFF;
@@ -134,7 +134,7 @@
   padding: 0 12rpx;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 4rpx;
+  border-radius: 0;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   background: #0A0C10;
   color: #A3ADB8;
@@ -175,7 +175,7 @@
   background: #0A0C10;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   border-left: 6rpx solid #00A6FF;
-  border-radius: 4rpx;
+  border-radius: 0;
   padding: 16rpx 24rpx;
   font-size: 24rpx;
   color: #38BDF8;
@@ -194,7 +194,7 @@
 .pv-card {
   background: #0A0C10;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 6rpx;
+  border-radius: 0;
   padding: 24rpx;
   margin-bottom: 24rpx;
   display: flex;
@@ -211,7 +211,7 @@
   background-image: radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.08) 0%, rgba(56, 189, 248, 0) 64%);
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   border-top: 4rpx solid #00A6FF;
-  border-radius: 6rpx;
+  border-radius: 0;
   padding: 28rpx 24rpx;
   margin-bottom: 24rpx;
   display: flex;
@@ -276,7 +276,7 @@
 
 .pv-badge {
   padding: 6rpx 14rpx;
-  border-radius: 4rpx;
+  border-radius: 0;
   border: 2rpx solid #00A6FF;
   background: rgba(0, 166, 255, 0.10);
   color: #38BDF8;
@@ -383,7 +383,7 @@
   margin: 16rpx 0 0;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 6rpx;
+  border-radius: 0;
   background: #00A6FF;
   color: #000000;
   font-size: 27rpx;
@@ -460,7 +460,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 6rpx;
+  border-radius: 0;
   padding: 8rpx 0;
 }
 
@@ -518,7 +518,7 @@
   background-image: radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.08) 0%, rgba(56, 189, 248, 0) 64%);
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   border-top: 4rpx solid #00A6FF;
-  border-radius: 6rpx;
+  border-radius: 0;
   padding: 28rpx 24rpx;
   display: flex;
   flex-direction: column;
@@ -563,7 +563,7 @@
   text-align: center;
   padding: 16rpx 8rpx;
   margin-right: 8rpx;
-  border-radius: 4rpx;
+  border-radius: 0;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   background: #0A0C10;
   color: #A3ADB8;
@@ -612,7 +612,7 @@
 .pv-rank-row {
   background: #0A0C10;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
-  border-radius: 4rpx;
+  border-radius: 0;
   padding: 16rpx 24rpx;
   margin-bottom: 12rpx;
   display: flex;
@@ -687,7 +687,7 @@
   padding: 0 22rpx;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 6rpx;
+  border-radius: 0;
   background: #00A6FF;
   color: #000000;
   font-size: 24rpx;
@@ -733,7 +733,7 @@
 /* 骨架屏 Shimmer 1.1s + 内容 180ms 上移淡入 */
 .pv-skel {
   height: 152rpx;
-  border-radius: 4rpx;
+  border-radius: 0;
   background: #0A0C10;
   border: 2rpx solid rgba(255, 255, 255, 0.14);
   margin-bottom: 16rpx;

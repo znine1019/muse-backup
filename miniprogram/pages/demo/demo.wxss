@@ -1,24 +1,26 @@
-/* 开发者专用演示预览页（V1.6.5 黑+白+科技蓝，零深海军蓝与第四色相残留）
+/* 开发者专用演示预览页（V1.6.5 R8 Neo-Brutalist Telemetry：0圆角 + 2px粗边框，纯黑+纯白+科技蓝）
    仅在 jg- 设计系统之上补充演示横幅；其余全部复用 app.wxss 公共类。 */
 
 .demo-banner {
   background: var(--jg-base, #0A0C10);
-  border: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
-  border-left: 6rpx solid var(--jg-accent, #00A6FF);
-  border-radius: 4rpx;
+  border: 4rpx solid var(--jg-line-strong, #FFFFFF);
+  border-left: 8rpx solid var(--jg-accent, #00A6FF);
+  border-radius: 0;
   padding: 20rpx 24rpx;
   margin-bottom: 24rpx;
+  box-shadow: 6rpx 6rpx 0 var(--jg-accent, #00A6FF);
 }
 
 .jg-page.jg-daylight .demo-banner {
   background: #F4F6F8;
-  border-color: rgba(0, 0, 0, 0.12);
+  border-color: #000000;
   border-left-color: #006BB3;
+  box-shadow: 6rpx 6rpx 0 #006BB3;
 }
 
 .demo-banner-t {
   font-size: 25rpx;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--jg-accent-hi, #38BDF8);
 }
 
