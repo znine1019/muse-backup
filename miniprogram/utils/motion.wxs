@@ -1,4 +1,4 @@
-// V1.6.5 蓝黑白高级感 渲染层 WXS 手势与动效控制器（零 setData 逐帧通信）
+// V1.6.5 R8 Neo-Brutalist Deck 渲染层 WXS 手势与实时索引轨控制器（零 setData 逐帧通信）
 // 统一缓动：cubic-bezier(0.16, 1, 0.3, 1)
 var EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 var state = {
@@ -38,6 +38,40 @@ function onSwipeEnd(event) {
   });
 }
 
+// 横向 Deck swiper 滑动跟手：在渲染层实时移动顶部索引游标（不触发 setData）
+function onDeckTransition(event, ownerInstance) {
+  var detail = event && event.detail;
+  var ds = event && event.currentTarget && event.currentTarget.dataset;
+  if (!detail || !ds || !ownerInstance) return;
+  var count = Number(ds.count) || 4;
+  var current = Number(ds.current) || 0;
+  var width = Number(ds.width) || 375;
+  var dx = Number(detail.dx) || 0;
+  var progress = current + dx / (width > 0 ? width : 375);
+  if (progress < 0) progress = 0;
+  if (progress > count - 1) progress = count - 1;
+  var cursor = ownerInstance.selectComponent('.jg-deck-cursor');
+  if (cursor) {
+    cursor.setStyle({
+      transform: 'translateX(' + (progress * 100) + '%)',
+      transition: 'none'
+    });
+  }
+}
+
+function onDeckFinish(event, ownerInstance) {
+  var detail = event && event.detail;
+  if (!detail || !ownerInstance) return;
+  var current = Number(detail.current) || 0;
+  var cursor = ownerInstance.selectComponent('.jg-deck-cursor');
+  if (cursor) {
+    cursor.setStyle({
+      transform: 'translateX(' + (current * 100) + '%)',
+      transition: 'transform 220ms ' + EASE
+    });
+  }
+}
+
 function onDrawerStart(event) {
   var touch = event.touches && event.touches[0];
   if (!touch) return;
@@ -75,8 +109,8 @@ function onDrawerEnd(event, ownerInstance) {
 
 function onPressStart(event) {
   event.instance.setStyle({
-    transform: 'scale(0.985)',
-    opacity: '0.88',
+    transform: 'scale(0.98)',
+    opacity: '0.86',
     transition: 'transform 90ms ' + EASE + ', opacity 90ms ' + EASE
   });
 }
@@ -93,6 +127,8 @@ module.exports = {
   onSwipeStart: onSwipeStart,
   onSwipeMove: onSwipeMove,
   onSwipeEnd: onSwipeEnd,
+  onDeckTransition: onDeckTransition,
+  onDeckFinish: onDeckFinish,
   onDrawerStart: onDrawerStart,
   onDrawerMove: onDrawerMove,
   onDrawerEnd: onDrawerEnd,

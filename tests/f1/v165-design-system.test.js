@@ -53,7 +53,7 @@ test('V1.6.5 品牌色板与全局窗口配置为黑+白+科技蓝，无 native 
     '--jg-surface: #111419',
     '--jg-accent: #00A6FF',
     '--jg-accent-hi: #38BDF8',
-    '--jg-line: rgba(255, 255, 255, 0.14)',
+    '--jg-line: rgba(255, 255, 255, 0.24)',
     '--jg-text-hi: #FFFFFF',
     '--jg-text-mid: #A3ADB8',
     '--jg-cta-bg: #FFFFFF',

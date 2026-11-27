@@ -1,73 +1,75 @@
-/* V1.6.5 黑+白+科技蓝 遥测页头（自包含样式：纯黑/纯白 + 电光蓝标尺） */
-.head { margin-bottom: 20rpx; }
+/* V1.6.5 R8 Neo-Brutalist 遥测页头（零圆角 + 4rpx 边框 + 900 重字重） */
+.head { margin-bottom: 18rpx; }
+.head-compact { margin-bottom: 10rpx; }
 .head-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
 }
 .head-brand { display: flex; align-items: center; }
 .head-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 0;
   background: #00A6FF;
   margin-right: 10rpx;
 }
 .head-code {
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-size: 20rpx;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 2rpx;
   color: #38BDF8;
 }
 .head-tools { display: flex; align-items: center; }
 .role {
   font-size: 20rpx;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.2;
-  border-radius: 4rpx;
+  border-radius: 0;
   padding: 6rpx 12rpx;
-  border: 2rpx solid #00A6FF;
-  background: rgba(0, 166, 255, 0.10);
+  border: 4rpx solid #00A6FF;
+  background: #000000;
   color: #38BDF8;
 }
-.role-brand { background: rgba(0, 166, 255, 0.10); border-color: #00A6FF; color: #38BDF8; }
+.role-brand { background: #000000; border-color: #00A6FF; color: #38BDF8; }
 .role-accent { background: #00A6FF; border-color: #00A6FF; color: #000000; }
-.role-mute { background: #0A0C10; border-color: rgba(255, 255, 255, 0.16); color: #A3ADB8; }
+.role-mute { background: #0A0C10; border-color: #FFFFFF; color: #A3ADB8; }
 .daylight-btn {
   min-height: 88rpx;
   min-width: 88rpx;
   padding: 0 18rpx;
-  margin-left: 12rpx;
-  border-radius: 4rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.24);
-  background: #0A0C10;
+  margin-left: 10rpx;
+  border-radius: 0;
+  border: 4rpx solid #FFFFFF;
+  background: #000000;
   color: #FFFFFF;
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.daylight-btn:active { transform: scale(0.985); opacity: 0.86; }
+.daylight-btn:active { transform: translate(2rpx, 2rpx); opacity: 0.85; }
 .head-main { min-width: 0; }
-.head-title { font-size: 46rpx; font-weight: 800; line-height: 1.18; letter-spacing: -1rpx; color: #FFFFFF; }
-.head-meta { margin-top: 8rpx; font-size: 24rpx; color: #A3ADB8; line-height: 1.48; }
+.head-title { font-size: 46rpx; font-weight: 900; line-height: 1.12; letter-spacing: -1rpx; color: #FFFFFF; }
+.head-compact .head-title { font-size: 38rpx; }
+.head-meta { margin-top: 6rpx; font-size: 23rpx; color: #A3ADB8; line-height: 1.4; }
 .head-rule {
-  margin-top: 18rpx;
-  height: 2rpx;
-  background: rgba(255, 255, 255, 0.14);
+  margin-top: 14rpx;
+  height: 4rpx;
+  background: #FFFFFF;
   position: relative;
 }
 .head-rule-accent {
   position: absolute;
   left: 0;
   top: -2rpx;
-  width: 64rpx;
-  height: 4rpx;
+  width: 96rpx;
+  height: 8rpx;
   background: #00A6FF;
 }
 
@@ -75,11 +77,11 @@
 .head-daylight .head-code { color: #005596; }
 .head-daylight .head-title { color: #000000; }
 .head-daylight .head-meta { color: #4B5563; }
-.head-daylight .role-brand { background: rgba(0, 107, 179, 0.08); border-color: #006BB3; color: #005596; }
+.head-daylight .role-brand { background: #FFFFFF; border-color: #006BB3; color: #005596; }
 .head-daylight .role-accent { background: #006BB3; border-color: #006BB3; color: #FFFFFF; }
-.head-daylight .role-mute { background: #F4F6F8; border-color: rgba(0, 0, 0, 0.14); color: #4B5563; }
+.head-daylight .role-mute { background: #F4F6F8; border-color: #000000; color: #4B5563; }
 .head-daylight .daylight-btn { background: #000000; border-color: #000000; color: #FFFFFF; }
-.head-daylight .head-rule { background: rgba(0, 0, 0, 0.12); }
+.head-daylight .head-rule { background: #000000; }
 .head-daylight .head-rule-accent { background: #006BB3; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,23 +1,25 @@
-/* V1.6.5 黑+白+科技蓝 环形遥测仪表 */
+/* V1.6.5 R8 Neo-Brutalist 方形遥测仪表（零圆角 + 4rpx 边框） */
 .sr-wrap {
   width: 152rpx;
   height: 152rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  border: 4rpx solid #FFFFFF;
+  background: rgba(255, 255, 255, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  animation: sr-in 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box;
+  animation: sr-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes sr-in {
-  from { opacity: 0; transform: scale(0.92); }
+  from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: scale(1); }
 }
 .sr-core {
-  width: 128rpx;
-  height: 128rpx;
-  border-radius: 50%;
+  width: 124rpx;
+  height: 124rpx;
+  border-radius: 0;
   background: #000000;
   display: flex;
   flex-direction: column;
@@ -28,16 +30,18 @@
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
-  font-size: 30rpx;
-  font-weight: 800;
+  font-size: 32rpx;
+  font-weight: 900;
   color: #38BDF8;
   line-height: 1.05;
 }
 .sr-lbl {
   font-size: 19rpx;
+  font-weight: 700;
   color: #A3ADB8;
   margin-top: 4rpx;
 }
+.sr-daylight { border-color: #000000; }
 .sr-daylight .sr-core { background: #FFFFFF; }
 .sr-daylight .sr-val { color: #005596; }
 .sr-daylight .sr-lbl { color: #4B5563; }

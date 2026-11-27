@@ -1,4 +1,4 @@
-/* V1.6.5 黑+白+科技蓝 3D Y 轴翻面遥测台（480ms + 双分支 2D 交叉淡入降级，零深海军蓝） */
+/* V1.6.5 R8 Neo-Brutalist 3D Y 轴翻面遥测台（零圆角 + 4rpx 边框 + 硬蓝影 + 2D/SDK降级） */
 .fc-scene {
   perspective: 900rpx;
   width: 100%;
@@ -16,13 +16,13 @@
 .fc-face {
   width: 100%;
   box-sizing: border-box;
-  background-color: #0A0C10;
-  background-image: radial-gradient(circle at 88% 12%, rgba(56, 189, 248, 0.08) 0%, rgba(56, 189, 248, 0) 60%);
-  border: 2rpx solid rgba(255, 255, 255, 0.14);
-  border-top: 4rpx solid #00A6FF;
-  border-radius: 6rpx;
-  padding: 28rpx 24rpx;
+  background: #0A0C10;
+  border: 4rpx solid #FFFFFF;
+  border-top: 8rpx solid #00A6FF;
+  border-radius: 0;
+  padding: 24rpx;
   color: #FFFFFF;
+  box-shadow: 6rpx 6rpx 0 #00A6FF;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -32,9 +32,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #111419;
-  background-image: none;
-  border-color: rgba(255, 255, 255, 0.16);
+  background: #111419;
+  border-color: #FFFFFF;
   border-top-color: #38BDF8;
   transform: rotateY(180deg);
   display: flex;
@@ -42,43 +41,42 @@
   justify-content: space-between;
 }
 .fc-bar {
-  margin-top: 20rpx;
-  padding-top: 16rpx;
-  border-top: 2rpx solid rgba(255, 255, 255, 0.10);
+  margin-top: 18rpx;
+  padding-top: 14rpx;
+  border-top: 2rpx solid rgba(255, 255, 255, 0.24);
   display: flex;
   justify-content: flex-end;
 }
 .fc-toggle {
   margin: 0;
   min-height: 88rpx;
-  line-height: 88rpx;
-  padding: 0 24rpx;
-  border-radius: 4rpx;
-  border: 2rpx solid #00A6FF;
+  line-height: 80rpx;
+  padding: 0 22rpx;
+  border-radius: 0;
+  border: 4rpx solid #00A6FF;
   background: #000000;
   color: #38BDF8;
   font-size: 23rpx;
-  font-weight: 700;
+  font-weight: 900;
   transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.fc-toggle:active { transform: scale(0.985); opacity: 0.86; }
+.fc-toggle:active { transform: translate(2rpx, 2rpx); opacity: 0.85; }
 .fc-toggle::after { border: none; }
 
 /* 日光模式 */
 .fc-daylight .fc-face {
-  background-color: #F4F6F8;
-  background-image: radial-gradient(circle at 88% 12%, rgba(0, 107, 179, 0.06) 0%, rgba(0, 107, 179, 0) 60%);
-  border-color: rgba(0, 0, 0, 0.12);
+  background: #F4F6F8;
+  border-color: #000000;
   border-top-color: #006BB3;
   color: #000000;
+  box-shadow: 6rpx 6rpx 0 #006BB3;
 }
 .fc-daylight .fc-back {
-  background-color: #FFFFFF;
-  background-image: none;
-  border-color: rgba(0, 0, 0, 0.14);
+  background: #FFFFFF;
+  border-color: #000000;
 }
 .fc-daylight .fc-bar {
-  border-top-color: rgba(0, 0, 0, 0.10);
+  border-top-color: rgba(0, 0, 0, 0.24);
 }
 .fc-daylight .fc-toggle {
   background: #006BB3;

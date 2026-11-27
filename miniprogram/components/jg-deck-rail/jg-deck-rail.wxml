@@ -1,0 +1,24 @@
+<view class="dr-wrap {{daylight ? 'dr-daylight' : ''}}">
+  <view class="dr-row">
+    <view
+      wx:for="{{items}}"
+      wx:key="key"
+      class="dr-tab {{index === current ? 'dr-tab-on' : ''}}"
+      data-index="{{index}}"
+      data-key="{{item.key}}"
+      bindtap="onTapTab"
+    >
+      <view class="dr-top">
+        <text class="dr-idx">{{item.idx || ('0' + (index + 1))}}</text>
+        <text wx:if="{{item.badge}}" class="dr-badge">{{item.badge}}</text>
+      </view>
+      <text class="dr-lbl">{{item.label}}</text>
+    </view>
+  </view>
+  <view class="dr-track">
+    <view
+      class="dr-bar"
+      style="width:{{items.length ? (100 / items.length) : 25}}%;transform:translateX({{current * 100}}%)"
+    ></view>
+  </view>
+</view>

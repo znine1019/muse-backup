@@ -1,4 +1,4 @@
-<view class="head {{daylight ? 'head-daylight' : ''}}">
+<view class="head {{daylight ? 'head-daylight' : ''}} {{compact ? 'head-compact' : ''}}">
   <view class="head-bar">
     <view class="head-brand">
       <view class="head-dot"></view>
@@ -15,7 +15,7 @@
     <view class="head-title">{{title}}</view>
     <view wx:if="{{meta}}" class="head-meta">{{meta}}</view>
   </view>
-  <view class="head-rule">
+  <view wx:if="{{!compact}}" class="head-rule">
     <view class="head-rule-accent"></view>
   </view>
 </view>

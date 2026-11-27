@@ -1,0 +1,110 @@
+/* V1.6.5 R8 Neo-Brutalist 顶部横向索引轨（零圆角 + 4rpx 实线边框 + 实时位移光标） */
+.dr-wrap {
+  background: #000000;
+  border-top: 4rpx solid #FFFFFF;
+  border-bottom: 4rpx solid #FFFFFF;
+  box-sizing: border-box;
+}
+.dr-row {
+  display: flex;
+  width: 100%;
+}
+.dr-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 88rpx;
+  padding: 10rpx 6rpx;
+  border-right: 2rpx solid rgba(255, 255, 255, 0.24);
+  background: #000000;
+  color: #A3ADB8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dr-tab:last-child { border-right: none; }
+.dr-tab:active { transform: scale(0.97); opacity: 0.85; }
+.dr-tab-on {
+  background: #00A6FF;
+  color: #000000;
+}
+.dr-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dr-idx {
+  font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
+  font-size: 19rpx;
+  font-weight: 900;
+  letter-spacing: 1rpx;
+  line-height: 1;
+}
+.dr-badge {
+  margin-left: 6rpx;
+  padding: 2rpx 6rpx;
+  font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
+  font-size: 18rpx;
+  font-weight: 900;
+  background: #FFFFFF;
+  color: #000000;
+  line-height: 1.1;
+}
+.dr-tab-on .dr-badge {
+  background: #000000;
+  color: #38BDF8;
+}
+.dr-lbl {
+  font-size: 25rpx;
+  font-weight: 900;
+  line-height: 1.25;
+  margin-top: 4rpx;
+}
+.dr-track {
+  position: relative;
+  height: 8rpx;
+  width: 100%;
+  background: #0A0C10;
+  overflow: hidden;
+}
+.dr-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 8rpx;
+  background: #38BDF8;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 日光模式 */
+.dr-daylight {
+  background: #FFFFFF;
+  border-top-color: #000000;
+  border-bottom-color: #000000;
+}
+.dr-daylight .dr-tab {
+  background: #FFFFFF;
+  color: #4B5563;
+  border-right-color: rgba(0, 0, 0, 0.24);
+}
+.dr-daylight .dr-tab-on {
+  background: #006BB3;
+  color: #FFFFFF;
+}
+.dr-daylight .dr-badge {
+  background: #000000;
+  color: #FFFFFF;
+}
+.dr-daylight .dr-tab-on .dr-badge {
+  background: #FFFFFF;
+  color: #006BB3;
+}
+.dr-daylight .dr-track { background: #F4F6F8; }
+.dr-daylight .dr-bar { background: #005596; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dr-tab,
+  .dr-bar { transition-duration: 0.01ms !important; }
+}

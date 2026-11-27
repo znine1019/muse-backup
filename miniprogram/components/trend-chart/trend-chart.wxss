@@ -1,35 +1,65 @@
-/* 趋势图组件（V1.6.5 黑+白+科技蓝自包含样式） */
-.trend-chart { margin-top: 8rpx; }
-.trend-title { font-size: 28rpx; font-weight: 700; color: #FFFFFF; }
-.chart-canvas { width: 100%; height: 360rpx; margin-top: 16rpx; border-radius: 4rpx; border: 2rpx solid rgba(255, 255, 255, 0.14); }
-.trend-empty {
-  margin-top: 16rpx;
-  padding: 32rpx 24rpx;
-  border: 2rpx dashed rgba(255, 255, 255, 0.16);
-  border-radius: 4rpx;
-  background: #0A0C10;
-  color: #A3ADB8;
-  font-size: 24rpx;
-  line-height: 1.56;
-  text-align: center;
+/* V1.6.5 R8 Neo-Brutalist 原生 Canvas 趋势图（零圆角 + 4rpx 实线框） */
+.chart-box {
+  margin-top: 12rpx;
+  border: 4rpx solid #FFFFFF;
+  border-radius: 0;
+  padding: 18rpx;
+  background: #000000;
+  box-sizing: border-box;
 }
-.trend-note { margin-top: 12rpx; color: #A3ADB8; font-size: 24rpx; line-height: 1.5; }
-.trend-single {
-  margin-top: 16rpx;
-  padding: 28rpx 24rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.14);
-  border-top: 4rpx solid #00A6FF;
-  border-radius: 4rpx;
-  background: #0A0C10;
-  text-align: center;
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10rpx;
+  padding-bottom: 8rpx;
+  border-bottom: 2rpx solid rgba(255, 255, 255, 0.24);
 }
-.trend-single-value {
-  color: #38BDF8;
+
+.chart-title {
+  font-size: 27rpx;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+.chart-summary {
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
-  font-size: 52rpx;
-  font-weight: 700;
+  font-size: 24rpx;
+  font-weight: 900;
+  color: #38BDF8;
 }
-.trend-single-date { margin-top: 8rpx; color: #A3ADB8; font-size: 24rpx; }
-.trend-single-note { margin-top: 8rpx; color: #A3ADB8; font-size: 24rpx; }
+
+.chart-canvas {
+  width: 100%;
+  height: 360rpx;
+  display: block;
+}
+
+.chart-empty {
+  padding: 28rpx 16rpx;
+  color: #A3ADB8;
+  font-size: 24rpx;
+  text-align: center;
+  background: #0A0C10;
+  border: 2rpx solid rgba(255, 255, 255, 0.24);
+  border-radius: 0;
+}
+
+.chart-caption {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #A3ADB8;
+}
+
+.chart-box.is-daylight {
+  background: #FFFFFF;
+  border-color: #000000;
+}
+.chart-box.is-daylight .chart-header { border-bottom-color: rgba(0, 0, 0, 0.24); }
+.chart-box.is-daylight .chart-title { color: #000000; }
+.chart-box.is-daylight .chart-summary { color: #005596; }
+.chart-box.is-daylight .chart-empty { background: #F4F6F8; border-color: rgba(0, 0, 0, 0.24); color: #4B5563; }
+.chart-box.is-daylight .chart-caption { color: #4B5563; }
