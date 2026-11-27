@@ -20,18 +20,18 @@ function pageFile(page, extension) {
 
 test('阶段7-1 设计令牌覆盖颜色、字号与触控目标', () => {
   for (const token of [
-    '#04060A',
-    '#0A0E14',
-    '#0F141C',
-    '#16304F',
-    '#2E6BFF',
-    '#8FB6FF',
+    '#000000',
+    '#0A0C10',
+    '#111419',
+    '#00A6FF',
+    '#38BDF8',
     '#FFFFFF',
-    '#A9B4C2',
-    '#FF5A5F',
-    'rgba(255, 255, 255, 0.08)'
+    '#A3ADB8',
+    '#006BB3',
+    '#005596',
+    'rgba(255, 255, 255, 0.14)'
   ]) {
-    assert.ok(APP_WXSS.includes(token), `缺少 V1.6.5 蓝黑白设计令牌值 ${token}`);
+    assert.ok(APP_WXSS.includes(token), `缺少 V1.6.5 黑科技蓝设计令牌值 ${token}`);
   }
 
   assert.match(APP_WXSS, /--jg-touch:\s*88rpx/, '触控目标令牌应为 88rpx');
@@ -114,7 +114,7 @@ test('阶段7-2 公共组件样式自包含且不依赖 app.wxss', () => {
   const emptyCss = read('miniprogram/components/jg-empty/jg-empty.wxss');
 
   assert.match(headCss, /\.head-title\s*\{/, '页面头部组件应自带标题样式');
-  assert.match(headCss, /font-size:\s*42rpx/, '页面头部组件应自带字号');
+  assert.match(headCss, /font-size:\s*4[26]rpx/, '页面头部组件应自带主标题字号');
   assert.match(emptyCss, /\.empty-t\s*\{/, '空状态组件应自带标题样式');
   assert.match(emptyCss, /min-height:\s*88rpx/, '空状态组件按钮应满足触控目标');
 

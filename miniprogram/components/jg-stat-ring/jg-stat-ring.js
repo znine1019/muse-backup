@@ -32,10 +32,10 @@ Component({
       const empty = Boolean(this.data.empty);
       const pct = empty ? 0 : Math.max(0, Math.min(100, Number(this.data.percent) || 0));
       const deg = Math.round((pct / 100) * 360);
-      const track = this.data.daylight ? 'rgba(10, 14, 20, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+      const track = this.data.daylight ? 'rgba(0, 0, 0, 0.10)' : 'rgba(255, 255, 255, 0.12)';
       const fill = this.data.daylight
-        ? '#2B5FCC'
-        : (this.data.incomplete ? '#8FB6FF' : '#2E6BFF');
+        ? '#006BB3'
+        : (this.data.incomplete ? '#38BDF8' : '#00A6FF');
       const displayText = empty ? '—' : (this.data.valueText || `${pct}%`);
       this.setData({
         ringStyle: `background: conic-gradient(${fill} 0deg ${deg}deg, ${track} ${deg}deg 360deg);`,

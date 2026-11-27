@@ -23,18 +23,18 @@ function read(relativePath) {
 const APP_JSON = JSON.parse(read('miniprogram/app.json'));
 const APP_WXSS = read('miniprogram/app.wxss');
 
-/* V1.6.5 蓝黑白高级感核心色值（三色系 + 错误红） */
+/* V1.6.5 黑+白+科技蓝 核心色值（禁用深海军蓝与任何第四色相） */
 const APPROVED_COLORS = [
-  ['画布黑', '#04060A'],
-  ['承托黑', '#0A0E14'],
-  ['卡片黑', '#0F141C'],
-  ['品牌深蓝', '#16304F'],
-  ['强调蓝', '#2E6BFF'],
-  ['高亮蓝', '#8FB6FF'],
-  ['主文字', '#FFFFFF'],
-  ['次级文字', '#A9B4C2'],
-  ['错误红', '#FF5A5F'],
-  ['日光强调蓝', '#2B5FCC']
+  ['OLED纯黑画布', '#000000'],
+  ['碳黑承托', '#0A0C10'],
+  ['石墨面', '#111419'],
+  ['主电光科技蓝', '#00A6FF'],
+  ['高亮电光科技蓝', '#38BDF8'],
+  ['纯白主文字', '#FFFFFF'],
+  ['次级灰白', '#A3ADB8'],
+  ['日光纸白', '#F4F6F8'],
+  ['日光深灰次文', '#4B5563'],
+  ['日光加深科技蓝', '#006BB3']
 ];
 
 /* F1-A 范围内页面 */
@@ -113,11 +113,11 @@ function classTokens(source) {
 test('F1-A 全局导航栏与窗口背景统一为品牌色', () => {
   assert.equal(
     APP_JSON.window.navigationBarBackgroundColor,
-    '#16304F',
-    '导航栏背景应为 V1.6.5 品牌深蓝 #16304F'
+    '#000000',
+    '导航栏背景应为 OLED 纯黑 #000000（禁用深海军蓝）'
   );
   assert.equal(APP_JSON.window.navigationBarTextStyle, 'white', '导航栏文字应为白色');
-  assert.equal(APP_JSON.window.backgroundColor, '#04060A', '窗口背景应为 V1.6.5 画布黑 #04060A');
+  assert.equal(APP_JSON.window.backgroundColor, '#000000', '窗口背景应为 OLED 纯黑 #000000');
 });
 
 test('F1-A 不存在页面级导航栏/窗口覆盖（改动 app.json 即可全站统一）', () => {
@@ -146,17 +146,17 @@ test('F1-A 设计令牌包含本轮批准的全部核心色值', () => {
   }
 });
 
-test('F1-A V1.6.5 彻底清除橙色残留，使用蓝黑白高级感令牌', () => {
+test('F1-A V1.6.5 彻底清除橙色与深海军蓝，使用黑+白+科技蓝令牌', () => {
   assert.ok(
-    APP_WXSS.includes('--jg-accent: #2E6BFF') && APP_WXSS.includes('--jg-accent-hi: #8FB6FF'),
-    '强调蓝与高亮蓝令牌必须为 #2E6BFF / #8FB6FF'
+    APP_WXSS.includes('--jg-accent: #00A6FF') && APP_WXSS.includes('--jg-accent-hi: #38BDF8'),
+    '主科技蓝与高亮科技蓝令牌必须为 #00A6FF / #38BDF8'
   );
   for (const file of [
     'miniprogram/app.wxss',
     'miniprogram/components/jg-page-head/jg-page-head.wxss'
   ]) {
     const css = read(file);
-    assert.ok(!/#D95F0E|#F2711C|#B54A07|#EE8300/i.test(css), `${file} 不应再残留任何橙色`);
+    assert.ok(!/#D95F0E|#F2711C|#B54A07|#EE8300|#16304F|#132D49/i.test(css), `${file} 不应再残留任何橙色或深海军蓝`);
   }
 });
 
@@ -179,20 +179,20 @@ function contrastRatio(foreground, background) {
 
 test('F1-A 文字对比度不低于 AA 4.5:1', () => {
   const pairs = [
-    ['主文字/画布黑', '#FFFFFF', '#04060A'],
-    ['主文字/卡片黑', '#FFFFFF', '#0F141C'],
-    ['次文字/卡片黑', '#A9B4C2', '#0F141C'],
-    ['主按钮黑字/纯白底', '#04060A', '#FFFFFF'],
-    ['页头白字/品牌深蓝', '#FFFFFF', '#16304F'],
-    ['高亮蓝数值/卡片黑', '#8FB6FF', '#0F141C'],
-    ['高亮蓝数值/品牌深蓝', '#8FB6FF', '#16304F'],
-    ['白字/强调蓝选中', '#FFFFFF', '#2E6BFF'],
-    ['错误红/卡片黑', '#FF5A5F', '#0F141C'],
-    ['日光正文/纯白卡', '#0A0E14', '#FFFFFF'],
-    ['日光次文/纯白卡', '#4A5568', '#FFFFFF'],
-    ['日光主按钮/品牌深蓝', '#FFFFFF', '#16304F'],
-    ['日光强调蓝/画布白', '#2B5FCC', '#FAFBFC'],
-    ['日光错误红/纯白卡', '#C53030', '#FFFFFF']
+    ['主文字/OLED纯黑', '#FFFFFF', '#000000'],
+    ['主文字/石墨面', '#FFFFFF', '#111419'],
+    ['次文字/OLED纯黑', '#A3ADB8', '#000000'],
+    ['次文字/石墨面', '#A3ADB8', '#111419'],
+    ['主按钮黑字/纯白底', '#000000', '#FFFFFF'],
+    ['黑字/电光科技蓝', '#000000', '#00A6FF'],
+    ['电光科技蓝/纯黑底', '#00A6FF', '#000000'],
+    ['高亮科技蓝/纯黑底', '#38BDF8', '#000000'],
+    ['高亮科技蓝/石墨面', '#38BDF8', '#111419'],
+    ['日光正文/纯白画布', '#000000', '#FFFFFF'],
+    ['日光次文/纯白画布', '#4B5563', '#FFFFFF'],
+    ['日光次文/纸白带', '#4B5563', '#F4F6F8'],
+    ['日光加深科技蓝/纯白', '#006BB3', '#FFFFFF'],
+    ['日光数值科技蓝/纯白', '#005596', '#FFFFFF']
   ];
   for (const [label, fg, bg] of pairs) {
     const ratio = contrastRatio(fg, bg);

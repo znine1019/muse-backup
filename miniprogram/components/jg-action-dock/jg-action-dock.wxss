@@ -1,18 +1,18 @@
-/* V1.6.5 蓝黑白高级感 自包含单排 5 项页内跳转坞（高度严格 <= 112rpx，非原生 tabBar） */
+/* V1.6.5 黑+白+科技蓝 OLED 极简指令坞（高度 <= 112rpx，顶部电光蓝激光线激活态） */
 .ad-dock {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 40;
-  background: #0F141C;
-  border-top: 2rpx solid rgba(255, 255, 255, 0.08);
-  padding: 10rpx 16rpx calc(10rpx + env(safe-area-inset-bottom));
+  background: #000000;
+  border-top: 2rpx solid rgba(255, 255, 255, 0.16);
+  padding: 6rpx 12rpx calc(6rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   animation: ad-up 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 @keyframes ad-up {
-  from { opacity: 0; transform: translateY(24rpx); }
+  from { opacity: 0; transform: translateY(20rpx); }
   to { opacity: 1; transform: translateY(0); }
 }
 .ad-row {
@@ -22,46 +22,47 @@
   max-height: 112rpx;
 }
 .ad-item {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
   height: 88rpx;
-  border-radius: 16rpx;
-  background: #0A0E14;
-  border: 2rpx solid rgba(255, 255, 255, 0.08);
-  color: #A9B4C2;
+  border-radius: 4rpx;
+  background: transparent;
+  color: #A3ADB8;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 8rpx;
   box-sizing: border-box;
-  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1), background-color 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.ad-item:last-child { margin-right: 0; }
-.ad-item:active { transform: scale(0.985); opacity: 0.88; }
+.ad-item:active { transform: scale(0.985); opacity: 0.84; }
 .ad-item.is-active {
-  background: #16304F;
-  border-color: #2E6BFF;
-  color: #FFFFFF;
+  background: rgba(0, 166, 255, 0.10);
+  color: #38BDF8;
+}
+.ad-laser {
+  position: absolute;
+  top: 0;
+  left: 16rpx;
+  right: 16rpx;
+  height: 4rpx;
+  background: #00A6FF;
 }
 .ad-label {
-  font-size: 22rpx;
+  font-size: 23rpx;
   font-weight: 700;
   line-height: 1.2;
 }
 .ad-daylight {
   background: #FFFFFF;
-  border-top-color: rgba(10, 14, 20, 0.08);
+  border-top-color: rgba(0, 0, 0, 0.14);
 }
-.ad-daylight .ad-item {
-  background: #FAFBFC;
-  border-color: rgba(10, 14, 20, 0.08);
-  color: #4A5568;
-}
+.ad-daylight .ad-item { color: #4B5563; }
 .ad-daylight .ad-item.is-active {
-  background: #16304F;
-  border-color: #16304F;
-  color: #FFFFFF;
+  background: rgba(0, 107, 179, 0.08);
+  color: #005596;
 }
+.ad-daylight .ad-laser { background: #006BB3; }
 @media (prefers-reduced-motion: reduce) {
   .ad-dock,
   .ad-item { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

@@ -88,8 +88,8 @@ Component({
 
           const isDay = Boolean(this.data.daylight);
           const pal = isDay
-            ? { bg: '#FFFFFF', axis: 'rgba(10,14,20,0.12)', line: '#2B5FCC', dot: '#16304F', text: '#4A5568', label: '#0A0E14', areaTop: 'rgba(43,95,204,0.16)', areaBot: 'rgba(43,95,204,0.01)' }
-            : { bg: '#04060A', axis: 'rgba(255,255,255,0.08)', line: '#2E6BFF', dot: '#8FB6FF', text: '#A9B4C2', label: '#FFFFFF', areaTop: 'rgba(46,107,255,0.22)', areaBot: 'rgba(46,107,255,0.01)' };
+            ? { bg: '#FFFFFF', axis: 'rgba(0,0,0,0.14)', line: '#006BB3', dot: '#005596', text: '#4B5563', label: '#000000', areaTop: 'rgba(0,107,179,0.16)', areaBot: 'rgba(0,107,179,0.01)' }
+            : { bg: '#000000', axis: 'rgba(255,255,255,0.14)', line: '#00A6FF', dot: '#38BDF8', text: '#A3ADB8', label: '#FFFFFF', areaTop: 'rgba(0,166,255,0.24)', areaBot: 'rgba(0,166,255,0.01)' };
 
           const values = series.map((item) => Number(item.value));
           const minValue = Math.min(...values);

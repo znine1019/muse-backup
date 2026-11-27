@@ -1,11 +1,21 @@
 <view class="head {{daylight ? 'head-daylight' : ''}}">
+  <view class="head-bar">
+    <view class="head-brand">
+      <view class="head-dot"></view>
+      <text class="head-code">QIAOGE // V1.6.5</text>
+    </view>
+    <view class="head-tools">
+      <text wx:if="{{roleLabel}}" class="role role-{{roleTone}}">{{roleLabel}}</text>
+      <view wx:if="{{showDaylightToggle}}" class="daylight-btn" bindtap="onToggleDaylight">
+        {{daylight ? '暗夜' : '日光'}}
+      </view>
+    </view>
+  </view>
   <view class="head-main">
     <view class="head-title">{{title}}</view>
-    <view class="head-meta" wx:if="{{meta}}">{{meta}}</view>
+    <view wx:if="{{meta}}" class="head-meta">{{meta}}</view>
   </view>
-  <view class="head-right">
-    <text wx:if="{{roleLabel}}" class="role role-{{roleTone}}">{{roleLabel}}</text>
-    <view wx:if="{{showDaylightToggle}}" class="daylight-btn" bindtap="onToggleDaylight">{{daylight ? '日光:开' : '日光'}}</view>
-    <slot></slot>
+  <view class="head-rule">
+    <view class="head-rule-accent"></view>
   </view>
 </view>
