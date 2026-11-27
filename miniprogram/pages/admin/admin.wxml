@@ -9,12 +9,10 @@
     bind:toggledaylight="onToggleDaylight"
   />
 
-  <!-- 刷新状态条：返回工作台时保留内容并静默刷新 -->
+  <!-- 刷新状态条：细线指示器 + 静默刷新 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
-    <view class="jg-flex-row">
-      <view wx:if="{{refreshing}}" class="jg-ptr-ring"></view>
-      <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
-    </view>
+    <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
+    <text class="jg-refbar-t">{{refreshing ? '正在同步数据…' : lastUpdatedText}}</text>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 

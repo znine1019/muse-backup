@@ -305,7 +305,7 @@ Page({
       this._revealTimer = setTimeout(() => {
         this._revealTimer = null;
         this.setData({ scopeRevealing: false });
-      }, 300);
+      }, 240);
     } else {
       this.setData({ scopeRevealing: false });
     }

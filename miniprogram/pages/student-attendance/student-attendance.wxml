@@ -99,11 +99,12 @@
           <view class="jg-field-row">
             <text class="jg-field-label">请假原因</text>
             <view class="jg-field-body">
-              <textarea class="jg-textarea" value="{{leaveReason}}" bindinput="onLeaveReasonInput" maxlength="300" placeholder="填写请假原因（仅教练可见）" />
+              <textarea class="jg-textarea {{focusedField === 'leaveReason' ? 'jg-input-focus' : ''}} {{leaveError ? 'jg-input-error jg-shake' : ''}}" value="{{leaveReason}}" data-field="leaveReason" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onLeaveReasonInput" maxlength="300" placeholder="填写请假原因（仅教练可见）" />
+              <view wx:if="{{leaveError}}" class="jg-field-err">{{leaveError}}</view>
             </view>
           </view>
 
-          <button class="jg-btn jg-btn-block" loading="{{submitting}}" bindtap="submitLeave">提交请假申请</button>
+          <button class="jg-btn jg-btn-block {{submitting ? 'jg-btn-loading' : ''}}" loading="{{submitting}}" bindtap="submitLeave">提交请假申请</button>
         </block>
       </view>
     </view>

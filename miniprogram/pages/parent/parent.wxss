@@ -1,8 +1,8 @@
-/* 家长工作台（V1.6.5 黑底白字 + 品牌深蓝，严格只读） */
+/* 家长工作台（V1.6.5 蓝黑白高级感，严格只读） */
 .jg-page .jg-card-t { word-break: break-all; }
 
 .plan-block {
-  border-bottom: 2rpx solid var(--jg-line, #1E2C3A);
+  border-bottom: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
 }
 
 .plan-block:last-child {
@@ -14,14 +14,14 @@
 }
 
 .plan-toggle {
-  color: var(--jg-accent-hi, #7FB2FF);
+  color: var(--jg-accent-hi, #8FB6FF);
   font-size: 24rpx;
   font-weight: 700;
 }
 
 .plan-detail {
   padding: 0 28rpx 24rpx;
-  background: var(--jg-surface-2, #101A24);
+  background: var(--jg-base, #0A0E14);
 }
 
 .plan-item {

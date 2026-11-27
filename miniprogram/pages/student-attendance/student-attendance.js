@@ -55,7 +55,9 @@ Page({
     busySessionId: '',
     busyLeaveId: '',
     uiDaylight: false,
-    checkInPulsing: false
+    checkInPulsing: false,
+    focusedField: '',
+    leaveError: ''
   },
 
   onShow() {
@@ -86,10 +88,19 @@ Page({
       this._pulseTimer = setTimeout(() => {
         this._pulseTimer = null;
         this.setData({ checkInPulsing: false });
-      }, 640);
+      }, 520);
     } else {
       this.setData({ checkInPulsing: false });
     }
+  },
+
+  onFieldFocus(event) {
+    const field = (event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.field) || '';
+    this.setData({ focusedField: field });
+  },
+
+  onFieldBlur() {
+    this.setData({ focusedField: '' });
   },
 
   onToggleDaylight() {
@@ -143,7 +154,7 @@ Page({
   },
 
   onLeaveReasonInput(event) {
-    this.setData({ leaveReason: event.detail.value });
+    this.setData({ leaveReason: event.detail.value, leaveError: '' });
   },
 
   async checkIn(event) {
@@ -210,7 +221,7 @@ Page({
       return;
     }
     if (!reason) {
-      this.setData({ error: '请填写请假原因。' });
+      this.setData({ error: '请填写请假原因。', leaveError: '请填写请假原因后再提交。' });
       return;
     }
     this.setData({ submitting: true, error: '' });

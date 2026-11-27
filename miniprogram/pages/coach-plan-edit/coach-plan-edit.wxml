@@ -58,7 +58,7 @@
       <view class="jg-field-row">
         <view class="jg-field-label">注意事项</view>
         <view class="jg-field-body">
-          <textarea class="jg-textarea" value="{{notes}}" data-field="notes" bindinput="onFieldInput" maxlength="300" placeholder="训练前热身、伤病提醒等，可选" />
+          <textarea class="jg-textarea {{focusedField === 'notes' ? 'jg-input-focus' : ''}}" value="{{notes}}" data-field="notes" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onFieldInput" maxlength="300" placeholder="训练前热身、伤病提醒等，可选" />
         </view>
       </view>
     </view>
@@ -157,8 +157,8 @@
     </view>
 
     <view class="jg-btn-row">
-      <button class="jg-btn jg-btn-ghost" loading="{{saving}}" disabled="{{publishing}}" bindtap="saveDraft">保存草稿</button>
-      <button class="jg-btn" loading="{{publishing}}" disabled="{{saving}}" bindtap="publishPlan">发布计划</button>
+      <button class="jg-btn jg-btn-secondary {{saving ? 'jg-btn-loading' : ''}}" loading="{{saving}}" disabled="{{publishing}}" bindtap="saveDraft">保存草稿</button>
+      <button class="jg-btn {{publishing ? 'jg-btn-loading' : ''}}" loading="{{publishing}}" disabled="{{saving}}" bindtap="publishPlan">发布计划</button>
     </view>
 
     <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goBack">返回计划列表</button>

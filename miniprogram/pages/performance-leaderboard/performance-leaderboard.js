@@ -86,7 +86,7 @@ Page({
       this._scanTimer = setTimeout(() => {
         this._scanTimer = null;
         this.setData({ rankScanning: false });
-      }, 560);
+      }, 500);
     } else {
       this.setData({ rankScanning: false });
     }

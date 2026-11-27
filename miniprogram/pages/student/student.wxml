@@ -1,3 +1,4 @@
+<wxs src="../../utils/motion.wxs" module="motion" />
 <view class="jg-page jg-dock-pad jg-enter-fwd {{uiDaylight ? 'jg-daylight' : ''}}">
   <jg-page-head
     title="学生工作台"
@@ -9,12 +10,10 @@
     bind:toggledaylight="onToggleDaylight"
   />
 
-  <!-- 刷新状态条：返回工作台时保留内容并静默刷新，仅在已有数据时显示 -->
+  <!-- 刷新状态条：细线指示器 + 静默刷新 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
-    <view class="jg-flex-row">
-      <view wx:if="{{refreshing}}" class="jg-ptr-ring"></view>
-      <text class="jg-refbar-t">{{refreshing ? '正在刷新…' : lastUpdatedText}}</text>
-    </view>
+    <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
+    <text class="jg-refbar-t">{{refreshing ? '正在同步数据…' : lastUpdatedText}}</text>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
@@ -225,45 +224,45 @@
       <text class="jg-sect-t">常用功能</text>
       <text class="jg-sect-c">{{noticeMeta}}</text>
     </view>
-    <!-- 学生常用入口：V1 双列快捷面板（保留原有 6 项入口） -->
+    <!-- 学生常用入口：双列瑞士栅格面板（保留原有 6 项入口 + WXS 90ms 按压反馈） -->
     <view class="jg-tiles">
       <view class="jg-tile jg-tile-brand">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goPlans">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPlans">
           <view class="jg-tile-ic">计</view>
           <view class="jg-tile-t">训练计划</view>
           <view class="jg-tile-d">本周安排</view>
         </view>
       </view>
       <view class="jg-tile jg-tile-ok">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goReport">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goReport">
           <view class="jg-tile-ic">报</view>
           <view class="jg-tile-t">运动报告</view>
           <view class="jg-tile-d">PB 与趋势</view>
         </view>
       </view>
       <view class="jg-tile jg-tile-accent">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goPerformance">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformance">
           <view class="jg-tile-ic">绩</view>
           <view class="jg-tile-t">成绩申报</view>
           <view class="jg-tile-d">提交成绩</view>
         </view>
       </view>
       <view class="jg-tile jg-tile-brand">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goStatistics">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goStatistics">
           <view class="jg-tile-ic">统</view>
           <view class="jg-tile-t">训练统计</view>
           <view class="jg-tile-d">考勤与反馈</view>
         </view>
       </view>
       <view class="jg-tile jg-tile-plain">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goPerformanceLeaderboard">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPerformanceLeaderboard">
           <view class="jg-tile-ic">榜</view>
           <view class="jg-tile-t">成绩排行</view>
           <view class="jg-tile-d">正式排名</view>
         </view>
       </view>
       <view class="jg-tile jg-tile-accent">
-        <view class="jg-tile-in" hover-class="jg-row-hover" bindtap="goCompetitions">
+        <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goCompetitions">
           <view class="jg-tile-ic">赛</view>
           <view class="jg-tile-t">赛事意向</view>
           <view class="jg-tile-d">参赛报名</view>

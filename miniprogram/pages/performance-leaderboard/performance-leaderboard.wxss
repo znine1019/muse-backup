@@ -1,12 +1,12 @@
-/* 正式成绩排行榜（V1.6.5 黑底白字 + 品牌深蓝，零橙色残留） */
+/* 正式成绩排行榜（V1.6.5 蓝黑白高级感，零橙色与旧色残留） */
 
 .rank-badge {
   flex: 0 0 auto;
   width: 72rpx;
   height: 72rpx;
-  border-radius: 22rpx;
-  background: var(--jg-brand, #132D49);
-  border: 2rpx solid var(--jg-line, #1E2C3A);
+  border-radius: 16rpx;
+  background: var(--jg-brand, #16304F);
+  border: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
   color: #FFFFFF;
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
@@ -20,16 +20,16 @@
 }
 
 .rank-badge-self {
-  background: var(--jg-accent, #2F6FBF);
-  border-color: var(--jg-accent-hi, #7FB2FF);
+  background: var(--jg-accent, #2E6BFF);
+  border-color: var(--jg-accent-hi, #8FB6FF);
   color: #FFFFFF;
 }
 
-/* 本人所在行：品牌深蓝底高亮 */
+/* 本人所在行：品牌深蓝高亮 */
 .ranking-self {
-  background: var(--jg-brand, #132D49);
+  background: var(--jg-brand, #16304F);
 }
 
 .jg-page.jg-daylight .ranking-self {
-  background: #EDF3F9;
+  background: #FAFBFC;
 }
