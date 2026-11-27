@@ -36,7 +36,7 @@ function contrastRatio(fg, bg) {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-test('R6 黑+白+科技蓝 色板完整，且 app.wxss 与组件禁用深海军蓝及第四色相', () => {
+test('R6 黑+白+科技蓝 色板完整，且全站 miniprogram 禁用深海军蓝及第四色相', () => {
   const appWxss = read('miniprogram/app.wxss');
   const required = [
     '#000000',
@@ -56,23 +56,18 @@ test('R6 黑+白+科技蓝 色板完整，且 app.wxss 与组件禁用深海军�
     assert.ok(appWxss.includes(token), `app.wxss 缺少黑科技蓝令牌 ${token}`);
   }
 
-  /* 禁用深海军蓝、藏青、暗蓝及橙/紫/金/绿/旧红等第四色相 */
+  /* 全站扫描：禁用深海军蓝、藏青、旧版 R4/R5/F1 暗蓝及橙/紫/金/绿/旧红等第四色相 */
   const bannedRe = /#(16304F|132D49|103A6B|0F172A|1E293B|04060A|0A0E14|0F141C|2E6BFF|8FB6FF|2B5FCC|FF5A5F|C53030|05070A|0B1219|101A24|2F6FBF|7FB2FF|1E2C3A|B9C6D4|FF6B6B|F2711C|B54A07|D95F0E|EE8300|FF9E2C|FDEDE2|FFF6E5|FEF6E7|B45309|7A4308|8A5A12|FFC46B|F1DDB6|F7D0B4|00A7C4|123C4D|207788|8B5CF6|A855F7|D4AF37|FFD700|22C55E|16A34A)\b/i;
-  const coreFiles = [
-    'miniprogram/app.wxss',
-    'miniprogram/app.json',
-    ...walkFiles(path.join(ROOT, 'miniprogram/components'), ['.wxss', '.wxml', '.js'])
-  ];
+  const allFiles = walkFiles(path.join(ROOT, 'miniprogram'), ['.wxss', '.wxml', '.js', '.json']);
   const hits = [];
-  for (const file of coreFiles) {
-    const abs = path.isAbsolute(file) ? file : path.join(ROOT, file);
-    const clean = fs.readFileSync(abs, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+  for (const file of allFiles) {
+    const clean = fs.readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
     const m = clean.match(bannedRe);
     if (m) {
-      hits.push(`${path.relative(ROOT, abs)} => ${m[0]}`);
+      hits.push(`${path.relative(ROOT, file)} => ${m[0]}`);
     }
   }
-  assert.deepEqual(hits, [], `核心样式/组件存在禁用深蓝或第四色相残留：${hits.join('; ')}`);
+  assert.deepEqual(hits, [], `miniprogram 全站存在禁用深蓝或第四色相残留：${hits.join('; ')}`);
 });
 
 test('R6 全站所有 miniprogram/**/*.wxss 零禁用 CSS（Grid/backdrop-filter/blur/sticky/通配符*）', () => {
@@ -140,6 +135,30 @@ test('R6 按钮五变体四态、去卡片化结构类与统一动效令牌齐�
   assert.match(appWxss, /--jg-dur-base:\s*220ms/);
   assert.match(appWxss, /--jg-dur-slow:\s*320ms/);
   assert.match(appWxss, /--jg-dur-sig:\s*480ms/);
+});
+
+test('R6 结构性重设计覆盖全部 7 个核心页且超过全站 50% 页面（>= 19 页）', () => {
+  const structuralRe = /\b(jg-band|jg-hero-band|jg-matrix|jg-queue-row|jg-kv-grid|jg-pill-bar|jg-form-2col)\b/;
+  const core7 = [
+    'pages/student/student',
+    'pages/coach/coach',
+    'pages/admin/admin',
+    'pages/parent/parent',
+    'pages/performance-leaderboard/performance-leaderboard',
+    'pages/student-attendance/student-attendance',
+    'pages/coach-plan-edit/coach-plan-edit'
+  ];
+  for (const p of core7) {
+    const wxml = read(`miniprogram/${p}.wxml`);
+    assert.match(wxml, structuralRe, `核心页 ${p} 必须采用 R6 新结构组件（非仅换色）`);
+  }
+
+  const appJson = JSON.parse(read('miniprogram/app.json'));
+  const upgraded = appJson.pages.filter((p) => structuralRe.test(read(`miniprogram/${p}.wxml`)));
+  assert.ok(
+    upgraded.length >= 19,
+    `结构性重设计页面应 >= 19（超过 37 页的 50%），实际仅 ${upgraded.length} 页`
+  );
 });
 
 test('R6 翻面双分支降级、单排操作坞 <=112rpx、日光模式零低对比组合', () => {
