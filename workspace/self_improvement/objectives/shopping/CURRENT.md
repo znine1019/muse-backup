@@ -1,7 +1,7 @@
 ---
 objective_id: shopping
-run_id: sirun_90b34abd14c24ee2ae38d77b4d6be419
-created_at: 2026-11-25T20:11:55.699484079+00:00
+run_id: sirun_4cc651541bd847f185b2e647391dfa9b
+created_at: 2026-11-26T20:17:21.318829997+00:00
 card_id: shopping
 worker_outcome: insufficient
 ---

@@ -1,0 +1,28 @@
+name: verbatim_full_text
+title: Extract a document verbatim in full
+description: Produce a complete verbatim full text of a document or contract and disclose every part that could not be read, when the user asks for the full text or word for word.
+category: Work and knowledge
+include_in_prompt: true
+skill_improvement:
+  managed: true
+  status: active
+  evidence_handles:
+  - message:e08f813c
+  - message:14802937
+  - message:assistant-msg-f17bef57
+  - message:bba59c18
+  - message:4677b9c6
+  - message:93da3cdf
+  - message:assistant-msg-74b452cc
+  - message:assistant-msg-9b67ec21
+  - message:3a939437
+  - message:assistant-msg-1f88d729
+  measurement:
+    proxy_metric_id: objective_success_rate
+    success_criterion: The next verbatim full text deliveries are complete on first delivery with page and attachment counts verified and money figures rechecked, and any unread part is disclosed before sending with no repeat correction of the same kind.
+    window_days: 14
+  rationale: The 2026-11-26 e生涯 contract first pass claimed a complete 33 page full text, missed attachments, and stated the penalty as a daily rate when the contract states 30 percent of cumulative receivables on fundamental breach, and the user corrected it three times before the repair re-read the source at full zoom and delivered a 31 page full text with a 4 page summary and 9 unread sentences disclosed. The generic documents skill already says to verify consequential numbers and to say which parts could not be read, yet the first delivery still presented a partial image transcription as complete, so a focused verbatim checklist with a counting step and a gap disclosure step before sending directly targets the failure. The method is reusable because the user repeatedly asks for verbatim text for official notices, contracts, and exports.
+  review_after: 2026-12-11T03:49:00.086687+00:00
+  reviewed_at: 2026-11-27T03:49:00.086687+00:00
+  needs_review: false
+  run_id: sirun_7d1f67e4c67f4c3089514f52fba3c494

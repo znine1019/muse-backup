@@ -80,14 +80,6 @@
       "version": "13fadcd34e8190cf96701c819a53adbfe47ca7aa1bb09bf874048a50a11e3f3b",
       "source_url": "https://www.frontiersin.org/api/ipx/w=1020&f=webp&v=2/https://www.frontiersin.org/files/Articles/1969271/xml-images/fphys-17-1969271-g001.webp"
     },
-    "3e8a0f35d2b7b660af8aa95f4aa0604e1bd3e94ce2d4b4552d012ca5ae299c4b": {
-      "path": "workspace/feed/media/1p/4ee9f5bbf04c43a6f695a31a5478ad5aae2edb12adcaad61187ad12cf1490ed1/image.jpg",
-      "mime_type": "image/jpeg",
-      "size_bytes": 227280,
-      "modified_ms": 1795102927821,
-      "version": "75aa06f635785f484b25033bfbb00bd07dbc72a38607b7d4ba50aa3744d61830",
-      "source_url": "https://scontent-lax3-1.cdninstagram.com/v/t51.82787-15/907557690_17966512200232533_2466261602226449107_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=104&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0FST1VTRUxfSVRFTS5iZXN0X2ltYWdlX3VybGdlbi5DMyJ9&_nc_ohc=OIJGPz0BgAQQ7kNvwEk97UR&_nc_oc=AdrjV8mC4xSkd2eUJA1mJlIzrkQbh0KK_w-5CYztjQUFiq62V3HOVl0WlRTr9-_HmhoI1MNJbKFXXb6nMUYwRZqZ&_nc_zt=23&_nc_ht=scontent-lax3-1.cdninstagram.com&_nc_gid=SZAzYIuTqzgbka_sM7SGrA&_nc_ct=RQosPBUKFQIAAAA&oh=00_AQTMXai4GQCBJP0moOPvPq8_Le4cM0kvrcpLpZmL9ki8dA&oe=6B04F9BE"
-    },
     "41d96d4f0669e95bfd226a32aefa13d7c921fca47824ff719aa647a5ab5f7057": {
       "path": "workspace/feed/media/1p/95693e43ff0209f2e7818fa1c9a19133a9943ec91b261fc0fe658f1394ccd650/image.jpg",
       "mime_type": "image/jpeg",
@@ -143,6 +135,14 @@
       "modified_ms": 1795599865481,
       "version": "bc911a74e201cfcb019ca541741663387ee506529523cbc16fd5587d16c1cad9",
       "source_url": "https://www.chromegeek.com/wp-content/uploads/2026/11/cover-gemini-4-carbon-antigravity-ai-pro.webp"
+    },
+    "7c11b7d8a59b5d5331121113530f3d0cb0bf18ae7358b9c1ff980a007d40addf": {
+      "path": "workspace/feed/media/1p/d9bf1f664edb5dbf8562d6962a91fe54808d7fa446e49d4a3795844f37019bd6/image.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 353465,
+      "modified_ms": 1795794322805,
+      "version": "7d5f21c959efd7051ee1ac62195cda6118210314391726b2dab9a9e9de0b0b17",
+      "source_url": "https://scontent-sjc6-1.xx.fbcdn.net/v/t51.82787-0/934071471_18193844128406654_1616361561940029843_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=5b3566&_nc_ohc=4axCZ1LNoq4Q7kNvwGRiIt3&_nc_oc=AdrfNpcCvzjXkBOFC9HrWJr1AU5p0YopgABB2FE2uJijmjCbgIOdaGf6cmnZnCYETL-oGKBHCn-g2qiiO0tbNvP0&_nc_zt=23&_nc_ht=scontent-sjc6-1.xx&_nc_gid=CNo0xcymIZzVGx8xUXFMCQ&oh=00_AQVOvShfJ-JhaxvtQKCaWlPV0Jtci1bv-UYwNTJ1oA2QAQ&oe=6B0F698B"
     },
     "82cf9ebcf8cfdd2b4cfa1e693ef14ad3fa9b4c7456c8b2c38d3ae2fb1dc89367": {
       "path": "workspace/feed/media/1p/710b9eea1d79b1071db3e99800a426c847a96e9484d3c4a656c42353a04ee791/image.jpg",
@@ -256,6 +256,14 @@
       "version": "6bca826f70f6f93c1361aff4d753435080519250536003b7ec5a6638cb7dd96b",
       "source_url": "https://scontent-dfw5-1.cdninstagram.com/v/t51.71878-15/907437855_1633074801124384_6065419949521327604_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQ0xJUFMuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=KEqsDgrNRIEQ7kNvwFomv7P&_nc_oc=AdrEN9if0Pdu-iSJL2ewaEKeB1D_vfttj9Nge-IBkmrRkRRZEBG8mfEP0g-xaFqxYndRAH-vCfahnWWVzBCRjsoE&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&_nc_gid=-aZhqZpFBCbLfw-SsA7WlA&_nc_ct=RQosPBUKFQQAAAA&oh=00_AQQ1hlYX6NJBrKUALYSWBRWvvlNfYFXTOwi2tdbaklzOzA&oe=6B05AFAE"
     },
+    "ba9a99fb71f93ab6ed194ba2ffad796a2ba426c1ec543da0e49af1be862e58cd": {
+      "path": "workspace/feed/media/3p/5f9b3bebef1105b7800297b968ac075ceb33ff63d00f5c3ac85bb2467e0f886e/hero.png",
+      "mime_type": "image/png",
+      "size_bytes": 125322,
+      "modified_ms": 1795750991657,
+      "version": "af2714a7705e9addcf5d44cd7d2bdd1351c6bec60c6bb4191bd11241d46f8bce",
+      "source_url": "https://sakana.ai/assets/namazu-small/benchmark.png"
+    },
     "bf6a6746a72fe3178a766a0dc542fb79d5de97f26ca5a7cd52d08dc6df528cc1": {
       "path": "workspace/feed/media/3p/cc6f5deedfbee7a19908a8e2487e2bb401434829e33cbfd3dd804013b68512f8/hero.webp",
       "mime_type": "image/webp",
@@ -272,13 +280,13 @@
       "version": "289585c3539e860f085631587bafdab99b2bfe27de78e7143ea57ce573c56871",
       "source_url": "https://images.mykhel.com/img/2026/11/bimstec-u23-athletics-2026-10851795516905.jpg"
     },
-    "c7fb085a84653f176e0c2197845c21280feb34e11644eb6dc2a863b1f6548581": {
-      "path": "workspace/feed/media/3p/0643a0e692f8d770b65cbf1866f4454dde509b616ba9f5a427490714634c5b61/hero.webp",
-      "mime_type": "image/webp",
-      "size_bytes": 45060,
-      "modified_ms": 1795059794553,
-      "version": "8be5e391c2c9cfb659f673d6a7444035fab39990d3f03f55b095cdbbee784aa7",
-      "source_url": "https://img.allfootballapp.com/www/M00/60/AF/720x-/-/-/CgAGVmeaFXuAcVJ5AAF8cFTWr2g655.jpg.webp"
+    "c72630ba30ca99968cc7ae90599ef833ae717a98d3af5226dea3818f421f795d": {
+      "path": "workspace/feed/media/3p/9705fac29b6f2f37006bcfd0264aca44da8e5c83c9c4d2399dcef476a545dd02/hero.jpg",
+      "mime_type": "image/jpeg",
+      "size_bytes": 267767,
+      "modified_ms": 1795715115741,
+      "version": "5f8c23dbad097c598e1a230e0b2a35d8ea3159b208ed1871b0ace9e721738503",
+      "source_url": "https://cognition.com/images/swe-2-1/cover.jpg"
     },
     "c86d0ec625ee6aab090c9c5bf39f646e24db9372ec0770490a129d60603e9ef0": {
       "path": "workspace/feed/media/3p/a7e1c1cadf21a34a9d87ee9b55d41a33b9c59a0d23f38af61ae381a8226ed218/hero.jpg",
@@ -343,14 +351,6 @@
       "modified_ms": 1795527897172,
       "version": "a52d5ab4f21786e3b9e8f7f35dfeefaa0cb6faa64bde601d50dc88d0c7cac91c",
       "source_url": "https://www.benchleader.com/opengraph-image"
-    },
-    "e1b63ff75c7e02f829fc3ae9f129fb61f06afcf1e62a7c28afcf906595c0c854": {
-      "path": "workspace/feed/media/3p/896696dd1f5c752a665f66f96ec1f022c73fc61bc2d33d0234456617aaacc243/hero.jpg",
-      "mime_type": "image/jpeg",
-      "size_bytes": 117701,
-      "modified_ms": 1795081314004,
-      "version": "eff6559db06c42a670eda313cfcebd1924e634e459876a7f1aa396111ac3c1e9",
-      "source_url": "https://www.mountainblog.it/wp-content/uploads/2026/11/Kilian_Jornet_Burgada.jpg"
     },
     "e1e06e04f689edaa78564d1396812f7a8d493fa3fb14c8b27e8952d8bd3a93a2": {
       "path": "workspace/feed/media/1p/e3f6f344c3030b19328a5966bec7ad4b270d3141cff39a1d3f825c460959fdbf/image.jpg",

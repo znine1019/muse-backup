@@ -1,7 +1,7 @@
 ---
 objective_id: alignment
-run_id: sirun_2b611459d0e54e089ee8506bfb012746
-created_at: 2026-11-25T08:00:00.538531743+00:00
+run_id: sirun_0e43f57ec174499b9d797cf7a3d9d229
+created_at: 2026-11-27T08:17:50.190240158+00:00
 card_id: alignment_nightly_reflection
 worker_outcome: insufficient
 ---

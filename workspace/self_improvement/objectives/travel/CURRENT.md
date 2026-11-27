@@ -1,7 +1,7 @@
 ---
 objective_id: travel
-run_id: sirun_0070d0a0e9464d2c8e9dadf7b1240543
-created_at: 2026-11-25T04:00:23.780299444+00:00
+run_id: sirun_8926c65dbb2f4eb39f27127d957a6761
+created_at: 2026-11-27T03:56:41.328060465+00:00
 card_id: travel
 worker_outcome: insufficient
 ---

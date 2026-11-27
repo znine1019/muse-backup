@@ -1,41 +1,48 @@
 ---
 format_version: 3
 source_hashes:
-  MEMORY.md: be858b2abc22e39feeea2ecaf9eee0d509ed36d17039b16077d7e4d684bef88b
+  MEMORY.md: 466a5ca52cd3a7939cc719b0277132f8f36aae5b229d96b99c1922dd9d72270e
   USER.md: cbd51114ceb143fed23a18d4cc701f65a8bfa04064a7a6be1e844692f86e300b
-generated_at: 2026-11-26T14:22:41Z
+generated_at: 2026-11-27T15:27:05Z
 ---
 # User Identity and Memory
 
-- **姓名与称呼**: 周才翔，称呼“老板”。曾用英文名 Kenneth，已停用。
-- **身份与背景**: 体育教育专业在读，25体教1班，田径教练员兼学生；小名/乳名“周铭星”仅用于私密、祭祀、家书或更亲近口吻的书信落款，正式材料用“周才翔”。
-- **时区**: Asia/Shanghai。白天也可能睡眠，不要假设“白天醒着”并安排需要本人确认的步骤。
+**Identity & Address**
+- Name: 周才翔, called 老板. Xiaoming/乳名 周铭星 for private/family letters; formal materials use 周才翔. Former English name Kenneth deprecated as of 2026-11-12.
+- Student: 体育教育专业在读, 25体教1班. Athletics coach and student.
+- Timezone: Asia/Shanghai.
+- Emails: Gmail caixiangzhou9@gmail.com; QQ 3282446722@qq.com (alias Zzzko'9).
+- Meta account: Lewis Kenneth, 84655059@qq.com.
 
-**沟通与工作偏好**
-- 回答风格：中性、克制、客观、直接、事实导向；区分强事实/中等推断/弱推断/不可证伪猜测/情绪安慰，不把可能性说成结论。
-- 任务明确时直接执行，不反复征求确认；情绪类话题避免无端联想自伤或将其与失眠、压力、前任感情挂钩。
-- 公众号文章正文直接以对话文字发出，不用代码块；封面/插图需JPG格式，webp会被编辑器拒收。
-- 科普视频：约1分钟，旁白必须按事先稿子念。
+**Work & Projects**
+- Role at 乔格体育俱乐部: 100米专项, 中国田径协会 D级教练员、国家田径初级教练员. Listed as 周教练 in core staff materials; no ID/phone/photo stored.
+- 乔格海报/宣传规范: top-left 贵阳奥体中心 logo, top-right 乔格体育俱乐部 logo, fixed size, no distortion. Five coach versions identical layout, QR only with name+code, no avatar. Leave-receipt images: small purple outline watermark top-left with text “教练员宣传示例”. Fake-note edits: pixel-only on specified fields, no redraw, no watermark, no font/size/layout changes.
+- Products: 中学升学体育、初中体育统考、高考四项 100/800/铅球/立定三级跳远、体育单招100/200/400/800米、体适能提升. Training site: 贵阳奥林匹克体育中心 only. No fee info or 小学服务 in materials.
+- Public messaging: 单期最大承载约80人、余量200人次; 教师6-8人、流动性约20%; B/C营收二八开; 办学资质对外称“已备案、在办理中”. No编造录取率/提分数据.
 
-**体育与教学相关**
-- 100米PB：11秒39（原计11秒59作废）。荣誉：2023年中国大众田径公开赛4×100米季军；2024年贵阳市运会4×100米冠军；2024年wse田径公开赛60米季军。
-- 资质：D级教练员、国家田径初级教练员。对外称“周教练”；乔格核心师资名单已按此更新，去掉学历/专业与职务称谓。
-- 乔格海报标准：两logo固定顶部不拉伸——“贵阳奥林匹克体育中心”IMG_9647.jpeg、“乔格体育俱乐部”IMG_9645(1).jpeg；五个教练员版本版式一致，仅换姓名/联系方式/二维码，无头像。
-- 假条修改：只在原图逐像素改指定字段，不重画、不改其他文字/水印/尺寸/字体/排版。
-- 跑山Vlog回复：先肯定再给安全建议；高温、雷雨、情绪波动、睡眠不足、断联焦虑时不跑山；安全底线之一不超过120km/h。
-- 乔格俱乐部对外口径：单期承载约80人、余量200人次；教师6–8人、流动约20%；B/C营收二八开；办学许可/资质表述为“已备案、在办理中”；不编造转介绍、退费、录取率/通过率/提分数据。
+**Standing Preferences & Workflow**
+- Tone: direct, factual, neutral, restrained emotion. Separate strong fact vs inference vs guess vs comfort; don’t state guesses as conclusions.
+- Execution: when tasks are clear, execute without repeated confirmation.
+- Sleep: sleeps during day too; avoid assuming daytime availability for approval steps that may expire.
+- Emotion boundaries: don’t link stress/insomnia/pressure to past relationships unless user raises it; don’t pivot to self-harm.
+- Writing/Academic: WorkBuddy use 浑元4 + humanizer v4.0.0 for AI-味 check, assistant revises until clear, preserve original formatting; priority: no AI-味, then effect.
+- Media: 科普视频~1分钟, 旁白按稿; 公众号图先转JPG; 公众号正文直接发文本, 不用代码块.
 
-**项目与长期任务**
-- 公众号：每96小时一期，含文章、封面、插图；下一期约2026-11-28 17:36 CST。
-- WorkBuddy：桌面端“韭菜馅”保持登录；每日约00:18领取100积分，过期汇报，不自行登录。
-- 每日迁移备份00:19执行：主包/补包邮件，GPT包/全局包/非GitHub包走Drive，GitHub仅个人仓，不入私钥、凭证与补包敏感源。
-- 花山拳App：网页版已交付，需真人示范视频，不标注AI出处。
-- IP纯净度检测空间已建；云开发CloudBase上海区个人版到期后第16天释放数据。
+**Athletics & Health**
+- PB: 100米 11.39. Honors: 2023 中国大众田径 4×100m 季军; 2024 贵阳市运会 4×100m 冠军; 2024 WSE 60米 季军. 赛事总分: 高考文化÷2 + 专业成绩(100/800/铅球/立定跳远各40, 总160).
+- 跑山骑行安全: 先肯定具体内容, 再给建议; 高温/雷雨/情绪波动/睡眠不足/断联焦虑/前任刺激时不进行; 底线不过120码.
 
-**联系与账户**
-- 邮箱：Gmail caixiangzhou9@gmail.com；QQ邮箱 3282446722@qq.com（名 Zzzko'9）。
-- Gmail发信：给罗雯靖3340095988@qq.com、430746030@qq.com已预授权，其余仍需审批卡；若用户在睡觉错过审批则先存草稿。
+**Tech & Accounts**
+- Google: region changed HK→US (Ohio) 2026-11-25; Google AI Pro active with 5TB; Antigravity via Subscription, no Cloud project needed. Antigravity timeouts usually peak capacity, not penalty; v2.33.0 mitigates.
+- ChatGPT: Plus account 3282446722@qq.com, renewal 2026-12-02. 327 stored memories flagged as “已停用的旧版记忆”.
+- WorkBuddy: 账号“韭菜馅”, desktop client logged-in; 100积分 claimed daily 00:18 with report; remain logged in.
+- Meta exports: use US residential IP with clean score before download; avoid old JP node.
 
-**敏感信息处理**
-- 不抄入记忆库的细节：教练电话号码；摇六爻旁聊不查记忆库也不记录该旁聊内容。
-- 身份证号等敏感源文件仅记文件位置，不记录号码值。
+**Recurring Commitments**
+- 公众号: 每4天一期, 主题/文稿/封面插图生成后交付; 例: 2026-11-28 下期约17:36 CST.
+- 每日备份: 00:19 邮件至 QQ+Gmail, 含主包/补包/GPT包/全局包/非GitHub包/ChatGPT导出 zip; GitHub 同步到 znine1019/muse-backup (4个大文件分块), 失败不阻断邮件.
+- Gmail朋友求助: 先核对身份; 不做伪造/违法/钱/账号密码/敏感信息. 发信给罗雯靖和430746030@qq.com已预授权, 其他仍弹审批卡.
+
+**Constraints to Respect**
+- 摇六爻旁聊独立: 不查记忆库, 不落库, 每次空白新起.
+- 敏感信息: 仅记文件位置/哈希, 不抄身份证号等完整值.

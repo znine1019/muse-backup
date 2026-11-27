@@ -1,6 +1,6 @@
 # GitHub 同步排除清单 SYNC-EXCLUDED
 
-生成时间：2026-11-27 00:26 UTC+08:00
+生成时间：2026-11-28 03:09 UTC+08:00
 被排除文件条目数：1309（含目录级汇总条目）
 说明：以下文件属于全局备份范围，但因二进制/敏感/凭证/体积等原因不进 GitHub 同步树；
 本体仍在邮件附件与 Google Drive 全局包里。敏感值本身从不写入本清单，只记名/大小/哈希。
@@ -854,7 +854,6 @@
 | workspace/browser_downloads/sess-17162883/browser-download-20261117T122035.802610585Z-18-___________________.docx | 56470 | 2234ec0b950851fc | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/browser_downloads/sess-17162883/browser-download-20261117T122046.447289607Z-19-___________________.docx | 2106425 | 968e7a3804029eee | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/browser_downloads/sess-17162883/browser-download-20261117T122057.618716916Z-20-______________.pdf | 4708592 | bd52b1ad9758ee96 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
-| workspace/feed/media/1p/4ee9f5bbf04c43a6f695a31a5478ad5aae2edb12adcaad61187ad12cf1490ed1/image.jpg | 227280 | 75aa06f635785f48 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/710b9eea1d79b1071db3e99800a426c847a96e9484d3c4a656c42353a04ee791/image.jpg | 54581 | d5c5e2b699e51ef5 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/85d206e6fc02939d5938a7cfda50f5e8dfd9b82d96923e6c91c42cddfe8d3a89/image.jpg | 50748 | 6bca826f70f6f93c | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/886eb4ca74089743d91cd3b8f7927bdd75855961329d58ef1fa842f189772c47/image.jpg | 418671 | 368b3a8abf35c636 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
@@ -862,11 +861,11 @@
 | workspace/feed/media/1p/9d78c453cb0206c2f432232ea2c8ddd0ff8b6c1fa3c344d658e1a0d44c386aa5/image.jpg | 51378 | 565766a7b6ec365f | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/a58f39ee12a0ff8dacb999a20879f6793d0cb3a3f54a2e851d0e5d8456eb9c2d/image.jpg | 203925 | a2ca4c8667d6b870 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/c7658a62a865b3bf21983154163b84ee6b9257189adbea6d9f6632f71ebb5365/image.jpg | 547044 | 11b0af846cb3f351 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
+| workspace/feed/media/1p/d9bf1f664edb5dbf8562d6962a91fe54808d7fa446e49d4a3795844f37019bd6/image.jpg | 353465 | 7d5f21c959efd705 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/e3f6f344c3030b19328a5966bec7ad4b270d3141cff39a1d3f825c460959fdbf/image.jpg | 63938 | e6c6a2e8ae9d9811 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/eabba62818ad6131b37a629750c6beed14076bbe381247e987a644b011e75332/image.jpg | 42331 | e890b71b9cf0931d | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/1p/f01c716e5ab258926c5d39e206a075df7740ec2d369bb3c5ba04d4eeabe4a133/image.jpg | 144923 | 513db7ae444522eb | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/051f55a04a6fd891c5b23f9f307149ac75f5af4eaa4b328300efe14173fd044a/hero.jpg | 167144 | 2abc8c5ed5efc574 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
-| workspace/feed/media/3p/0643a0e692f8d770b65cbf1866f4454dde509b616ba9f5a427490714634c5b61/hero.webp | 45060 | 8be5e391c2c9cfb6 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/1364b0a376f45b2babffc4bb2f2b813615dfed85513a2497f6af6fa9ed608543/hero.webp | 23924 | f18a3fe68033cf10 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/1776022f95493ad8f16be06aae4b99394af2e7b213ef7147c2fa5e984d6018ef/hero.jpg | 181794 | ea3e4593ef80ae12 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/1b0612c1a96c492dc4f51ad8fb22a52fd2ffbdaaa15025801e7d094d2e3ccec9/hero.jpg | 32041 | e9eae393457c9bca | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
@@ -877,14 +876,15 @@
 | workspace/feed/media/3p/4a279d54e5a48fc5802184c13f7881722c9a3ff9e44df255b09cf780411111e2/hero.webp | 87188 | bc911a74e201cfcb | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/5284c1193ef0b9a4f6d0b809c88d7a2c4882b0a7b4b0d5ca46943cb096953135/hero.jpg | 42503 | 529008ebac56a90c | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/550a3fae776183ae8eeed92cb9d40803e0b877241fa3b7ec2a51e04fc811e7d4/hero.webp | 102130 | 13fadcd34e8190cf | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
+| workspace/feed/media/3p/5f9b3bebef1105b7800297b968ac075ceb33ff63d00f5c3ac85bb2467e0f886e/hero.png | 125322 | af2714a7705e9add | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/602d02dbf8b9e5310f372864dbf97d54c94b1c602c569dad8f4680e2cf4a8264/hero.jpg | 297967 | 289585c3539e860f | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/67b919c2e927f7a28bb50ce3048bf20fa77da41fb726c4dc4a7048b13ff61a2d/hero.jpg | 785723 | a9041f738cb83bda | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/69cbc13fd1b74fbf86336c9292f224b9465255b92fcbff499944372b0bd5c7e3/hero.webp | 76754 | a4a7d6169286bca7 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/6ebbe672ef08dbea67c4dbc73fe3e22ab762142900fe6c64bfe1cc6def893805/hero.webp | 89076 | 01fc5795073a46ce | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/80413c9f92ff6711152bb1ff0e5b40526415db1869281ffcc68e623f011e6699/hero.jpg | 81630 | 2fe34a4471b939d5 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/857ad67d11359e2049be0a03891c9720129e93cb606baf141aa0d0deda3c15fd/hero.webp | 30998 | ea1a3480f190a6c1 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
-| workspace/feed/media/3p/896696dd1f5c752a665f66f96ec1f022c73fc61bc2d33d0234456617aaacc243/hero.jpg | 117701 | eff6559db06c42a6 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/93b896018018eaa6fbd06783b291a947ce2b8d171a77dd24034528eb4fd78e39/hero.jpg | 175639 | f079e2f6360ba990 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
+| workspace/feed/media/3p/9705fac29b6f2f37006bcfd0264aca44da8e5c83c9c4d2399dcef476a545dd02/hero.jpg | 267767 | 5f8c23dbad097c59 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/9956d914d10d41a384f9b841e6824cccfd6c2909868a73d875cb4611bcdb3299/hero.png | 173193 | 7298d7fd972df954 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/9b2768fdf9e1afafa0df70405826c86136b8eb08a2e5782a5119c698effc9050/hero.jpg | 147098 | b83f6e3a5ed1255e | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/feed/media/3p/a2ef87d635fecd924c23b33b412f542bfccbd50a2b7621036545bfc068730f59/hero.jpg | 86472 | aacdfc8f35c1f8fe | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
@@ -1197,7 +1197,7 @@
 | workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T16-01-00Z-953207652/screenshot.png | 321856 | 1011186d80c05b70 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/ts-spaces/hua-shan-quan-aixun-lian/audits/2026-11-24T16-01-00Z-953207652/space-preview-card-og_1200x630.jpg | 120553 | a742a39226c4b9ab | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/ts-spaces/hua-shan-quan-aixun-lian/icon.webp | 35496 | 5133e3bd56542825 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
-| workspace/ts-spaces/ip-chun-jing-du-jian-ce/app.db | 32768 | 55c95005edd1d2cf | Spaces 数据库文件 app.db*（需空间工具导出） |
+| workspace/ts-spaces/ip-chun-jing-du-jian-ce/app.db | 32768 | d50a85d1815fa52f | Spaces 数据库文件 app.db*（需空间工具导出） |
 | workspace/ts-spaces/ip-chun-jing-du-jian-ce/audits/2026-11-23T09-31-40Z-145141610/act-001.png | 70090 | f079ca0566d829a8 | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/ts-spaces/ip-chun-jing-du-jian-ce/audits/2026-11-23T09-31-40Z-145141610/act-002.png | 66125 | 2faa74ab775d210e | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |
 | workspace/ts-spaces/ip-chun-jing-du-jian-ce/audits/2026-11-23T09-31-40Z-145141610/act-003.png | 74316 | 5bb144e5e657befe | 二进制文件（非 UTF-8 文本），不进 GitHub 树 |

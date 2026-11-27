@@ -1,34 +1,4 @@
 outcomes:
-- observed_at: 2026-11-19T04:45:30.398770Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-19T04:45:50.934418Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-19T06:51:00.226012Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-19T06:51:12.819269Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-20T03:41:01.149778Z
-  correction_free_rate: 1.0
-  eligible_evidence: 16
-  open_repair_threads: 0
-  classification: insufficient
-- observed_at: 2026-11-20T03:43:30.404704Z
-  correction_free_rate: 0.0
-  eligible_evidence: 0
-  open_repair_threads: 0
-  classification: insufficient
 - observed_at: 2026-11-21T03:41:01.318438Z
   correction_free_rate: 1.0
   eligible_evidence: 5
@@ -145,6 +115,36 @@ outcomes:
   open_repair_threads: 0
   classification: insufficient
 - observed_at: 2026-11-25T07:58:58.182161Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T03:41:01.140239Z
+  correction_free_rate: 1.0
+  eligible_evidence: 8
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T03:49:02.375524Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T05:44:57.300206Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T05:57:17.353250Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T07:41:05.899552Z
+  correction_free_rate: 0.0
+  eligible_evidence: 0
+  open_repair_threads: 0
+  classification: insufficient
+- observed_at: 2026-11-27T07:41:30.145032Z
   correction_free_rate: 0.0
   eligible_evidence: 0
   open_repair_threads: 0

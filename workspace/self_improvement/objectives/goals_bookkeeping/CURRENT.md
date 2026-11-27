@@ -1,7 +1,7 @@
 ---
 objective_id: goals_bookkeeping
-run_id: sirun_10fd2eac116e41e99e5e27f9a6384445
-created_at: 2026-11-26T15:41:17.405522897+00:00
+run_id: sirun_650b7369e0874bbf8f13dc7f8442a1a7
+created_at: 2026-11-27T09:46:28.651280254+00:00
 card_id: goals_bookkeeping
 worker_outcome: insufficient
 ---

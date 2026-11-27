@@ -1,7 +1,7 @@
 ---
 objective_id: skill_improvement
-run_id: sirun_31338ef20e124e8fb5dde724466656f2
-created_at: 2026-11-25T04:00:23.581280204+00:00
+run_id: sirun_7d1f67e4c67f4c3089514f52fba3c494
+created_at: 2026-11-27T03:56:41.089097672+00:00
 card_id: skill_improvement
 worker_outcome: changed
 ---
