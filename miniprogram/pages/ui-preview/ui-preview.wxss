@@ -1,301 +1,331 @@
-/* V1.6.5 真机试穿页：黑底白字 + 品牌深蓝（零橙色残留，纯 transform/opacity 动效）
- * 严禁：CSS Grid、backdrop-filter、filter: blur()、position: sticky、外部字体。
+/* V1.6.5 蓝黑白高级感 真机试穿页（三色系、发丝线、<=8% 径向光、统一 cubic-bezier(0.16, 1, 0.3, 1)）
+ * 严禁：CSS Grid、backdrop-filter、filter: blur()、position: sticky、外部字体、通配符 *。
  */
 .pv-page {
   min-height: 100vh;
-  background: #05070A;
+  background: #04060A;
   color: #FFFFFF;
   padding-bottom: 64rpx;
   box-sizing: border-box;
-  font-size: 28rpx;
-  line-height: 1.5;
+  font-size: 27rpx;
+  line-height: 1.56;
 }
 
 .pv-page.is-daylight {
-  background: #F7FAFC;
-  color: #05070A;
+  background: #FAFBFC;
+  color: #0A0E14;
 }
 
 .pv-num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
-  animation: pv-num-roll 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: pv-num-roll 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes pv-num-roll {
-  0% { opacity: 0.25; transform: translateY(16rpx) scale(0.92); }
-  60% { opacity: 1; transform: translateY(-2rpx) scale(1.02); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% { opacity: 0.2; transform: translateY(14rpx); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .pv-header {
-  background: #132D49;
-  border-bottom: 2rpx solid #1E2C3A;
-  padding: 24rpx 28rpx 20rpx;
+  background: #16304F;
+  border-bottom: 2rpx solid rgba(255, 255, 255, 0.08);
+  padding: 24rpx 32rpx 24rpx;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
 }
 
 .pv-page.is-daylight .pv-header {
   background: #FFFFFF;
-  border-bottom-color: #C9D6E3;
+  border-bottom-color: rgba(10, 14, 20, 0.08);
 }
 
 .pv-head-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
 }
 
 .pv-head-main {
   flex: 1;
   min-width: 0;
+  margin-right: 16rpx;
 }
 
 .pv-kicker {
   font-size: 24rpx;
-  font-weight: 700;
-  color: #7FB2FF;
+  font-weight: 600;
+  color: #8FB6FF;
 }
 
 .pv-page.is-daylight .pv-kicker {
-  color: #2F6FBF;
+  color: #2B5FCC;
 }
 
 .pv-title {
   font-size: 38rpx;
-  font-weight: 800;
+  font-weight: 700;
   color: #FFFFFF;
-  margin-top: 4rpx;
+  margin-top: 8rpx;
 }
 
 .pv-page.is-daylight .pv-title {
-  color: #05070A;
+  color: #0A0E14;
 }
 
 .pv-meta {
   font-size: 24rpx;
-  color: #B9C6D4;
+  color: #A9B4C2;
+  margin-top: 8rpx;
 }
 
 .pv-page.is-daylight .pv-meta {
-  color: #33485E;
+  color: #4A5568;
 }
 
 .pv-daylight-btn {
   margin: 0;
-  padding: 0 22rpx;
+  padding: 0 24rpx;
   min-height: 88rpx;
   line-height: 88rpx;
   border-radius: 16rpx;
-  border: 2rpx solid #2F6FBF;
-  background: #0B1219;
-  color: #7FB2FF;
+  border: 2rpx solid rgba(143, 182, 255, 0.28);
+  background: #0A0E14;
+  color: #8FB6FF;
   font-size: 24rpx;
   font-weight: 700;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pv-daylight-btn:active {
+  transform: scale(0.985);
+  opacity: 0.88;
 }
 
 .pv-daylight-btn.is-on {
-  background: #132D49;
-  border-color: #132D49;
+  background: #16304F;
+  border-color: #16304F;
   color: #FFFFFF;
 }
 
 .pv-body {
-  padding: 24rpx;
+  padding: 24rpx 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
 }
 
 .pv-stack {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
 }
 
 .pv-seg-row {
   display: flex;
-  gap: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .pv-seg-btn {
   flex: 1;
-  margin: 0;
-  padding: 0 10rpx;
+  margin: 0 8rpx 0 0;
+  padding: 0 12rpx;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 14rpx;
-  border: 2rpx solid #1E2C3A;
-  background: #0B1219;
-  color: #B9C6D4;
+  border-radius: 16rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  background: #0A0E14;
+  color: #A9B4C2;
   font-size: 24rpx;
-  font-weight: 700;
+  font-weight: 600;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pv-seg-btn:last-child {
+  margin-right: 0;
+}
+
+.pv-seg-btn:active {
+  transform: scale(0.985);
+  opacity: 0.88;
 }
 
 .pv-page.is-daylight .pv-seg-btn {
   background: #FFFFFF;
-  border-color: #C9D6E3;
-  color: #33485E;
+  border-color: rgba(10, 14, 20, 0.08);
+  color: #4A5568;
 }
 
 .pv-seg-btn.is-active {
-  background: #2F6FBF;
-  border-color: #2F6FBF;
+  background: #2E6BFF;
+  border-color: #2E6BFF;
+  color: #FFFFFF;
+}
+
+.pv-page.is-daylight .pv-seg-btn.is-active {
+  background: #2B5FCC;
+  border-color: #2B5FCC;
   color: #FFFFFF;
 }
 
 .pv-tip {
-  background: #101A24;
-  border: 2rpx solid #1E2C3A;
-  border-left: 8rpx solid #2F6FBF;
-  border-radius: 12rpx;
-  padding: 16rpx 20rpx;
+  background: #0A0E14;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  border-left: 6rpx solid #2E6BFF;
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
   font-size: 24rpx;
-  color: #7FB2FF;
-  font-weight: 700;
+  color: #8FB6FF;
+  font-weight: 600;
+  margin-bottom: 24rpx;
 }
 
 .pv-page.is-daylight .pv-tip {
   background: #FFFFFF;
-  border-color: #C9D6E3;
-  border-left-color: #132D49;
-  color: #132D49;
+  border-color: rgba(10, 14, 20, 0.08);
+  border-left-color: #2B5FCC;
+  color: #16304F;
 }
 
 /* 卡片 */
 .pv-card {
-  background: #0B1219;
-  border: 2rpx solid #1E2C3A;
-  border-radius: 20rpx;
-  padding: 26rpx;
+  background: #0F141C;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
 }
 
 .pv-page.is-daylight .pv-card {
   background: #FFFFFF;
-  border-color: #C9D6E3;
+  border-color: rgba(10, 14, 20, 0.08);
+  box-shadow: 0 2rpx 8rpx rgba(10, 14, 20, 0.04);
 }
 
 .pv-brand-card {
-  background: linear-gradient(145deg, #132D49 0%, #0B1219 100%);
-  border: 2rpx solid #2F6FBF;
-  border-top: 6rpx solid #7FB2FF;
-  border-radius: 22rpx;
-  padding: 28rpx;
+  background-color: #16304F;
+  background-image: radial-gradient(circle at 88% 12%, rgba(143, 182, 255, 0.08) 0%, rgba(143, 182, 255, 0) 64%);
+  border: 2rpx solid rgba(143, 182, 255, 0.22);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
 }
 
 .pv-page.is-daylight .pv-brand-card {
-  background: linear-gradient(145deg, #FFFFFF 0%, #EDF3F9 100%);
-  border-color: #C9D6E3;
-  border-top-color: #132D49;
+  background-color: #FFFFFF;
+  background-image: radial-gradient(circle at 88% 12%, rgba(43, 95, 204, 0.06) 0%, rgba(43, 95, 204, 0) 64%);
+  border-color: rgba(22, 48, 79, 0.16);
+  box-shadow: 0 2rpx 8rpx rgba(10, 14, 20, 0.04);
 }
 
 .pv-err-card {
-  margin: 28rpx;
-  border-color: #FF6B6B;
+  margin: 32rpx;
+  border-color: #FF5A5F;
 }
 
 .pv-err-text {
   font-size: 26rpx;
-  color: #FF6B6B;
+  color: #FF5A5F;
   font-weight: 700;
+  margin: 16rpx 0 24rpx;
 }
 
 .pv-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .pv-card-t {
-  font-size: 30rpx;
-  font-weight: 800;
+  font-size: 28rpx;
+  font-weight: 700;
   color: #FFFFFF;
 }
 
 .pv-page.is-daylight .pv-card-t {
-  color: #05070A;
+  color: #0A0E14;
 }
 
 .pv-sub {
   font-size: 24rpx;
-  color: #B9C6D4;
+  color: #A9B4C2;
+  margin-top: 8rpx;
 }
 
 .pv-page.is-daylight .pv-sub {
-  color: #33485E;
+  color: #4A5568;
 }
 
 .pv-badge {
   padding: 6rpx 16rpx;
-  border-radius: 10rpx;
-  border: 2rpx solid #2F6FBF;
-  background: #101A24;
-  color: #7FB2FF;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(143, 182, 255, 0.28);
+  background: #0A0E14;
+  color: #8FB6FF;
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
 .pv-page.is-daylight .pv-badge {
-  background: #EDF3F9;
-  border-color: #2F6FBF;
-  color: #132D49;
+  background: #FAFBFC;
+  border-color: rgba(22, 48, 79, 0.2);
+  color: #16304F;
 }
 
 .pv-big-num {
-  font-size: 62rpx;
-  font-weight: 900;
-  color: #7FB2FF;
-  line-height: 1.1;
+  font-size: 64rpx;
+  font-weight: 700;
+  color: #8FB6FF;
+  line-height: 1.08;
+  margin-top: 8rpx;
 }
 
 .pv-page.is-daylight .pv-big-num {
-  color: #132D49;
+  color: #16304F;
 }
 
 .pv-accent-val {
-  font-size: 30rpx;
-  font-weight: 800;
-  color: #7FB2FF;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #8FB6FF;
 }
 
 .pv-page.is-daylight .pv-accent-val {
-  color: #2F6FBF;
+  color: #2B5FCC;
 }
 
-/* 环形出勤仪表（纯 CSS conic-gradient，零重排） */
+/* 环形出勤仪表 */
 .pv-cockpit-row {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  margin-bottom: 24rpx;
 }
 
 .pv-ring-wrap {
-  width: 172rpx;
-  height: 172rpx;
+  width: 168rpx;
+  height: 168rpx;
   border-radius: 50%;
-  background: conic-gradient(#2F6FBF 0deg 315deg, #1E2C3A 315deg 360deg);
+  background: conic-gradient(#2E6BFF 0deg 315deg, rgba(255, 255, 255, 0.08) 315deg 360deg);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-right: 24rpx;
+}
+
+.pv-page.is-daylight .pv-ring-wrap {
+  background: conic-gradient(#2B5FCC 0deg 315deg, rgba(10, 14, 20, 0.08) 315deg 360deg);
 }
 
 .pv-ring-inner {
-  width: 138rpx;
-  height: 138rpx;
+  width: 136rpx;
+  height: 136rpx;
   border-radius: 50%;
-  background: #0B1219;
+  background: #0F141C;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -307,22 +337,22 @@
 }
 
 .pv-ring-num {
-  font-size: 34rpx;
-  font-weight: 900;
+  font-size: 32rpx;
+  font-weight: 700;
   color: #FFFFFF;
 }
 
 .pv-page.is-daylight .pv-ring-num {
-  color: #05070A;
+  color: #0A0E14;
 }
 
 .pv-ring-sub {
   font-size: 20rpx;
-  color: #B9C6D4;
+  color: #A9B4C2;
 }
 
 .pv-page.is-daylight .pv-ring-sub {
-  color: #33485E;
+  color: #4A5568;
 }
 
 .pv-cockpit-main {
@@ -330,33 +360,33 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
 }
 
-/* 主 CTA：暗夜白底黑字 / 日光深蓝底白字 */
+/* 主 CTA：暗夜纯白实底黑字 / 日光品牌深蓝底白字 */
 .pv-cta {
   width: 100%;
-  margin: 0;
-  min-height: 92rpx;
-  line-height: 92rpx;
+  margin: 16rpx 0 0;
+  min-height: 88rpx;
+  line-height: 88rpx;
   border-radius: 16rpx;
   background: #FFFFFF;
-  color: #05070A;
-  font-size: 28rpx;
-  font-weight: 800;
+  color: #04060A;
+  font-size: 27rpx;
+  font-weight: 700;
   border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 120ms ease;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pv-cta:active {
-  transform: scale(0.97);
+  transform: scale(0.985);
+  opacity: 0.88;
 }
 
 .pv-page.is-daylight .pv-cta {
-  background: #132D49;
+  background: #16304F;
   color: #FFFFFF;
 }
 
@@ -364,16 +394,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14rpx;
 }
 
-/* 提交进度环 + 400ms 成功确认环 */
+/* 提交进度环 + 360ms 成功确认环 */
 .pv-spinner {
-  width: 34rpx;
-  height: 34rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 50%;
-  border: 5rpx solid #05070A;
+  border: 4rpx solid #04060A;
   border-top-color: transparent;
+  margin-right: 12rpx;
   animation: pv-spin 650ms linear infinite;
 }
 
@@ -383,15 +413,16 @@
 }
 
 .pv-check-ring {
-  width: 40rpx;
-  height: 40rpx;
-  line-height: 36rpx;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 32rpx;
   text-align: center;
   border-radius: 50%;
-  border: 4rpx solid #05070A;
-  font-size: 26rpx;
-  font-weight: 900;
-  animation: pv-pop 400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  border: 4rpx solid #04060A;
+  margin-right: 12rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  animation: pv-pop 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .pv-page.is-daylight .pv-check-ring {
@@ -403,61 +434,61 @@
 }
 
 @keyframes pv-pop {
-  0% { transform: scale(0.5); opacity: 0; }
-  65% { transform: scale(1.15); opacity: 1; }
+  0% { transform: scale(0.6); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* V1 招牌动效：三层蓝白光环扩散（560ms） */
+/* 三层光环扩散（480ms 招牌） */
 .pv-pulse-stage {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 18rpx;
-  padding: 12rpx 0;
+  border-radius: 16rpx;
+  padding: 8rpx 0;
 }
 
 .pv-pulse-ring {
   position: absolute;
-  width: 110rpx;
-  height: 110rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
-  border: 4rpx solid #7FB2FF;
+  border: 2rpx solid #8FB6FF;
   opacity: 0;
   pointer-events: none;
 }
 
 .pv-pulse-stage.is-pulsing .pv-pr-1 {
-  animation: pv-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 0ms forwards;
+  animation: pv-ring-burst 480ms cubic-bezier(0.16, 1, 0.3, 1) 0ms forwards;
 }
 
 .pv-pulse-stage.is-pulsing .pv-pr-2 {
-  animation: pv-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 110ms forwards;
+  animation: pv-ring-burst 480ms cubic-bezier(0.16, 1, 0.3, 1) 90ms forwards;
 }
 
 .pv-pulse-stage.is-pulsing .pv-pr-3 {
-  animation: pv-ring-burst 560ms cubic-bezier(0.22, 1, 0.36, 1) 220ms forwards;
+  animation: pv-ring-burst 480ms cubic-bezier(0.16, 1, 0.3, 1) 180ms forwards;
 }
 
 @keyframes pv-ring-burst {
-  0% { transform: scale(0.45); opacity: 0.95; }
-  100% { transform: scale(2.6); opacity: 0; }
+  0% { transform: scale(0.5); opacity: 0.72; }
+  100% { transform: scale(2.4); opacity: 0; }
 }
 
-/* V2 招牌动效：PB 遥测卡 3D Y 轴翻面（520ms） */
+/* PB 卡 3D Y 轴翻面（480ms） */
 .pv-flip-scene {
   perspective: 900rpx;
   width: 100%;
+  margin-bottom: 24rpx;
 }
 
 .pv-flip-card {
   position: relative;
   width: 100%;
-  min-height: 350rpx;
+  min-height: 344rpx;
   transform-style: preserve-3d;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pv-flip-card.is-flipped {
@@ -466,25 +497,24 @@
 
 .pv-flip-face {
   width: 100%;
-  min-height: 350rpx;
+  min-height: 344rpx;
   box-sizing: border-box;
-  background: #132D49;
-  border: 2rpx solid #2F6FBF;
-  border-left: 8rpx solid #7FB2FF;
-  border-radius: 22rpx;
-  padding: 28rpx;
+  background-color: #16304F;
+  background-image: radial-gradient(circle at 88% 12%, rgba(143, 182, 255, 0.08) 0%, rgba(143, 182, 255, 0) 64%);
+  border: 2rpx solid rgba(143, 182, 255, 0.22);
+  border-radius: 24rpx;
+  padding: 32rpx;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 16rpx;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .pv-page.is-daylight .pv-flip-face {
-  background: #FFFFFF;
-  border-color: #C9D6E3;
-  border-left-color: #132D49;
+  background-color: #FFFFFF;
+  background-image: radial-gradient(circle at 88% 12%, rgba(43, 95, 204, 0.06) 0%, rgba(43, 95, 204, 0) 64%);
+  border-color: rgba(22, 48, 79, 0.16);
 }
 
 .pv-flip-back {
@@ -493,31 +523,44 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #101A24;
+  background-color: #0F141C;
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.08);
   transform: rotateY(180deg);
 }
 
-/* V3 任务进度槽与招牌光栅扫描 + 名次置换（540ms） */
+.pv-page.is-daylight .pv-flip-back {
+  background-color: #FFFFFF;
+  background-image: none;
+  border-color: rgba(10, 14, 20, 0.08);
+}
+
+/* 任务进度槽与光栅扫描（480ms） */
 .pv-mission-bar {
   display: flex;
-  gap: 10rpx;
+  margin-bottom: 16rpx;
 }
 
 .pv-step {
   flex: 1;
   text-align: center;
   padding: 16rpx 8rpx;
-  border-radius: 12rpx;
-  border: 2rpx solid #1E2C3A;
-  background: #0B1219;
-  color: #B9C6D4;
+  margin-right: 8rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  background: #0F141C;
+  color: #A9B4C2;
   font-size: 22rpx;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+.pv-step:last-child {
+  margin-right: 0;
 }
 
 .pv-step.is-now {
-  background: #132D49;
-  border-color: #2F6FBF;
+  background: #16304F;
+  border-color: #2E6BFF;
   color: #FFFFFF;
 }
 
@@ -526,7 +569,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
 }
 
 .pv-raster-beam {
@@ -534,51 +576,59 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 96rpx;
-  background: linear-gradient(90deg, transparent, rgba(127, 178, 255, 0.58), transparent);
+  width: 80rpx;
+  background: rgba(143, 182, 255, 0.16);
   opacity: 0;
   pointer-events: none;
   z-index: 4;
 }
 
 .pv-rank-box.is-scanning .pv-raster-beam {
-  animation: pv-raster-sweep 540ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pv-raster-sweep 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes pv-raster-sweep {
-  0% { opacity: 0.95; transform: translateX(-100rpx); }
+  0% { opacity: 0.9; transform: translateX(-80rpx); }
   100% { opacity: 0; transform: translateX(720rpx); }
 }
 
 .pv-rank-row {
-  background: #101A24;
-  border: 2rpx solid #1E2C3A;
-  border-radius: 14rpx;
-  padding: 18rpx 20rpx;
+  background: #0A0E14;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 16rpx;
+  padding: 16rpx 24rpx;
+  margin-bottom: 12rpx;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .pv-page.is-daylight .pv-rank-row {
-  background: #F7FAFC;
-  border-color: #C9D6E3;
+  background: #FAFBFC;
+  border-color: rgba(10, 14, 20, 0.08);
 }
 
 .pv-bar-track {
   width: 100%;
   height: 12rpx;
   border-radius: 999rpx;
-  background: #1E2C3A;
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
+}
+
+.pv-page.is-daylight .pv-bar-track {
+  background: rgba(10, 14, 20, 0.08);
 }
 
 .pv-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2F6FBF, #7FB2FF);
+  background: #2E6BFF;
   transform-origin: left center;
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pv-page.is-daylight .pv-bar-fill {
+  background: #2B5FCC;
 }
 
 /* 列表行与迷你按钮 */
@@ -586,13 +636,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
   padding-top: 16rpx;
-  border-top: 2rpx solid #1E2C3A;
+  margin-top: 16rpx;
+  border-top: 2rpx solid rgba(255, 255, 255, 0.08);
 }
 
 .pv-page.is-daylight .pv-row {
-  border-top-color: #C9D6E3;
+  border-top-color: rgba(10, 14, 20, 0.08);
 }
 
 .pv-row.is-done {
@@ -602,16 +652,17 @@
 .pv-row-main {
   flex: 1;
   min-width: 0;
+  margin-right: 16rpx;
 }
 
 .pv-row-t {
-  font-size: 28rpx;
-  font-weight: 700;
+  font-size: 27rpx;
+  font-weight: 600;
   color: #FFFFFF;
 }
 
 .pv-page.is-daylight .pv-row-t {
-  color: #05070A;
+  color: #0A0E14;
 }
 
 .pv-mini-btn {
@@ -619,50 +670,62 @@
   padding: 0 24rpx;
   min-height: 88rpx;
   line-height: 88rpx;
-  border-radius: 14rpx;
-  background: #2F6FBF;
+  border-radius: 16rpx;
+  background: #2E6BFF;
   color: #FFFFFF;
   font-size: 24rpx;
   font-weight: 700;
   border: 0;
   flex-shrink: 0;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pv-mini-btn:active {
+  transform: scale(0.985);
+  opacity: 0.88;
+}
+
+.pv-page.is-daylight .pv-mini-btn {
+  background: #2B5FCC;
 }
 
 .pv-mini-btn.is-muted {
-  background: #1E2C3A;
-  color: #B9C6D4;
+  background: #0A0E14;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  color: #A9B4C2;
 }
 
-/* 列表 Stagger 入场（34-40ms 间隔，位移 10px） */
+/* 列表 Stagger 入场（40ms 错峰，位移 16rpx <= 20rpx） */
 .pv-stagger {
   opacity: 0;
-  transform: translateY(20rpx);
-  animation: pv-stagger-in 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translateY(16rpx);
+  animation: pv-stagger-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .pv-s0 { animation-delay: 0ms; }
-.pv-s1 { animation-delay: 36ms; }
-.pv-s2 { animation-delay: 72ms; }
-.pv-s3 { animation-delay: 108ms; }
+.pv-s1 { animation-delay: 40ms; }
+.pv-s2 { animation-delay: 80ms; }
+.pv-s3 { animation-delay: 120ms; }
 
 @keyframes pv-stagger-in {
-  from { opacity: 0; transform: translateY(20rpx); }
+  from { opacity: 0; transform: translateY(16rpx); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 骨架屏 Shimmer 1.2s + 内容 200ms 上移淡入 */
+/* 骨架屏 Shimmer 1.1s + 内容 180ms 上移淡入 */
 .pv-skel {
-  height: 150rpx;
-  border-radius: 20rpx;
-  background: #0B1219;
-  border: 2rpx solid #1E2C3A;
+  height: 152rpx;
+  border-radius: 24rpx;
+  background: #0F141C;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16rpx;
   position: relative;
   overflow: hidden;
 }
 
 .pv-page.is-daylight .pv-skel {
   background: #FFFFFF;
-  border-color: #C9D6E3;
+  border-color: rgba(10, 14, 20, 0.08);
 }
 
 .pv-skel::after {
@@ -672,9 +735,9 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(127, 178, 255, 0.24) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(143, 182, 255, 0.14) 50%, transparent 100%);
   transform: translateX(-100%);
-  animation: pv-shimmer 1.2s linear infinite;
+  animation: pv-shimmer 1.1s linear infinite;
 }
 
 @keyframes pv-shimmer {
@@ -682,17 +745,17 @@
 }
 
 .pv-reveal {
-  animation: pv-fade-up 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: pv-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes pv-fade-up {
-  from { opacity: 0; transform: translateY(20rpx); }
+  from { opacity: 0; transform: translateY(16rpx); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @supports not (transform-style: preserve-3d) {
   .pv-flip-card.is-flipped { transform: none; }
-  .pv-flip-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .pv-flip-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1); }
   .pv-flip-card.is-flipped .pv-flip-front { opacity: 0; pointer-events: none; }
   .pv-flip-card.is-flipped .pv-flip-back { opacity: 1; pointer-events: auto; }
 }
@@ -710,7 +773,10 @@
   .pv-raster-beam,
   .pv-rank-row,
   .pv-bar-fill,
-  .pv-cta {
+  .pv-cta,
+  .pv-mini-btn,
+  .pv-seg-btn,
+  .pv-daylight-btn {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -1,25 +1,25 @@
-/* 开发者专用演示预览页（V1.6.5 黑底白字 + 品牌深蓝，零橙色残留）
+/* 开发者专用演示预览页（V1.6.5 蓝黑白高级感，零橙色与旧色残留）
    仅在 jg- 设计系统之上补充演示横幅；其余全部复用 app.wxss 公共类。 */
 
 .demo-banner {
-  background: var(--jg-brand, #132D49);
-  border: 2rpx solid var(--jg-accent, #2F6FBF);
+  background: var(--jg-brand, #16304F);
+  border: 2rpx solid rgba(143, 182, 255, 0.28);
   border-radius: 24rpx;
-  padding: 20rpx 24rpx;
+  padding: 24rpx;
   margin-bottom: 24rpx;
 }
 
 .demo-banner-t {
   font-size: 25rpx;
   font-weight: 700;
-  color: var(--jg-accent-hi, #7FB2FF);
+  color: var(--jg-accent-hi, #8FB6FF);
 }
 
 .demo-banner-m {
-  font-size: 23rpx;
-  color: var(--jg-text-mid, #B9C6D4);
-  line-height: 1.5;
-  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: var(--jg-text-mid, #A9B4C2);
+  line-height: 1.56;
+  margin-top: 8rpx;
 }
 
 /* 演示详情正文：保持与正式列表相同的可读行高 */
