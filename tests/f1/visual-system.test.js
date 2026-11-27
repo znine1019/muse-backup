@@ -23,18 +23,18 @@ function read(relativePath) {
 const APP_JSON = JSON.parse(read('miniprogram/app.json'));
 const APP_WXSS = read('miniprogram/app.wxss');
 
-/* V1.6.5 批准的黑底白字 + 深蓝核心色值（已移除全部橙色） */
+/* V1.6.5 蓝黑白高级感核心色值（三色系 + 错误红） */
 const APPROVED_COLORS = [
-  ['页面底', '#05070A'],
-  ['卡片面', '#0B1219'],
-  ['次级面', '#101A24'],
-  ['品牌深蓝', '#132D49'],
-  ['强调蓝', '#2F6FBF'],
-  ['高亮蓝', '#7FB2FF'],
-  ['分割线', '#1E2C3A'],
+  ['画布黑', '#04060A'],
+  ['承托黑', '#0A0E14'],
+  ['卡片黑', '#0F141C'],
+  ['品牌深蓝', '#16304F'],
+  ['强调蓝', '#2E6BFF'],
+  ['高亮蓝', '#8FB6FF'],
   ['主文字', '#FFFFFF'],
-  ['次文字', '#B9C6D4'],
-  ['错误红', '#FF6B6B']
+  ['次级文字', '#A9B4C2'],
+  ['错误红', '#FF5A5F'],
+  ['日光强调蓝', '#2B5FCC']
 ];
 
 /* F1-A 范围内页面 */
@@ -113,11 +113,11 @@ function classTokens(source) {
 test('F1-A 全局导航栏与窗口背景统一为品牌色', () => {
   assert.equal(
     APP_JSON.window.navigationBarBackgroundColor,
-    '#132D49',
-    '导航栏背景应为 V1.6.5 品牌深蓝 #132D49'
+    '#16304F',
+    '导航栏背景应为 V1.6.5 品牌深蓝 #16304F'
   );
   assert.equal(APP_JSON.window.navigationBarTextStyle, 'white', '导航栏文字应为白色');
-  assert.equal(APP_JSON.window.backgroundColor, '#05070A', '窗口背景应为 V1.6.5 深空黑 #05070A');
+  assert.equal(APP_JSON.window.backgroundColor, '#04060A', '窗口背景应为 V1.6.5 画布黑 #04060A');
 });
 
 test('F1-A 不存在页面级导航栏/窗口覆盖（改动 app.json 即可全站统一）', () => {
@@ -146,10 +146,10 @@ test('F1-A 设计令牌包含本轮批准的全部核心色值', () => {
   }
 });
 
-test('F1-A V1.6.5 彻底清除橙色残留，使用高对比蓝白令牌', () => {
+test('F1-A V1.6.5 彻底清除橙色残留，使用蓝黑白高级感令牌', () => {
   assert.ok(
-    APP_WXSS.includes('--jg-accent: #2F6FBF') && APP_WXSS.includes('--jg-accent-hi: #7FB2FF'),
-    '强调蓝与高亮蓝令牌必须为 #2F6FBF / #7FB2FF'
+    APP_WXSS.includes('--jg-accent: #2E6BFF') && APP_WXSS.includes('--jg-accent-hi: #8FB6FF'),
+    '强调蓝与高亮蓝令牌必须为 #2E6BFF / #8FB6FF'
   );
   for (const file of [
     'miniprogram/app.wxss',
@@ -179,18 +179,20 @@ function contrastRatio(foreground, background) {
 
 test('F1-A 文字对比度不低于 AA 4.5:1', () => {
   const pairs = [
-    ['主文字/页面底', '#FFFFFF', '#05070A'],
-    ['主文字/卡片面', '#FFFFFF', '#0B1219'],
-    ['次文字/卡片面', '#B9C6D4', '#0B1219'],
-    ['主按钮黑字/白底', '#05070A', '#FFFFFF'],
-    ['页头白字/品牌深蓝', '#FFFFFF', '#132D49'],
-    ['高亮蓝数值/卡片面', '#7FB2FF', '#0B1219'],
-    ['高亮蓝数值/品牌深蓝', '#7FB2FF', '#132D49'],
-    ['白字/强调蓝选中', '#FFFFFF', '#2F6FBF'],
-    ['错误红/卡片面', '#FF6B6B', '#0B1219'],
-    ['日光主文字/白卡', '#05070A', '#FFFFFF'],
-    ['日光主按钮/深蓝', '#FFFFFF', '#132D49'],
-    ['日光强调蓝/浅底', '#2F6FBF', '#F7FAFC']
+    ['主文字/画布黑', '#FFFFFF', '#04060A'],
+    ['主文字/卡片黑', '#FFFFFF', '#0F141C'],
+    ['次文字/卡片黑', '#A9B4C2', '#0F141C'],
+    ['主按钮黑字/纯白底', '#04060A', '#FFFFFF'],
+    ['页头白字/品牌深蓝', '#FFFFFF', '#16304F'],
+    ['高亮蓝数值/卡片黑', '#8FB6FF', '#0F141C'],
+    ['高亮蓝数值/品牌深蓝', '#8FB6FF', '#16304F'],
+    ['白字/强调蓝选中', '#FFFFFF', '#2E6BFF'],
+    ['错误红/卡片黑', '#FF5A5F', '#0F141C'],
+    ['日光正文/纯白卡', '#0A0E14', '#FFFFFF'],
+    ['日光次文/纯白卡', '#4A5568', '#FFFFFF'],
+    ['日光主按钮/品牌深蓝', '#FFFFFF', '#16304F'],
+    ['日光强调蓝/画布白', '#2B5FCC', '#FAFBFC'],
+    ['日光错误红/纯白卡', '#C53030', '#FFFFFF']
   ];
   for (const [label, fg, bg] of pairs) {
     const ratio = contrastRatio(fg, bg);

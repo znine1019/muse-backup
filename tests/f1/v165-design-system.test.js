@@ -38,28 +38,28 @@ function contrastRatio(hex1, hex2) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-test('V1.6.5 品牌色板与全局窗口配置为黑底白字 + 品牌深蓝，无 native tabBar', () => {
+test('V1.6.5 品牌色板与全局窗口配置为蓝黑白高级感，无 native tabBar', () => {
   const appJson = JSON.parse(read('miniprogram/app.json'));
-  assert.equal(appJson.window.navigationBarBackgroundColor, '#132D49');
+  assert.equal(appJson.window.navigationBarBackgroundColor, '#16304F');
   assert.equal(appJson.window.navigationBarTextStyle, 'white');
-  assert.equal(appJson.window.backgroundColor, '#05070A');
+  assert.equal(appJson.window.backgroundColor, '#04060A');
   assert.equal(appJson.tabBar, undefined, '禁止引入原生 tabBar');
   assert.equal(appJson.pages.length, 37, '应保持 37 个已注册页面');
 
   const appWxss = read('miniprogram/app.wxss');
   const tokens = [
-    '--jg-void: #05070A',
-    '--jg-surface: #0B1219',
-    '--jg-surface-2: #101A24',
-    '--jg-brand: #132D49',
-    '--jg-accent: #2F6FBF',
-    '--jg-accent-hi: #7FB2FF',
-    '--jg-line: #1E2C3A',
+    '--jg-void: #04060A',
+    '--jg-base: #0A0E14',
+    '--jg-surface: #0F141C',
+    '--jg-brand: #16304F',
+    '--jg-accent: #2E6BFF',
+    '--jg-accent-hi: #8FB6FF',
+    '--jg-line: rgba(255, 255, 255, 0.08)',
     '--jg-text-hi: #FFFFFF',
-    '--jg-text-mid: #B9C6D4',
+    '--jg-text-mid: #A9B4C2',
     '--jg-cta-bg: #FFFFFF',
-    '--jg-cta-text: #05070A',
-    '--jg-danger: #FF6B6B'
+    '--jg-cta-text: #04060A',
+    '--jg-danger: #FF5A5F'
   ];
   for (const token of tokens) {
     assert.ok(appWxss.includes(token), `app.wxss 缺少 V1.6.5 令牌：${token}`);
@@ -69,16 +69,16 @@ test('V1.6.5 品牌色板与全局窗口配置为黑底白字 + 品牌深蓝，�
 
 test('V1.6.5 暗夜与日光高对比核心配色对比度均满足 WCAG AA (>= 4.5:1)', () => {
   const pairs = [
-    ['暗夜主文/页面底', '#FFFFFF', '#05070A'],
-    ['暗夜次文/卡片面', '#B9C6D4', '#0B1219'],
-    ['暗夜高亮蓝/品牌深蓝', '#7FB2FF', '#132D49'],
-    ['暗夜主按钮黑字/白底', '#05070A', '#FFFFFF'],
-    ['暗夜错误红/卡片面', '#FF6B6B', '#0B1219'],
-    ['日光主文/白面', '#05070A', '#FFFFFF'],
-    ['日光次文/白面', '#33485E', '#FFFFFF'],
-    ['日光主按钮白字/深蓝底', '#FFFFFF', '#132D49'],
-    ['日光强调蓝/白面', '#2F6FBF', '#FFFFFF'],
-    ['日光错误红/白面', '#C53030', '#FFFFFF']
+    ['暗夜主文/画布黑', '#FFFFFF', '#04060A'],
+    ['暗夜次文/卡片黑', '#A9B4C2', '#0F141C'],
+    ['暗夜高亮蓝/品牌深蓝', '#8FB6FF', '#16304F'],
+    ['暗夜主按钮黑字/纯白底', '#04060A', '#FFFFFF'],
+    ['暗夜错误红/卡片黑', '#FF5A5F', '#0F141C'],
+    ['日光正文/纯白面', '#0A0E14', '#FFFFFF'],
+    ['日光次文/纯白面', '#4A5568', '#FFFFFF'],
+    ['日光主按钮白字/品牌深蓝', '#FFFFFF', '#16304F'],
+    ['日光强调蓝/纯白面', '#2B5FCC', '#FFFFFF'],
+    ['日光错误红/纯白面', '#C53030', '#FFFFFF']
   ];
   for (const [label, fg, bg] of pairs) {
     const ratio = contrastRatio(fg, bg);
@@ -125,7 +125,7 @@ test('V1.6.5 动效类齐全、曲线统一、禁用 CSS 清零、含减弱动�
   for (const cls of motionClasses) {
     assert.ok(appWxss.includes(cls), `app.wxss 缺少动效类 ${cls}`);
   }
-  assert.ok(appWxss.includes('cubic-bezier(0.22, 1, 0.36, 1)'), '必须使用统一缓动曲线');
+  assert.ok(appWxss.includes('cubic-bezier(0.16, 1, 0.3, 1)'), '必须使用统一缓动曲线 cubic-bezier(0.16, 1, 0.3, 1)');
   assert.ok(appWxss.includes('@supports not (transform-style: preserve-3d)'), 'app.wxss 必须含 3D 翻面 2D 降级');
   assert.ok(appWxss.includes('@media (prefers-reduced-motion: reduce)'), 'app.wxss 必须含减弱动效降级');
 

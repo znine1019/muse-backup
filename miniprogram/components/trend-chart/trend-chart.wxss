@@ -1,34 +1,34 @@
-/* 趋势图组件（V1.6.5 黑底白字 + 深蓝自包含样式） */
+/* 趋势图组件（V1.6.5 蓝黑白高级感自包含样式） */
 .trend-chart { margin-top: 8rpx; }
-.trend-title { font-size: 29rpx; font-weight: 700; color: #FFFFFF; }
-.chart-canvas { width: 100%; height: 360rpx; margin-top: 12rpx; border-radius: 16rpx; border: 2rpx solid #1E2C3A; }
+.trend-title { font-size: 28rpx; font-weight: 700; color: #FFFFFF; }
+.chart-canvas { width: 100%; height: 360rpx; margin-top: 16rpx; border-radius: 16rpx; border: 2rpx solid rgba(255, 255, 255, 0.08); }
 .trend-empty {
   margin-top: 16rpx;
   padding: 32rpx 24rpx;
-  border: 2rpx dashed #1E2C3A;
-  border-radius: 20rpx;
-  background: #0B1219;
-  color: #B9C6D4;
+  border: 2rpx dashed rgba(255, 255, 255, 0.08);
+  border-radius: 24rpx;
+  background: #0F141C;
+  color: #A9B4C2;
   font-size: 24rpx;
-  line-height: 1.55;
+  line-height: 1.56;
   text-align: center;
 }
-.trend-note { margin-top: 12rpx; color: #B9C6D4; font-size: 24rpx; line-height: 1.5; }
+.trend-note { margin-top: 12rpx; color: #A9B4C2; font-size: 24rpx; line-height: 1.5; }
 .trend-single {
   margin-top: 16rpx;
   padding: 32rpx 24rpx;
-  border: 2rpx solid #1E2C3A;
-  border-radius: 20rpx;
-  background: #0B1219;
+  border: 2rpx solid rgba(255, 255, 255, 0.08);
+  border-radius: 24rpx;
+  background: #0F141C;
   text-align: center;
 }
 .trend-single-value {
-  color: #7FB2FF;
+  color: #8FB6FF;
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
-  font-size: 50rpx;
+  font-size: 48rpx;
   font-weight: 700;
 }
-.trend-single-date { margin-top: 10rpx; color: #B9C6D4; font-size: 24rpx; }
-.trend-single-note { margin-top: 10rpx; color: #B9C6D4; font-size: 24rpx; }
+.trend-single-date { margin-top: 8rpx; color: #A9B4C2; font-size: 24rpx; }
+.trend-single-note { margin-top: 8rpx; color: #A9B4C2; font-size: 24rpx; }

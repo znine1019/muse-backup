@@ -66,14 +66,14 @@ for (const file of [
 const appWxss = readText('miniprogram/app.wxss');
 
 for (const token of [
-  '#05070A', // V1.6.5 页面底
-  '#0B1219', // V1.6.5 卡片面
-  '#101A24', // V1.6.5 次级面
-  '#132D49', // V1.6.5 品牌深蓝
-  '#2F6FBF', // V1.6.5 强调蓝
-  '#7FB2FF', // V1.6.5 高亮蓝
-  '#1E2C3A', // V1.6.5 分割线
-  '#FF6B6B'  // V1.6.5 错误红
+  '#04060A', // V1.6.5 画布黑
+  '#0A0E14', // V1.6.5 承托黑
+  '#0F141C', // V1.6.5 卡片面
+  '#16304F', // V1.6.5 品牌深蓝
+  '#2E6BFF', // V1.6.5 强调蓝
+  '#8FB6FF', // V1.6.5 高亮蓝
+  '#A9B4C2', // V1.6.5 次级文字
+  '#FF5A5F'  // V1.6.5 错误红
 ]) {
   check(appWxss.includes(token), `设计令牌已定义：${token}`);
 }

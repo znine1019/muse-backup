@@ -88,8 +88,8 @@ Component({
 
           const isDay = Boolean(this.data.daylight);
           const pal = isDay
-            ? { bg: '#FFFFFF', axis: '#C9D6E3', line: '#2F6FBF', dot: '#132D49', text: '#33485E', label: '#05070A', areaTop: 'rgba(47,111,191,0.22)', areaBot: 'rgba(47,111,191,0.02)' }
-            : { bg: '#05070A', axis: '#1E2C3A', line: '#2F6FBF', dot: '#7FB2FF', text: '#B9C6D4', label: '#FFFFFF', areaTop: 'rgba(47,111,191,0.34)', areaBot: 'rgba(47,111,191,0.03)' };
+            ? { bg: '#FFFFFF', axis: 'rgba(10,14,20,0.12)', line: '#2B5FCC', dot: '#16304F', text: '#4A5568', label: '#0A0E14', areaTop: 'rgba(43,95,204,0.16)', areaBot: 'rgba(43,95,204,0.01)' }
+            : { bg: '#04060A', axis: 'rgba(255,255,255,0.08)', line: '#2E6BFF', dot: '#8FB6FF', text: '#A9B4C2', label: '#FFFFFF', areaTop: 'rgba(46,107,255,0.22)', areaBot: 'rgba(46,107,255,0.01)' };
 
           const values = series.map((item) => Number(item.value));
           const minValue = Math.min(...values);
@@ -210,7 +210,7 @@ Component({
             }
           };
 
-          /* 真实 Canvas 2D 支持自左向右 320ms 生长 + 标签延迟 120ms 淡入 */
+          /* 真实 Canvas 2D 支持自左向右 320ms 生长 + 标签延迟 100ms 淡入 */
           if (!hasRichCanvas || typeof canvas.requestAnimationFrame !== 'function') {
             renderFrame(1, 0);
             return;
@@ -218,7 +218,7 @@ Component({
 
           const start = Date.now();
           const lineDur = 320;
-          const labelDelay = 120;
+          const labelDelay = 100;
           const labelDur = 180;
           const tick = () => {
             if (this._alive === false) return;

@@ -20,18 +20,18 @@ function pageFile(page, extension) {
 
 test('阶段7-1 设计令牌覆盖颜色、字号与触控目标', () => {
   for (const token of [
-    '#05070A',
-    '#0B1219',
-    '#101A24',
-    '#132D49',
-    '#2F6FBF',
-    '#7FB2FF',
-    '#1E2C3A',
+    '#04060A',
+    '#0A0E14',
+    '#0F141C',
+    '#16304F',
+    '#2E6BFF',
+    '#8FB6FF',
     '#FFFFFF',
-    '#B9C6D4',
-    '#FF6B6B'
+    '#A9B4C2',
+    '#FF5A5F',
+    'rgba(255, 255, 255, 0.08)'
   ]) {
-    assert.ok(APP_WXSS.includes(token), `缺少 V1.6.5 设计令牌值 ${token}`);
+    assert.ok(APP_WXSS.includes(token), `缺少 V1.6.5 蓝黑白设计令牌值 ${token}`);
   }
 
   assert.match(APP_WXSS, /--jg-touch:\s*88rpx/, '触控目标令牌应为 88rpx');

@@ -236,5 +236,5 @@ test('V1.6.2 UX 全部页面具备基础加载和保护界面', () => {
 test('V1.6.2 UX buttons expose immediate pressed feedback', () => {
   const css = read('miniprogram/app.wxss');
   assert.match(css, /\.jg-btn:active/);
-  assert.match(css, /transition:\s*opacity\s+120ms/);
+  assert.match(css, /transition:\s*transform\s+90ms[^;]*opacity\s+90ms/);
 });

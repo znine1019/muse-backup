@@ -1,4 +1,4 @@
-/* V1.6.5 自包含 3D Y 轴翻面数据卡（含 @supports / 低基础库 / reduced-motion 自动 2D 交叉淡入降级） */
+/* V1.6.5 蓝黑白高级感 自包含 3D Y 轴翻面数据卡（480ms + 双分支 2D 交叉淡入降级） */
 .fc-scene {
   perspective: 900rpx;
   width: 100%;
@@ -8,7 +8,7 @@
   position: relative;
   width: 100%;
   transform-style: preserve-3d;
-  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .fc-scene.is-flipped .fc-inner {
   transform: rotateY(180deg);
@@ -16,11 +16,11 @@
 .fc-face {
   width: 100%;
   box-sizing: border-box;
-  background: linear-gradient(148deg, #132D49 0%, #0B1219 100%);
-  border: 2rpx solid #2F6FBF;
-  border-top: 6rpx solid #7FB2FF;
-  border-radius: 28rpx;
-  padding: 28rpx;
+  background-color: #16304F;
+  background-image: radial-gradient(circle at 88% 12%, rgba(143, 182, 255, 0.08) 0%, rgba(143, 182, 255, 0) 64%);
+  border: 2rpx solid rgba(143, 182, 255, 0.22);
+  border-radius: 24rpx;
+  padding: 32rpx;
   color: #FFFFFF;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -31,15 +31,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #101A24;
-  border-top-color: #2F6FBF;
+  background-color: #0F141C;
+  background-image: none;
+  border-color: rgba(255, 255, 255, 0.08);
   transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 .fc-bar {
-  margin-top: 20rpx;
+  margin-top: 24rpx;
   display: flex;
   justify-content: flex-end;
 }
@@ -48,50 +49,58 @@
   min-height: 88rpx;
   line-height: 88rpx;
   padding: 0 28rpx;
-  border-radius: 18rpx;
-  border: 2rpx solid #2F6FBF;
-  background: #101A24;
-  color: #7FB2FF;
+  border-radius: 16rpx;
+  border: 2rpx solid rgba(143, 182, 255, 0.28);
+  background: #0A0E14;
+  color: #8FB6FF;
   font-size: 24rpx;
   font-weight: 700;
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), opacity 90ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+.fc-toggle:active { transform: scale(0.985); opacity: 0.88; }
 .fc-toggle::after { border: none; }
 
 /* 日光模式 */
 .fc-daylight .fc-face {
-  background: linear-gradient(148deg, #FFFFFF 0%, #EDF3F9 100%);
-  border-color: #C9D6E3;
-  border-top-color: #132D49;
-  color: #05070A;
+  background-color: #FFFFFF;
+  background-image: radial-gradient(circle at 88% 12%, rgba(43, 95, 204, 0.06) 0%, rgba(43, 95, 204, 0) 64%);
+  border-color: rgba(22, 48, 79, 0.16);
+  color: #0A0E14;
+  box-shadow: 0 2rpx 8rpx rgba(10, 14, 20, 0.04);
 }
 .fc-daylight .fc-back {
-  background: #FFFFFF;
+  background-color: #FFFFFF;
+  background-image: none;
+  border-color: rgba(10, 14, 20, 0.08);
 }
 .fc-daylight .fc-toggle {
-  background: #132D49;
-  border-color: #132D49;
+  background: #16304F;
+  border-color: #16304F;
   color: #FFFFFF;
 }
 
-/* 2D 交叉淡入降级（基础库过低 / 显式降级） */
+/* 2D 交叉淡入降级（低基础库 < 2.16 / 显式降级） */
 .fc-2d.is-flipped .fc-inner { transform: none; }
-.fc-2d .fc-front { opacity: 1; transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1); }
-.fc-2d .fc-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+.fc-2d .fc-front { opacity: 1; transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.fc-2d .fc-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1); }
 .fc-2d.is-flipped .fc-front { opacity: 0; pointer-events: none; }
 .fc-2d.is-flipped .fc-back { opacity: 1; pointer-events: auto; }
 
 /* @supports 不支持 preserve-3d 时自动退化为 2D 交叉淡入 */
 @supports not (transform-style: preserve-3d) {
   .fc-scene.is-flipped .fc-inner { transform: none; }
-  .fc-front { opacity: 1; transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1); }
-  .fc-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+  .fc-front { opacity: 1; transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .fc-back { transform: none; opacity: 0; pointer-events: none; transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1); }
   .fc-scene.is-flipped .fc-front { opacity: 0; pointer-events: none; }
   .fc-scene.is-flipped .fc-back { opacity: 1; pointer-events: auto; }
 }
 
 /* 减弱动效时退化为静态 2D 切换 */
 @media (prefers-reduced-motion: reduce) {
-  .fc-inner { transition-duration: 0.01ms !important; }
+  .fc-inner,
+  .fc-front,
+  .fc-back,
+  .fc-toggle { transition-duration: 0.01ms !important; }
   .fc-scene.is-flipped .fc-inner { transform: none !important; }
   .fc-back { transform: none !important; opacity: 0; pointer-events: none; }
   .fc-scene.is-flipped .fc-front { opacity: 0; pointer-events: none; }
