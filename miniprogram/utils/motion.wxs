@@ -43,10 +43,10 @@ function onDeckTransition(event, ownerInstance) {
   var detail = event && event.detail;
   var ds = event && event.currentTarget && event.currentTarget.dataset;
   if (!detail || !ds || !ownerInstance) return;
-  var count = Number(ds.count) || 4;
-  var current = Number(ds.current) || 0;
-  var width = Number(ds.width) || 375;
-  var dx = Number(detail.dx) || 0;
+  var count = parseInt(ds.count, 10) || 4;
+  var current = parseInt(ds.current, 10) || 0;
+  var width = parseFloat(ds.width) || 375;
+  var dx = parseFloat(detail.dx) || 0;
   var progress = current + dx / (width > 0 ? width : 375);
   if (progress < 0) progress = 0;
   if (progress > count - 1) progress = count - 1;
@@ -62,7 +62,7 @@ function onDeckTransition(event, ownerInstance) {
 function onDeckFinish(event, ownerInstance) {
   var detail = event && event.detail;
   if (!detail || !ownerInstance) return;
-  var current = Number(detail.current) || 0;
+  var current = parseInt(detail.current, 10) || 0;
   var cursor = ownerInstance.selectComponent('.jg-deck-cursor');
   if (cursor) {
     cursor.setStyle({
