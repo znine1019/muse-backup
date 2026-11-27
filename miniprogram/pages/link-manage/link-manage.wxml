@@ -46,12 +46,14 @@
     </view>
     <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
     <jg-empty wx:elif="{{!links.length}}" title="暂无家长关联" message="生成凭证并交给家长后，关联申请会显示在这里等待您确认。" />
-    <view wx:else class="jg-list">
-      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
-        <view class="jg-queue-rail {{item.status === 'pending_student' ? 'jg-queue-rail-p1' : ''}}"></view>
-        <view class="jg-queue-main">
-          <view class="jg-todo-t">{{item.parentName || '家长'}}<text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text></view>
-          <view class="jg-todo-m">家长只能查看已授权范围内的训练数据（只读）</view>
+    <view wx:else class="jg-tbl">
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-tbl-row">
+        <view class="jg-tbl-gutter {{item.status === 'pending_student' ? 'jg-tbl-gutter-tech' : ''}}">
+          <text class="jg-tbl-gutter-sub">{{item.statusLabel}}</text>
+        </view>
+        <view class="jg-tbl-body">
+          <view class="jg-tbl-t">{{item.parentName || '家长'}}</view>
+          <view class="jg-tbl-m">家长只能查看已授权范围内的训练数据（只读）</view>
         </view>
         <view class="jg-queue-act">
           <button wx:if="{{item.status === 'pending_student'}}" class="jg-btn jg-btn-accent jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="confirm" loading="{{busyLinkId === item.linkId}}" bindtap="decide">确认</button>

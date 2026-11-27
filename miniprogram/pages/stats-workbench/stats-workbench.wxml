@@ -1,7 +1,9 @@
+<wxs src="../../utils/motion.wxs" module="motion" />
 <view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="统计工作台"
     meta="汇总当前授权范围的成绩、考勤和训练反馈，并导出标准 XLSX 报表。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
@@ -20,58 +22,20 @@
   </view>
 
   <block wx:if="{{!loading && overview}}">
-    <!-- 01 // 双列筛选条件 -->
-    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
-      <view class="jg-band-head">
-        <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">01</text>
-          <text class="jg-band-title">筛选条件</text>
-        </view>
-        <text class="jg-chip jg-chip-brand">{{overview.period.label}}</text>
-      </view>
-
-      <view class="jg-form-2col">
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">训练组</text>
-          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
-          </picker>
-        </view>
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">统计周期</text>
-          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
-          </picker>
-        </view>
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">年份</text>
-          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
-          </picker>
-        </view>
-        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
-          <text class="jg-form-col-l">月份</text>
-          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
-          </picker>
-        </view>
-        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
-          <text class="jg-form-col-l">季度</text>
-          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
-          </picker>
-        </view>
-      </view>
+    <!-- 顶部单行筛选条（条件收进底部抽屉，首屏直接进入核心统计与训练组对比） -->
+    <view class="jg-filter-bar jg-mb-12">
+      <text class="jg-filter-val">{{groups[groupIndex].name}} · {{overview.period.label}}</text>
+      <text class="jg-filter-btn" bindtap="onOpenFilter">筛选 ▾</text>
     </view>
 
-    <!-- 02 // 范围概览与考勤汇总 -->
-    <view class="jg-band jg-stagger jg-stagger-1">
-      <view class="jg-band-head">
+    <!-- 01 // 范围概览与考勤遥测舞台 -->
+    <view class="jg-chart-stage jg-mb-16">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">02</text>
+          <text class="jg-idx-tag">01</text>
           <text class="jg-band-title">范围概览与考勤汇总</text>
         </view>
-        <text class="jg-band-meta">已结束场次口径</text>
+        <text class="jg-band-meta jg-mono">{{overview.period.label}}</text>
       </view>
 
       <view class="jg-matrix">
@@ -124,17 +88,15 @@
       </view>
 
       <view class="jg-note">
-        <view>
-          <view class="jg-note-m">已取消场次不计入；未结束场次不计入最终出勤率；待核实异常单独统计。</view>
-        </view>
+        <view><view class="jg-note-m">已取消场次不计入；未结束场次不计入最终出勤率；待核实异常单独统计。</view></view>
       </view>
     </view>
 
-    <!-- 03 // 训练组比较 -->
+    <!-- 02 // 训练组比较双栏表 -->
     <view class="jg-band">
-      <view class="jg-band-head">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">03</text>
+          <text class="jg-idx-tag">02</text>
           <text class="jg-band-title">训练组比较</text>
         </view>
         <text class="jg-band-meta jg-mono">{{overview.groupComparison.length}} 组</text>
@@ -145,30 +107,30 @@
         title="当前范围暂无训练组数据"
         message="调整统计周期或训练组后再查看。"
       />
-
-      <view wx:else class="jg-list">
-        <view wx:for="{{overview.groupComparison}}" wx:key="trainingGroupId" class="jg-row">
-          <view class="jg-row-main">
-            <view class="jg-row-t">{{item.trainingGroupName}}</view>
-            <view class="jg-row-m">学生：{{item.studentCount}} · 已审核成绩：{{item.approvedCount}}</view>
-            <view class="jg-row-m">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}}</view>
+      <view wx:else class="jg-tbl">
+        <view wx:for="{{overview.groupComparison}}" wx:key="trainingGroupId" class="jg-tbl-row">
+          <view class="jg-tbl-gutter jg-tbl-gutter-tech">
+            <text class="jg-tbl-gutter-num">{{item.studentCount}}</text>
+            <text class="jg-tbl-gutter-sub">人</text>
           </view>
-          <view class="jg-row-e">
-            <text class="jg-row-v">{{item.attendanceRateText}}</text>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.trainingGroupName}}</view>
+            <view class="jg-tbl-m">已审核成绩：{{item.approvedCount}} · 有效出勤：{{item.validAttendance}} / {{item.actualExpected}}</view>
           </view>
+          <view class="jg-tbl-end"><text class="jg-tbl-val">{{item.attendanceRateText}}</text></view>
         </view>
       </view>
     </view>
 
-    <!-- 04 // 成绩与反馈 -->
+    <!-- 03 // 成绩、反馈与 XLSX 报表导出 -->
     <view class="jg-band">
-      <view class="jg-band-head">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">04</text>
-          <text class="jg-band-title">成绩与反馈</text>
+          <text class="jg-idx-tag">03</text>
+          <text class="jg-band-title">成绩反馈与 XLSX 导出</text>
         </view>
       </view>
-      <view class="jg-card">
+      <view class="jg-card jg-mb-12">
         <view class="jg-kv-grid">
           <view class="jg-kv">
             <view class="jg-kv-l">正式成绩</view>
@@ -191,16 +153,7 @@
           <view wx:for="{{overview.performance.summary.eventCounts}}" wx:key="eventCode" class="jg-row-m">{{item.eventName}}：{{item.count}} 条</view>
         </view>
       </view>
-    </view>
 
-    <!-- 05 // 报表导出与排行入口 -->
-    <view class="jg-band">
-      <view class="jg-band-head">
-        <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">05</text>
-          <text class="jg-band-title">报表与排行</text>
-        </view>
-      </view>
       <view class="jg-btn-row jg-mt-0">
         <button class="jg-btn jg-btn-secondary" bindtap="goPerformanceLeaderboard">成绩排行榜</button>
         <button class="jg-btn jg-btn-ghost" bindtap="goAttendanceStatistics">考勤排行榜</button>
@@ -208,9 +161,7 @@
       <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{exporting === 'performance'}}" bindtap="exportPerformance">导出正式成绩XLSX</button>
       <button class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12" loading="{{exporting === 'attendance'}}" bindtap="exportAttendance">导出考勤XLSX</button>
       <view class="jg-note">
-        <view>
-          <view class="jg-note-m">导出只包含当前授权范围；超过系统上限时会明确提示缩小周期或训练组，不会静默截断。</view>
-        </view>
+        <view><view class="jg-note-m">导出只包含当前授权范围；超过系统上限时会明确提示缩小周期或训练组，不会静默截断。</view></view>
       </view>
     </view>
 
@@ -221,4 +172,57 @@
       </view>
     </view>
   </block>
+
+  <!-- 底部筛选抽屉 -->
+  <view wx:if="{{filterOpen}}" class="jg-drawer-mask" bindtap="onCloseFilter">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-idx-tag">FLT</text>
+          <text class="jg-drawer-title">统计范围与周期筛选</text>
+        </view>
+        <text class="jg-drawer-close" bindtap="onCloseFilter">完成 ×</text>
+      </view>
+      <view class="jg-form-2col">
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">训练组</text>
+          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">统计周期</text>
+          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">年份</text>
+          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+          </picker>
+        </view>
+        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
+          <text class="jg-form-col-l">月份</text>
+          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+          </picker>
+        </view>
+        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
+          <text class="jg-form-col-l">季度</text>
+          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" bindtap="onCloseFilter">应用筛选</button>
+    </view>
+  </view>
 </view>

@@ -69,8 +69,23 @@ Page({
     monthIndex: new Date().getMonth(),
     quarterIndex: Math.floor(new Date().getMonth() / 3),
     overview: null,
-    exporting: ''
+    exporting: '',
+    filterOpen: false
   },
+
+  onOpenFilter() {
+    this.setData({ filterOpen: true });
+  },
+
+  onCloseFilter() {
+    this.setData({ filterOpen: false });
+  },
+
+  onCloseDrawer() {
+    this.setData({ filterOpen: false });
+  },
+
+  noop() {},
 
   onShow() {
     this.loadPage();

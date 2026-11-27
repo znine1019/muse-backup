@@ -4,6 +4,7 @@
     meta="{{headMeta}}"
     role-label="{{roleLabel}}"
     role-tone="{{roleTone}}"
+    compact="{{true}}"
   />
 
   <!-- 多角色账号：水平不折行筛选药丸条 -->

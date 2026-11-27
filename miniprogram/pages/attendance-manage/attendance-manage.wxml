@@ -4,6 +4,7 @@
     meta="管理本人负责训练组的考勤场次与请假审批；定位距离与考勤状态均由服务端计算。"
     role-label="考勤管理"
     role-tone="brand"
+    compact="{{true}}"
   />
 
   <button class="jg-btn jg-btn-accent jg-btn-block jg-mb-12" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '+ 创建考勤场次'}}</button>
@@ -174,13 +175,16 @@
             </view>
           </view>
 
-          <view class="jg-list jg-mt-12">
-            <view wx:for="{{roster}}" wx:key="studentUserId" class="jg-queue-row roster-row">
-              <view class="jg-queue-main">
-                <view class="jg-todo-t">{{item.studentName || '学生'}} · {{item.statusLabel}}</view>
-                <view wx:if="{{item.leaveStatusLabel}}" class="jg-todo-m">请假状态：{{item.leaveStatusLabel}}</view>
-                <view wx:if="{{item.record && item.record.distanceMeters !== null}}" class="jg-todo-m jg-mono">距训练点：{{item.record.distanceMeters}} 米 · 精度 {{item.record.accuracyMeters}} 米</view>
-                <view wx:if="{{item.record && item.record.adjustReason}}" class="jg-todo-m">核实说明：{{item.record.adjustReason}}</view>
+          <view class="jg-tbl jg-mt-12">
+            <view wx:for="{{roster}}" wx:key="studentUserId" class="jg-tbl-row roster-row">
+              <view class="jg-tbl-gutter {{item.status === 'checked_in' ? 'jg-tbl-gutter-tech' : ''}}">
+                <text class="jg-tbl-gutter-sub">{{item.statusLabel}}</text>
+              </view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">{{item.studentName || '学生'}}</view>
+                <view wx:if="{{item.leaveStatusLabel}}" class="jg-tbl-m">请假状态：{{item.leaveStatusLabel}}</view>
+                <view wx:if="{{item.record && item.record.distanceMeters !== null}}" class="jg-tbl-m jg-mono">距训练点：{{item.record.distanceMeters}} 米 · 精度 {{item.record.accuracyMeters}} 米</view>
+                <view wx:if="{{item.record && item.record.adjustReason}}" class="jg-tbl-m">核实说明：{{item.record.adjustReason}}</view>
               </view>
               <view class="jg-queue-act roster-actions">
                 <button class="jg-btn jg-btn-sm jg-btn-ghost" data-student-user-id="{{item.studentUserId}}" bindtap="manualVerify">人工核实</button>
@@ -209,13 +213,15 @@
       message="学生提交请假后会显示在这里。"
     />
 
-    <view wx:else class="jg-list">
-      <view wx:for="{{pendingLeaves}}" wx:key="leaveId" class="jg-queue-row leave-row">
-        <view class="jg-queue-rail jg-queue-rail-p1"></view>
-        <view class="jg-queue-main">
-          <view class="jg-todo-t">{{item.studentName || '学生'}} · {{item.attendanceDate}}</view>
-          <view class="jg-todo-m">训练组：{{item.trainingGroupName || '未标注'}}</view>
-          <view class="jg-todo-m">请假原因：{{item.reason}}</view>
+    <view wx:else class="jg-tbl">
+      <view wx:for="{{pendingLeaves}}" wx:key="leaveId" class="jg-tbl-row leave-row">
+        <view class="jg-tbl-gutter jg-tbl-gutter-tech">
+          <text class="jg-tbl-gutter-sub">{{item.attendanceDate}}</text>
+        </view>
+        <view class="jg-tbl-body">
+          <view class="jg-tbl-t">{{item.studentName || '学生'}}</view>
+          <view class="jg-tbl-m">训练组：{{item.trainingGroupName || '未标注'}}</view>
+          <view class="jg-tbl-m">请假原因：{{item.reason}}</view>
         </view>
         <view class="jg-queue-act leave-actions">
           <button class="jg-btn jg-btn-accent jg-btn-sm" data-leave-id="{{item.leaveId}}" data-decision="approve" bindtap="reviewLeave" loading="{{reviewingLeaveId === item.leaveId}}" disabled="{{reviewingLeaveId !== ''}}">通过</button>

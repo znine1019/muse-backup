@@ -130,13 +130,16 @@
         message="提交反馈后会显示在这里，教练评价也会一并展示。"
       />
 
-      <view wx:else class="jg-list">
-        <view wx:for="{{history}}" wx:key="feedbackId" class="jg-row">
-          <view class="jg-row-main">
-            <view class="jg-row-t">{{item.sessionTitle}} · {{item.attendanceDate}}</view>
-            <view class="jg-row-m">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
-            <view wx:if="{{item.comment}}" class="jg-row-m">我的说明：{{item.comment}}</view>
-            <view wx:if="{{item.coachComment}}" class="jg-row-m">教练评价：{{item.coachComment}}</view>
+      <view wx:else class="jg-tbl">
+        <view wx:for="{{history}}" wx:key="feedbackId" class="jg-tbl-row">
+          <view class="jg-tbl-gutter">
+            <text class="jg-tbl-gutter-sub">{{item.rpeText}}</text>
+          </view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.sessionTitle}} · {{item.attendanceDate}}</view>
+            <view class="jg-tbl-m">完成情况：{{item.completionLabel}}</view>
+            <view wx:if="{{item.comment}}" class="jg-tbl-m">我的说明：{{item.comment}}</view>
+            <view wx:if="{{item.coachComment}}" class="jg-tbl-m">教练评价：{{item.coachComment}}</view>
           </view>
         </view>
       </view>

@@ -36,13 +36,13 @@
       message="学生在小程序内确认家长关联申请后，会显示在这里等待核验。"
     />
 
-    <view wx:else class="jg-list">
-      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
-        <view class="jg-queue-rail jg-queue-rail-p1"></view>
-        <view class="jg-queue-main">
-          <view class="jg-todo-t">{{item.parentName || '家长'}} → {{item.studentName || '学生'}}</view>
-          <view class="jg-todo-m">学生已确认，等待俱乐部核验</view>
-          <view class="jg-todo-m jg-mono">关联编号：{{item.linkId}}</view>
+    <view wx:else class="jg-tbl">
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-tbl-row">
+        <view class="jg-tbl-gutter jg-tbl-gutter-tech">核验</view>
+        <view class="jg-tbl-body">
+          <view class="jg-tbl-t">{{item.parentName || '家长'}} → {{item.studentName || '学生'}}</view>
+          <view class="jg-tbl-m">学生已确认，等待俱乐部核验</view>
+          <view class="jg-tbl-m jg-mono">关联编号：{{item.linkId}}</view>
         </view>
         <view class="jg-queue-act">
           <button class="jg-btn jg-btn-accent jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="approve" loading="{{busyId === item.linkId}}" bindtap="review">通过</button>

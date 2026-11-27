@@ -72,15 +72,15 @@
           </view>
 
           <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
-            <view class="jg-list">
-              <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="jg-row">
-                <view class="jg-row-ic jg-row-ic-brand">{{planItem.order}}</view>
-                <view class="jg-row-main">
-                  <view class="jg-row-t">{{planItem.name}}（{{planItem.categoryLabel}}）</view>
-                  <view wx:if="{{planItem.eventName}}" class="jg-row-m">关联项目：{{planItem.eventName}}</view>
-                  <view wx:if="{{planItem.target}}" class="jg-row-m">训练目标：{{planItem.target}}</view>
-                  <view wx:if="{{planItem.requirementText}}" class="jg-row-m">训练要求：{{planItem.requirementText}}</view>
-                  <view wx:if="{{planItem.notes}}" class="jg-row-m">注意：{{planItem.notes}}</view>
+            <view class="jg-tbl">
+              <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="jg-tbl-row">
+                <view class="jg-tbl-gutter jg-tbl-gutter-tech">#{{planItem.order}}</view>
+                <view class="jg-tbl-body">
+                  <view class="jg-tbl-t">{{planItem.name}}（{{planItem.categoryLabel}}）</view>
+                  <view wx:if="{{planItem.eventName}}" class="jg-tbl-m">关联项目：{{planItem.eventName}}</view>
+                  <view wx:if="{{planItem.target}}" class="jg-tbl-m">训练目标：{{planItem.target}}</view>
+                  <view wx:if="{{planItem.requirementText}}" class="jg-tbl-m">训练要求：{{planItem.requirementText}}</view>
+                  <view wx:if="{{planItem.notes}}" class="jg-tbl-m">注意：{{planItem.notes}}</view>
                 </view>
               </view>
             </view>

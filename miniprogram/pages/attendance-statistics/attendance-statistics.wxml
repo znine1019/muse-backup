@@ -1,7 +1,9 @@
+<wxs src="../../utils/motion.wxs" module="motion" />
 <view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="训练考勤统计与排行"
     meta="出勤率仅基于已结束的有效训练场次；未签到不等同于已核实无故缺勤。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
@@ -13,55 +15,17 @@
   </view>
 
   <block wx:if="{{!loading && metaLoaded}}">
-    <!-- 01 // 双列紧凑筛选条 -->
-    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
-      <view class="jg-band-head">
-        <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">01</text>
-          <text class="jg-band-title">筛选条件</text>
-        </view>
-        <text class="jg-band-meta">训练组 · 周期</text>
-      </view>
-
-      <view class="jg-form-2col">
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">训练组</text>
-          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
-          </picker>
-        </view>
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">统计周期</text>
-          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
-          </picker>
-        </view>
-        <view class="jg-form-col">
-          <text class="jg-form-col-l">年份</text>
-          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
-          </picker>
-        </view>
-        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
-          <text class="jg-form-col-l">月份</text>
-          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
-          </picker>
-        </view>
-        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
-          <text class="jg-form-col-l">季度</text>
-          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
-          </picker>
-        </view>
-      </view>
+    <!-- 顶部紧凑筛选条（条件收进底部抽屉） -->
+    <view class="jg-filter-bar jg-mb-12">
+      <text class="jg-filter-val">{{groups[groupIndex].name}} · {{yearOptions[yearIndex].label}}{{periodTypeOptions[periodTypeIndex].label}}</text>
+      <text class="jg-filter-btn" bindtap="onOpenFilter">筛选 ▾</text>
     </view>
 
-    <!-- 02 // 出勤概览（2组4列发丝矩阵） -->
-    <view wx:if="{{summary}}" class="jg-band jg-stagger jg-stagger-1">
-      <view class="jg-band-head">
+    <!-- 01 // 出勤概览矩阵 -->
+    <view wx:if="{{summary}}" class="jg-chart-stage jg-mb-16">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">02</text>
+          <text class="jg-idx-tag">01</text>
           <text class="jg-band-title">出勤概览</text>
         </view>
         <text class="jg-band-meta">已结束场次口径</text>
@@ -106,18 +70,11 @@
       </view>
     </view>
 
-    <view wx:if="{{dataQuality}}" class="jg-note jg-mt-0 jg-mb-12">
-      <view>
-        <view class="jg-note-t">统计口径</view>
-        <view class="jg-note-m">{{dataQuality.membershipHistoryNote}} 当前出勤率基于已结束场次计算，最低样本门槛 {{dataQuality.minSampleSessions}} 场。</view>
-      </view>
-    </view>
-
-    <!-- 03 // 个人出勤排行 -->
+    <!-- 02 // 个人出勤排行双栏连续表（点击行展开详情抽屉） -->
     <view class="jg-band">
-      <view class="jg-band-head">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">03</text>
+          <text class="jg-idx-tag">02</text>
           <text class="jg-band-title">个人出勤排行</text>
         </view>
         <text class="jg-band-meta jg-mono">{{rows.length}} 人</text>
@@ -128,24 +85,129 @@
         title="当前范围暂无有效考勤统计"
         message="调整训练组或统计周期后再试。"
       />
-
-      <view wx:else class="jg-list">
-        <view wx:for="{{rows}}" wx:key="studentUserId" class="jg-row {{item.isSelf ? 'ranking-self' : ''}}">
-          <view class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">{{item.rankText}}</view>
-          <view class="jg-row-main">
-            <view class="jg-row-t">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
-            <view class="jg-row-m">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}} · {{item.attendanceRateText}}</view>
-            <view class="jg-row-m">迟到：{{item.late}} · 待核实：{{item.pendingVerification}} · 未签到：{{item.absent}}</view>
-            <view class="jg-row-m">样本场次：{{item.sampleSessions}}{{item.sampleSufficient ? '' : '（样本不足，不参与排名）'}}</view>
+      <view wx:else class="jg-tbl">
+        <view
+          wx:for="{{rows}}"
+          wx:key="studentUserId"
+          class="jg-tbl-row {{item.isSelf ? 'ranking-self' : ''}}"
+          hover-class="jg-tbl-row-hover"
+          data-index="{{index}}"
+          bindtap="onOpenRowDrawer"
+        >
+          <view class="jg-tbl-gutter {{item.isSelf ? 'jg-tbl-gutter-tech' : ''}}">
+            <text class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">{{item.rankText}}</text>
+          </view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
+            <view class="jg-tbl-m jg-mono">有效出勤：{{item.validAttendance}} / 实际应签到：{{item.actualExpected}} · 迟到：{{item.late}} · 待核实：{{item.pendingVerification}} · 未签到：{{item.absent}}</view>
+            <view class="jg-tbl-m">样本场次：{{item.sampleSessions}}{{item.sampleSufficient ? '' : '（样本不足，不参与排名）'}}</view>
+          </view>
+          <view class="jg-tbl-end">
+            <text class="jg-tbl-val">{{item.attendanceRateText}}</text>
           </view>
         </view>
       </view>
 
-      <view class="jg-note">
+      <view wx:if="{{dataQuality}}" class="jg-note">
         <view>
-          <view class="jg-note-m">不以请假次数、RPE或身体指标制作惩罚榜；样本不足时只显示数据，不给出领先名次。</view>
+          <view class="jg-note-t">统计口径</view>
+          <view class="jg-note-m">{{dataQuality.membershipHistoryNote}} 当前出勤率基于已结束场次计算，最低样本门槛 {{dataQuality.minSampleSessions}} 场。</view>
         </view>
+      </view>
+      <view class="jg-note">
+        <view><view class="jg-note-m">不以请假次数、RPE或身体指标制作惩罚榜；样本不足时只显示数据，不给出领先名次。</view></view>
       </view>
     </view>
   </block>
+
+  <!-- 底部筛选抽屉 -->
+  <view wx:if="{{filterOpen}}" class="jg-drawer-mask" bindtap="onCloseFilter">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-idx-tag">FLT</text>
+          <text class="jg-drawer-title">考勤统计筛选</text>
+        </view>
+        <text class="jg-drawer-close" bindtap="onCloseFilter">完成 ×</text>
+      </view>
+      <view class="jg-form-2col">
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">训练组</text>
+          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">统计周期</text>
+          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">年份</text>
+          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+          </picker>
+        </view>
+        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
+          <text class="jg-form-col-l">月份</text>
+          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+          </picker>
+        </view>
+        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
+          <text class="jg-form-col-l">季度</text>
+          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+          </picker>
+        </view>
+      </view>
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" bindtap="onCloseFilter">应用筛选</button>
+    </view>
+  </view>
+
+  <!-- 底部出勤明细抽屉 -->
+  <view wx:if="{{drawerRow}}" class="jg-drawer-mask" bindtap="onCloseDrawer">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-idx-tag">{{drawerRow.rankText}}</text>
+          <text class="jg-drawer-title">{{drawerRow.studentName}}</text>
+        </view>
+        <text class="jg-drawer-close" bindtap="onCloseDrawer">关闭 ×</text>
+      </view>
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">出勤率</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.attendanceRateText}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">有效出勤 / 应签</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.validAttendance}} / {{drawerRow.actualExpected}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">迟到 / 未签到</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.late}} / {{drawerRow.absent}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">样本场次</view>
+          <view class="jg-kv-v jg-mono">{{drawerRow.sampleSessions}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
 </view>

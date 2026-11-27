@@ -36,12 +36,14 @@
     </view>
     <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
     <jg-empty wx:elif="{{!links.length}}" title="暂无关联记录" message="在上方输入学生提供的关联凭证后开始申请。" />
-    <view wx:else class="jg-list">
-      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
-        <view class="jg-queue-rail {{item.status === 'active' ? 'jg-queue-rail-p1' : ''}}"></view>
-        <view class="jg-queue-main">
-          <view class="jg-todo-t">{{item.studentName || '学生'}}<text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text></view>
-          <view class="jg-todo-m">已生效的关联可直接在学生列表中查看</view>
+    <view wx:else class="jg-tbl">
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-tbl-row">
+        <view class="jg-tbl-gutter {{item.status === 'active' ? 'jg-tbl-gutter-tech' : ''}}">
+          <text class="jg-tbl-gutter-sub">{{item.statusLabel}}</text>
+        </view>
+        <view class="jg-tbl-body">
+          <view class="jg-tbl-t">{{item.studentName || '学生'}}</view>
+          <view class="jg-tbl-m">已生效的关联可直接在学生列表中查看</view>
         </view>
         <view wx:if="{{item.status === 'active' || item.status === 'pending_student' || item.status === 'pending_review'}}" class="jg-queue-act">
           <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" bindtap="revoke">解除</button>

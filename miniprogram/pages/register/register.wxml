@@ -2,6 +2,7 @@
   <jg-page-head
     title="学生首次注册"
     meta="提交后账号进入待审核状态，审核通过前不能访问内部业务功能。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

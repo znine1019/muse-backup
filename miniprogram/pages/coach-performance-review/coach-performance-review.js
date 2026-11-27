@@ -20,8 +20,42 @@ Page({
     performances: [],
     pendingCount: 0,
     truncated: false,
-    reviewingId: ''
+    reviewingId: '',
+    drawerItem: null,
+    flashId: ''
   },
+
+  onHide() {
+    this.clearFlashTimer();
+  },
+
+  onUnload() {
+    this.clearFlashTimer();
+  },
+
+  clearFlashTimer() {
+    if (this._flashTimer) {
+      if (typeof clearTimeout === 'function') {
+        clearTimeout(this._flashTimer);
+      }
+      this._flashTimer = null;
+    }
+  },
+
+  onOpenDrawer(event) {
+    const id = event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.id;
+    const found = (this.data.performances || []).find((item) => item.id === id) || null;
+    if (!found) {
+      return;
+    }
+    this.setData({ drawerItem: found });
+  },
+
+  onCloseDrawer() {
+    this.setData({ drawerItem: null });
+  },
+
+  noop() {},
 
   onShow() {
     this.loadPage();
@@ -99,6 +133,7 @@ Page({
         title: decision === 'approve' ? '已通过' : '已驳回',
         icon: 'success'
       });
+      this.setData({ drawerItem: null, flashId: performanceId });
       await this.loadPage();
     } catch (error) {
       this.setData({ error: error.message || '成绩审核失败，请重试。' });

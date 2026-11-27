@@ -67,8 +67,23 @@ Page({
     ],
     quarterIndex: Math.floor(new Date().getMonth() / 3),
     data: null,
-    rpeSeries: []
+    rpeSeries: [],
+    filterOpen: false
   },
+
+  onOpenFilter() {
+    this.setData({ filterOpen: true });
+  },
+
+  onCloseFilter() {
+    this.setData({ filterOpen: false });
+  },
+
+  onCloseDrawer() {
+    this.setData({ filterOpen: false });
+  },
+
+  noop() {},
 
   onShow() {
     this.loadPage();

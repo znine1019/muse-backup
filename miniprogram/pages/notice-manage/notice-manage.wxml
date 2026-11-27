@@ -2,6 +2,7 @@
   <jg-page-head
     title="通知管理"
     meta="向当前授权范围发布训练安排、赛事通知和俱乐部公告；学生和家长只看到已发布通知。"
+    compact="{{true}}"
   />
 
   <button class="jg-btn jg-btn-accent jg-btn-block jg-mb-12" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '+ 创建通知'}}</button>

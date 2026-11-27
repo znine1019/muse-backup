@@ -4,6 +4,7 @@
     meta="查看与本人训练组相关的训练安排、赛事通知和俱乐部公告。"
     role-label="学生"
     role-tone="brand"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

@@ -108,19 +108,18 @@
         message="提交参赛意向后会显示在这里，并标注教练办理进度。"
       />
 
-      <view wx:else class="jg-list">
-        <view wx:for="{{intents}}" wx:key="registrationId" class="jg-queue-row">
-          <view class="jg-queue-rail jg-queue-rail-p1"></view>
-          <view class="jg-queue-main">
-            <view class="jg-todo-t">
-              <text>{{item.competitionTitle}}</text>
-              <text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text>
-            </view>
-            <view wx:for="{{item.items}}" wx:for-item="intentItem" wx:key="itemId" class="jg-todo-m">项目：{{intentItem.eventName}} · {{intentItem.category}}</view>
-            <view wx:if="{{item.reviewNote}}" class="jg-todo-m">处理说明：{{item.reviewNote}}</view>
+      <view wx:else class="jg-tbl">
+        <view wx:for="{{intents}}" wx:key="registrationId" class="jg-tbl-row">
+          <view class="jg-tbl-gutter jg-tbl-gutter-tech">
+            <text class="jg-tbl-gutter-sub">{{item.statusLabel}}</text>
+          </view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.competitionTitle}}</view>
+            <view wx:for="{{item.items}}" wx:for-item="intentItem" wx:key="itemId" class="jg-tbl-m">项目：{{intentItem.eventName}} · {{intentItem.category}}</view>
+            <view wx:if="{{item.reviewNote}}" class="jg-tbl-m">处理说明：{{item.reviewNote}}</view>
 
             <view wx:if="{{item.canUploadMaterial}}" class="material-section jg-mt-12">
-              <view class="jg-todo-m">报名材料：已上传 {{item.materialUploadedCount}} / {{item.materialMaxFiles}}（剩余 {{item.materialRemainingCount}}，支持 jpg/jpeg/png/pdf，≤10MB）</view>
+              <view class="jg-tbl-m">报名材料：已上传 {{item.materialUploadedCount}} / {{item.materialMaxFiles}}（剩余 {{item.materialRemainingCount}}，支持 jpg/jpeg/png/pdf，≤10MB）</view>
               <view wx:if="{{!item.materials.length}}" class="jg-sub jg-mt-8">暂未上传材料文件</view>
               <view wx:for="{{item.materials}}" wx:for-item="material" wx:key="attachmentId" class="material-row jg-mt-8">
                 <view class="jg-body-s">{{material.fileName}}（{{material.sizeText}}）</view>
@@ -143,7 +142,7 @@
               </view>
             </view>
           </view>
-          <view wx:if="{{item.canCancel}}" class="jg-queue-act">
+          <view wx:if="{{item.canCancel}}" class="jg-tbl-end">
             <button
               class="jg-btn jg-btn-sm jg-btn-danger"
               data-registration-id="{{item.registrationId}}"

@@ -1,7 +1,9 @@
+<wxs src="../../utils/motion.wxs" module="motion" />
 <view class="jg-page jg-safe-bottom jg-enter-fwd">
   <jg-page-head
     title="成绩审核"
     meta="只显示本人负责训练组内学生提交的待审核成绩；通过后进入正式成绩和 PB 统计。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
@@ -20,7 +22,7 @@
         <text class="jg-hero-num jg-num-roll">{{pendingCount}}</text>
         <text class="jg-hero-unit">条待审核</text>
       </view>
-      <view class="jg-data-meta">通过后成绩计入正式成绩和 PB；驳回记录不会进入排行榜。</view>
+      <view class="jg-data-meta">通过后成绩计入正式成绩和 PB；驳回记录不会进入排行榜。点击任意行展开审批抽屉。</view>
     </view>
 
     <view wx:if="{{truncated}}" class="jg-note jg-note-warn jg-mb-12">
@@ -30,10 +32,11 @@
       </view>
     </view>
 
+    <!-- 01 // 待审核双栏连续表（左成绩读数 + 右选手/项目/快捷操作，点击展开底部审批抽屉） -->
     <view class="jg-band jg-stagger jg-stagger-1">
-      <view class="jg-band-head">
+      <view class="jg-deck-head">
         <view class="jg-band-title-wrap">
-          <text class="jg-band-idx">01</text>
+          <text class="jg-idx-tag">01</text>
           <text class="jg-band-title">待审核列表</text>
         </view>
         <text class="jg-band-meta jg-mono">{{performances.length}} 条</text>
@@ -45,47 +48,101 @@
         message="学生提交成绩后会显示在这里；通过或驳回都需要教练确认。"
       />
 
-      <view wx:else class="jg-list">
-        <view wx:for="{{performances}}" wx:key="id" class="jg-queue-row">
-          <view class="jg-queue-rail jg-queue-rail-p1"></view>
-          <view class="jg-queue-main">
-            <view class="jg-todo-t">
-              <text>{{item.studentName || '学生'}} · {{item.eventName}}</text>
-              <text class="jg-chip jg-chip-warn">待审核</text>
-            </view>
-            <view class="jg-row-v jg-mt-8" data-unit="{{item.unit}}">{{item.valueText}}</view>
-            <view class="jg-todo-m">训练组：{{item.groupText || '未分组'}} · 来源：{{item.sourceLabel}}</view>
-            <view class="jg-todo-m jg-mono">取得日期：{{item.achievedAt}}</view>
-            <view wx:if="{{item.note}}" class="jg-todo-m">学生说明：{{item.note}}</view>
+      <view wx:else class="jg-tbl">
+        <view
+          wx:for="{{performances}}"
+          wx:key="id"
+          class="jg-tbl-row {{flashId === item.id ? 'jg-row-flash' : ''}}"
+          hover-class="jg-tbl-row-hover"
+          data-id="{{item.id}}"
+          bindtap="onOpenDrawer"
+        >
+          <view class="jg-tbl-gutter jg-tbl-gutter-tech">
+            <text class="jg-tbl-gutter-sub" data-unit="{{item.unit}}">{{item.valueText}}</text>
           </view>
-          <view class="jg-queue-act">
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.studentName || '学生'}} · {{item.eventName}}</view>
+            <view class="jg-tbl-m">训练组：{{item.groupText || '未分组'}} · 来源：{{item.sourceLabel}}</view>
+            <view class="jg-tbl-m jg-mono">取得日期：{{item.achievedAt}}</view>
+            <view wx:if="{{item.note}}" class="jg-tbl-m">学生说明：{{item.note}}</view>
+          </view>
+          <view class="jg-tbl-end">
             <button
               class="jg-btn jg-btn-accent jg-btn-sm"
               data-performance-id="{{item.id}}"
               data-decision="approve"
-              bindtap="review"
+              catchtap="review"
               loading="{{reviewingId === item.id}}"
               disabled="{{reviewingId !== ''}}"
             >通过</button>
-            <button
-              class="jg-btn jg-btn-sm jg-btn-danger"
-              data-performance-id="{{item.id}}"
-              data-decision="reject"
-              bindtap="review"
-              loading="{{reviewingId === item.id}}"
-              disabled="{{reviewingId !== ''}}"
-            >驳回</button>
           </view>
         </view>
       </view>
     </view>
 
     <view class="jg-note">
-      <view>
-        <view class="jg-note-m">审核权限、训练组范围和审核结果均由云函数重新校验，前端不参与范围判断。</view>
-      </view>
+      <view><view class="jg-note-m">审核权限、训练组范围和审核结果均由云函数重新校验，前端不参与范围判断。</view></view>
     </view>
 
     <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goHome">退出当前会话</button>
   </block>
+
+  <!-- 底部成绩审批抽屉 -->
+  <view wx:if="{{drawerItem}}" class="jg-drawer-mask" bindtap="onCloseDrawer">
+    <view
+      class="jg-drawer-sheet"
+      catchtap="noop"
+      bindtouchstart="{{motion.onDrawerStart}}"
+      bindtouchmove="{{motion.onDrawerMove}}"
+      bindtouchend="{{motion.onDrawerEnd}}"
+    >
+      <view class="jg-drawer-grab"></view>
+      <view class="jg-drawer-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-idx-tag">审绩</text>
+          <text class="jg-drawer-title">{{drawerItem.studentName || '学生'}} · {{drawerItem.eventName}}</text>
+        </view>
+        <text class="jg-drawer-close" bindtap="onCloseDrawer">关闭 ×</text>
+      </view>
+      <view class="jg-data-v jg-mb-12">
+        <text class="jg-hero-num">{{drawerItem.valueText}}</text>
+      </view>
+      <view class="jg-kv-grid jg-mb-16">
+        <view class="jg-kv">
+          <view class="jg-kv-l">训练组</view>
+          <view class="jg-kv-v">{{drawerItem.groupText || '未分组'}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">取得日期</view>
+          <view class="jg-kv-v jg-mono">{{drawerItem.achievedAt}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">申报来源</view>
+          <view class="jg-kv-v">{{drawerItem.sourceLabel}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">说明备注</view>
+          <view class="jg-kv-v">{{drawerItem.note || '无'}}</view>
+        </view>
+      </view>
+      <view class="jg-btn-row">
+        <button
+          class="jg-btn jg-btn-accent"
+          data-performance-id="{{drawerItem.id}}"
+          data-decision="approve"
+          bindtap="review"
+          loading="{{reviewingId === drawerItem.id}}"
+          disabled="{{reviewingId !== ''}}"
+        >通过</button>
+        <button
+          class="jg-btn jg-btn-danger"
+          data-performance-id="{{drawerItem.id}}"
+          data-decision="reject"
+          bindtap="review"
+          loading="{{reviewingId === drawerItem.id}}"
+          disabled="{{reviewingId !== ''}}"
+        >驳回</button>
+      </view>
+    </view>
+  </view>
 </view>

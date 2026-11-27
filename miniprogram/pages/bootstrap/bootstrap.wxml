@@ -2,6 +2,7 @@
   <jg-page-head
     title="开发者安全初始化"
     meta="仅用于系统首次建立最高权限账号。"
+    compact="{{true}}"
   />
 
   <view class="jg-note jg-note-warn jg-mt-0 jg-mb-12">

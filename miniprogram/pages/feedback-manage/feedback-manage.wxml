@@ -2,6 +2,7 @@
   <jg-page-head
     title="训练反馈管理"
     meta="查看当前授权训练组学生的训练反馈，对需要关注的记录补充教练评价。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

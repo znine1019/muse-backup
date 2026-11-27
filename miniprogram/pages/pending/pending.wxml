@@ -2,6 +2,7 @@
   <jg-page-head
     title="账号状态"
     meta="审核结果和角色授权均以云函数返回为准，前端显示不构成正式权限。"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

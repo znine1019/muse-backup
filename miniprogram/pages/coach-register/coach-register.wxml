@@ -4,6 +4,7 @@
     meta="提交后由开发者审核；未通过审核不会获得教练角色或训练组管理权限。"
     role-label="教练员"
     role-tone="brand"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

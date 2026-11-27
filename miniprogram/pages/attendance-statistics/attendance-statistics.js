@@ -53,8 +53,33 @@ Page({
     quarterIndex: Math.floor(new Date().getMonth() / 3),
     summary: null,
     rows: [],
-    dataQuality: null
+    dataQuality: null,
+    filterOpen: false,
+    drawerRow: null
   },
+
+  onOpenFilter() {
+    this.setData({ filterOpen: true, drawerRow: null });
+  },
+
+  onCloseFilter() {
+    this.setData({ filterOpen: false });
+  },
+
+  onOpenRowDrawer(event) {
+    const idx = Number(event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.index);
+    const row = (this.data.rows || [])[idx] || null;
+    if (!row) {
+      return;
+    }
+    this.setData({ drawerRow: row, filterOpen: false });
+  },
+
+  onCloseDrawer() {
+    this.setData({ drawerRow: null, filterOpen: false });
+  },
+
+  noop() {},
 
   onShow() {
     this.loadPage();

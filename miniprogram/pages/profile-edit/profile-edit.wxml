@@ -148,11 +148,12 @@
         message="记录身高体重后会显示在这里，并用于运动报告趋势。"
       />
 
-      <view wx:else class="jg-list jg-mt-12">
-        <view wx:for="{{measurements}}" wx:key="id" class="jg-row">
-          <view class="jg-row-main">
-            <view class="jg-row-t jg-mono">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-            <view class="jg-row-m jg-mono">记录时间：{{item.measuredAt}}</view>
+      <view wx:else class="jg-tbl jg-mt-12">
+        <view wx:for="{{measurements}}" wx:key="id" class="jg-tbl-row">
+          <view class="jg-tbl-gutter"><text class="jg-tbl-gutter-sub">{{item.measuredAt}}</text></view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t jg-mono">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+            <view class="jg-tbl-m jg-mono">记录时间：{{item.measuredAt}}</view>
           </view>
         </view>
       </view>

@@ -2,6 +2,7 @@
   <jg-page-head
     title="赛事管理"
     meta="记录参赛意向、核对资料和教练办理进度；官方报名由教练在外部赛事平台完成。"
+    compact="{{true}}"
   />
 
   <button class="jg-btn jg-btn-accent jg-btn-block jg-mb-12" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '+ 创建赛事'}}</button>
@@ -187,14 +188,16 @@
             message="赛事发布后，学生提交的意向会显示在这里。"
           />
 
-          <view wx:else class="jg-list">
-            <view wx:for="{{registrations}}" wx:for-item="registration" wx:key="registrationId" class="jg-row">
-              <view class="jg-row-main">
-                <view class="jg-row-t">{{registration.studentName}} · {{registration.statusLabel}}</view>
-                <view class="jg-row-m">训练组：{{registration.groupText || '未标注'}}</view>
-                <view class="jg-row-m">项目：{{registration.itemsText}}</view>
-                <view wx:if="{{registration.contactNote}}" class="jg-row-m">补充说明：{{registration.contactNote}}</view>
-                <view wx:if="{{registration.reviewNote}}" class="jg-row-m">处理说明：{{registration.reviewNote}}</view>
+          <view wx:else class="jg-tbl">
+            <view wx:for="{{registrations}}" wx:for-item="registration" wx:key="registrationId" class="jg-tbl-row">
+              <view class="jg-tbl-gutter jg-tbl-gutter-tech">
+                <text class="jg-tbl-gutter-sub">{{registration.statusLabel}}</text>
+              </view>
+              <view class="jg-tbl-body">
+                <view class="jg-tbl-t">{{registration.studentName}}</view>
+                <view class="jg-tbl-m">训练组：{{registration.groupText || '未标注'}} · 项目：{{registration.itemsText}}</view>
+                <view wx:if="{{registration.contactNote}}" class="jg-tbl-m">补充说明：{{registration.contactNote}}</view>
+                <view wx:if="{{registration.reviewNote}}" class="jg-tbl-m">处理说明：{{registration.reviewNote}}</view>
                 <view class="jg-mt-8">
                   <button
                     class="jg-btn jg-btn-sm jg-btn-secondary"

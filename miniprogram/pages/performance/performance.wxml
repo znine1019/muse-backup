@@ -76,19 +76,17 @@
         message="提交成绩后会显示在这里，并标注教练审核状态。"
       />
 
-      <view wx:else class="jg-list">
-        <view wx:for="{{performances}}" wx:key="id" class="jg-row">
-          <view class="jg-row-main">
-            <view class="jg-row-t">
-              <text>{{item.eventName}}</text>
-              <text
-                class="jg-chip {{item.status === 'approved' ? 'jg-chip-ok' : item.status === 'rejected' ? 'jg-chip-danger' : 'jg-chip-warn'}}"
-              >{{item.statusLabel}}</text>
-            </view>
-            <view class="jg-row-m jg-mono">取得日期：{{item.achievedAt}}</view>
-            <view wx:if="{{item.reviewComment}}" class="jg-row-m">审核意见：{{item.reviewComment}}</view>
+      <view wx:else class="jg-tbl">
+        <view wx:for="{{performances}}" wx:key="id" class="jg-tbl-row">
+          <view class="jg-tbl-gutter {{item.status === 'approved' ? 'jg-tbl-gutter-tech' : ''}}">
+            <text class="jg-tbl-gutter-sub">{{item.statusLabel}}</text>
           </view>
-          <view class="jg-row-e"><text class="jg-row-v">{{item.valueText}}</text></view>
+          <view class="jg-tbl-body">
+            <view class="jg-tbl-t">{{item.eventName}}</view>
+            <view class="jg-tbl-m jg-mono">取得日期：{{item.achievedAt}}</view>
+            <view wx:if="{{item.reviewComment}}" class="jg-tbl-m">审核意见：{{item.reviewComment}}</view>
+          </view>
+          <view class="jg-tbl-end"><text class="jg-tbl-val">{{item.valueText}}</text></view>
         </view>
       </view>
 

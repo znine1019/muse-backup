@@ -1,28 +1,16 @@
-/* 训练考勤统计与排行（V1.6.5 黑+白+科技蓝 电子考勤板） */
+/* 训练考勤统计与排行（V1.6.5 R8 Neo-Brutalist 双栏表） */
 
 .rank-badge {
-  flex: 0 0 auto;
-  min-width: 112rpx;
-  height: 64rpx;
-  padding: 0 12rpx;
-  box-sizing: border-box;
-  border-radius: 4rpx;
-  background: var(--jg-base, #0A0C10);
-  border: 2rpx solid var(--jg-line-strong, rgba(255, 255, 255, 0.28));
-  color: var(--jg-text-hi, #FFFFFF);
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   font-size: 24rpx;
-  font-weight: 800;
-  line-height: 60rpx;
-  text-align: center;
-  margin-right: 18rpx;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--jg-text-hi, #FFFFFF);
 }
 
 .rank-badge-self {
-  background: var(--jg-accent, #00A6FF);
-  border-color: var(--jg-accent, #00A6FF);
   color: #000000;
 }
 
@@ -31,12 +19,9 @@
 }
 
 .ranking-self {
-  background: var(--jg-accent-tint, rgba(0, 166, 255, 0.10));
-  border-left: 6rpx solid var(--jg-accent, #00A6FF);
-  padding-left: 14rpx;
+  background: var(--jg-accent-tint, rgba(0, 166, 255, 0.14));
 }
 
 .jg-page.jg-daylight .ranking-self {
   background: #F4F6F8;
-  border-left-color: #006BB3;
 }

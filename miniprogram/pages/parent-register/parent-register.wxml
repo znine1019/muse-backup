@@ -4,6 +4,7 @@
     meta="只需姓名与监护人关系；学生专属资料不需要填写"
     role-label="家长"
     role-tone="accent"
+    compact="{{true}}"
   />
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>

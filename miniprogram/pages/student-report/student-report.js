@@ -125,8 +125,23 @@ Page({
     selectedEvent: null,
     selectedSeries: [],
     heightSeries: [],
-    weightSeries: []
+    weightSeries: [],
+    filterOpen: false
   },
+
+  onOpenFilter() {
+    this.setData({ filterOpen: true });
+  },
+
+  onCloseFilter() {
+    this.setData({ filterOpen: false });
+  },
+
+  onCloseDrawer() {
+    this.setData({ filterOpen: false });
+  },
+
+  noop() {},
 
   onLoad(options) {
     this.setData({
