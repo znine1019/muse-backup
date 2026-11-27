@@ -14,7 +14,7 @@
   </view>
 
   <block wx:else>
-    <view wx:if="{{statusLabel}}" class="jg-note jg-note-warn">
+    <view wx:if="{{statusLabel}}" class="jg-note jg-note-warn jg-mt-0 jg-mb-12">
       <view>
         <view class="jg-note-t">当前状态</view>
         <view class="jg-note-m">{{statusLabel}}</view>
@@ -26,8 +26,14 @@
       <view class="jg-state-err-m">{{formError}}</view>
     </view>
 
-    <view class="jg-card">
-      <view class="jg-card-h"><text class="jg-card-t">家长资料</text><text class="jg-card-c">必填 2 项</text></view>
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">家长资料</text>
+        </view>
+        <text class="jg-band-meta">必填 2 项</text>
+      </view>
 
       <view class="jg-note jg-note-warn jg-realname-alert">
         <view>
@@ -39,31 +45,33 @@
         </view>
       </view>
 
-      <view class="jg-field-row">
-        <view class="jg-field-label">家长姓名 <text class="form-req">*</text></view>
-        <view class="jg-field-body">
-          <input class="jg-input" value="{{name}}" maxlength="40" bindinput="onNameInput" placeholder="请输入真实姓名" />
+      <view class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <view class="jg-field-label">家长姓名 <text class="form-req">*</text></view>
+          <view class="jg-field-body">
+            <input class="jg-input" value="{{name}}" maxlength="40" bindinput="onNameInput" placeholder="请输入真实姓名" />
+          </view>
         </view>
-      </view>
 
-      <view class="jg-field-row">
-        <view class="jg-field-label">监护人关系 <text class="form-req">*</text></view>
-        <view class="jg-field-body">
-          <picker range="{{relationOptions}}" range-key="label" value="{{relationIndex}}" bindchange="onRelationChange">
-            <view class="jg-input jg-picker">{{relationOptions[relationIndex].label}}</view>
-          </picker>
+        <view class="jg-field-row">
+          <view class="jg-field-label">监护人关系 <text class="form-req">*</text></view>
+          <view class="jg-field-body">
+            <picker range="{{relationOptions}}" range-key="label" value="{{relationIndex}}" bindchange="onRelationChange">
+              <view class="jg-input jg-picker">{{relationOptions[relationIndex].label}}</view>
+            </picker>
+          </view>
         </view>
-      </view>
 
-      <view class="jg-field-row">
-        <view class="jg-field-label">备注 <text class="form-opt">选填</text></view>
-        <view class="jg-field-body">
-          <input class="jg-input" value="{{note}}" maxlength="200" bindinput="onNoteInput" placeholder="例如需要核验的说明" />
+        <view class="jg-field-row">
+          <view class="jg-field-label">备注 <text class="form-opt">选填</text></view>
+          <view class="jg-field-body">
+            <input class="jg-input" value="{{note}}" maxlength="200" bindinput="onNoteInput" placeholder="例如需要核验的说明" />
+          </view>
         </view>
       </view>
     </view>
 
-    <button class="jg-btn jg-btn-block" loading="{{submitting}}" bindtap="submit">提交家长注册资料</button>
+    <button class="jg-btn jg-btn-accent jg-btn-block" loading="{{submitting}}" bindtap="submit">提交家长注册资料</button>
 
     <view class="jg-note">
       <view>
@@ -72,6 +80,6 @@
       </view>
     </view>
 
-    <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goHome">退出当前会话</button>
+    <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goHome">退出当前会话</button>
   </block>
 </view>

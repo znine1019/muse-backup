@@ -15,11 +15,14 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 可参与赛事 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">可参与赛事</text>
-        <text class="jg-sect-c">{{competitions.length}} 项</text>
+    <!-- 01 // 可参与赛事 -->
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">可参与赛事</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{competitions.length}} 项</text>
       </view>
 
       <jg-empty
@@ -35,17 +38,31 @@
             <text wx:if="{{item.registration}}" class="jg-chip jg-chip-brand">{{item.registrationStatusLabel}}</text>
           </view>
 
-          <view class="jg-body-s">地点：{{item.location}}</view>
-          <view class="jg-body-s jg-mt-8">比赛日期：{{item.eventDate}}</view>
-          <view class="jg-body-s jg-mt-8">报名时间：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
-          <view class="jg-body-s jg-mt-8">状态：{{item.phaseLabel}} · {{item.capacityText}}</view>
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">比赛地点</view>
+              <view class="jg-kv-v">{{item.location}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">比赛日期</view>
+              <view class="jg-kv-v jg-mono">{{item.eventDate}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">报名窗口</view>
+              <view class="jg-kv-v jg-mono">{{item.registrationStartAt}} – {{item.registrationEndAt}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">阶段与名额</view>
+              <view class="jg-kv-v">{{item.phaseLabel}} · {{item.capacityText}}</view>
+            </view>
+          </view>
           <view wx:if="{{item.requirements}}" class="jg-body-s jg-mt-8">报名要求：{{item.requirements}}</view>
           <view wx:if="{{item.description}}" class="jg-body-s jg-mt-8">说明：{{item.description}}</view>
 
           <block wx:if="{{selectedCompetitionId === item.competitionId}}">
-            <view class="jg-sect-h jg-mt-16">
-              <text class="jg-sect-t">参赛项目</text>
-              <text class="jg-sect-c">可多选</text>
+            <view class="jg-band-head jg-mt-16">
+              <text class="jg-band-title">参赛项目</text>
+              <text class="jg-band-meta">可多选</text>
             </view>
             <checkbox-group bindchange="onItemChange">
               <label wx:for="{{item.itemOptions}}" wx:for-item="option" wx:key="key" class="event-choice">
@@ -62,12 +79,12 @@
               placeholder="报名补充说明，可选"
             />
 
-            <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="submitIntent">提交参赛意向</button>
+            <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="submitIntent">提交参赛意向</button>
           </block>
 
           <button
             wx:elif="{{item.canSubmit}}"
-            class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+            class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12"
             data-competition-id="{{item.competitionId}}"
             bindtap="toggleIntentForm"
           >登记参赛意向</button>
@@ -75,11 +92,14 @@
       </block>
     </view>
 
-    <!-- 我的赛事意向 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">我的赛事意向</text>
-        <text class="jg-sect-c">{{intents.length}} 条</text>
+    <!-- 02 // 我的赛事意向与材料上传 -->
+    <view class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">我的赛事意向</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{intents.length}} 条</text>
       </view>
 
       <jg-empty
@@ -89,9 +109,9 @@
       />
 
       <view wx:else class="jg-list">
-        <view wx:for="{{intents}}" wx:key="registrationId" class="jg-todo">
-          <view class="jg-todo-bar"></view>
-          <view class="jg-todo-main">
+        <view wx:for="{{intents}}" wx:key="registrationId" class="jg-queue-row">
+          <view class="jg-queue-rail jg-queue-rail-p1"></view>
+          <view class="jg-queue-main">
             <view class="jg-todo-t">
               <text>{{item.competitionTitle}}</text>
               <text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text>
@@ -113,7 +133,7 @@
               </view>
               <view class="jg-mt-8">
                 <button
-                  class="jg-btn jg-btn-sm jg-btn-ghost"
+                  class="jg-btn jg-btn-sm jg-btn-secondary"
                   data-competition-id="{{item.competitionId}}"
                   data-registration-id="{{item.registrationId}}"
                   loading="{{busyMaterialKey === item.registrationId}}"
@@ -123,7 +143,7 @@
               </view>
             </view>
           </view>
-          <view wx:if="{{item.canCancel}}" class="jg-todo-a">
+          <view wx:if="{{item.canCancel}}" class="jg-queue-act">
             <button
               class="jg-btn jg-btn-sm jg-btn-danger"
               data-registration-id="{{item.registrationId}}"

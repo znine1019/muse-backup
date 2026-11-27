@@ -15,8 +15,15 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 通知筛选 -->
-    <view class="jg-card">
+    <!-- 01 // 通知筛选 -->
+    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">筛选</text>
+        </view>
+        <text class="jg-band-meta jg-mono">未读 {{unreadCount}} 条</text>
+      </view>
       <view class="jg-field-row jg-mt-0">
         <text class="jg-field-label">通知分类</text>
         <view class="jg-field-body">
@@ -25,7 +32,6 @@
           </picker>
         </view>
       </view>
-
       <view class="jg-field-row">
         <text class="jg-field-label">只看未读</text>
         <view class="jg-field-body unread-row">
@@ -35,11 +41,14 @@
       </view>
     </view>
 
-    <!-- 通知列表 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">通知列表</text>
-        <text class="jg-sect-c">{{notices.length}} 条</text>
+    <!-- 02 // 通知列表 -->
+    <view class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">通知列表</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{notices.length}} 条</text>
       </view>
 
       <jg-empty
@@ -56,7 +65,16 @@
               <text class="jg-chip {{notice.isRead ? '' : 'jg-chip-brand'}}">{{notice.isRead ? '已读' : '未读'}}</text>
             </view>
 
-            <view class="jg-body-s">{{notice.categoryLabel}} · {{notice.priorityLabel}} · {{notice.publishedText}}</view>
+            <view class="jg-kv-grid">
+              <view class="jg-kv">
+                <view class="jg-kv-l">分类与级别</view>
+                <view class="jg-kv-v">{{notice.categoryLabel}} · {{notice.priorityLabel}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">发布时间</view>
+                <view class="jg-kv-v jg-mono">{{notice.publishedText}}</view>
+              </view>
+            </view>
             <view class="jg-body-s jg-mt-8">可见范围：{{notice.groupText}}</view>
 
             <view class="jg-btn-row">
@@ -67,7 +85,7 @@
               >{{expandedNoticeId === notice.noticeId ? '收起详情' : '查看详情'}}</button>
               <button
                 wx:if="{{!notice.isRead}}"
-                class="jg-btn"
+                class="jg-btn jg-btn-accent"
                 data-notice-id="{{notice.noticeId}}"
                 bindtap="markRead"
                 loading="{{markingId === notice.noticeId}}"

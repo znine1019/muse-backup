@@ -1,4 +1,4 @@
-/* 通知管理（V1.6.5 蓝黑白高级感） */
+/* 通知管理（V1.6.5 黑+白+科技蓝） */
 .check-list {
   display: flex;
   flex-wrap: wrap;
@@ -10,7 +10,7 @@
   min-height: 88rpx;
   margin-right: 28rpx;
   font-size: 25rpx;
-  color: var(--jg-text-mid, #A9B4C2);
+  color: var(--jg-text-mid, #A3ADB8);
 }
 
 .notice-content {

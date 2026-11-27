@@ -12,32 +12,42 @@
     <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
-  <view class="jg-note">
+  <view class="jg-note jg-mt-0 jg-mb-12">
     <view>
       <view class="jg-note-t">核验提示</view>
       <view class="jg-note-m">未成年学生需确认监护关系；成年学生需取得本人明确授权（学生已在第一步确认）。建议先在线下完成关系核验，再在系统内通过。</view>
     </view>
   </view>
 
-  <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
-
-  <jg-empty
-    wx:elif="{{!links.length}}"
-    title="没有待核验的家长关联"
-    message="学生在小程序内确认家长关联申请后，会显示在这里等待核验。"
-  />
-
-  <view wx:else class="jg-list">
-    <view wx:for="{{links}}" wx:key="linkId" class="jg-todo jg-todo-p2">
-      <view class="jg-todo-bar"></view>
-      <view class="jg-todo-main">
-        <view class="jg-todo-t">{{item.parentName || '家长'}} → {{item.studentName || '学生'}}</view>
-        <view class="jg-todo-m">学生已确认，等待俱乐部核验</view>
-        <view class="jg-todo-m">关联编号：{{item.linkId}}</view>
+  <view class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">待核验队列</text>
       </view>
-      <view class="jg-todo-a">
-        <button class="jg-btn jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="approve" loading="{{busyId === item.linkId}}" bindtap="review">通过</button>
-        <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" data-decision="reject" loading="{{busyId === item.linkId}}" bindtap="review">驳回</button>
+      <text class="jg-band-meta jg-mono">{{links.length}} 条</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
+
+    <jg-empty
+      wx:elif="{{!links.length}}"
+      title="没有待核验的家长关联"
+      message="学生在小程序内确认家长关联申请后，会显示在这里等待核验。"
+    />
+
+    <view wx:else class="jg-list">
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
+        <view class="jg-queue-rail jg-queue-rail-p1"></view>
+        <view class="jg-queue-main">
+          <view class="jg-todo-t">{{item.parentName || '家长'}} → {{item.studentName || '学生'}}</view>
+          <view class="jg-todo-m">学生已确认，等待俱乐部核验</view>
+          <view class="jg-todo-m jg-mono">关联编号：{{item.linkId}}</view>
+        </view>
+        <view class="jg-queue-act">
+          <button class="jg-btn jg-btn-accent jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="approve" loading="{{busyId === item.linkId}}" bindtap="review">通过</button>
+          <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" data-decision="reject" loading="{{busyId === item.linkId}}" bindtap="review">驳回</button>
+        </view>
       </view>
     </view>
   </view>

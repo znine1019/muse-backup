@@ -1,4 +1,4 @@
-/* 赛事管理（V1.6.5 蓝黑白高级感） */
+/* 赛事管理（V1.6.5 黑+白+科技蓝） */
 .check-list {
   display: flex;
   flex-wrap: wrap;
@@ -10,7 +10,7 @@
   min-height: 88rpx;
   margin-right: 28rpx;
   font-size: 25rpx;
-  color: var(--jg-text-mid, #A9B4C2);
+  color: var(--jg-text-mid, #A3ADB8);
 }
 
 .switch-line {
@@ -26,13 +26,13 @@
 .competition-detail {
   margin-top: 24rpx;
   padding-top: 16rpx;
-  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
+  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
 }
 
 .registration-actions {
   width: 100%;
   padding: 16rpx 0;
-  border-bottom: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
+  border-bottom: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
 }
 
 .registration-actions:last-child {

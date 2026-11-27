@@ -13,68 +13,104 @@
   </view>
 
   <block wx:if="{{!loading && !error}}">
-    <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">当前状态</text>
+    <view class="jg-hero-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-dot-live"></text>
+          <text class="jg-band-title">当前状态</text>
+        </view>
         <text class="jg-chip {{status === 'rejected' || status === 'disabled' ? 'jg-chip-danger' : (status === 'pending_review' ? 'jg-chip-warn' : 'jg-chip-brand')}}">{{statusLabel}}</text>
       </view>
 
-      <view wx:if="{{status === 'pending_review' && pendingProfileType === 'coach'}}" class="jg-note">
+      <view wx:if="{{status === 'pending_review' && pendingProfileType === 'coach'}}" class="jg-note jg-mt-0">
         <view><view class="jg-note-m">教练实名资料已提交，等待开发者审核。审核前不会获得教练角色。</view></view>
       </view>
-      <view wx:if="{{status === 'unregistered'}}" class="jg-note">
+      <view wx:if="{{status === 'unregistered'}}" class="jg-note jg-mt-0">
         <view><view class="jg-note-m">当前微信尚未创建系统账号。请先选择身份并填写本人真实姓名，提交后才会进入审核流程。</view></view>
       </view>
-      <view wx:elif="{{status === 'pending_review'}}" class="jg-note">
+      <view wx:elif="{{status === 'pending_review'}}" class="jg-note jg-mt-0">
         <view><view class="jg-note-m">资料已提交，等待负责教练员或开发者审核。</view></view>
       </view>
-      <view wx:if="{{status === 'rejected'}}" class="jg-note jg-note-warn">
+      <view wx:if="{{status === 'rejected'}}" class="jg-note jg-note-warn jg-mt-0">
         <view><view class="jg-note-m">审核未通过{{reviewComment ? '：' + reviewComment : '，请修改资料后重新提交。'}}</view></view>
       </view>
       <view wx:if="{{status === 'disabled'}}" class="jg-state-err jg-mt-12 jg-shake">
         <view class="jg-state-err-t">账号已停用</view>
         <view class="jg-state-err-m">不能访问内部业务数据。</view>
       </view>
-      <view wx:if="{{status === 'pending_profile'}}" class="jg-note">
+      <view wx:if="{{status === 'pending_profile'}}" class="jg-note jg-mt-0">
         <view><view class="jg-note-m">尚未提交注册资料。</view></view>
       </view>
     </view>
 
-    <view wx:if="{{profile && pendingProfileType === 'coach'}}" class="jg-card">
-      <view class="jg-card-h"><text class="jg-card-t">已提交教练实名资料</text></view>
-      <view class="jg-list">
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">真实姓名</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.name}}</text></view></view>
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">身份说明</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.identityNote || '未填写'}}</text></view></view>
+    <view wx:if="{{profile && pendingProfileType === 'coach'}}" class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">已提交教练实名资料</text>
+        </view>
+      </view>
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">真实姓名</view>
+          <view class="jg-kv-v pending-value">{{profile.name}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">身份说明</view>
+          <view class="jg-kv-v pending-value">{{profile.identityNote || '未填写'}}</view>
+        </view>
       </view>
     </view>
 
-    <view wx:if="{{profile && pendingProfileType !== 'coach'}}" class="jg-card">
-      <view class="jg-card-h"><text class="jg-card-t">已提交资料</text></view>
-      <view class="jg-list">
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">姓名</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.name}}</text></view></view>
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">出生日期</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.birthDate}}</text></view></view>
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">主要项目</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.primaryTrainingProject}}</text></view></view>
-        <view class="jg-row"><view class="jg-row-main"><view class="jg-row-t">身高／体重</view></view><view class="jg-row-e"><text class="jg-row-v pending-value">{{profile.heightCm}} cm / {{profile.weightKg}} kg</text></view></view>
+    <view wx:if="{{profile && pendingProfileType !== 'coach'}}" class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">已提交资料</text>
+        </view>
+      </view>
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">姓名</view>
+          <view class="jg-kv-v pending-value">{{profile.name}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">出生日期</view>
+          <view class="jg-kv-v jg-mono pending-value">{{profile.birthDate}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">主要项目</view>
+          <view class="jg-kv-v pending-value">{{profile.primaryTrainingProject}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">身高／体重</view>
+          <view class="jg-kv-v jg-mono pending-value">{{profile.heightCm}} cm / {{profile.weightKg}} kg</view>
+        </view>
       </view>
     </view>
 
     <view class="jg-btn-row">
-      <button wx:if="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'coach'}}" class="jg-btn" bindtap="goCoachRegister">填写或修改教练资料</button>
-      <button wx:elif="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'parent'}}" class="jg-btn" bindtap="goParentRegister">填写或修改家长资料</button>
-      <button wx:elif="{{(status === 'pending_profile' || status === 'rejected') && pendingProfileType !== 'coach' && pendingProfileType !== 'parent'}}" class="jg-btn" bindtap="goRegister">填写或修改学生资料</button>
-      <button class="jg-btn jg-btn-ghost" bindtap="refresh">刷新状态</button>
+      <button wx:if="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'coach'}}" class="jg-btn jg-btn-accent" bindtap="goCoachRegister">填写或修改教练资料</button>
+      <button wx:elif="{{(status === 'unregistered' || status === 'pending_profile' || status === 'rejected') && pendingProfileType === 'parent'}}" class="jg-btn jg-btn-accent" bindtap="goParentRegister">填写或修改家长资料</button>
+      <button wx:elif="{{(status === 'pending_profile' || status === 'rejected') && pendingProfileType !== 'coach' && pendingProfileType !== 'parent'}}" class="jg-btn jg-btn-accent" bindtap="goRegister">填写或修改学生资料</button>
+      <button class="jg-btn jg-btn-secondary" bindtap="refresh">刷新状态</button>
     </view>
 
-    <view wx:if="{{status === 'unregistered' || status === 'pending_profile' || status === 'rejected'}}" class="jg-card">
-      <view class="jg-card-h"><text class="jg-card-t">首次注册身份</text></view>
-      <view class="jg-body-s">学生填写完整训练档案；家长填写姓名与监护人关系；教练员填写本人真实姓名和身份说明。</view>
-      <view class="jg-btn-row jg-mt-12">
-        <button class="jg-btn" bindtap="goRegister">学生注册</button>
-        <button class="jg-btn jg-btn-ghost" bindtap="goParentRegister">家长注册</button>
+    <view wx:if="{{status === 'unregistered' || status === 'pending_profile' || status === 'rejected'}}" class="jg-band jg-mt-12">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">首次注册身份</text>
+        </view>
+      </view>
+      <view class="jg-body-s jg-mb-12">学生填写完整训练档案；家长填写姓名与监护人关系；教练员填写本人真实姓名和身份说明。</view>
+      <view class="jg-btn-row">
+        <button class="jg-btn jg-btn-accent" bindtap="goRegister">学生注册</button>
+        <button class="jg-btn jg-btn-secondary" bindtap="goParentRegister">家长注册</button>
         <button class="jg-btn jg-btn-ghost" bindtap="goCoachRegister">教练员注册</button>
       </view>
     </view>
 
-    <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goHome">退出当前会话</button>
+    <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goHome">退出当前会话</button>
   </block>
 </view>

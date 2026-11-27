@@ -12,47 +12,52 @@
   </view>
 
   <block wx:if="{{!loading && profile}}">
-    <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t profile-name">{{profile.name}}</text>
+    <!-- 00 // 学生档案英雄遥测带 -->
+    <view class="jg-hero-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-dot-live"></text>
+          <text class="jg-band-title profile-name">{{profile.name}}</text>
+        </view>
+        <text class="jg-chip jg-chip-brand">{{profile.primaryEventName || profile.primaryTrainingProject || '未填主项'}}</text>
       </view>
-      <view class="jg-list">
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">性别</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.gender || '未填写'}}</text></view>
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">性别</view>
+          <view class="jg-kv-v profile-value">{{profile.gender || '未填写'}}</view>
         </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">出生日期</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.birthDate || '未填写'}}</text></view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">出生日期</view>
+          <view class="jg-kv-v jg-mono profile-value">{{profile.birthDate || '未填写'}}</view>
         </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">主项</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.primaryEventName || profile.primaryTrainingProject || '未填写'}}</text></view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">副项</view>
+          <view class="jg-kv-v profile-value">{{secondaryEventsText || '未填写'}}</view>
         </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">副项</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{secondaryEventsText || '未填写'}}</text></view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">训练年限</view>
+          <view class="jg-kv-v jg-mono profile-value">{{profile.trainingYears || 0}} 年</view>
         </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">训练年限</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.trainingYears || 0}} 年</text></view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">体考目标</view>
+          <view class="jg-kv-v profile-value">{{profile.examGoal.targetScore || '未填写'}}</view>
         </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">训练经历</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.trainingExperienceSummary || '未填写'}}</text></view>
-        </view>
-        <view class="jg-row">
-          <view class="jg-row-main"><view class="jg-row-t">体考目标</view></view>
-          <view class="jg-row-e"><text class="jg-row-v profile-value">{{profile.examGoal.targetScore || '未填写'}}</text></view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">训练经历</view>
+          <view class="jg-kv-v profile-value">{{profile.trainingExperienceSummary || '未填写'}}</view>
         </view>
       </view>
-      <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goReport">查看运动报告</button>
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" bindtap="goReport">查看运动报告</button>
     </view>
 
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">身体记录</text>
-        <text class="jg-sect-c">{{measurements.length}} 条</text>
+    <!-- 01 // 身体记录 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">身体记录</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{measurements.length}} 条</text>
       </view>
 
       <jg-empty
@@ -64,17 +69,21 @@
       <view wx:else class="jg-list">
         <view wx:for="{{measurements}}" wx:key="id" class="jg-row">
           <view class="jg-row-main">
-            <view class="jg-row-t">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-            <view class="jg-row-m">记录日期：{{item.measuredAt}}</view>
+            <view class="jg-row-t jg-mono">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+            <view class="jg-row-m jg-mono">记录日期：{{item.measuredAt}}</view>
           </view>
         </view>
       </view>
     </view>
 
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">成绩申报与审核</text>
-        <text class="jg-sect-c">{{performances.length}} 项</text>
+    <!-- 02 // 成绩申报与审核 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">成绩申报与审核</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{performances.length}} 项</text>
       </view>
 
       <jg-empty
@@ -87,7 +96,7 @@
         <view wx:for="{{performances}}" wx:key="id" class="jg-row">
           <view class="jg-row-main">
             <view class="jg-row-t profile-name" data-unit="{{item.unit}}">{{item.eventName}}：{{item.valueText}}</view>
-            <view class="jg-row-m">取得日期：{{item.achievedAt}}</view>
+            <view class="jg-row-m jg-mono">取得日期：{{item.achievedAt}}</view>
             <view class="jg-row-m">审核意见：{{item.reviewComment || '无'}}</view>
           </view>
           <view class="jg-row-e">

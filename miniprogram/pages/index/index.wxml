@@ -4,25 +4,22 @@
     meta="乔格体育数字化训练管理 · V1.6.5"
   />
 
-  <view class="jg-note">
-    <view>
-      <view class="jg-note-t">可信身份入口</view>
-      <view class="jg-note-m">使用微信身份进入系统。首次登录不会创建账号；完成实名资料提交并审核通过后，才会获得对应业务权限。</view>
-    </view>
-  </view>
-
-  <view class="jg-card">
-    <view class="jg-card-h">
-      <text class="jg-card-t">{{session ? '当前账号状态' : '登录乔格训迹'}}</text>
-      <text class="jg-chip {{loading ? 'jg-chip-brand' : 'jg-chip-ok'}}">{{loading ? '正在识别身份' : '微信可信身份登录'}}</text>
+  <!-- 00 // 入口英雄遥测带：微信可信身份认证 -->
+  <view class="jg-hero-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-dot-live"></text>
+        <text class="jg-band-title">{{session ? '当前账号状态' : '可信身份入口'}}</text>
+      </view>
+      <text class="jg-chip {{loading ? 'jg-chip-brand' : 'jg-chip-ok'}}">{{loading ? '识别中' : '微信身份'}}</text>
     </view>
 
-    <view wx:if="{{session}}" class="jg-body-s">账号状态：{{statusLabel}}</view>
-    <view wx:else class="jg-body-s">首次登录不会创建账号，审核通过前不能访问内部业务数据。</view>
+    <view wx:if="{{session}}" class="jg-body">账号状态：{{statusLabel}}</view>
+    <view wx:else class="jg-body-s">使用微信身份进入系统。首次登录不会创建账号；完成实名资料提交并审核通过后，才会获得对应业务权限。</view>
 
     <button
       wx:if="{{!isUnregistered}}"
-      class="jg-btn jg-btn-block jg-mt-12"
+      class="jg-btn jg-btn-accent jg-btn-block jg-mt-12"
       loading="{{loading}}"
       bindtap="{{session ? 'handleContinue' : 'handleLogin'}}"
     >{{session ? actionLabel : '微信一键登录'}}</button>
@@ -37,19 +34,26 @@
     </view>
   </view>
 
-  <view wx:if="{{isUnregistered}}" class="jg-card">
-    <view class="jg-card-h"><text class="jg-card-t">选择实名注册身份</text></view>
-    <view class="jg-body-s">请选择与本人实际身份一致的入口。进入页面和查看说明不会创建账号，只有填写真实姓名并主动提交后才会进入审核流程。</view>
-    <view class="jg-btn-row jg-mt-12">
-      <button class="jg-btn" bindtap="goStudentRegister">学生注册</button>
-      <button class="jg-btn jg-btn-ghost" bindtap="goParentRegister">家长注册</button>
+  <!-- 01 // 实名注册入口带（未注册时展示） -->
+  <view wx:if="{{isUnregistered}}" class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">选择实名注册身份</text>
+      </view>
+      <text class="jg-band-meta">三类身份独立审核</text>
+    </view>
+    <view class="jg-body-s jg-mb-12">请选择与本人实际身份一致的入口。进入页面和查看说明不会创建账号，只有填写真实姓名并主动提交后才会进入审核流程。</view>
+    <view class="jg-btn-row">
+      <button class="jg-btn jg-btn-accent" bindtap="goStudentRegister">学生注册</button>
+      <button class="jg-btn jg-btn-secondary" bindtap="goParentRegister">家长注册</button>
       <button class="jg-btn jg-btn-ghost" bindtap="goCoachRegister">教练员注册</button>
     </view>
   </view>
 
-
   <view class="jg-note">
     <view>
+      <view class="jg-note-t">权限边界</view>
       <view class="jg-note-m">未授权账号不能访问内部数据；页面跳转不代表权限已通过，所有数据操作仍由云函数重新校验。</view>
     </view>
   </view>

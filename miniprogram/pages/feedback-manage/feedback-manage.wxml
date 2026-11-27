@@ -13,12 +13,15 @@
   </view>
 
   <block wx:if="{{!loading && !error}}">
-    <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">反馈概览</text>
+    <view class="jg-hero-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-dot-live"></text>
+          <text class="jg-band-title">反馈监控</text>
+        </view>
         <text class="jg-chip jg-chip-warn">需要关注 {{attentionCount}} 条</text>
       </view>
-      <view class="jg-field-row">
+      <view class="jg-field-row jg-mt-0">
         <view class="jg-field-label">只看关注</view>
         <view class="jg-field-body switch-line">
           <switch checked="{{attentionOnly}}" bindchange="onAttentionToggle" />
@@ -27,10 +30,13 @@
       </view>
     </view>
 
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">反馈列表</text>
-        <text class="jg-sect-c">{{feedback.length}} 条</text>
+    <view class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">反馈列表</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{feedback.length}} 条</text>
       </view>
 
       <jg-empty
@@ -46,9 +52,18 @@
             <text wx:if="{{item.needsAttention}}" class="jg-chip jg-chip-warn">需要关注</text>
           </view>
 
-          <view class="jg-body-s">训练组：{{item.trainingGroupId}}</view>
-          <view class="jg-body-s jg-mt-8">完成情况：{{item.completionLabel}} · {{item.rpeText}}</view>
-          <view class="jg-body-s jg-mt-8">提交时间：{{item.commentTimeText}}</view>
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">完成与强度</view>
+              <view class="jg-kv-v">{{item.completionLabel}} · {{item.rpeText}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">提交时间</view>
+              <view class="jg-kv-v jg-mono">{{item.commentTimeText}}</view>
+            </view>
+          </view>
+          <view class="jg-body-s jg-mt-8">训练组：{{item.trainingGroupId}}</view>
+
           <view wx:if="{{item.comment}}" class="jg-note">
             <view>
               <view class="jg-note-t">学生说明</view>
@@ -63,7 +78,7 @@
           </view>
 
           <button
-            class="jg-btn jg-btn-block jg-mt-12"
+            class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12"
             data-feedback-id="{{item.feedbackId}}"
             data-version="{{item.coachCommentVersion}}"
             bindtap="review"

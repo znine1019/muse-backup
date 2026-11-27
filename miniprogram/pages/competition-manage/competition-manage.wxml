@@ -4,9 +4,7 @@
     meta="记录参赛意向、核对资料和教练办理进度；官方报名由教练在外部赛事平台完成。"
   />
 
-  <view class="jg-btn-row jg-mb-12">
-    <button class="jg-btn" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '创建赛事'}}</button>
-  </view>
+  <button class="jg-btn jg-btn-accent jg-btn-block jg-mb-12" bindtap="toggleCreateForm">{{showCreateForm ? '收起创建表单' : '+ 创建赛事'}}</button>
 
   <view wx:if="{{error}}" class="jg-state-err jg-shake">
     <view class="jg-state-err-t">赛事操作未完成</view>
@@ -16,119 +14,125 @@
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
-  <view wx:if="{{showCreateForm}}" class="jg-card">
-    <view class="jg-card-h"><text class="jg-card-t">创建赛事</text></view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">赛事名称</view>
-      <view class="jg-field-body">
-        <input class="jg-input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="赛事名称" />
+  <!-- 创建赛事：双列日期与时间排布 -->
+  <view wx:if="{{showCreateForm}}" class="jg-band jg-band-tight">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">NEW</text>
+        <text class="jg-band-title">创建赛事草稿</text>
       </view>
     </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">举办地点</view>
-      <view class="jg-field-body">
-        <input class="jg-input" value="{{form.location}}" data-field="location" bindinput="onFormInput" maxlength="100" placeholder="举办地点" />
-      </view>
-    </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">比赛日期</view>
-      <view class="jg-field-body">
-        <picker mode="date" value="{{form.eventDate}}" data-field="eventDate" bindchange="onFormInput">
-          <view class="jg-input jg-picker">{{form.eventDate}}</view>
-        </picker>
-      </view>
-    </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">报名开始</view>
-      <view class="jg-field-body">
-        <picker mode="date" value="{{form.registrationStartDate}}" data-field="registrationStartDate" bindchange="onFormInput">
-          <view class="jg-input jg-picker">{{form.registrationStartDate}}</view>
-        </picker>
-      </view>
-    </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">开始时间</view>
-      <view class="jg-field-body">
-        <input class="jg-input" value="{{form.registrationStartTime}}" data-field="registrationStartTime" bindinput="onFormInput" maxlength="5" placeholder="HH:mm" />
-      </view>
-    </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">报名截止</view>
-      <view class="jg-field-body">
-        <picker mode="date" value="{{form.registrationEndDate}}" data-field="registrationEndDate" bindchange="onFormInput">
-          <view class="jg-input jg-picker">{{form.registrationEndDate}}</view>
-        </picker>
-      </view>
-    </view>
-    <view class="jg-field-row">
-      <view class="jg-field-label">截止时间</view>
-      <view class="jg-field-body">
-        <input class="jg-input" value="{{form.registrationEndTime}}" data-field="registrationEndTime" bindinput="onFormInput" maxlength="5" placeholder="HH:mm" />
-      </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">参赛项目</view>
-      <view class="jg-field-body">
-        <checkbox-group class="check-list" bindchange="onEventSelect">
-          <label wx:for="{{events}}" wx:key="code" class="check-item">
-            <checkbox value="{{item.code}}" /> {{item.name}}
-          </label>
-        </checkbox-group>
-      </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">参赛组别</view>
-      <view class="jg-field-body">
-        <input class="jg-input" value="{{form.categoriesText}}" data-field="categoriesText" bindinput="onFormInput" placeholder="用逗号分隔，例如 甲组,乙组" />
-      </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">参与训练组</view>
-      <view class="jg-field-body">
-        <checkbox-group class="check-list" bindchange="onGroupSelect">
-          <label wx:for="{{groups}}" wx:key="id" class="check-item">
-            <checkbox value="{{item.id}}" /> {{item.name}}
-          </label>
-        </checkbox-group>
-      </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">人数上限</view>
-      <view class="jg-field-body">
-        <view class="switch-line">
-          <switch checked="{{form.capacityEnabled}}" bindchange="onCapacityToggle" />
-          <text class="jg-sub">{{form.capacityEnabled ? '启用上限（1-100人）' : '默认不限人数'}}</text>
+    <view class="jg-card">
+      <view class="jg-field-row jg-mt-0">
+        <view class="jg-field-label">赛事名称</view>
+        <view class="jg-field-body">
+          <input class="jg-input" value="{{form.title}}" data-field="title" bindinput="onFormInput" maxlength="80" placeholder="赛事名称" />
         </view>
-        <input wx:if="{{form.capacityEnabled}}" class="jg-input jg-mt-8" type="number" value="{{form.capacity}}" data-field="capacity" bindinput="onFormInput" placeholder="意向人数上限（1-100）" />
       </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">报名要求</view>
-      <view class="jg-field-body">
-        <textarea class="jg-textarea" value="{{form.requirements}}" data-field="requirements" bindinput="onFormInput" maxlength="1000" placeholder="报名要求" />
+      <view class="jg-field-row">
+        <view class="jg-field-label">举办地点</view>
+        <view class="jg-field-body">
+          <input class="jg-input" value="{{form.location}}" data-field="location" bindinput="onFormInput" maxlength="100" placeholder="举办地点" />
+        </view>
       </view>
-    </view>
-
-    <view class="jg-field-row">
-      <view class="jg-field-label">赛事介绍</view>
-      <view class="jg-field-body">
-        <textarea class="jg-textarea" value="{{form.description}}" data-field="description" bindinput="onFormInput" maxlength="2000" placeholder="赛事介绍" />
+      <view class="jg-field-row">
+        <view class="jg-field-label">比赛日期</view>
+        <view class="jg-field-body">
+          <picker mode="date" value="{{form.eventDate}}" data-field="eventDate" bindchange="onFormInput">
+            <view class="jg-input jg-picker jg-mono">{{form.eventDate}}</view>
+          </picker>
+        </view>
       </view>
-    </view>
 
-    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{busyId === 'create'}}" bindtap="createCompetition">保存赛事草稿</button>
+      <view class="jg-form-2col">
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">报名开始日期</text>
+          <picker mode="date" value="{{form.registrationStartDate}}" data-field="registrationStartDate" bindchange="onFormInput">
+            <view class="jg-input jg-picker jg-mono">{{form.registrationStartDate}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">开始时间</text>
+          <input class="jg-input jg-mono" value="{{form.registrationStartTime}}" data-field="registrationStartTime" bindinput="onFormInput" maxlength="5" placeholder="HH:mm" />
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">报名截止日期</text>
+          <picker mode="date" value="{{form.registrationEndDate}}" data-field="registrationEndDate" bindchange="onFormInput">
+            <view class="jg-input jg-picker jg-mono">{{form.registrationEndDate}}</view>
+          </picker>
+        </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">截止时间</text>
+          <input class="jg-input jg-mono" value="{{form.registrationEndTime}}" data-field="registrationEndTime" bindinput="onFormInput" maxlength="5" placeholder="HH:mm" />
+        </view>
+      </view>
+
+      <view class="jg-field-row jg-mt-0">
+        <view class="jg-field-label">参赛项目</view>
+        <view class="jg-field-body">
+          <checkbox-group class="check-list" bindchange="onEventSelect">
+            <label wx:for="{{events}}" wx:key="code" class="check-item">
+              <checkbox value="{{item.code}}" /> {{item.name}}
+            </label>
+          </checkbox-group>
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">参赛组别</view>
+        <view class="jg-field-body">
+          <input class="jg-input" value="{{form.categoriesText}}" data-field="categoriesText" bindinput="onFormInput" placeholder="用逗号分隔，例如 甲组,乙组" />
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">参与训练组</view>
+        <view class="jg-field-body">
+          <checkbox-group class="check-list" bindchange="onGroupSelect">
+            <label wx:for="{{groups}}" wx:key="id" class="check-item">
+              <checkbox value="{{item.id}}" /> {{item.name}}
+            </label>
+          </checkbox-group>
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">人数上限</view>
+        <view class="jg-field-body">
+          <view class="switch-line">
+            <switch checked="{{form.capacityEnabled}}" bindchange="onCapacityToggle" />
+            <text class="jg-sub">{{form.capacityEnabled ? '启用上限（1-100人）' : '默认不限人数'}}</text>
+          </view>
+          <input wx:if="{{form.capacityEnabled}}" class="jg-input jg-mt-8" type="number" value="{{form.capacity}}" data-field="capacity" bindinput="onFormInput" placeholder="意向人数上限（1-100）" />
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">报名要求</view>
+        <view class="jg-field-body">
+          <textarea class="jg-textarea" value="{{form.requirements}}" data-field="requirements" bindinput="onFormInput" maxlength="1000" placeholder="报名要求" />
+        </view>
+      </view>
+
+      <view class="jg-field-row">
+        <view class="jg-field-label">赛事介绍</view>
+        <view class="jg-field-body">
+          <textarea class="jg-textarea" value="{{form.description}}" data-field="description" bindinput="onFormInput" maxlength="2000" placeholder="赛事介绍" />
+        </view>
+      </view>
+
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{busyId === 'create'}}" bindtap="createCompetition">保存赛事草稿</button>
+    </view>
   </view>
 
-  <view wx:if="{{!loading}}" class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">赛事列表</text>
-      <text class="jg-sect-c">{{competitions.length}} 项</text>
+  <!-- 01 // 赛事列表 -->
+  <view wx:if="{{!loading}}" class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">赛事列表</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{competitions.length}} 项</text>
     </view>
 
     <jg-empty
@@ -144,23 +148,37 @@
           <text class="jg-chip {{item.status === 'published' ? 'jg-chip-ok' : (item.status === 'draft' ? 'jg-chip-warn' : '')}}">{{item.phaseLabel}}</text>
         </view>
 
-        <view class="jg-body-s">地点：{{item.location}} · 比赛日期：{{item.eventDate}}</view>
-        <view class="jg-body-s jg-mt-8">报名：{{item.registrationStartAt}} 至 {{item.registrationEndAt}}</view>
-        <view class="jg-body-s jg-mt-8">人数：{{item.capacityText}}</view>
-        <view class="jg-body-s jg-mt-8">项目：{{item.eventNames}}</view>
+        <view class="jg-kv-grid">
+          <view class="jg-kv">
+            <view class="jg-kv-l">举办地点</view>
+            <view class="jg-kv-v">{{item.location}}</view>
+          </view>
+          <view class="jg-kv">
+            <view class="jg-kv-l">比赛日期</view>
+            <view class="jg-kv-v jg-mono">{{item.eventDate}}</view>
+          </view>
+          <view class="jg-kv">
+            <view class="jg-kv-l">报名窗口</view>
+            <view class="jg-kv-v jg-mono">{{item.registrationStartAt}} – {{item.registrationEndAt}}</view>
+          </view>
+          <view class="jg-kv">
+            <view class="jg-kv-l">人数与项目</view>
+            <view class="jg-kv-v">{{item.capacityText}} · {{item.eventNames}}</view>
+          </view>
+        </view>
 
         <view class="jg-actions-wrap">
-<button wx:if="{{item.canManage && item.status === 'draft'}}" class="jg-btn jg-btn-sm" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition">发布</button>
-<button wx:if="{{item.canManage && item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="close" bindtap="transition">关闭意向</button>
-<button wx:if="{{item.canManage && item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition">归档</button>
-          <button class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" bindtap="loadRegistrations">查看报名意向</button>
+          <button wx:if="{{item.canManage && item.status === 'draft'}}" class="jg-btn jg-btn-accent jg-btn-sm" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="publish" bindtap="transition">发布</button>
+          <button wx:if="{{item.canManage && item.status === 'published'}}" class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="close" bindtap="transition">关闭意向</button>
+          <button wx:if="{{item.canManage && item.status !== 'archived'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-competition-id="{{item.competitionId}}" data-version="{{item.version}}" data-action="archive" bindtap="transition">归档</button>
+          <button class="jg-btn jg-btn-sm jg-btn-secondary" data-competition-id="{{item.competitionId}}" bindtap="loadRegistrations">查看报名意向</button>
           <button class="jg-btn jg-btn-sm jg-btn-ghost" data-competition-id="{{item.competitionId}}" bindtap="exportRegistrations" loading="{{exporting}}">导出XLSX</button>
         </view>
 
         <view wx:if="{{selectedCompetitionId === item.competitionId}}" class="competition-detail">
-          <view class="jg-sect-h">
-            <text class="jg-sect-t">学生报名意向</text>
-            <text class="jg-sect-c">{{registrations.length}} 条</text>
+          <view class="jg-band-head">
+            <text class="jg-band-title">学生报名意向</text>
+            <text class="jg-band-meta jg-mono">{{registrations.length}} 条</text>
           </view>
 
           <jg-empty
@@ -179,7 +197,7 @@
                 <view wx:if="{{registration.reviewNote}}" class="jg-row-m">处理说明：{{registration.reviewNote}}</view>
                 <view class="jg-mt-8">
                   <button
-                    class="jg-btn jg-btn-sm jg-btn-ghost"
+                    class="jg-btn jg-btn-sm jg-btn-secondary"
                     data-competition-id="{{item.competitionId}}"
                     data-registration-id="{{registration.registrationId}}"
                     loading="{{busyId === 'mat_' + registration.registrationId}}"
@@ -218,7 +236,7 @@
             <view wx:for="{{registrations}}" wx:for-item="registration" wx:key="registrationId" class="registration-actions">
               <view class="jg-row-t">{{registration.studentName}}</view>
               <button class="jg-btn jg-btn-sm jg-btn-ghost" data-registration-id="{{registration.registrationId}}" data-status="processing" data-version="{{registration.version}}" bindtap="updateStatus">处理中</button>
-              <button class="jg-btn jg-btn-sm" data-registration-id="{{registration.registrationId}}" data-status="registered" data-version="{{registration.version}}" bindtap="updateStatus">官方提交</button>
+              <button class="jg-btn jg-btn-sm jg-btn-accent" data-registration-id="{{registration.registrationId}}" data-status="registered" data-version="{{registration.version}}" bindtap="updateStatus">官方提交</button>
               <button class="jg-btn jg-btn-sm jg-btn-danger" data-registration-id="{{registration.registrationId}}" data-status="failed" data-version="{{registration.version}}" bindtap="updateStatus">未完成</button>
             </view>
           </view>

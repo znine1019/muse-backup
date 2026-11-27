@@ -6,9 +6,7 @@
     role-tone="brand"
   />
 
-  <view class="jg-btn-row jg-mb-12">
-    <button class="jg-btn" bindtap="goCreate">新建训练计划</button>
-  </view>
+  <button class="jg-btn jg-btn-accent jg-btn-block jg-mb-12" bindtap="goCreate">+ 新建训练计划</button>
 
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
@@ -19,8 +17,16 @@
   </view>
 
   <block wx:if="{{!loading && !error}}">
-    <view class="jg-card">
-      <view class="jg-field-row">
+    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">计划列表</text>
+        </view>
+        <text class="jg-band-meta jg-mono">共 {{total}} 条</text>
+      </view>
+
+      <view class="jg-field-row jg-mt-0 jg-mb-12">
         <view class="jg-field-label">计划状态</view>
         <view class="jg-field-body">
           <picker range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
@@ -28,103 +34,114 @@
           </picker>
         </view>
       </view>
-      <view class="jg-sub jg-mt-8">共 {{total}} 条计划</view>
-    </view>
 
-    <view wx:if="{{truncated}}" class="jg-note jg-note-warn jg-mt-12">
-      <view>
-        <view class="jg-note-t">结果已截断</view>
-        <view class="jg-note-m">当前仅显示前 {{plans.length}} 条，请缩小筛选范围。</view>
-      </view>
-    </view>
-
-    <jg-empty
-      wx:if="{{!plans.length}}"
-      title="当前没有训练计划"
-      message="可以新建训练计划，保存为草稿后再正式发布。"
-    />
-
-    <view wx:else class="jg-timeline">
-      <view wx:for="{{plans}}" wx:key="planId" class="jg-tl-item">
-        <view class="jg-tl-dot"></view>
-        <view class="jg-card">
-          <view class="jg-card-h">
-            <text class="jg-card-t">{{item.title}}</text>
-            <text class="jg-chip {{item.status === 'draft' ? 'jg-chip-warn' : (item.status === 'published' ? 'jg-chip-ok' : '')}}">{{item.statusLabel}}</text>
-          </view>
-
-          <view class="jg-body-s">训练组：{{item.trainingGroupName || '未标注'}}</view>
-          <view class="jg-body-s jg-mt-8">训练日期：{{item.dateText}}</view>
-          <view class="jg-body-s jg-mt-8">共 {{item.itemCount}} 项内容 · 版本 v{{item.version}}</view>
-          <view wx:if="{{item.copiedFromPlanId}}" class="jg-chips jg-mt-8">
-            <text class="jg-chip">复制计划</text>
-          </view>
-
-          <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
-            <view class="jg-list">
-              <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="jg-row">
-                <view class="jg-row-ic jg-row-ic-brand">{{planItem.order}}</view>
-                <view class="jg-row-main">
-                  <view class="jg-row-t">{{planItem.name}}（{{planItem.categoryLabel}}）</view>
-                  <view wx:if="{{planItem.eventName}}" class="jg-row-m">关联项目：{{planItem.eventName}}</view>
-                  <view wx:if="{{planItem.target}}" class="jg-row-m">训练目标：{{planItem.target}}</view>
-                  <view wx:if="{{planItem.requirementText}}" class="jg-row-m">训练要求：{{planItem.requirementText}}</view>
-                  <view wx:if="{{planItem.notes}}" class="jg-row-m">注意：{{planItem.notes}}</view>
-                </view>
-              </view>
-            </view>
-            <view wx:if="{{item.notes}}" class="jg-note">
-              <view>
-                <view class="jg-note-t">计划注意事项</view>
-                <view class="jg-note-m">{{item.notes}}</view>
-              </view>
-            </view>
-          </view>
-
-          <view class="jg-actions-wrap">
-            <button
-              class="jg-btn jg-btn-sm jg-btn-ghost"
-              data-plan-id="{{item.planId}}"
-              bindtap="toggleDetail"
-            >{{expandedPlanId === item.planId ? '收起内容' : '查看内容'}}</button>
-            <button
-              wx:if="{{item.canEdit}}"
-              class="jg-btn jg-btn-sm jg-btn-ghost"
-              data-plan-id="{{item.planId}}"
-              bindtap="goEdit"
-            >编辑</button>
-            <button
-              class="jg-btn jg-btn-sm jg-btn-ghost"
-              data-plan-id="{{item.planId}}"
-              bindtap="copyPlan"
-              loading="{{busyPlanId === item.planId}}"
-              disabled="{{busyPlanId !== ''}}"
-            >复制</button>
-            <button
-              wx:if="{{item.status === 'draft'}}"
-              class="jg-btn jg-btn-sm"
-              data-plan-id="{{item.planId}}"
-              data-version="{{item.version}}"
-              bindtap="publishPlan"
-              loading="{{busyPlanId === item.planId}}"
-              disabled="{{busyPlanId !== ''}}"
-            >发布</button>
-            <button
-              wx:if="{{item.status !== 'archived'}}"
-              class="jg-btn jg-btn-sm jg-btn-danger"
-              data-plan-id="{{item.planId}}"
-              data-version="{{item.version}}"
-              bindtap="archivePlan"
-              loading="{{busyPlanId === item.planId}}"
-              disabled="{{busyPlanId !== ''}}"
-            >归档</button>
-          </view>
+      <view wx:if="{{truncated}}" class="jg-note jg-note-warn jg-mb-12">
+        <view>
+          <view class="jg-note-t">结果已截断</view>
+          <view class="jg-note-m">当前仅显示前 {{plans.length}} 条，请缩小筛选范围。</view>
         </view>
       </view>
 
-      <view class="jg-note">
-        <view>
-          <view class="jg-note-m">训练组范围、计划状态和版本由云函数校验，草稿不会向学生公开。</view>
+      <jg-empty
+        wx:if="{{!plans.length}}"
+        title="当前没有训练计划"
+        message="可以新建训练计划，保存为草稿后再正式发布。"
+      />
+
+      <view wx:else class="jg-timeline">
+        <view wx:for="{{plans}}" wx:key="planId" class="jg-tl-item">
+          <view class="jg-tl-dot"></view>
+          <view class="jg-card">
+            <view class="jg-card-h">
+              <text class="jg-card-t">{{item.title}}</text>
+              <text class="jg-chip {{item.status === 'draft' ? 'jg-chip-warn' : (item.status === 'published' ? 'jg-chip-ok' : '')}}">{{item.statusLabel}}</text>
+            </view>
+
+            <view class="jg-kv-grid">
+              <view class="jg-kv">
+                <view class="jg-kv-l">训练组</view>
+                <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">训练日期</view>
+                <view class="jg-kv-v jg-mono">{{item.dateText}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">内容 / 版本</view>
+                <view class="jg-kv-v jg-mono">{{item.itemCount}} 项 · v{{item.version}}</view>
+              </view>
+            </view>
+
+            <view wx:if="{{item.copiedFromPlanId}}" class="jg-chips jg-mt-8">
+              <text class="jg-chip">复制计划</text>
+            </view>
+
+            <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
+              <view class="jg-list">
+                <view wx:for="{{item.items}}" wx:for-item="planItem" wx:key="itemId" class="jg-row">
+                  <view class="jg-row-ic jg-row-ic-brand">{{planItem.order}}</view>
+                  <view class="jg-row-main">
+                    <view class="jg-row-t">{{planItem.name}}（{{planItem.categoryLabel}}）</view>
+                    <view wx:if="{{planItem.eventName}}" class="jg-row-m">关联项目：{{planItem.eventName}}</view>
+                    <view wx:if="{{planItem.target}}" class="jg-row-m">训练目标：{{planItem.target}}</view>
+                    <view wx:if="{{planItem.requirementText}}" class="jg-row-m">训练要求：{{planItem.requirementText}}</view>
+                    <view wx:if="{{planItem.notes}}" class="jg-row-m">注意：{{planItem.notes}}</view>
+                  </view>
+                </view>
+              </view>
+              <view wx:if="{{item.notes}}" class="jg-note">
+                <view>
+                  <view class="jg-note-t">计划注意事项</view>
+                  <view class="jg-note-m">{{item.notes}}</view>
+                </view>
+              </view>
+            </view>
+
+            <view class="jg-actions-wrap">
+              <button
+                class="jg-btn jg-btn-sm jg-btn-ghost"
+                data-plan-id="{{item.planId}}"
+                bindtap="toggleDetail"
+              >{{expandedPlanId === item.planId ? '收起内容' : '查看内容'}}</button>
+              <button
+                wx:if="{{item.canEdit}}"
+                class="jg-btn jg-btn-sm jg-btn-ghost"
+                data-plan-id="{{item.planId}}"
+                bindtap="goEdit"
+              >编辑</button>
+              <button
+                class="jg-btn jg-btn-sm jg-btn-ghost"
+                data-plan-id="{{item.planId}}"
+                bindtap="copyPlan"
+                loading="{{busyPlanId === item.planId}}"
+                disabled="{{busyPlanId !== ''}}"
+              >复制</button>
+              <button
+                wx:if="{{item.status === 'draft'}}"
+                class="jg-btn jg-btn-sm jg-btn-accent"
+                data-plan-id="{{item.planId}}"
+                data-version="{{item.version}}"
+                bindtap="publishPlan"
+                loading="{{busyPlanId === item.planId}}"
+                disabled="{{busyPlanId !== ''}}"
+              >发布</button>
+              <button
+                wx:if="{{item.status !== 'archived'}}"
+                class="jg-btn jg-btn-sm jg-btn-danger"
+                data-plan-id="{{item.planId}}"
+                data-version="{{item.version}}"
+                bindtap="archivePlan"
+                loading="{{busyPlanId === item.planId}}"
+                disabled="{{busyPlanId !== ''}}"
+              >归档</button>
+            </view>
+          </view>
+        </view>
+
+        <view class="jg-note">
+          <view>
+            <view class="jg-note-m">训练组范围、计划状态和版本由云函数校验，草稿不会向学生公开。</view>
+          </view>
         </view>
       </view>
     </view>

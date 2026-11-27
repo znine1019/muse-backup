@@ -6,11 +6,11 @@
     role-tone="brand"
   />
 
-  <!-- 范围切换：保留原有三段式按钮与 onScopeTap 行为 -->
-  <view class="jg-btn-row jg-mb-12">
+  <!-- 范围切换：分段控件样式保留 onScopeTap -->
+  <view class="jg-pill-bar">
     <block wx:for="{{scopes}}" wx:key="code">
       <button
-        class="jg-btn {{scopeIndex === index ? '' : 'jg-btn-ghost'}}"
+        class="jg-btn jg-btn-sm {{scopeIndex === index ? 'jg-btn-accent' : 'jg-btn-ghost'}}"
         data-index="{{index}}"
         bindtap="onScopeTap"
       >{{item.label}}</button>
@@ -25,10 +25,13 @@
     <view class="jg-retry" bindtap="retry">重新加载</view>
   </view>
 
-  <block wx:if="{{!loading && !error}}">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">{{scopeLabel}}训练计划</text>
-      <text class="jg-sect-c">共 {{total}} 条</text>
+  <view wx:if="{{!loading && !error}}" class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">{{scopeLabel}}训练计划</text>
+      </view>
+      <text class="jg-band-meta jg-mono">共 {{total}} 条</text>
     </view>
 
     <view wx:if="{{truncated}}" class="jg-note jg-note-warn jg-mb-12">
@@ -53,9 +56,20 @@
             <text class="jg-chip jg-chip-ok">{{item.statusLabel}}</text>
           </view>
 
-          <view class="jg-body-s">训练组：{{item.trainingGroupName || '未标注'}}</view>
-          <view class="jg-body-s jg-mt-8">训练日期：{{item.dateText}}</view>
-          <view class="jg-body-s jg-mt-8">共 {{item.itemCount}} 项训练内容</view>
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练组</view>
+              <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练日期</view>
+              <view class="jg-kv-v jg-mono">{{item.dateText}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练内容</view>
+              <view class="jg-kv-v jg-mono">{{item.itemCount}} 项</view>
+            </view>
+          </view>
 
           <view wx:if="{{expandedPlanId === item.planId}}" class="plan-detail">
             <view class="jg-list">
@@ -80,7 +94,7 @@
           </view>
 
           <button
-            class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+            class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12"
             data-plan-id="{{item.planId}}"
             bindtap="toggleDetail"
           >{{expandedPlanId === item.planId ? '收起详情' : '查看详情'}}</button>
@@ -93,5 +107,5 @@
         </view>
       </view>
     </view>
-  </block>
+  </view>
 </view>

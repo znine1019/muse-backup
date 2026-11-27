@@ -1,6 +1,6 @@
-/* 学生训练计划（V1.6.5 蓝黑白高级感） */
+/* 学生训练计划（V1.6.5 黑+白+科技蓝） */
 .plan-detail {
-  margin-top: 24rpx;
+  margin-top: 20rpx;
   padding-top: 8rpx;
-  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
+  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
 }

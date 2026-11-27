@@ -6,11 +6,11 @@
     role-tone="{{roleTone}}"
   />
 
-  <!-- 多角色账号：只展示服务端会话中已授权的角色 -->
-  <view wx:if="{{roleChips.length > 1}}" class="jg-chips jg-mb-12">
+  <!-- 多角色账号：水平不折行筛选药丸条 -->
+  <view wx:if="{{roleChips.length > 1}}" class="jg-pill-bar">
     <block wx:for="{{roleChips}}" wx:key="role">
       <text
-        class="jg-chip jg-chip-tap {{item.active ? 'jg-chip-brand' : ''}}"
+        class="jg-pill jg-chip-tap {{item.active ? 'jg-pill-on' : ''}}"
         data-role="{{item.role}}"
         bindtap="onRoleTap"
       >{{item.label}}</text>
@@ -26,9 +26,9 @@
   <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <block wx:if="{{!loading}}">
-    <view wx:if="{{roleNote}}" class="jg-note">
+    <view wx:if="{{roleNote}}" class="jg-note jg-mt-0 jg-mb-12">
       <view>
-        <view class="jg-note-t">当前身份：{{roleLabel}}</view>
+        <view class="jg-note-t"><text class="jg-dot-live"></text>当前身份：{{roleLabel}}</view>
         <view class="jg-note-m">{{roleNote}}</view>
       </view>
     </view>
@@ -39,13 +39,16 @@
       message="当前身份没有配置任何已实现的功能入口。"
     />
 
-    <view wx:else class="jg-sect">
-      <block wx:for="{{categories}}" wx:key="key">
-        <view class="jg-sect-h">
-          <text class="jg-sect-t">{{item.label}}</text>
-          <text class="jg-sect-c">{{item.count}} 项</text>
+    <block wx:else>
+      <view wx:for="{{categories}}" wx:key="key" class="jg-band jg-band-tight jg-stagger">
+        <view class="jg-band-head">
+          <view class="jg-band-title-wrap">
+            <text class="jg-band-idx">0{{index + 1}}</text>
+            <text class="jg-band-title">{{item.label}}</text>
+          </view>
+          <text class="jg-band-meta jg-mono">{{item.count}} 项</text>
         </view>
-        <view class="jg-tiles jg-mb-12">
+        <view class="jg-tiles">
           <view wx:for="{{item.items}}" wx:for-item="feature" wx:key="id" class="jg-tile jg-tile-{{feature.tone}}">
             <view
               class="jg-tile-in"
@@ -59,11 +62,11 @@
             </view>
           </view>
         </view>
-      </block>
-    </view>
+      </view>
+    </block>
 
     <view class="jg-btn-row">
-      <button class="jg-btn jg-btn-ghost" bindtap="goWorkbench">返回{{roleLabel}}工作台</button>
+      <button class="jg-btn jg-btn-secondary" bindtap="goWorkbench">返回{{roleLabel}}工作台</button>
     </view>
 
     <view class="jg-note">

@@ -15,11 +15,14 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 可反馈训练 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">可反馈训练</text>
-        <text class="jg-sect-c">{{eligibleSessions.length}} 场</text>
+    <!-- 01 // 可反馈训练 -->
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">可反馈训练</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{eligibleSessions.length}} 场</text>
       </view>
 
       <jg-empty
@@ -35,8 +38,16 @@
             <text class="jg-chip {{sessionItem.feedback ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{sessionItem.feedback ? '已反馈' : '待反馈'}}</text>
           </view>
 
-          <view class="jg-body-s">日期：{{sessionItem.session.attendanceDate}} · 考勤：{{sessionItem.attendanceLabel}}</view>
-          <view class="jg-body-s jg-mt-8">训练组：{{sessionItem.session.trainingGroupName || '未标注'}}</view>
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练日期</view>
+              <view class="jg-kv-v jg-mono">{{sessionItem.session.attendanceDate}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">考勤与分组</view>
+              <view class="jg-kv-v">{{sessionItem.attendanceLabel}} · {{sessionItem.session.trainingGroupName || '未标注'}}</view>
+            </view>
+          </view>
           <view wx:if="{{sessionItem.feedback}}" class="jg-body-s jg-mt-8">完成情况：{{sessionItem.feedback.completionLabel}} · {{sessionItem.feedback.rpeText}}</view>
 
           <view wx:if="{{sessionItem.feedback && sessionItem.feedback.coachComment}}" class="jg-note">
@@ -48,13 +59,13 @@
 
           <button
             wx:if="{{!sessionItem.feedback}}"
-            class="jg-btn jg-btn-block jg-mt-12"
+            class="jg-btn jg-btn-accent jg-btn-block jg-mt-12"
             data-session-id="{{sessionItem.session.sessionId}}"
             bindtap="startFeedback"
           >填写反馈</button>
           <button
             wx:if="{{sessionItem.feedback}}"
-            class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12"
+            class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12"
             data-feedback-id="{{sessionItem.feedback.feedbackId}}"
             bindtap="editFeedback"
           >修改反馈</button>
@@ -62,15 +73,18 @@
       </block>
     </view>
 
-    <!-- 反馈表单 -->
-    <view wx:if="{{selectedSessionId}}" class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">{{editingFeedbackId ? '修改训练反馈' : '提交训练反馈'}}</text>
-        <text class="jg-sect-c">RPE {{rpe}}/10</text>
+    <!-- 02 // 反馈表单 -->
+    <view wx:if="{{selectedSessionId}}" class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">{{editingFeedbackId ? '修改训练反馈' : '提交训练反馈'}}</text>
+        </view>
+        <text class="jg-band-meta jg-mono">RPE {{rpe}}/10</text>
       </view>
 
       <view class="jg-card">
-        <view class="jg-field-row">
+        <view class="jg-field-row jg-mt-0">
           <text class="jg-field-label">完成情况</text>
           <view class="jg-field-body">
             <picker range="{{completionOptions}}" range-key="label" value="{{completionIndex}}" bindchange="onCompletionChange">
@@ -94,17 +108,20 @@
         </view>
 
         <view class="jg-btn-row">
-          <button class="jg-btn" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
+          <button class="jg-btn jg-btn-accent" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
           <button class="jg-btn jg-btn-ghost" bindtap="cancelEdit">取消</button>
         </view>
       </view>
     </view>
 
-    <!-- 我的反馈记录 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">我的反馈记录</text>
-        <text class="jg-sect-c">{{history.length}} 条</text>
+    <!-- 03 // 我的反馈记录 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">03</text>
+          <text class="jg-band-title">我的反馈记录</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{history.length}} 条</text>
       </view>
 
       <jg-empty

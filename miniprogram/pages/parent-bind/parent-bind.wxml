@@ -11,24 +11,39 @@
     <view class="jg-state-err-m">{{error}}</view>
   </view>
 
-  <view class="jg-card">
-    <view class="jg-card-h"><text class="jg-card-t">输入关联凭证</text><text class="jg-card-c">10 位字符</text></view>
-    <input class="jg-input" value="{{code}}" maxlength="14" bindinput="onCodeInput" placeholder="例如 K7MPQ2XR9T" />
-    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="redeem">提交关联申请</button>
-    <view class="jg-note"><view><view class="jg-note-m">凭证由学生本人生成，30 分钟内有效且只能使用一次；俱乐部不会要求您提供学生姓名或学号。</view></view></view>
+  <view class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">输入关联凭证</text>
+      </view>
+      <text class="jg-band-meta jg-mono">10 位字符</text>
+    </view>
+    <view class="jg-card">
+      <input class="jg-input" value="{{code}}" maxlength="14" bindinput="onCodeInput" placeholder="例如 K7MPQ2XR9T" />
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{submitting}}" bindtap="redeem">提交关联申请</button>
+      <view class="jg-note"><view><view class="jg-note-m">凭证由学生本人生成，30 分钟内有效且只能使用一次；俱乐部不会要求您提供学生姓名或学号。</view></view></view>
+    </view>
   </view>
 
-  <view class="jg-sect">
-    <view class="jg-sect-h"><text class="jg-sect-t">我的关联申请</text><text class="jg-sect-c">{{links.length}} 条</text></view>
+  <view class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">02</text>
+        <text class="jg-band-title">我的关联申请</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{links.length}} 条</text>
+    </view>
     <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
     <jg-empty wx:elif="{{!links.length}}" title="暂无关联记录" message="在上方输入学生提供的关联凭证后开始申请。" />
     <view wx:else class="jg-list">
-      <view wx:for="{{links}}" wx:key="linkId" class="jg-row">
-        <view class="jg-row-main">
-          <view class="jg-row-t">{{item.studentName || '学生'}}<text class="jg-chip">{{item.statusLabel}}</text></view>
-          <view class="jg-row-m">已生效的关联可直接在学生列表中查看</view>
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
+        <view class="jg-queue-rail {{item.status === 'active' ? 'jg-queue-rail-p1' : ''}}"></view>
+        <view class="jg-queue-main">
+          <view class="jg-todo-t">{{item.studentName || '学生'}}<text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text></view>
+          <view class="jg-todo-m">已生效的关联可直接在学生列表中查看</view>
         </view>
-        <view wx:if="{{item.status === 'active' || item.status === 'pending_student' || item.status === 'pending_review'}}" class="jg-row-e">
+        <view wx:if="{{item.status === 'active' || item.status === 'pending_student' || item.status === 'pending_review'}}" class="jg-queue-act">
           <button class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" bindtap="revoke">解除</button>
         </view>
       </view>

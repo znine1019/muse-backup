@@ -4,32 +4,41 @@
     meta="仅用于系统首次建立最高权限账号。"
   />
 
-  <view class="jg-note jg-note-warn">
+  <view class="jg-note jg-note-warn jg-mt-0 jg-mb-12">
     <view>
       <view class="jg-note-t">安全说明</view>
       <view class="jg-note-m">初始化码只能配置在云函数环境变量中。普通登录不会调用此功能，也不得向普通用户提供入口。使用完成后请立即删除环境变量并重新部署云函数。</view>
     </view>
   </view>
 
-  <view class="jg-card">
-    <view class="jg-field-row">
-      <view class="jg-field-label">一次性初始化码</view>
-      <view class="jg-field-body">
-        <input class="jg-input" password value="{{bootstrapCode}}" bindinput="onInput" placeholder="请输入云函数环境中的初始化码" />
+  <view class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">初始化凭据</text>
       </view>
+      <text class="jg-band-meta">一次性</text>
     </view>
+    <view class="jg-card">
+      <view class="jg-field-row jg-mt-0">
+        <view class="jg-field-label">一次性初始化码</view>
+        <view class="jg-field-body">
+          <input class="jg-input jg-mono" password value="{{bootstrapCode}}" bindinput="onInput" placeholder="请输入云函数环境中的初始化码" />
+        </view>
+      </view>
 
-    <button class="jg-btn jg-btn-block jg-mt-12" loading="{{submitting}}" disabled="{{submitting || !bootstrapCode}}" bindtap="handleSubmit">建立首个开发者账号</button>
+      <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{submitting}}" disabled="{{submitting || !bootstrapCode}}" bindtap="handleSubmit">建立首个开发者账号</button>
 
-    <view wx:if="{{error}}" class="jg-state-err jg-mt-12 jg-shake">
-      <view class="jg-state-err-t">初始化失败</view>
-      <view class="jg-state-err-m">{{error}}</view>
-    </view>
+      <view wx:if="{{error}}" class="jg-state-err jg-mt-12 jg-shake">
+        <view class="jg-state-err-t">初始化失败</view>
+        <view class="jg-state-err-m">{{error}}</view>
+      </view>
 
-    <view wx:if="{{message}}" class="jg-note jg-mt-12">
-      <view>
-        <view class="jg-note-t">初始化成功</view>
-        <view class="jg-note-m">{{message}}</view>
+      <view wx:if="{{message}}" class="jg-note jg-mt-12">
+        <view>
+          <view class="jg-note-t">初始化成功</view>
+          <view class="jg-note-m">{{message}}</view>
+        </view>
       </view>
     </view>
   </view>

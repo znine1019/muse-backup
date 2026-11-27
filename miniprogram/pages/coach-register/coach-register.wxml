@@ -14,7 +14,7 @@
   </view>
 
   <block wx:else>
-    <view wx:if="{{statusLabel}}" class="jg-note jg-note-warn">
+    <view wx:if="{{statusLabel}}" class="jg-note jg-note-warn jg-mt-0 jg-mb-12">
       <view>
         <view class="jg-note-t">当前状态</view>
         <view class="jg-note-m">{{statusLabel}}</view>
@@ -26,10 +26,13 @@
       <view class="jg-state-err-m">{{formError}}</view>
     </view>
 
-    <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">教练实名资料</text>
-        <text class="jg-card-c">姓名必填</text>
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">教练实名资料</text>
+        </view>
+        <text class="jg-band-meta">姓名必填</text>
       </view>
 
       <view class="jg-note jg-note-warn jg-realname-alert">
@@ -42,37 +45,38 @@
         </view>
       </view>
 
-      <view class="jg-field-row">
-        <view class="jg-field-label">真实姓名 <text class="form-req">*</text></view>
-        <view class="jg-field-body">
-          <input
-            class="jg-input"
-            value="{{name}}"
-            maxlength="40"
-            bindinput="onNameInput"
-            placeholder="请填写您本人的真实姓名"
-          />
+      <view class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <view class="jg-field-label">真实姓名 <text class="form-req">*</text></view>
+          <view class="jg-field-body">
+            <input
+              class="jg-input"
+              value="{{name}}"
+              maxlength="40"
+              bindinput="onNameInput"
+              placeholder="请填写您本人的真实姓名"
+            />
+          </view>
+        </view>
+
+        <view class="jg-field-row">
+          <view class="jg-field-label">身份说明 <text class="form-opt">选填</text></view>
+          <view class="jg-field-body">
+            <textarea
+              class="jg-textarea"
+              value="{{identityNote}}"
+              maxlength="200"
+              bindinput="onIdentityNoteInput"
+              placeholder="例如：负责短跑项目、执教年限或所属训练方向"
+            />
+          </view>
         </view>
       </view>
-
-      <view class="jg-field-row">
-        <view class="jg-field-label">身份说明 <text class="form-opt">选填</text></view>
-        <view class="jg-field-body">
-          <textarea
-            class="jg-textarea"
-            value="{{identityNote}}"
-            maxlength="200"
-            bindinput="onIdentityNoteInput"
-            placeholder="例如：负责短跑项目、执教年限或所属训练方向"
-          />
-        </view>
-      </view>
-
     </view>
 
     <button
       wx:if="{{canSubmit}}"
-      class="jg-btn jg-btn-block"
+      class="jg-btn jg-btn-accent jg-btn-block"
       loading="{{submitting}}"
       disabled="{{submitting}}"
       bindtap="submit"
@@ -80,7 +84,7 @@
 
     <button
       wx:if="{{isActiveCoach}}"
-      class="jg-btn jg-btn-ghost jg-btn-block"
+      class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12"
       bindtap="goWorkbench"
     >返回教练工作台</button>
 
@@ -91,6 +95,6 @@
       </view>
     </view>
 
-    <button class="jg-btn jg-btn-ghost jg-btn-block" bindtap="goHome">退出当前会话</button>
+    <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goHome">退出当前会话</button>
   </block>
 </view>

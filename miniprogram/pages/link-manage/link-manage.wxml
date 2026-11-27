@@ -11,33 +11,50 @@
     <view class="jg-state-err-m">{{error}}</view>
   </view>
 
-  <view class="jg-card">
-    <view class="jg-card-h"><text class="jg-card-t">生成关联凭证</text><text class="jg-card-c">30 分钟内有效</text></view>
-    <view wx:if="{{code}}" class="jg-data-card" style="margin-bottom:12rpx">
-      <view class="jg-data-k">请把凭证告知家长（仅显示一次）</view>
-      <view class="jg-data-v"><text class="jg-data-num" style="font-size:52rpx">{{code}}</text></view>
-      <view class="jg-data-meta">失效时间 {{expiresText}}</view>
+  <view class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">生成关联凭证</text>
+      </view>
+      <text class="jg-band-meta jg-mono">30 分钟内有效</text>
     </view>
-    <view wx:else class="jg-sub">生成后请当面或通过可靠渠道告知家长；生成新凭证会使旧凭证立即失效。</view>
+
+    <view wx:if="{{code}}" class="jg-hero-band">
+      <view class="jg-hero-k"><text class="jg-dot-live"></text>一次性关联凭证（仅显示一次）</view>
+      <view class="jg-data-v"><text class="jg-data-num jg-mono">{{code}}</text></view>
+      <view class="jg-data-meta jg-mono">失效时间 {{expiresText}}</view>
+    </view>
+    <view wx:else class="jg-card">
+      <view class="jg-sub">生成后请当面或通过可靠渠道告知家长；生成新凭证会使旧凭证立即失效。</view>
+    </view>
+
     <view class="jg-btn-row">
-      <button class="jg-btn" loading="{{generating}}" bindtap="createInvite">{{code ? '重新生成' : '生成凭证'}}</button>
-      <button wx:if="{{code}}" class="jg-btn jg-btn-ghost" bindtap="copyCode">复制凭证</button>
+      <button class="jg-btn jg-btn-accent" loading="{{generating}}" bindtap="createInvite">{{code ? '重新生成' : '生成凭证'}}</button>
+      <button wx:if="{{code}}" class="jg-btn jg-btn-secondary" bindtap="copyCode">复制凭证</button>
     </view>
     <view class="jg-note"><view><view class="jg-note-m">凭证随机生成、短时有效、只能使用一次，并且不能使用姓名或学号代替。</view></view></view>
   </view>
 
-  <view class="jg-sect">
-    <view class="jg-sect-h"><text class="jg-sect-t">我的家长关联</text><text class="jg-sect-c">{{links.length}} 条</text></view>
+  <view class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">02</text>
+        <text class="jg-band-title">我的家长关联</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{links.length}} 条</text>
+    </view>
     <view wx:if="{{loading}}" class="jg-skeleton jg-skeleton-card"></view>
     <jg-empty wx:elif="{{!links.length}}" title="暂无家长关联" message="生成凭证并交给家长后，关联申请会显示在这里等待您确认。" />
     <view wx:else class="jg-list">
-      <view wx:for="{{links}}" wx:key="linkId" class="jg-row">
-        <view class="jg-row-main">
-          <view class="jg-row-t">{{item.parentName || '家长'}}<text class="jg-chip">{{item.statusLabel}}</text></view>
-          <view class="jg-row-m">家长只能查看已授权范围内的训练数据（只读）</view>
+      <view wx:for="{{links}}" wx:key="linkId" class="jg-queue-row">
+        <view class="jg-queue-rail {{item.status === 'pending_student' ? 'jg-queue-rail-p1' : ''}}"></view>
+        <view class="jg-queue-main">
+          <view class="jg-todo-t">{{item.parentName || '家长'}}<text class="jg-chip jg-chip-brand">{{item.statusLabel}}</text></view>
+          <view class="jg-todo-m">家长只能查看已授权范围内的训练数据（只读）</view>
         </view>
-        <view class="jg-row-e">
-          <button wx:if="{{item.status === 'pending_student'}}" class="jg-btn jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="confirm" loading="{{busyLinkId === item.linkId}}" bindtap="decide">确认</button>
+        <view class="jg-queue-act">
+          <button wx:if="{{item.status === 'pending_student'}}" class="jg-btn jg-btn-accent jg-btn-sm" data-link-id="{{item.linkId}}" data-decision="confirm" loading="{{busyLinkId === item.linkId}}" bindtap="decide">确认</button>
           <button wx:if="{{item.status === 'pending_student'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" data-decision="reject" bindtap="decide">拒绝</button>
           <button wx:if="{{item.status === 'active'}}" class="jg-btn jg-btn-sm jg-btn-danger" data-link-id="{{item.linkId}}" bindtap="revoke">解除</button>
         </view>

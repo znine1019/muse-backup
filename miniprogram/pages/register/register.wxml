@@ -18,8 +18,15 @@
         <view class="jg-state-err-m">{{formError}}</view>
       </view>
 
-      <view class="jg-card">
-        <view class="jg-card-h"><text class="jg-card-t">个人基础信息</text></view>
+      <!-- 01 // 个人基础信息 -->
+      <view class="jg-band jg-stagger jg-stagger-0">
+        <view class="jg-band-head">
+          <view class="jg-band-title-wrap">
+            <text class="jg-band-idx">01</text>
+            <text class="jg-band-title">个人基础信息</text>
+          </view>
+          <text class="jg-band-meta">实名登记</text>
+        </view>
 
         <view class="jg-note jg-note-warn jg-realname-alert">
           <view>
@@ -31,69 +38,70 @@
           </view>
         </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">学生姓名 <text class="form-req">*</text></view>
-          <view class="jg-field-body">
-            <input class="jg-input" name="name" value="{{form.name}}" maxlength="40" data-field="name" bindinput="onFieldInput" placeholder="请填写学生本人真实姓名" />
+        <view class="jg-card">
+          <view class="jg-field-row jg-mt-0">
+            <view class="jg-field-label">学生姓名 <text class="form-req">*</text></view>
+            <view class="jg-field-body">
+              <input class="jg-input" name="name" value="{{form.name}}" maxlength="40" data-field="name" bindinput="onFieldInput" placeholder="请填写学生本人真实姓名" />
+            </view>
           </view>
-        </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">性别</view>
-          <view class="jg-field-body">
-            <picker range="{{genderOptions}}" range-key="label" value="{{genderIndex}}" bindchange="onGenderChange">
-              <view class="jg-input jg-picker">{{genderOptions[genderIndex].label}}</view>
-            </picker>
+          <view class="jg-form-2col">
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">性别</text>
+              <picker range="{{genderOptions}}" range-key="label" value="{{genderIndex}}" bindchange="onGenderChange">
+                <view class="jg-input jg-picker">{{genderOptions[genderIndex].label}}</view>
+              </picker>
+            </view>
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">出生日期</text>
+              <picker mode="date" value="{{form.birthDate}}" end="{{maxDate}}" bindchange="onBirthDateChange">
+                <view class="jg-input jg-picker jg-mono">{{form.birthDate || '请选择出生日期'}}</view>
+              </picker>
+            </view>
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">身高（厘米）</text>
+              <input class="jg-input jg-mono" type="digit" name="heightCm" value="{{form.heightCm}}" data-field="heightCm" bindinput="onFieldInput" placeholder="例如 175" />
+            </view>
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">体重（千克）</text>
+              <input class="jg-input jg-mono" type="digit" name="weightKg" value="{{form.weightKg}}" data-field="weightKg" bindinput="onFieldInput" placeholder="例如 65" />
+            </view>
           </view>
-        </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">出生日期</view>
-          <view class="jg-field-body">
-            <picker mode="date" value="{{form.birthDate}}" end="{{maxDate}}" bindchange="onBirthDateChange">
-              <view class="jg-input jg-picker">{{form.birthDate || '请选择出生日期'}}</view>
-            </picker>
-          </view>
-        </view>
-
-        <view class="jg-field-row">
-          <view class="jg-field-label">身高（厘米）</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" name="heightCm" value="{{form.heightCm}}" data-field="heightCm" bindinput="onFieldInput" placeholder="例如 175" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
-          <view class="jg-field-label">体重（千克）</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" name="weightKg" value="{{form.weightKg}}" data-field="weightKg" bindinput="onFieldInput" placeholder="例如 65" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
-          <view class="jg-field-label">主要训练项目</view>
-          <view class="jg-field-body">
-            <input class="jg-input" name="primaryTrainingProject" value="{{form.primaryTrainingProject}}" data-field="primaryTrainingProject" bindinput="onFieldInput" placeholder="例如 100米" />
+          <view class="jg-field-row jg-mt-0">
+            <view class="jg-field-label">主要训练项目</view>
+            <view class="jg-field-body">
+              <input class="jg-input" name="primaryTrainingProject" value="{{form.primaryTrainingProject}}" data-field="primaryTrainingProject" bindinput="onFieldInput" placeholder="例如 100米" />
+            </view>
           </view>
         </view>
       </view>
 
-      <view class="jg-card">
-        <view class="jg-card-h"><text class="jg-card-t">训练组申请</text></view>
-        <view class="jg-field-row">
-          <view class="jg-field-label">申请训练组</view>
-          <view class="jg-field-body">
-            <picker range="{{groupOptions}}" range-key="label" value="{{groupIndex}}" bindchange="onGroupChange">
-              <view class="jg-input jg-picker">{{groupOptions[groupIndex].label}}</view>
-            </picker>
+      <!-- 02 // 训练组申请 -->
+      <view class="jg-band">
+        <view class="jg-band-head">
+          <view class="jg-band-title-wrap">
+            <text class="jg-band-idx">02</text>
+            <text class="jg-band-title">训练组申请</text>
           </view>
         </view>
-        <view class="jg-note">
-          <view><view class="jg-note-m">训练组为空时，请联系开发者先在后台建立基础训练组。</view></view>
+        <view class="jg-card">
+          <view class="jg-field-row jg-mt-0">
+            <view class="jg-field-label">申请训练组</view>
+            <view class="jg-field-body">
+              <picker range="{{groupOptions}}" range-key="label" value="{{groupIndex}}" bindchange="onGroupChange">
+                <view class="jg-input jg-picker">{{groupOptions[groupIndex].label}}</view>
+              </picker>
+            </view>
+          </view>
+          <view class="jg-note">
+            <view><view class="jg-note-m">训练组为空时，请联系开发者先在后台建立基础训练组。</view></view>
+          </view>
         </view>
       </view>
 
-      <button class="jg-btn jg-btn-block" form-type="submit" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
+      <button class="jg-btn jg-btn-accent jg-btn-block" form-type="submit" loading="{{submitting}}" disabled="{{submitting}}">提交审核</button>
     </form>
   </block>
 </view>

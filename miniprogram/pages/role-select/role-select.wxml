@@ -17,19 +17,34 @@
     message="请联系开发者检查角色授权，授权完成后重新登录即可看到对应工作台。"
   />
 
-  <block wx:if="{{!loading && roles.length}}">
-    <view wx:for="{{roles}}" wx:key="value" class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">{{item.label}}端</text>
-        <text class="jg-chip jg-chip-brand">已授权</text>
+  <view wx:if="{{!loading && roles.length}}" class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">已授权工作台</text>
       </view>
-      <view class="jg-sub">进入后可使用该身份对应的功能，数据范围由服务端按可信微信身份判定。</view>
-      <button
-        class="jg-btn jg-btn-block jg-mt-12"
-        data-route="{{item.route}}"
-        data-role="{{item.value}}"
-        bindtap="selectRole"
-      >进入{{item.label}}端</button>
+      <text class="jg-band-meta jg-mono">{{roles.length}} 个角色</text>
     </view>
-  </block>
+
+    <view class="jg-list">
+      <view wx:for="{{roles}}" wx:key="value" class="jg-queue-row">
+        <view class="jg-queue-rail jg-queue-rail-p1"></view>
+        <view class="jg-queue-main">
+          <view class="jg-todo-t">
+            <text>{{item.label}}端</text>
+            <text class="jg-chip jg-chip-brand">已授权</text>
+          </view>
+          <view class="jg-todo-m">数据范围由服务端按可信微信身份判定。</view>
+        </view>
+        <view class="jg-queue-act">
+          <button
+            class="jg-btn jg-btn-accent jg-btn-sm"
+            data-route="{{item.route}}"
+            data-role="{{item.value}}"
+            bindtap="selectRole"
+          >进入{{item.label}}端</button>
+        </view>
+      </view>
+    </view>
+  </view>
 </view>

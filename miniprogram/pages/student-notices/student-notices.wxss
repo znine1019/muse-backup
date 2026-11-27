@@ -1,4 +1,4 @@
-/* 学生俱乐部通知（F1-B2）：复用 jg- 设计系统 */
+/* 学生俱乐部通知（V1.6.5 黑+白+科技蓝） */
 .unread-row {
   display: flex;
   align-items: center;
@@ -8,11 +8,10 @@
   margin-left: 16rpx;
 }
 
-/* 展开后的通知详情：用发丝线区分正文区域 */
 .notice-detail {
-  margin-top: 24rpx;
-  padding-top: 20rpx;
-  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
+  margin-top: 20rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.14));
 }
 
 .notice-content {

@@ -4,8 +4,7 @@
     meta="报告只使用系统实际保存的身体记录和已审核成绩；待审、拒绝和未录入数据不会进入正式趋势。"
   />
 
-  <!-- 演示模式横幅（复用统一提示样式） -->
-  <view wx:if="{{isDemoMode}}" class="jg-note jg-note-warn">
+  <view wx:if="{{isDemoMode}}" class="jg-note jg-note-warn jg-mt-0 jg-mb-12">
     <view>
       <view class="jg-note-t">{{demoMarker}}</view>
       <view class="jg-note-m">{{demoNotice}}</view>
@@ -21,46 +20,56 @@
   </view>
 
   <block wx:if="{{!loading && report}}">
-    <!-- 概览：深蓝竞技数据卡 -->
-    <view class="jg-data-card">
-      <view class="jg-data-k">个人运动数据概览</view>
-      <view class="jg-data-cols">
-        <view class="jg-data-col">
-          <view class="jg-data-col-l">专项</view>
-          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.primaryEventName}}</view>
+    <!-- 00 // 个人运动数据英雄带 -->
+    <view class="jg-hero-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-dot-live"></text>
+          <text class="jg-band-title">{{report.profile.name}}</text>
         </view>
-        <view class="jg-data-col">
-          <view class="jg-data-col-l">当前 PB</view>
-          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.pbText}}</view>
+        <text class="jg-chip jg-chip-brand">正式数据</text>
+      </view>
+
+      <view class="jg-kv-grid">
+        <view class="jg-kv">
+          <view class="jg-kv-l">主项</view>
+          <view class="jg-kv-v">{{overview.primaryEventName}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">当前 PB</view>
+          <view class="jg-kv-v jg-mono">{{overview.pbText}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">近期变化</view>
+          <view class="jg-kv-v jg-mono">{{overview.changeText}}</view>
+        </view>
+        <view class="jg-kv">
+          <view class="jg-kv-l">体考目标</view>
+          <view class="jg-kv-v jg-mono">{{overview.targetText}}</view>
         </view>
       </view>
-      <view class="jg-data-cols">
-        <view class="jg-data-col">
-          <view class="jg-data-col-l">近期变化</view>
-          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.changeText}}</view>
+
+      <view class="jg-matrix">
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">身体记录</view>
+          <view class="jg-mcell-v">{{report.dataQuality.measurementCount}}</view>
         </view>
-        <view class="jg-data-col">
-          <view class="jg-data-col-l">体考目标</view>
-          <view class="jg-data-col-v jg-data-col-v-sm">{{overview.targetText}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">正式审核成绩</view>
+          <view class="jg-mcell-v jg-mcell-v-tech">{{report.dataQuality.approvedPerformanceCount}}</view>
         </view>
       </view>
       <view class="jg-data-meta">{{isDemoMode ? '虚构演示数据，仅供界面预览' : '仅使用实际保存的数据'}}</view>
     </view>
 
-    <view class="jg-card">
-      <view class="jg-card-h">
-        <text class="jg-card-t">{{report.profile.name}}</text>
-        <text class="jg-chip jg-chip-brand">正式数据</text>
-      </view>
-      <view class="jg-body-s">身体指标记录：{{report.dataQuality.measurementCount}} 条</view>
-      <view class="jg-body-s jg-mt-8">正式审核成绩：{{report.dataQuality.approvedPerformanceCount}} 条</view>
-    </view>
-
-    <!-- 身体指标趋势 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">身体指标趋势</text>
-        <text class="jg-sect-c">身高 · 体重</text>
+    <!-- 01 // 身体指标趋势 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">身体指标趋势</text>
+        </view>
+        <text class="jg-band-meta">身高 · 体重</text>
       </view>
       <view class="jg-card">
         <trend-chart
@@ -87,11 +96,14 @@
       </view>
     </view>
 
-    <!-- 正式成绩趋势 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">正式成绩趋势</text>
-        <text class="jg-sect-c">仅已审核成绩</text>
+    <!-- 02 // 正式成绩趋势 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">正式成绩趋势</text>
+        </view>
+        <text class="jg-band-meta">仅已审核成绩</text>
       </view>
 
       <view class="jg-card">
@@ -122,11 +134,14 @@
       </view>
     </view>
 
-    <!-- 正式个人最好成绩 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">正式个人最好成绩</text>
-        <text class="jg-sect-c">{{report.personalBests.length}} 项</text>
+    <!-- 03 // 正式个人最好成绩 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">03</text>
+          <text class="jg-band-title">正式个人最好成绩</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{report.personalBests.length}} 项</text>
       </view>
 
       <jg-empty
@@ -148,10 +163,13 @@
       </view>
     </view>
 
-    <!-- 体考目标对比 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">体考目标对比</text>
+    <!-- 04 // 体考目标对比 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">04</text>
+          <text class="jg-band-title">体考目标对比</text>
+        </view>
       </view>
 
       <jg-empty
@@ -165,17 +183,27 @@
           <text class="jg-card-t">{{report.targetComparison.eventName}}</text>
           <text wx:if="{{report.targetComparison.achieved}}" class="jg-chip jg-chip-ok">已达到目标</text>
         </view>
-        <view class="jg-body-s">目标：{{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue || report.targetComparison.targetValue}} {{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue ? '' : report.targetComparison.unit}}</view>
-        <view wx:if="{{report.targetComparison.hasCurrentResult}}" class="jg-body-s jg-mt-8">当前正式成绩：{{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue || report.targetComparison.currentValue}} {{report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue ? '' : report.targetComparison.unit}}</view>
-        <view wx:else class="jg-body-s jg-mt-8">暂无对应项目的正式成绩。</view>
+        <view class="jg-kv-grid">
+          <view class="jg-kv">
+            <view class="jg-kv-l">设定目标</view>
+            <view class="jg-kv-v jg-mono">{{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue || report.targetComparison.targetValue}} {{report.targetComparison.targetDisplayText || report.targetComparison.targetDisplayValue ? '' : report.targetComparison.unit}}</view>
+          </view>
+          <view class="jg-kv">
+            <view class="jg-kv-l">当前正式成绩</view>
+            <view class="jg-kv-v jg-mono">{{report.targetComparison.hasCurrentResult ? (report.targetComparison.currentDisplayText || report.targetComparison.currentDisplayValue || report.targetComparison.currentValue) : '暂无'}}</view>
+          </view>
+        </view>
       </view>
     </view>
 
-    <!-- 阶段变化 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">阶段变化</text>
-        <text class="jg-sect-c">{{report.stageChanges.length}} 项</text>
+    <!-- 05 // 阶段变化 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">05</text>
+          <text class="jg-band-title">阶段变化</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{report.stageChanges.length}} 项</text>
       </view>
 
       <jg-empty

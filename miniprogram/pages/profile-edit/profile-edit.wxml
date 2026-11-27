@@ -14,24 +14,31 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 专项与经历 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">专项与经历</text>
-        <text class="jg-sect-c">用于训练分组参考</text>
+    <!-- 01 // 专项与经历 -->
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">专项与经历</text>
+        </view>
+        <text class="jg-band-meta">用于训练分组参考</text>
       </view>
 
       <view class="jg-card">
-        <view class="jg-field-row jg-mt-0">
-          <text class="jg-field-label">主项</text>
-          <view class="jg-field-body">
+        <view class="jg-form-2col">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">主项</text>
             <picker range="{{events}}" range-key="label" value="{{primaryEventIndex}}" bindchange="onPrimaryEventChange">
               <view class="jg-input jg-picker">{{events[primaryEventIndex].name || '请选择主项'}}</view>
             </picker>
           </view>
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">开始训练年份</text>
+            <input class="jg-input jg-mono" type="number" value="{{trainingStartYear}}" data-field="trainingStartYear" bindinput="onFieldInput" placeholder="例如 2023" />
+          </view>
         </view>
 
-        <view class="jg-field-row">
+        <view class="jg-field-row jg-mt-0">
           <text class="jg-field-label">副项</text>
           <view class="jg-field-body">
             <view class="jg-sub">最多可选 3 项</view>
@@ -45,13 +52,6 @@
         </view>
 
         <view class="jg-field-row">
-          <text class="jg-field-label">开始训练年份</text>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{trainingStartYear}}" data-field="trainingStartYear" bindinput="onFieldInput" placeholder="例如 2023" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
           <text class="jg-field-label">训练经历</text>
           <view class="jg-field-body">
             <textarea class="jg-textarea" value="{{trainingExperienceSummary}}" data-field="trainingExperienceSummary" bindinput="onFieldInput" maxlength="500" placeholder="训练经历、比赛经历或教练说明" />
@@ -60,45 +60,39 @@
       </view>
     </view>
 
-    <!-- 体考目标 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">体考目标</text>
-        <text class="jg-sect-c">可选填</text>
+    <!-- 02 // 体考目标（双列紧凑数字表单） -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">体考目标</text>
+        </view>
+        <text class="jg-band-meta">可选填</text>
       </view>
 
       <view class="jg-card">
-        <view class="jg-field-row jg-mt-0">
-          <text class="jg-field-label">目标项目</text>
-          <view class="jg-field-body">
+        <view class="jg-form-2col">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">目标项目</text>
             <picker range="{{targetEventOptions}}" range-key="label" value="{{targetEventIndex}}" bindchange="onTargetEventChange">
               <view class="jg-input jg-picker">{{targetEventOptions[targetEventIndex].name || '暂不设置'}}</view>
             </picker>
           </view>
-        </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">数值目标</text>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" value="{{examGoal.targetValue}}" data-field="targetValue" bindinput="onExamGoalInput" placeholder="数值目标（可选）" />
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">数值目标</text>
+            <input class="jg-input jg-mono" type="digit" value="{{examGoal.targetValue}}" data-field="targetValue" bindinput="onExamGoalInput" placeholder="数值目标（可选）" />
           </view>
-        </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">目标成绩</text>
-          <view class="jg-field-body">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">目标成绩</text>
             <input class="jg-input" value="{{examGoal.targetScore}}" data-field="targetScore" bindinput="onExamGoalInput" placeholder="目标成绩" />
           </view>
-        </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">体考年份</text>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{examGoal.examYear}}" data-field="examYear" bindinput="onExamGoalInput" placeholder="体考年份" />
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">体考年份</text>
+            <input class="jg-input jg-mono" type="number" value="{{examGoal.examYear}}" data-field="examYear" bindinput="onExamGoalInput" placeholder="体考年份" />
           </view>
         </view>
 
-        <view class="jg-field-row">
+        <view class="jg-field-row jg-mt-0">
           <text class="jg-field-label">目标院校</text>
           <view class="jg-field-body">
             <input class="jg-input" value="{{examGoal.targetSchool}}" data-field="targetSchool" bindinput="onExamGoalInput" placeholder="目标院校" />
@@ -112,40 +106,40 @@
           </view>
         </view>
 
-        <button class="jg-btn jg-btn-block jg-mt-12" loading="{{saving}}" bindtap="saveProfile">保存档案</button>
+        <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" loading="{{saving}}" bindtap="saveProfile">保存档案</button>
       </view>
     </view>
 
-    <!-- 身体指标 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">身高与体重记录</text>
-        <text class="jg-sect-c">{{measurements.length}} 条</text>
+    <!-- 03 // 身高与体重记录 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">03</text>
+          <text class="jg-band-title">身高与体重记录</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{measurements.length}} 条</text>
       </view>
 
       <view class="jg-card">
+        <view class="jg-form-2col">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">身高（cm）</text>
+            <input class="jg-input jg-mono" type="digit" value="{{measurementHeight}}" data-field="measurementHeight" bindinput="onFieldInput" placeholder="身高（cm）" />
+          </view>
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">体重（kg）</text>
+            <input class="jg-input jg-mono" type="digit" value="{{measurementWeight}}" data-field="measurementWeight" bindinput="onFieldInput" placeholder="体重（kg）" />
+          </view>
+        </view>
+
         <view class="jg-field-row jg-mt-0">
-          <text class="jg-field-label">身高（cm）</text>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" value="{{measurementHeight}}" data-field="measurementHeight" bindinput="onFieldInput" placeholder="身高（cm）" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">体重（kg）</text>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" value="{{measurementWeight}}" data-field="measurementWeight" bindinput="onFieldInput" placeholder="体重（kg）" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
           <text class="jg-field-label">测量日期</text>
           <view class="jg-field-body">
-            <input class="jg-input" type="date" value="{{measuredAt}}" data-field="measuredAt" bindinput="onFieldInput" />
+            <input class="jg-input jg-mono" type="date" value="{{measuredAt}}" data-field="measuredAt" bindinput="onFieldInput" />
           </view>
         </view>
 
-        <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" loading="{{saving}}" bindtap="addMeasurement">记录本次身高体重</button>
+        <button class="jg-btn jg-btn-secondary jg-btn-block jg-mt-12" loading="{{saving}}" bindtap="addMeasurement">记录本次身高体重</button>
       </view>
 
       <jg-empty
@@ -154,11 +148,11 @@
         message="记录身高体重后会显示在这里，并用于运动报告趋势。"
       />
 
-      <view wx:else class="jg-list">
+      <view wx:else class="jg-list jg-mt-12">
         <view wx:for="{{measurements}}" wx:key="id" class="jg-row">
           <view class="jg-row-main">
-            <view class="jg-row-t">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
-            <view class="jg-row-m">记录时间：{{item.measuredAt}}</view>
+            <view class="jg-row-t jg-mono">{{item.heightCm}} cm / {{item.weightKg}} kg</view>
+            <view class="jg-row-m jg-mono">记录时间：{{item.measuredAt}}</view>
           </view>
         </view>
       </view>

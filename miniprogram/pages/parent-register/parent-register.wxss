@@ -1,3 +1,3 @@
-/* 家长注册（V1.6.5 蓝黑白高级感） */
-.form-req { color: var(--jg-danger, #FF5A5F); font-weight: 700; }
-.form-opt { color: var(--jg-text-mid, #A9B4C2); font-size: 22rpx; }
+/* 家长注册（V1.6.5 黑+白+科技蓝，黑白反差必填标记） */
+.form-req { color: var(--jg-accent-hi, #38BDF8); font-weight: 800; }
+.form-opt { color: var(--jg-text-mid, #A3ADB8); font-size: 22rpx; }

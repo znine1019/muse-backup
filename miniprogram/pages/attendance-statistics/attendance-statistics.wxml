@@ -13,119 +13,114 @@
   </view>
 
   <block wx:if="{{!loading && metaLoaded}}">
-    <!-- 筛选条件 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">筛选条件</text>
-        <text class="jg-sect-c">训练组 · 周期</text>
+    <!-- 01 // 双列紧凑筛选条 -->
+    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">筛选条件</text>
+        </view>
+        <text class="jg-band-meta">训练组 · 周期</text>
       </view>
 
-      <view class="jg-card">
-        <view class="jg-field-row jg-mt-0">
-          <text class="jg-field-label">训练组</text>
-          <view class="jg-field-body">
-            <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-              <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
-            </picker>
-          </view>
+      <view class="jg-form-2col">
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">训练组</text>
+          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+            <view class="jg-input jg-picker">{{groups[groupIndex].name}}</view>
+          </picker>
         </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">统计周期</text>
-          <view class="jg-field-body">
-            <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-              <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
-            </picker>
-          </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">统计周期</text>
+          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+          </picker>
         </view>
-
-        <view class="jg-field-row">
-          <text class="jg-field-label">年份</text>
-          <view class="jg-field-body">
-            <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-              <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
-            </picker>
-          </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">年份</text>
+          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+          </picker>
         </view>
-
-        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-field-row">
-          <text class="jg-field-label">月份</text>
-          <view class="jg-field-body">
-            <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-              <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
-            </picker>
-          </view>
+        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
+          <text class="jg-form-col-l">月份</text>
+          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+          </picker>
         </view>
-
-        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-field-row">
-          <text class="jg-field-label">季度</text>
-          <view class="jg-field-body">
-            <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-              <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
-            </picker>
-          </view>
+        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
+          <text class="jg-form-col-l">季度</text>
+          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+          </picker>
         </view>
       </view>
     </view>
 
-    <!-- 出勤概览：8 项指标分两行四列 -->
-    <view wx:if="{{summary}}" class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">出勤概览</text>
-        <text class="jg-sect-c">已结束场次口径</text>
+    <!-- 02 // 出勤概览（2组4列发丝矩阵） -->
+    <view wx:if="{{summary}}" class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">出勤概览</text>
+        </view>
+        <text class="jg-band-meta">已结束场次口径</text>
       </view>
 
-      <view class="jg-dstrip">
-        <view class="jg-ds">
-          <view class="jg-ds-l">计划应到</view>
-          <view class="jg-ds-v jg-ds-v-ink">{{summary.plannedExpected}}</view>
+      <view class="jg-matrix">
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">计划应到</view>
+          <view class="jg-mcell-v">{{summary.plannedExpected}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">已批准请假</view>
-          <view class="jg-ds-v">{{summary.approvedLeave}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">已批请假</view>
+          <view class="jg-mcell-v">{{summary.approvedLeave}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">有效出勤</view>
-          <view class="jg-ds-v jg-ds-v-ok">{{summary.validAttendance}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">有效出勤</view>
+          <view class="jg-mcell-v jg-mcell-v-tech">{{summary.validAttendance}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">出勤率</view>
-          <view class="jg-ds-v jg-ds-v-ok">{{summary.attendanceRateText}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">出勤率</view>
+          <view class="jg-mcell-v jg-mcell-v-tech">{{summary.attendanceRateText}}</view>
         </view>
       </view>
 
-      <view class="jg-dstrip jg-mt-8">
-        <view class="jg-ds">
-          <view class="jg-ds-l">迟到</view>
-          <view class="jg-ds-v jg-ds-v-warn">{{summary.late}}</view>
+      <view class="jg-matrix">
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">迟到</view>
+          <view class="jg-mcell-v">{{summary.late}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">待核实</view>
-          <view class="jg-ds-v jg-ds-v-warn">{{summary.pendingVerification}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">待核实</view>
+          <view class="jg-mcell-v">{{summary.pendingVerification}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">未签到</view>
-          <view class="jg-ds-v jg-ds-v-ink">{{summary.absent}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">未签到</view>
+          <view class="jg-mcell-v">{{summary.absent}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">迟到率</view>
-          <view class="jg-ds-v">{{summary.lateRateText}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">迟到率</view>
+          <view class="jg-mcell-v">{{summary.lateRateText}}</view>
         </view>
       </view>
     </view>
 
-    <view wx:if="{{dataQuality}}" class="jg-note">
+    <view wx:if="{{dataQuality}}" class="jg-note jg-mt-0 jg-mb-12">
       <view>
         <view class="jg-note-t">统计口径</view>
         <view class="jg-note-m">{{dataQuality.membershipHistoryNote}} 当前出勤率基于已结束场次计算，最低样本门槛 {{dataQuality.minSampleSessions}} 场。</view>
       </view>
     </view>
 
-    <!-- 个人出勤排行 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">个人出勤排行</text>
-        <text class="jg-sect-c">{{rows.length}} 人</text>
+    <!-- 03 // 个人出勤排行 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">03</text>
+          <text class="jg-band-title">个人出勤排行</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{rows.length}} 人</text>
       </view>
 
       <jg-empty
