@@ -10,10 +10,10 @@
     bind:toggledaylight="onToggleDaylight"
   />
 
-  <!-- 刷新状态条：细线指示器 + 静默刷新 -->
+  <!-- 无框细线同步条 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
     <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
-    <text class="jg-refbar-t">{{refreshing ? '正在同步数据…' : lastUpdatedText}}</text>
+    <text class="jg-refbar-t">{{refreshing ? 'SYNCING // 正在同步数据…' : lastUpdatedText}}</text>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
@@ -22,16 +22,17 @@
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <!-- 1. 今日训练与考勤（局部时间轴仅用于今日训练区块） -->
-  <view class="jg-sect jg-stagger jg-stagger-0">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">今日训练与考勤</text>
-      <text class="jg-sect-c">{{todayDate}}</text>
+  <!-- 01 // 今日实时场次与到课遥测（去卡片化通栏英雄带 + 4列发丝矩阵 + 单行主按钮） -->
+  <view class="jg-band jg-stagger jg-stagger-0">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">今日训练与考勤</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{todayDate}}</text>
     </view>
 
-    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-card">
-      <view class="jg-skeleton jg-skel-160"></view>
-    </view>
+    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-skeleton jg-skel-160"></view>
 
     <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">今日考勤加载失败</view>
@@ -52,14 +53,33 @@
         <view class="jg-tl-dot"></view>
         <view class="jg-card">
           <view class="jg-card-h">
-            <text class="jg-card-t">{{item.title}}</text>
+            <view class="jg-flex-row jg-flex-1">
+              <text wx:if="{{item.isOpen}}" class="jg-dot-live"></text>
+              <text class="jg-card-t">{{item.title}}</text>
+            </view>
             <text class="jg-chip {{item.isOpen ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{item.phaseLabel}}</text>
           </view>
+
           <view class="jg-flex-between">
             <view class="jg-flex-1">
-              <view class="jg-body-s">训练组：{{item.trainingGroupName || '未标注'}}</view>
-              <view class="jg-body-s jg-mt-8">地点：{{item.locationName || '未填写'}} · 半径 {{item.radiusMeters}} 米</view>
-              <view class="jg-body-s jg-mt-8">签到窗口：{{item.checkInOpenTime}} - {{item.checkInCloseTime}} · 迟到线 {{item.lateAfterTime}}</view>
+              <view class="jg-kv-grid">
+                <view class="jg-kv">
+                  <view class="jg-kv-l">训练组</view>
+                  <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
+                </view>
+                <view class="jg-kv">
+                  <view class="jg-kv-l">地点与半径</view>
+                  <view class="jg-kv-v">{{item.locationName || '未填写'}} · {{item.radiusMeters}}m</view>
+                </view>
+                <view class="jg-kv">
+                  <view class="jg-kv-l">签到窗口</view>
+                  <view class="jg-kv-v jg-mono">{{item.checkInOpenTime}}–{{item.checkInCloseTime}}</view>
+                </view>
+                <view class="jg-kv">
+                  <view class="jg-kv-l">迟到界线</view>
+                  <view class="jg-kv-v jg-mono">{{item.lateAfterTime}}</view>
+                </view>
+              </view>
             </view>
             <view wx:if="{{item.isFocus && rosterSummary}}" class="jg-ml-16">
               <jg-stat-ring
@@ -73,22 +93,22 @@
           </view>
 
           <block wx:if="{{item.isFocus}}">
-            <view wx:if="{{rosterSummary}}" class="jg-dstrip jg-mt-12">
-              <view class="jg-ds">
-                <view class="jg-ds-l">应到</view>
-                <view class="jg-ds-v jg-num-roll">{{rosterSummary.expected}}</view>
+            <view wx:if="{{rosterSummary}}" class="jg-matrix">
+              <view class="jg-mcell">
+                <view class="jg-mcell-l">应到</view>
+                <view class="jg-mcell-v jg-num-roll">{{rosterSummary.expected}}</view>
               </view>
-              <view class="jg-ds">
-                <view class="jg-ds-l">已签到</view>
-                <view class="jg-ds-v jg-ds-v-ok jg-num-roll">{{rosterSummary.checkedIn}}</view>
+              <view class="jg-mcell">
+                <view class="jg-mcell-l">已签到</view>
+                <view class="jg-mcell-v jg-mcell-v-tech jg-num-roll">{{rosterSummary.checkedIn}}</view>
               </view>
-              <view class="jg-ds">
-                <view class="jg-ds-l">迟到</view>
-                <view class="jg-ds-v jg-ds-v-warn">{{rosterSummary.late}}</view>
+              <view class="jg-mcell">
+                <view class="jg-mcell-l">迟到</view>
+                <view class="jg-mcell-v">{{rosterSummary.late}}</view>
               </view>
-              <view class="jg-ds">
-                <view class="jg-ds-l">待签到</view>
-                <view class="jg-ds-v jg-ds-v-ink">{{rosterSummary.pending}}</view>
+              <view class="jg-mcell">
+                <view class="jg-mcell-l">待签</view>
+                <view class="jg-mcell-v">{{rosterSummary.pending}}</view>
               </view>
             </view>
             <view wx:elif="{{rosterState.loading}}" class="jg-skeleton jg-mt-12 jg-skel-112"></view>
@@ -98,24 +118,27 @@
                 <view class="jg-note-m">{{rosterState.error}}</view>
               </view>
             </view>
-            <view wx:if="{{rosterSummary}}" class="jg-body-s jg-mt-8">
+            <view wx:if="{{rosterSummary}}" class="jg-body-s">
               已批准请假 {{rosterSummary.leaveApproved}} · 待核实异常 {{rosterSummary.pendingVerification}}
             </view>
           </block>
 
-          <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" data-session-id="{{item.sessionId}}" bindtap="goSessionRoster">
-            查看名单 · 人工核实 · 请假审批
+          <button class="jg-btn jg-btn-accent jg-btn-block jg-mt-12" data-session-id="{{item.sessionId}}" bindtap="goSessionRoster">
+            进入考勤名单与核实 →
           </button>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 2. 待办（统一待办列表，行内操作只做跳转，真实写入在业务页面完成） -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">待办</text>
-      <text class="jg-sect-c">共 {{todoTotal}} 项</text>
+  <!-- 02 // 高频审批队列（水平不折行药丸筛选 + 固定宽 164rpx 右侧操作列 + WXS 左滑） -->
+  <view class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">02</text>
+        <text class="jg-band-title">待办审批队列</text>
+      </view>
+      <text class="jg-band-meta jg-mono">共 {{todoTotal}} 项</text>
     </view>
 
     <view wx:if="{{todoState.loading && !todoState.ready}}" class="jg-list">
@@ -131,11 +154,10 @@
     </view>
 
     <block wx:else>
-      <view class="jg-seg jg-mb-12">
+      <view class="jg-pill-bar">
         <block wx:for="{{todoFilterChips}}" wx:key="value">
-          <!-- 分段式筛选控件：触控高度 >= 88rpx -->
           <text
-            class="jg-seg-item jg-chip-tap {{item.value === todoFilter ? 'jg-seg-item-active jg-chip-brand' : ''}}"
+            class="jg-pill jg-chip-tap {{item.value === todoFilter ? 'jg-pill-on' : ''}}"
             data-value="{{item.value}}"
             bindtap="onTodoFilterTap"
           >{{item.text}}</text>
@@ -158,13 +180,13 @@
             >{{item.actionLabel}}</view>
           </view>
           <view
-            class="jg-swipe-fg jg-todo {{item.priority}}"
+            class="jg-swipe-fg jg-queue-row"
             bindtouchstart="{{motion.onSwipeStart}}"
             bindtouchmove="{{motion.onSwipeMove}}"
             bindtouchend="{{motion.onSwipeEnd}}"
           >
-            <view class="jg-todo-bar"></view>
-            <view class="jg-todo-main">
+            <view class="jg-queue-rail {{item.priority === 'jg-todo-p1' ? 'jg-queue-rail-p1' : 'jg-queue-rail-p2'}}"></view>
+            <view class="jg-queue-main">
               <view class="jg-todo-t">
                 <text>{{item.title}}</text>
                 <text class="jg-chip {{item.typeChip}}">{{item.typeLabel}}</text>
@@ -172,7 +194,7 @@
               <view class="jg-todo-m">{{item.detail}}</view>
               <view wx:if="{{item.reason}}" class="jg-todo-m">{{item.reason}}</view>
             </view>
-            <view class="jg-todo-a">
+            <view class="jg-queue-act">
               <button
                 class="jg-btn jg-btn-sm"
                 data-url="{{item.url}}"
@@ -192,16 +214,17 @@
     </block>
   </view>
 
-  <!-- 3. 赛事报名意向 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">赛事报名意向</text>
-      <text class="jg-sect-a" bindtap="goCompetitionManage">去办理</text>
+  <!-- 03 // 赛事报名意向 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">03</text>
+        <text class="jg-band-title">赛事报名意向</text>
+      </view>
+      <text class="jg-band-action" bindtap="goCompetitionManage">去办理</text>
     </view>
 
-    <view wx:if="{{competitionState.loading && !competitionState.ready}}" class="jg-card">
-      <view class="jg-skeleton jg-skel-96"></view>
-    </view>
+    <view wx:if="{{competitionState.loading && !competitionState.ready}}" class="jg-skeleton jg-skel-96"></view>
 
     <view wx:elif="{{competitionState.error && !competitionState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">赛事信息加载失败</view>
@@ -209,17 +232,22 @@
       <view class="jg-retry" bindtap="retryCompetitions">重新加载</view>
     </view>
 
-    <view wx:else class="jg-card">
-      <view class="jg-body">{{competitionText}}</view>
-      <view class="jg-sub jg-mt-8">报名意向由学生在线提交，正式报名仍需在赛事官方渠道完成并回填办理状态。</view>
+    <view wx:else class="jg-note jg-mt-0">
+      <view>
+        <view class="jg-note-t">{{competitionText}}</view>
+        <view class="jg-note-m">报名意向由学生在线提交，正式报名仍需在赛事官方渠道完成并回填办理状态。</view>
+      </view>
     </view>
   </view>
 
-  <!-- 4. 待审核注册（保留原有二次确认流程） -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">待审核注册</text>
-      <text class="jg-sect-c">{{registrations.length}} 人</text>
+  <!-- 04 // 待审核注册（固定 164rpx 右侧垂直审批按钮组，杜绝挤压） -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">04</text>
+        <text class="jg-band-title">待审核注册</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{registrations.length}} 人</text>
     </view>
 
     <view wx:if="{{registrationState.loading && !registrationState.ready}}" class="jg-list">
@@ -239,14 +267,14 @@
     />
 
     <view wx:else class="jg-list">
-      <view wx:for="{{registrations}}" wx:key="userId" class="jg-todo jg-todo-p2">
-        <view class="jg-todo-bar"></view>
-        <view class="jg-todo-main">
+      <view wx:for="{{registrations}}" wx:key="userId" class="jg-queue-row">
+        <view class="jg-queue-rail jg-queue-rail-p2"></view>
+        <view class="jg-queue-main">
           <view class="jg-todo-t">{{item.name}}</view>
           <view class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
-          <view class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}} · 出生日期：{{item.birthDate || '未填写'}}</view>
+          <view class="jg-todo-m">主项：{{item.primaryTrainingProject || '未填写'}} · 出生：{{item.birthDate || '未填写'}}</view>
         </view>
-        <view class="jg-todo-a">
+        <view class="jg-queue-act">
           <button
             class="jg-btn jg-btn-sm"
             data-user-id="{{item.userId}}"
@@ -266,11 +294,14 @@
     </view>
   </view>
 
-  <!-- 5. 常用管理入口 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">常用管理入口</text>
-      <text class="jg-sect-c">按使用频率排序</text>
+  <!-- 05 // 常用管理入口 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">05</text>
+        <text class="jg-band-title">常用管理入口</text>
+      </view>
+      <text class="jg-band-meta">按使用频率排序</text>
     </view>
     <view class="jg-list">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goAttendanceManage">
@@ -347,8 +378,14 @@
     </view>
   </view>
 
-  <view class="jg-sect">
-    <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+  <!-- 06 // 账户与安全 -->
+  <view class="jg-band jg-band-tight">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">06</text>
+        <text class="jg-band-title">账户与安全</text>
+      </view>
+    </view>
     <view class="jg-list">
       <view
         wx:if="{{canSwitchDeveloper}}"

@@ -18,147 +18,142 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <view class="jg-card jg-stagger jg-stagger-0">
-      <view class="jg-card-h"><text class="jg-card-t">计划信息</text></view>
-
-      <view class="jg-field-row">
-        <view class="jg-field-label">计划名称</view>
-        <view class="jg-field-body">
-          <input class="jg-input {{focusedField === 'title' ? 'jg-input-focus' : ''}}" value="{{title}}" data-field="title" bindinput="onFieldInput" bindfocus="onFieldFocus" bindblur="onFieldBlur" maxlength="60" placeholder="例如 第1周速度训练" />
+    <!-- 01 // 计划基础信息（双列日期排布，压缩长表单滚动） -->
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">计划基础信息</text>
         </view>
+        <text class="jg-band-meta">名称 · 分组 · 周期</text>
       </view>
 
-      <view class="jg-field-row">
-        <view class="jg-field-label">训练组</view>
-        <view class="jg-field-body">
-          <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-            <view class="jg-input jg-picker">{{groups[groupIndex].name || '请选择训练组'}}</view>
-          </picker>
+      <view class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <view class="jg-field-label">计划名称</view>
+          <view class="jg-field-body">
+            <input class="jg-input {{focusedField === 'title' ? 'jg-input-focus' : ''}}" value="{{title}}" data-field="title" bindinput="onFieldInput" bindfocus="onFieldFocus" bindblur="onFieldBlur" maxlength="60" placeholder="例如 第1周速度训练" />
+          </view>
         </view>
-      </view>
-
-      <view class="jg-field-row">
-        <view class="jg-field-label">开始日期</view>
-        <view class="jg-field-body">
-          <picker mode="date" value="{{startDate}}" data-field="startDate" bindchange="onFieldInput">
-            <view class="jg-input jg-picker">{{startDate}}</view>
-          </picker>
-        </view>
-      </view>
-
-      <view class="jg-field-row">
-        <view class="jg-field-label">结束日期</view>
-        <view class="jg-field-body">
-          <picker mode="date" value="{{endDate}}" data-field="endDate" bindchange="onFieldInput">
-            <view class="jg-input jg-picker">{{endDate}}</view>
-          </picker>
-        </view>
-      </view>
-
-      <view class="jg-field-row">
-        <view class="jg-field-label">注意事项</view>
-        <view class="jg-field-body">
-          <textarea class="jg-textarea {{focusedField === 'notes' ? 'jg-input-focus' : ''}}" value="{{notes}}" data-field="notes" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onFieldInput" maxlength="300" placeholder="训练前热身、伤病提醒等，可选" />
-        </view>
-      </view>
-    </view>
-
-    <view class="jg-sect jg-stagger jg-stagger-1">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">训练内容</text>
-        <text class="jg-sect-c">{{items.length}} 项</text>
-      </view>
-
-      <!-- 局部时间轴仅用于训练计划区块 -->
-      <view class="jg-timeline">
-        <view wx:for="{{items}}" wx:key="order" class="jg-tl-item">
-          <view class="jg-tl-dot"></view>
-          <view class="jg-card">
-            <view class="jg-card-h"><text class="jg-card-t">第 {{index + 1}} 项</text></view>
 
         <view class="jg-field-row">
-          <view class="jg-field-label">运动专项</view>
+          <view class="jg-field-label">训练组</view>
           <view class="jg-field-body">
-            <picker range="{{categories}}" range-key="label" value="{{item.categoryIndex}}" data-index="{{index}}" bindchange="onItemCategoryChange">
-              <view class="jg-input jg-picker">{{categories[item.categoryIndex].label || '请选择'}}</view>
+            <picker range="{{groups}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+              <view class="jg-input jg-picker">{{groups[groupIndex].name || '请选择训练组'}}</view>
             </picker>
           </view>
         </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">训练名称</view>
-          <view class="jg-field-body">
-            <input class="jg-input" value="{{item.name}}" data-index="{{index}}" data-field="name" bindinput="onItemFieldInput" maxlength="60" placeholder="例如 30米加速跑" />
+        <view class="jg-form-2col">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">开始日期</text>
+            <picker mode="date" value="{{startDate}}" data-field="startDate" bindchange="onFieldInput">
+              <view class="jg-input jg-picker jg-mono">{{startDate}}</view>
+            </picker>
+          </view>
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">结束日期</text>
+            <picker mode="date" value="{{endDate}}" data-field="endDate" bindchange="onFieldInput">
+              <view class="jg-input jg-picker jg-mono">{{endDate}}</view>
+            </picker>
           </view>
         </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">训练目标</view>
+        <view class="jg-field-row jg-mt-0">
+          <view class="jg-field-label">注意事项</view>
           <view class="jg-field-body">
-            <input class="jg-input" value="{{item.target}}" data-index="{{index}}" data-field="target" bindinput="onItemFieldInput" maxlength="80" placeholder="可选" />
+            <textarea class="jg-textarea {{focusedField === 'notes' ? 'jg-input-focus' : ''}}" value="{{notes}}" data-field="notes" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onFieldInput" maxlength="300" placeholder="训练前热身、伤病提醒等，可选" />
           </view>
         </view>
+      </view>
+    </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">组数</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{item.sets}}" data-index="{{index}}" data-field="sets" bindinput="onItemFieldInput" placeholder="组数" />
-          </view>
+    <!-- 02 // 训练内容编排（局部时间轴 + 6 项数值双列成组排布） -->
+    <view class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">训练内容编排</text>
         </view>
+        <text class="jg-band-meta jg-mono">{{items.length}} 项</text>
+      </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">次数</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{item.reps}}" data-index="{{index}}" data-field="reps" bindinput="onItemFieldInput" placeholder="每组次数" />
-          </view>
-        </view>
+      <view class="jg-timeline">
+        <view wx:for="{{items}}" wx:key="order" class="jg-tl-item">
+          <view class="jg-tl-dot"></view>
+          <view class="jg-card">
+            <view class="jg-card-h">
+              <text class="jg-card-t jg-mono">DRILL #{{index + 1}}</text>
+              <text class="jg-chip jg-chip-brand">{{categories[item.categoryIndex].label || '未选专项'}}</text>
+            </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">距离</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="digit" value="{{item.distanceMeters}}" data-index="{{index}}" data-field="distanceMeters" bindinput="onItemFieldInput" placeholder="米" />
-          </view>
-        </view>
+            <view class="jg-form-2col">
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">运动专项</text>
+                <picker range="{{categories}}" range-key="label" value="{{item.categoryIndex}}" data-index="{{index}}" bindchange="onItemCategoryChange">
+                  <view class="jg-input jg-picker">{{categories[item.categoryIndex].label || '请选择'}}</view>
+                </picker>
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">训练名称</text>
+                <input class="jg-input" value="{{item.name}}" data-index="{{index}}" data-field="name" bindinput="onItemFieldInput" maxlength="60" placeholder="例如 30米加速跑" />
+              </view>
+            </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">持续时间</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{item.durationSeconds}}" data-index="{{index}}" data-field="durationSeconds" bindinput="onItemFieldInput" placeholder="秒" />
-          </view>
-        </view>
+            <view class="jg-field-row jg-mt-0">
+              <view class="jg-field-label">训练目标</view>
+              <view class="jg-field-body">
+                <input class="jg-input" value="{{item.target}}" data-index="{{index}}" data-field="target" bindinput="onItemFieldInput" maxlength="80" placeholder="可选" />
+              </view>
+            </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">恢复间隔</view>
-          <view class="jg-field-body">
-            <input class="jg-input" type="number" value="{{item.restSeconds}}" data-index="{{index}}" data-field="restSeconds" bindinput="onItemFieldInput" placeholder="组间休息秒数" />
-          </view>
-        </view>
+            <!-- 6 项量化参数：3 组双列并排 -->
+            <view class="jg-form-2col">
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">组数</text>
+                <input class="jg-input jg-mono" type="number" value="{{item.sets}}" data-index="{{index}}" data-field="sets" bindinput="onItemFieldInput" placeholder="组数" />
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">每组次数</text>
+                <input class="jg-input jg-mono" type="number" value="{{item.reps}}" data-index="{{index}}" data-field="reps" bindinput="onItemFieldInput" placeholder="次数" />
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">距离（米）</text>
+                <input class="jg-input jg-mono" type="digit" value="{{item.distanceMeters}}" data-index="{{index}}" data-field="distanceMeters" bindinput="onItemFieldInput" placeholder="米" />
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">持续时间（秒）</text>
+                <input class="jg-input jg-mono" type="number" value="{{item.durationSeconds}}" data-index="{{index}}" data-field="durationSeconds" bindinput="onItemFieldInput" placeholder="秒" />
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">恢复间隔（秒）</text>
+                <input class="jg-input jg-mono" type="number" value="{{item.restSeconds}}" data-index="{{index}}" data-field="restSeconds" bindinput="onItemFieldInput" placeholder="休息秒数" />
+              </view>
+              <view class="jg-form-col">
+                <text class="jg-form-col-l">训练负荷</text>
+                <input class="jg-input" value="{{item.load}}" data-index="{{index}}" data-field="load" bindinput="onItemFieldInput" maxlength="40" placeholder="70% 1RM" />
+              </view>
+            </view>
 
-        <view class="jg-field-row">
-          <view class="jg-field-label">训练负荷</view>
-          <view class="jg-field-body">
-            <input class="jg-input" value="{{item.load}}" data-index="{{index}}" data-field="load" bindinput="onItemFieldInput" maxlength="40" placeholder="例如 70% 1RM" />
-          </view>
-        </view>
-
-        <view class="jg-field-row">
-          <view class="jg-field-label">项目注意</view>
-          <view class="jg-field-body">
-            <textarea class="jg-textarea" value="{{item.notes}}" data-index="{{index}}" data-field="notes" bindinput="onItemFieldInput" maxlength="200" placeholder="该项训练注意事项，可选" />
-          </view>
-        </view>
+            <view class="jg-field-row jg-mt-0">
+              <view class="jg-field-label">项目注意</view>
+              <view class="jg-field-body">
+                <textarea class="jg-textarea" value="{{item.notes}}" data-index="{{index}}" data-field="notes" bindinput="onItemFieldInput" maxlength="200" placeholder="该项训练注意事项，可选" />
+              </view>
+            </view>
 
             <button class="jg-btn jg-btn-danger jg-btn-sm jg-btn-block jg-mt-12" data-index="{{index}}" bindtap="removeItem">删除该项</button>
           </view>
         </view>
       </view>
 
-      <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="addItem">添加训练内容</button>
+      <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="addItem">+ 添加训练内容</button>
     </view>
 
     <view class="jg-btn-row">
       <button class="jg-btn jg-btn-secondary {{saving ? 'jg-btn-loading' : ''}}" loading="{{saving}}" disabled="{{publishing}}" bindtap="saveDraft">保存草稿</button>
-      <button class="jg-btn {{publishing ? 'jg-btn-loading' : ''}}" loading="{{publishing}}" disabled="{{saving}}" bindtap="publishPlan">发布计划</button>
+      <button class="jg-btn jg-btn-accent {{publishing ? 'jg-btn-loading' : ''}}" loading="{{publishing}}" disabled="{{saving}}" bindtap="publishPlan">发布计划</button>
     </view>
 
     <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="goBack">返回计划列表</button>

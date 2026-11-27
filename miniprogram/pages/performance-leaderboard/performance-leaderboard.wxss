@@ -1,35 +1,53 @@
-/* 正式成绩排行榜（V1.6.5 蓝黑白高级感，零橙色与旧色残留） */
+/* 正式成绩排行榜（V1.6.5 黑+白+科技蓝 电子计时板） */
 
 .rank-badge {
   flex: 0 0 auto;
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 16rpx;
-  background: var(--jg-brand, #16304F);
-  border: 2rpx solid var(--jg-line, rgba(255, 255, 255, 0.08));
-  color: #FFFFFF;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 4rpx;
+  background: var(--jg-base, #0A0C10);
+  border: 2rpx solid var(--jg-line-strong, rgba(255, 255, 255, 0.28));
+  color: var(--jg-text-hi, #FFFFFF);
   font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
   font-size: 28rpx;
-  font-weight: 700;
-  line-height: 68rpx;
+  font-weight: 800;
+  line-height: 60rpx;
   text-align: center;
-  margin-right: 20rpx;
+  margin-right: 18rpx;
   box-sizing: border-box;
 }
 
 .rank-badge-self {
-  background: var(--jg-accent, #2E6BFF);
-  border-color: var(--jg-accent-hi, #8FB6FF);
+  background: var(--jg-accent, #00A6FF);
+  border-color: var(--jg-accent, #00A6FF);
+  color: #000000;
+}
+
+.jg-page.jg-daylight .rank-badge-self {
   color: #FFFFFF;
 }
 
-/* 本人所在行：品牌深蓝高亮 */
+/* 本人所在行：电光蓝微晕 + 左侧 6rpx 高亮轨 */
 .ranking-self {
-  background: var(--jg-brand, #16304F);
+  background: var(--jg-accent-tint, rgba(0, 166, 255, 0.10));
+  border-left: 6rpx solid var(--jg-accent, #00A6FF);
+  padding-left: 14rpx;
 }
 
 .jg-page.jg-daylight .ranking-self {
-  background: #FAFBFC;
+  background: #F4F6F8;
+  border-left-color: #006BB3;
+}
+
+/* 右侧超大电子计时成绩读数 */
+.rank-val {
+  font-family: 'DIN Alternate', 'SF Mono', Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 40rpx;
+  font-weight: 800;
+  color: var(--jg-accent-hi, #38BDF8);
+  letter-spacing: -0.5rpx;
 }

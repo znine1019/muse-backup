@@ -9,10 +9,10 @@
     bind:toggledaylight="onToggleDaylight"
   />
 
-  <!-- 刷新状态条：细线指示器 + 静默刷新 -->
+  <!-- 无框细线同步条 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
     <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
-    <text class="jg-refbar-t">{{refreshing ? '正在同步数据…' : lastUpdatedText}}</text>
+    <text class="jg-refbar-t">{{refreshing ? 'SYNCING // 正在同步数据…' : lastUpdatedText}}</text>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
@@ -21,7 +21,7 @@
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <!-- 1. 系统运行状态（深蓝竞技数据卡，全部为真实接口数据） -->
+  <!-- 00 // 系统遥测主带（全通栏科技蓝顶轨 + 2x2 系统探针 + 3列核心指标矩阵） -->
   <view wx:if="{{systemState.loading && !systemState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
 
   <view wx:elif="{{systemState.error && !systemState.ready}}" class="jg-state-err">
@@ -30,41 +30,56 @@
     <view class="jg-retry" bindtap="retrySystem">重新检查</view>
   </view>
 
-  <view wx:else class="jg-data-card jg-stagger jg-stagger-0">
-    <view class="jg-data-k">系统运行状态</view>
+  <view wx:else class="jg-hero-band jg-stagger jg-stagger-0">
+    <view class="jg-hero-k"><text class="jg-dot-live"></text>SYSTEM TELEMETRY // 系统运行状态</view>
     <view class="jg-data-v">
       <text class="jg-data-num jg-data-num-sm">{{system.overallText}}</text>
     </view>
-    <view class="jg-data-meta">云环境 {{system.envId}}</view>
-    <view class="jg-data-meta">云函数健康检查：{{system.cloudFunctionReady ? '正常' : '异常'}}</view>
-    <view class="jg-data-meta">数据库连接：{{system.databaseReady ? '正常' : '未就绪'}}</view>
-    <view class="jg-data-cols">
-      <view class="jg-data-col">
-        <view class="jg-data-col-l">账号总数</view>
-        <view class="jg-data-col-v jg-num-roll">{{accountSummary.total}}</view>
+    <view class="jg-kv-grid">
+      <view class="jg-kv">
+        <view class="jg-kv-l">云环境 ID</view>
+        <view class="jg-kv-v jg-mono jg-truncate">{{system.envId}}</view>
       </view>
-      <view class="jg-data-col">
-        <view class="jg-data-col-l">训练组</view>
-        <view class="jg-data-col-v jg-num-roll">{{groupSummary.total}}</view>
+      <view class="jg-kv">
+        <view class="jg-kv-l">云函数健康</view>
+        <view class="jg-kv-v">{{system.cloudFunctionReady ? 'ONLINE · 正常' : '异常'}}</view>
       </view>
-      <view class="jg-data-col">
-        <view class="jg-data-col-l">待处理</view>
-        <view class="jg-data-col-v jg-data-col-v-warn jg-num-roll">{{pendingTotal}}</view>
+      <view class="jg-kv">
+        <view class="jg-kv-l">数据库连接</view>
+        <view class="jg-kv-v">{{system.databaseReady ? 'CONNECTED · 正常' : '未就绪'}}</view>
+      </view>
+      <view wx:if="{{system.serverTimeText}}" class="jg-kv">
+        <view class="jg-kv-l">服务器时间</view>
+        <view class="jg-kv-v jg-mono">{{system.serverTimeText}}</view>
       </view>
     </view>
-    <view wx:if="{{system.serverTimeText}}" class="jg-data-meta jg-mt-8">服务器时间 {{system.serverTimeText}}</view>
+    <view class="jg-matrix">
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">账号总数</view>
+        <view class="jg-mcell-v jg-num-roll">{{accountSummary.total}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">训练组</view>
+        <view class="jg-mcell-v jg-num-roll">{{groupSummary.total}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">待处理</view>
+        <view class="jg-mcell-v jg-mcell-v-tech jg-num-roll">{{pendingTotal}}</view>
+      </view>
+    </view>
   </view>
 
-  <!-- 2. 待处理事项 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">待处理事项</text>
-      <text class="jg-sect-c">共 {{pendingTotal}} 项</text>
+  <!-- 01 // 待处理事项与实名注册审批 -->
+  <view class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title jg-sect-t">待处理事项</text>
+      </view>
+      <text class="jg-band-meta jg-mono">共 {{pendingTotal}} 项</text>
     </view>
 
-    <view wx:if="{{pendingState.loading && !pendingState.ready}}" class="jg-card">
-      <view class="jg-skeleton jg-skel-96"></view>
-    </view>
+    <view wx:if="{{pendingState.loading && !pendingState.ready}}" class="jg-skeleton jg-skel-96"></view>
 
     <view wx:elif="{{pendingState.error && !pendingState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">待处理数据加载失败</view>
@@ -72,14 +87,26 @@
       <view class="jg-retry" bindtap="retryPending">重新加载</view>
     </view>
 
-    <view wx:else class="jg-card">
-      <view class="jg-body">全局待审成绩 {{pendingPerformances}} 条 · 待批请假 {{pendingLeaves}} 条 · 待审核注册 {{registrations.length}} 人</view>
-      <view class="jg-sub jg-mt-8">成绩与请假的处理入口在对应业务页面，处理时会展示必要信息并二次确认。</view>
-      <view class="jg-btn-row">
-        <button class="jg-btn jg-btn-ghost" bindtap="goPerformanceReview">去审成绩</button>
+    <block wx:else>
+      <view class="jg-matrix">
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">待审成绩</view>
+          <view class="jg-mcell-v jg-mcell-v-tech">{{pendingPerformances}}</view>
+        </view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">待批请假</view>
+          <view class="jg-mcell-v">{{pendingLeaves}}</view>
+        </view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">待审注册</view>
+          <view class="jg-mcell-v">{{registrations.length}}</view>
+        </view>
+      </view>
+      <view class="jg-btn-row jg-mb-12">
+        <button class="jg-btn jg-btn-secondary" bindtap="goPerformanceReview">去审成绩</button>
         <button class="jg-btn jg-btn-ghost" bindtap="goAttendanceManage">去批请假</button>
       </view>
-    </view>
+    </block>
 
     <view wx:if="{{registrationState.loading && !registrationState.ready}}" class="jg-list jg-mt-12">
       <view class="jg-skeleton jg-skeleton-row"></view>
@@ -98,16 +125,16 @@
     />
 
     <view wx:else class="jg-list">
-      <view wx:for="{{registrations}}" wx:key="userId" class="jg-todo jg-todo-p1">
-        <view class="jg-todo-bar"></view>
-        <view class="jg-todo-main">
+      <view wx:for="{{registrations}}" wx:key="userId" class="jg-queue-row">
+        <view class="jg-queue-rail jg-queue-rail-p1"></view>
+        <view class="jg-queue-main">
           <view class="jg-todo-t">{{item.name}}<text class="jg-chip {{item.profileType === 'parent' ? 'jg-chip-accent' : (item.profileType === 'coach' ? 'jg-chip-warn' : 'jg-chip-brand')}}">{{item.profileType === 'parent' ? '家长注册' : (item.profileType === 'coach' ? '教练实名' : '学生注册')}}</text></view>
           <view wx:if="{{item.profileType === 'parent'}}" class="jg-todo-m">监护人关系：{{item.parentRelation}} · 无需训练组归属</view>
           <view wx:elif="{{item.profileType === 'coach'}}" class="jg-todo-m">身份说明：{{item.coachIdentityNote || '未填写'}}</view>
           <view wx:else class="jg-todo-m">申请训练组：{{item.requestedTrainingGroupName || '未填写'}}</view>
           <view wx:if="{{item.profileType === 'student'}}" class="jg-todo-m">主要项目：{{item.primaryTrainingProject || '未填写'}}</view>
         </view>
-        <view class="jg-todo-a">
+        <view class="jg-queue-act">
           <button
             class="jg-btn jg-btn-sm"
             data-user-id="{{item.userId}}"
@@ -129,80 +156,82 @@
     </view>
   </view>
 
-  <!-- 3. 账号与角色 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">账号与角色</text>
-      <text class="jg-sect-a" bindtap="toggleUserPanel">{{showUserPanel ? '收起管理' : '展开管理'}}</text>
-    </view>
-    <view class="jg-card">
-      <view class="jg-kpi-row jg-mt-0">
-        <view class="jg-kpi">
-          <view class="jg-kpi-l">学生</view>
-          <view class="jg-kpi-v">{{accountSummary.students}}</view>
-        </view>
-        <view class="jg-kpi">
-          <view class="jg-kpi-l">教练</view>
-          <view class="jg-kpi-v">{{accountSummary.coaches}}</view>
-        </view>
-        <view class="jg-kpi">
-          <view class="jg-kpi-l">开发者</view>
-          <view class="jg-kpi-v">{{accountSummary.developers}}</view>
-        </view>
-        <view class="jg-kpi">
-          <view class="jg-kpi-l">已停用</view>
-          <view class="jg-kpi-v jg-kpi-v-warn">{{accountSummary.disabled}}</view>
-        </view>
+  <!-- 02 // 账号与角色 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">02</text>
+        <text class="jg-band-title jg-sect-t">账号与角色</text>
       </view>
+      <text class="jg-band-action" bindtap="toggleUserPanel">{{showUserPanel ? '收起管理' : '展开管理'}}</text>
+    </view>
 
-      <block wx:if="{{showUserPanel}}">
-        <view class="jg-filter-grid jg-mt-12">
-          <picker range="{{userNameFilters}}" range-key="label" value="{{userFilterIndexes.nameStatus}}" data-filter="nameStatus" bindchange="onUserFilterChange">
-            <view class="jg-input jg-picker">{{userNameFilters[userFilterIndexes.nameStatus].label}}</view>
-          </picker>
-          <picker range="{{userRoleFilters}}" range-key="label" value="{{userFilterIndexes.role}}" data-filter="role" bindchange="onUserFilterChange">
-            <view class="jg-input jg-picker">{{userRoleFilters[userFilterIndexes.role].label}}</view>
-          </picker>
-          <picker range="{{userStatusFilters}}" range-key="label" value="{{userFilterIndexes.status}}" data-filter="status" bindchange="onUserFilterChange">
-            <view class="jg-input jg-picker">{{userStatusFilters[userFilterIndexes.status].label}}</view>
-          </picker>
-          <picker range="{{userTimeFilters}}" range-key="label" value="{{userFilterIndexes.time}}" data-filter="time" bindchange="onUserFilterChange">
-            <view class="jg-input jg-picker">{{userTimeFilters[userFilterIndexes.time].label}}</view>
-          </picker>
-        </view>
-        <view class="jg-body-s jg-mt-8">教练角色只能通过实名注册审核授予</view>
-        <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
-        <view wx:elif="{{accountState.error && !accountState.ready}}" class="jg-state-err jg-mt-12">
-          <view class="jg-state-err-t">账号数据加载失败</view>
-          <view class="jg-state-err-m">{{accountState.error}}</view>
-          <view class="jg-retry" bindtap="retryAccounts">重新加载</view>
-        </view>
-        <jg-empty
-          wx:elif="{{users.length === 0}}"
-          title="暂无账号"
-          message="用户首次登录并提交对应身份资料后会出现在这里。"
-        />
-        <view wx:else class="jg-list jg-mt-12">
-          <view wx:for="{{users}}" wx:key="userId" class="jg-todo">
-            <view class="jg-todo-bar"></view>
-            <view class="jg-todo-main">
-              <view class="jg-todo-t">
-                <text>{{item.displayName}}</text>
-                <text class="jg-chip {{item.status === 'active' ? 'jg-chip-ok' : 'jg-chip-danger'}}">{{item.statusLabel}}</text>
-                <text wx:if="{{item.hasCoachRole && !item.coachProfileApproved}}" class="jg-chip jg-chip-warn">历史教练待补实名</text>
-              </view>
-              <view class="jg-todo-m">当前角色：{{item.rolesText}}</view>
-              <view class="jg-todo-m">申请角色：{{item.applicationRoleText}} · 审核状态：{{item.reviewStatusText}}</view>
-              <view class="jg-todo-m">首次登录：{{item.createdAtText || '未知'}}</view>
-              <view class="jg-todo-m">脱敏标识：{{item.identityHintText}}</view>
-              <view wx:if="{{item.pendingProfileType === 'coach'}}" class="jg-todo-m">教练角色需教练实名注册审核通过后才能授予。</view>
-              <view class="jg-actions-wrap">
-                <button
-                  class="jg-btn jg-btn-sm jg-btn-ghost"
-                  data-user-id="{{item.userId}}"
-                  bindtap="toggleAuthorization"
-                >{{item.isAuthorizationExpanded ? '收起授权' : '展开授权'}}</button>
-                <block wx:if="{{item.isAuthorizationExpanded}}">
+    <view class="jg-matrix">
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">学生</view>
+        <view class="jg-mcell-v jg-mcell-v-tech">{{accountSummary.students}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">教练</view>
+        <view class="jg-mcell-v">{{accountSummary.coaches}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">开发者</view>
+        <view class="jg-mcell-v">{{accountSummary.developers}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">已停用</view>
+        <view class="jg-mcell-v">{{accountSummary.disabled}}</view>
+      </view>
+    </view>
+
+    <block wx:if="{{showUserPanel}}">
+      <view class="jg-filter-grid jg-mt-12">
+        <picker range="{{userNameFilters}}" range-key="label" value="{{userFilterIndexes.nameStatus}}" data-filter="nameStatus" bindchange="onUserFilterChange">
+          <view class="jg-input jg-picker">{{userNameFilters[userFilterIndexes.nameStatus].label}}</view>
+        </picker>
+        <picker range="{{userRoleFilters}}" range-key="label" value="{{userFilterIndexes.role}}" data-filter="role" bindchange="onUserFilterChange">
+          <view class="jg-input jg-picker">{{userRoleFilters[userFilterIndexes.role].label}}</view>
+        </picker>
+        <picker range="{{userStatusFilters}}" range-key="label" value="{{userFilterIndexes.status}}" data-filter="status" bindchange="onUserFilterChange">
+          <view class="jg-input jg-picker">{{userStatusFilters[userFilterIndexes.status].label}}</view>
+        </picker>
+        <picker range="{{userTimeFilters}}" range-key="label" value="{{userFilterIndexes.time}}" data-filter="time" bindchange="onUserFilterChange">
+          <view class="jg-input jg-picker">{{userTimeFilters[userFilterIndexes.time].label}}</view>
+        </picker>
+      </view>
+      <view class="jg-body-s jg-mt-8">教练角色只能通过实名注册审核授予</view>
+      <view wx:if="{{accountState.loading && !accountState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
+      <view wx:elif="{{accountState.error && !accountState.ready}}" class="jg-state-err jg-mt-12">
+        <view class="jg-state-err-t">账号数据加载失败</view>
+        <view class="jg-state-err-m">{{accountState.error}}</view>
+        <view class="jg-retry" bindtap="retryAccounts">重新加载</view>
+      </view>
+      <jg-empty
+        wx:elif="{{users.length === 0}}"
+        title="暂无账号"
+        message="用户首次登录并提交对应身份资料后会出现在这里。"
+      />
+      <view wx:else class="jg-list jg-mt-12">
+        <view wx:for="{{users}}" wx:key="userId" class="jg-queue-row">
+          <view class="jg-queue-rail"></view>
+          <view class="jg-queue-main">
+            <view class="jg-todo-t">
+              <text>{{item.displayName}}</text>
+              <text class="jg-chip {{item.status === 'active' ? 'jg-chip-ok' : 'jg-chip-danger'}}">{{item.statusLabel}}</text>
+              <text wx:if="{{item.hasCoachRole && !item.coachProfileApproved}}" class="jg-chip jg-chip-warn">历史教练待补实名</text>
+            </view>
+            <view class="jg-todo-m">当前角色：{{item.rolesText}}</view>
+            <view class="jg-todo-m">申请角色：{{item.applicationRoleText}} · 审核状态：{{item.reviewStatusText}}</view>
+            <view class="jg-todo-m">首次登录：{{item.createdAtText || '未知'}} · 标识：{{item.identityHintText}}</view>
+            <view wx:if="{{item.pendingProfileType === 'coach'}}" class="jg-todo-m">教练角色需教练实名注册审核通过后才能授予。</view>
+            <view class="jg-actions-wrap">
+              <button
+                class="jg-btn jg-btn-sm jg-btn-ghost"
+                data-user-id="{{item.userId}}"
+                bindtap="toggleAuthorization"
+              >{{item.isAuthorizationExpanded ? '收起授权' : '展开授权'}}</button>
+              <block wx:if="{{item.isAuthorizationExpanded}}">
                 <block wx:for="{{item.roleActions}}" wx:for-item="roleAction" wx:key="role">
                   <button
                     class="jg-btn jg-btn-sm {{roleAction.active ? 'jg-btn-danger' : 'jg-btn-ghost'}}"
@@ -231,115 +260,127 @@
                   data-user-id="{{item.userId}}"
                   bindtap="goStudentProfile"
                 >查看档案</button>
-                </block>
-              </view>
+              </block>
             </view>
           </view>
         </view>
-      </block>
-    </view>
+      </view>
+    </block>
   </view>
 
-  <!-- 4. 训练组与教练范围 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">训练组与教练范围</text>
-      <text class="jg-sect-a" bindtap="toggleGroupPanel">{{showGroupPanel ? '收起管理' : '展开管理'}}</text>
+  <!-- 03 // 训练组与教练范围 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">03</text>
+        <text class="jg-band-title jg-sect-t">训练组与教练范围</text>
+      </view>
+      <text class="jg-band-action" bindtap="toggleGroupPanel">{{showGroupPanel ? '收起管理' : '展开管理'}}</text>
     </view>
-    <view class="jg-card">
-      <view class="jg-body-s">训练组 {{groupSummary.total}} 个 · 已启用 {{groupSummary.enabled}} 个 · 教练账号 {{groupSummary.coaches}} 个</view>
 
-      <block wx:if="{{showGroupPanel}}">
-        <view wx:if="{{groupState.loading && !groupState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
-        <view wx:elif="{{groupState.error && !groupState.ready}}" class="jg-state-err jg-mt-12">
-          <view class="jg-state-err-t">训练组数据加载失败</view>
-          <view class="jg-state-err-m">{{groupState.error}}</view>
-          <view class="jg-retry" bindtap="retryGroups">重新加载</view>
+    <view class="jg-matrix">
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">训练组</view>
+        <view class="jg-mcell-v">{{groupSummary.total}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">已启用</view>
+        <view class="jg-mcell-v jg-mcell-v-tech">{{groupSummary.enabled}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">教练账号</view>
+        <view class="jg-mcell-v">{{groupSummary.coaches}}</view>
+      </view>
+    </view>
+
+    <block wx:if="{{showGroupPanel}}">
+      <view wx:if="{{groupState.loading && !groupState.ready}}" class="jg-skeleton jg-mt-12 jg-skel-120"></view>
+      <view wx:elif="{{groupState.error && !groupState.ready}}" class="jg-state-err jg-mt-12">
+        <view class="jg-state-err-t">训练组数据加载失败</view>
+        <view class="jg-state-err-m">{{groupState.error}}</view>
+        <view class="jg-retry" bindtap="retryGroups">重新加载</view>
+      </view>
+
+      <block wx:else>
+        <view class="jg-form-2col">
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">新建训练组</text>
+            <input class="jg-input" value="{{newGroupName}}" bindinput="onNewGroupInput" placeholder="例如 短跑一组" />
+          </view>
+          <view class="jg-form-col">
+            <text class="jg-form-col-l">年份或周期</text>
+            <input class="jg-input" value="{{newGroupSeasonLabel}}" bindinput="onNewGroupSeasonInput" placeholder="例如 2026春季" />
+          </view>
+        </view>
+        <button class="jg-btn jg-btn-secondary jg-btn-block" bindtap="createGroup">创建训练组</button>
+
+        <view class="jg-list jg-mt-12">
+          <view wx:for="{{groups}}" wx:key="id" class="jg-queue-row">
+            <view class="jg-queue-rail {{item.enabled ? 'jg-queue-rail-p1' : ''}}"></view>
+            <view class="jg-queue-main">
+              <view class="jg-todo-t">
+                <text>{{item.displayName}}</text>
+                <text class="jg-chip {{item.enabled ? 'jg-chip-ok' : 'jg-chip-danger'}}">{{item.enabled ? '启用中' : '已停用'}}</text>
+              </view>
+              <view class="jg-todo-m">负责教练：{{item.coachNames || '未分配'}}</view>
+            </view>
+            <view class="jg-queue-act">
+              <button
+                class="jg-btn jg-btn-sm {{item.enabled ? 'jg-btn-danger' : 'jg-btn-ghost'}}"
+                data-group-id="{{item.id}}"
+                data-enabled="{{item.statusActionValue}}"
+                bindtap="toggleGroupStatus"
+              >{{item.statusActionLabel}}</button>
+              <button
+                class="jg-btn jg-btn-sm jg-btn-danger"
+                data-group-id="{{item.id}}"
+                loading="{{deletingGroupId === item.id}}"
+                bindtap="deleteTrainingGroup"
+              >删除训练组</button>
+            </view>
+          </view>
         </view>
 
-        <block wx:else>
-          <view class="jg-field-row">
-            <text class="jg-field-label">新建训练组</text>
-            <view class="jg-field-body">
-              <input class="jg-input" value="{{newGroupName}}" bindinput="onNewGroupInput" placeholder="例如 短跑一组" />
+        <block wx:if="{{coachOptions.length && groupOptions.length}}">
+          <view class="jg-form-2col">
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">教练员</text>
+              <picker range="{{coachOptions}}" range-key="label" value="{{coachIndex}}" bindchange="onCoachChange">
+                <view class="jg-input jg-picker">{{coachOptions[coachIndex].label}}</view>
+              </picker>
+            </view>
+            <view class="jg-form-col">
+              <text class="jg-form-col-l">训练组</text>
+              <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+                <view class="jg-input jg-picker">{{groupOptions[groupIndex].name}}</view>
+              </picker>
             </view>
           </view>
-          <view class="jg-field-row">
-            <text class="jg-field-label">年份或周期</text>
-            <view class="jg-field-body">
-              <input class="jg-input" value="{{newGroupSeasonLabel}}" bindinput="onNewGroupSeasonInput" placeholder="例如 2026春季" />
-            </view>
-          </view>
-          <button class="jg-btn jg-btn-ghost jg-btn-block jg-mt-12" bindtap="createGroup">创建训练组</button>
-
-          <view class="jg-list jg-mt-12">
-            <view wx:for="{{groups}}" wx:key="id" class="jg-todo">
-              <view class="jg-todo-bar"></view>
-              <view class="jg-todo-main">
-                <view class="jg-todo-t">
-                  <text>{{item.displayName}}</text>
-                  <text class="jg-chip {{item.enabled ? 'jg-chip-ok' : 'jg-chip-danger'}}">{{item.enabled ? '启用中' : '已停用'}}</text>
-                </view>
-                <view class="jg-todo-m">负责教练：{{item.coachNames || '未分配'}}</view>
-              </view>
-              <view class="jg-todo-a">
-                <button
-                  class="jg-btn jg-btn-sm {{item.enabled ? 'jg-btn-danger' : 'jg-btn-ghost'}}"
-                  data-group-id="{{item.id}}"
-                  data-enabled="{{item.statusActionValue}}"
-                  bindtap="toggleGroupStatus"
-                >{{item.statusActionLabel}}</button>
-                <button
-                  class="jg-btn jg-btn-sm jg-btn-danger"
-                  data-group-id="{{item.id}}"
-                  loading="{{deletingGroupId === item.id}}"
-                  bindtap="deleteTrainingGroup"
-                >删除训练组</button>
-              </view>
-            </view>
-          </view>
-
-          <block wx:if="{{coachOptions.length && groupOptions.length}}">
-            <view class="jg-field-row">
-              <text class="jg-field-label">教练员</text>
-              <view class="jg-field-body">
-                <picker range="{{coachOptions}}" range-key="label" value="{{coachIndex}}" bindchange="onCoachChange">
-                  <view class="jg-input jg-picker">{{coachOptions[coachIndex].label}}</view>
-                </picker>
-              </view>
-            </view>
-            <view class="jg-field-row">
-              <text class="jg-field-label">训练组</text>
-              <view class="jg-field-body">
-                <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-                  <view class="jg-input jg-picker">{{groupOptions[groupIndex].name}}</view>
-                </picker>
-              </view>
-            </view>
-            <view class="jg-btn-row">
-              <button class="jg-btn jg-btn-ghost" data-active="true" bindtap="assignCoach">启用范围</button>
-              <button class="jg-btn jg-btn-danger" data-active="false" bindtap="assignCoach">移除范围</button>
-            </view>
-          </block>
-          <view wx:else class="jg-note">
-            <view>
-              <view class="jg-note-t">暂无法配置教练范围</view>
-              <view class="jg-note-m">至少需要一个教练员账号和一个训练组。</view>
-            </view>
+          <view class="jg-btn-row">
+            <button class="jg-btn jg-btn-secondary" data-active="true" bindtap="assignCoach">启用范围</button>
+            <button class="jg-btn jg-btn-danger" data-active="false" bindtap="assignCoach">移除范围</button>
           </view>
         </block>
+        <view wx:else class="jg-note">
+          <view>
+            <view class="jg-note-t">暂无法配置教练范围</view>
+            <view class="jg-note-m">至少需要一个教练员账号和一个训练组。</view>
+          </view>
+        </view>
       </block>
-    </view>
+    </block>
   </view>
 
-  <!-- 5. 全局管理入口（全部为已注册的真实页面） -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">全局管理入口</text>
-      <text class="jg-sect-c">按职责排序</text>
+  <!-- 04 // 全局管理入口 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">04</text>
+        <text class="jg-band-title jg-sect-t">全局管理入口</text>
+      </view>
+      <text class="jg-band-meta">按职责排序</text>
     </view>
     <view class="jg-list">
-      <!-- V1.6 阶段8：按业务分类的全部功能目录（只做导航） -->
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goAllFeatures">
         <view class="jg-row-ic jg-row-ic-accent">全</view>
         <view class="jg-row-main">
@@ -348,7 +389,6 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <!-- 只有已具备有效 coach 角色时才显示工作台切换入口 -->
       <view wx:if="{{canSwitchCoach}}" class="jg-row" hover-class="jg-row-hover" bindtap="goCoachWorkbench" aria-label="切换教练工作台">
         <view class="jg-row-ic jg-row-ic-accent">教</view>
         <view class="jg-row-main">
@@ -365,7 +405,6 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <!-- 家长关联审核：进入页面只读取待核验列表，通过/驳回均需二次确认并写审计日志 -->
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goLinkReview">
         <view class="jg-row-ic jg-row-ic-accent">亲</view>
         <view class="jg-row-main">
@@ -426,16 +465,11 @@
         <view class="jg-row-ic jg-row-ic-plain">馈</view>
         <view class="jg-row-main">
           <view class="jg-row-t">训练反馈管理</view>
-          <view class="jg-row-m">查看反馈与补充教练评价</view>
+          <view class="jg-row-m">查看反馈并补充教练评价</view>
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <view
-        wx:if="{{demoAvailable}}"
-        class="jg-row"
-        hover-class="jg-row-hover"
-        bindtap="goDemoReport"
-      >
+      <view wx:if="{{demoAvailable}}" class="jg-row" hover-class="jg-row-hover" bindtap="goDemoReport">
         <view class="jg-row-ic jg-row-ic-plain">示</view>
         <view class="jg-row-main">
           <view class="jg-row-t">预览运动数据报告（DEMO）</view>
@@ -443,12 +477,7 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <view
-        wx:if="{{demoAvailable}}"
-        class="jg-row"
-        hover-class="jg-row-hover"
-        bindtap="goDemoStudent"
-      >
+      <view wx:if="{{demoAvailable}}" class="jg-row" hover-class="jg-row-hover" bindtap="goDemoStudent">
         <view class="jg-row-ic jg-row-ic-brand">学</view>
         <view class="jg-row-main">
           <view class="jg-row-t">预览学生端（DEMO）</view>
@@ -456,12 +485,7 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <view
-        wx:if="{{demoAvailable}}"
-        class="jg-row"
-        hover-class="jg-row-hover"
-        bindtap="goDemoParent"
-      >
+      <view wx:if="{{demoAvailable}}" class="jg-row" hover-class="jg-row-hover" bindtap="goDemoParent">
         <view class="jg-row-ic jg-row-ic-accent">家</view>
         <view class="jg-row-main">
           <view class="jg-row-t">预览家长端（DEMO）</view>
@@ -469,12 +493,7 @@
         </view>
         <view class="jg-row-e"><text class="jg-chev">›</text></view>
       </view>
-      <view
-        wx:if="{{demoAvailable}}"
-        class="jg-row"
-        hover-class="jg-row-hover"
-        bindtap="goUiPreview"
-      >
+      <view wx:if="{{demoAvailable}}" class="jg-row" hover-class="jg-row-hover" bindtap="goUiPreview">
         <view class="jg-row-ic jg-row-ic-brand">新</view>
         <view class="jg-row-main">
           <view class="jg-row-t">V1.6.5 界面试穿</view>
@@ -485,8 +504,14 @@
     </view>
   </view>
 
-  <view class="jg-sect">
-    <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+  <!-- 05 // 账户与安全 -->
+  <view class="jg-band jg-band-tight">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">05</text>
+        <text class="jg-band-title jg-sect-t">账户与安全</text>
+      </view>
+    </view>
     <view class="jg-list">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>
@@ -499,7 +524,7 @@
     </view>
   </view>
 
-  <!-- 6. 审计与安全边界 -->
+  <!-- 审计与安全边界 -->
   <view class="jg-note">
     <view>
       <view class="jg-note-t">审计入口与安全边界</view>

@@ -29,11 +29,14 @@
   </view>
 
   <block wx:if="{{!loading}}">
-    <!-- 今日考勤（局部时间轴仅用于今日训练区块） -->
-    <view class="jg-sect jg-stagger jg-stagger-0">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">今日考勤</text>
-        <text class="jg-sect-c">{{todayDate}}</text>
+    <!-- 01 // 今日实时签到（局部时间轴 + 2列键值对遥测 + 科技蓝定位签到主行动） -->
+    <view class="jg-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">今日考勤</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{todayDate}}</text>
       </view>
 
       <jg-empty
@@ -47,21 +50,38 @@
           <view class="jg-tl-dot"></view>
           <view class="jg-card">
             <view class="jg-card-h">
-              <text class="jg-card-t">{{item.session.title || item.session.locationName}}</text>
+              <view class="jg-flex-row jg-flex-1">
+                <text wx:if="{{item.canCheckIn}}" class="jg-dot-live"></text>
+                <text class="jg-card-t">{{item.session.title || item.session.locationName}}</text>
+              </view>
               <text
                 class="jg-chip {{item.status === 'checked_in' ? 'jg-chip-ok' : item.status === 'late' || item.status === 'pending_verification' ? 'jg-chip-warn' : item.status === 'absent' ? 'jg-chip-danger' : item.status === 'leave_approved' ? 'jg-chip-brand' : ''}}"
               >{{item.statusLabel}}</text>
             </view>
 
-            <view class="jg-body-s">训练组：{{item.session.trainingGroupName || '未标注'}}</view>
-            <view class="jg-body-s jg-mt-8">训练地点：{{item.session.locationName}}</view>
-            <view class="jg-body-s jg-mt-8">签到时间：{{item.session.checkInOpenTime}} - {{item.session.checkInCloseTime}}，{{item.session.lateAfterTime}} 后为迟到</view>
-            <view class="jg-body-s jg-mt-8">签到范围：{{item.session.radiusMeters}} 米</view>
+            <view class="jg-kv-grid">
+              <view class="jg-kv">
+                <view class="jg-kv-l">训练组</view>
+                <view class="jg-kv-v">{{item.session.trainingGroupName || '未标注'}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">训练地点</view>
+                <view class="jg-kv-v">{{item.session.locationName}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">签到窗口</view>
+                <view class="jg-kv-v jg-mono">{{item.session.checkInOpenTime}}–{{item.session.checkInCloseTime}}</view>
+              </view>
+              <view class="jg-kv">
+                <view class="jg-kv-l">半径 / 迟到线</view>
+                <view class="jg-kv-v jg-mono">{{item.session.radiusMeters}}m · {{item.session.lateAfterTime}}</view>
+              </view>
+            </view>
             <view wx:if="{{item.leaveStatusLabel}}" class="jg-body-s jg-mt-8">请假状态：{{item.leaveStatusLabel}}</view>
 
             <button
               wx:if="{{item.canCheckIn}}"
-              class="jg-btn jg-btn-block jg-mt-12"
+              class="jg-btn jg-btn-accent jg-btn-block jg-mt-12"
               data-session-id="{{item.session.sessionId}}"
               bindtap="checkIn"
               loading="{{busySessionId === item.session.sessionId}}"
@@ -72,48 +92,52 @@
       </view>
     </view>
 
-    <!-- 申请请假 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">申请请假</text>
-        <text class="jg-sect-c">原因仅教练可见</text>
+    <!-- 02 // 申请请假 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">申请请假</text>
+        </view>
+        <text class="jg-band-meta">原因仅教练可见</text>
       </view>
 
-      <view class="jg-card">
-        <jg-empty
-          wx:if="{{!leaveSessionOptions.length}}"
-          title="暂无可申请请假的场次"
-          message="今天没有可提交请假申请的训练场次。"
-        />
+      <jg-empty
+        wx:if="{{!leaveSessionOptions.length}}"
+        title="暂无可申请请假的场次"
+        message="今天没有可提交请假申请的训练场次。"
+      />
 
-        <block wx:else>
-          <view class="jg-field-row">
-            <text class="jg-field-label">训练场次</text>
-            <view class="jg-field-body">
-              <picker range="{{leaveSessionOptions}}" range-key="label" value="{{leaveSessionIndex}}" bindchange="onLeaveSessionChange">
-                <view class="jg-input jg-picker">{{leaveSessionOptions[leaveSessionIndex].label}}</view>
-              </picker>
-            </view>
+      <view wx:else class="jg-card">
+        <view class="jg-field-row jg-mt-0">
+          <text class="jg-field-label">训练场次</text>
+          <view class="jg-field-body">
+            <picker range="{{leaveSessionOptions}}" range-key="label" value="{{leaveSessionIndex}}" bindchange="onLeaveSessionChange">
+              <view class="jg-input jg-picker">{{leaveSessionOptions[leaveSessionIndex].label}}</view>
+            </picker>
           </view>
+        </view>
 
-          <view class="jg-field-row">
-            <text class="jg-field-label">请假原因</text>
-            <view class="jg-field-body">
-              <textarea class="jg-textarea {{focusedField === 'leaveReason' ? 'jg-input-focus' : ''}} {{leaveError ? 'jg-input-error jg-shake' : ''}}" value="{{leaveReason}}" data-field="leaveReason" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onLeaveReasonInput" maxlength="300" placeholder="填写请假原因（仅教练可见）" />
-              <view wx:if="{{leaveError}}" class="jg-field-err">{{leaveError}}</view>
-            </view>
+        <view class="jg-field-row">
+          <text class="jg-field-label">请假原因</text>
+          <view class="jg-field-body">
+            <textarea class="jg-textarea {{focusedField === 'leaveReason' ? 'jg-input-focus' : ''}} {{leaveError ? 'jg-input-error jg-shake' : ''}}" value="{{leaveReason}}" data-field="leaveReason" bindfocus="onFieldFocus" bindblur="onFieldBlur" bindinput="onLeaveReasonInput" maxlength="300" placeholder="填写请假原因（仅教练可见）" />
+            <view wx:if="{{leaveError}}" class="jg-field-err">{{leaveError}}</view>
           </view>
+        </view>
 
-          <button class="jg-btn jg-btn-block {{submitting ? 'jg-btn-loading' : ''}}" loading="{{submitting}}" bindtap="submitLeave">提交请假申请</button>
-        </block>
+        <button class="jg-btn jg-btn-block jg-mt-12 {{submitting ? 'jg-btn-loading' : ''}}" loading="{{submitting}}" bindtap="submitLeave">提交请假申请</button>
       </view>
     </view>
 
-    <!-- 我的请假记录 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">我的请假记录</text>
-        <text class="jg-sect-c">{{leaves.length}} 条</text>
+    <!-- 03 // 我的请假记录 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">03</text>
+          <text class="jg-band-title">我的请假记录</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{leaves.length}} 条</text>
       </view>
 
       <jg-empty
@@ -123,11 +147,11 @@
       />
 
       <view wx:else class="jg-list">
-        <view wx:for="{{leaves}}" wx:key="leaveId" class="jg-todo">
-          <view class="jg-todo-bar"></view>
-          <view class="jg-todo-main">
+        <view wx:for="{{leaves}}" wx:key="leaveId" class="jg-queue-row">
+          <view class="jg-queue-rail {{item.status === 'pending' ? 'jg-queue-rail-p1' : ''}}"></view>
+          <view class="jg-queue-main">
             <view class="jg-todo-t">
-              <text>{{item.attendanceDate}}</text>
+              <text class="jg-mono">{{item.attendanceDate}}</text>
               <text
                 class="jg-chip {{item.status === 'approved' ? 'jg-chip-ok' : item.status === 'rejected' ? 'jg-chip-danger' : item.status === 'pending' ? 'jg-chip-warn' : ''}}"
               >{{item.statusLabel}}</text>
@@ -135,7 +159,7 @@
             <view class="jg-todo-m">原因：{{item.reason}}</view>
             <view wx:if="{{item.reviewComment}}" class="jg-todo-m">审批意见：{{item.reviewComment}}</view>
           </view>
-          <view wx:if="{{item.canCancel}}" class="jg-todo-a">
+          <view wx:if="{{item.canCancel}}" class="jg-queue-act">
             <button
               class="jg-btn jg-btn-sm jg-btn-danger"
               data-leave-id="{{item.leaveId}}"
@@ -147,29 +171,32 @@
       </view>
     </view>
 
-    <!-- 出勤统计 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">出勤统计</text>
-        <text class="jg-sect-c">演示周期口径</text>
+    <!-- 04 // 出勤统计（4 列发丝十字矩阵） -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">04</text>
+          <text class="jg-band-title">出勤统计</text>
+        </view>
+        <text class="jg-band-meta">当前周期口径</text>
       </view>
 
-      <view wx:if="{{summary}}" class="jg-dstrip">
-        <view class="jg-ds">
-          <view class="jg-ds-l">已签到</view>
-          <view class="jg-ds-v jg-ds-v-ok">{{summary.checkedIn}}</view>
+      <view wx:if="{{summary}}" class="jg-matrix">
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">已签到</view>
+          <view class="jg-mcell-v jg-mcell-v-tech">{{summary.checkedIn}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">迟到</view>
-          <view class="jg-ds-v jg-ds-v-warn">{{summary.late}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">迟到</view>
+          <view class="jg-mcell-v">{{summary.late}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">已批准请假</view>
-          <view class="jg-ds-v">{{summary.leaveApproved}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">已批请假</view>
+          <view class="jg-mcell-v">{{summary.leaveApproved}}</view>
         </view>
-        <view class="jg-ds">
-          <view class="jg-ds-l">待核实异常</view>
-          <view class="jg-ds-v jg-ds-v-warn">{{summary.pendingVerification}}</view>
+        <view class="jg-mcell">
+          <view class="jg-mcell-l">待核实</view>
+          <view class="jg-mcell-v">{{summary.pendingVerification}}</view>
         </view>
       </view>
 
@@ -180,11 +207,14 @@
       </view>
     </view>
 
-    <!-- 历史考勤记录 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">历史考勤记录</text>
-        <text class="jg-sect-c">{{records.length}} 条</text>
+    <!-- 05 // 历史考勤记录 -->
+    <view class="jg-band">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">05</text>
+          <text class="jg-band-title">历史考勤记录</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{records.length}} 条</text>
       </view>
 
       <jg-empty
@@ -196,7 +226,7 @@
       <view wx:else class="jg-list">
         <view wx:for="{{records}}" wx:key="recordId" class="jg-row">
           <view class="jg-row-main">
-            <view class="jg-row-t">{{item.attendanceDate}}</view>
+            <view class="jg-row-t jg-mono">{{item.attendanceDate}}</view>
             <view wx:if="{{item.checkInAt}}" class="jg-row-m">签到时间：{{item.checkInAt}}</view>
             <view wx:if="{{item.distanceMeters !== null}}" class="jg-row-m">距训练点：{{item.distanceMeters}} 米</view>
             <view wx:if="{{item.adjustReason}}" class="jg-row-m">人工核实：{{item.adjustReason}}</view>

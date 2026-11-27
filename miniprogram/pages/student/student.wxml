@@ -10,10 +10,10 @@
     bind:toggledaylight="onToggleDaylight"
   />
 
-  <!-- 刷新状态条：细线指示器 + 静默刷新 -->
+  <!-- 无框细线同步条 -->
   <view wx:if="{{hasData}}" class="jg-refbar">
     <view wx:if="{{refreshing}}" class="jg-ptr-line"></view>
-    <text class="jg-refbar-t">{{refreshing ? '正在同步数据…' : lastUpdatedText}}</text>
+    <text class="jg-refbar-t">{{refreshing ? 'SYNCING // 正在同步数据…' : lastUpdatedText}}</text>
     <text wx:if="{{staleNotice}}" class="jg-refbar-warn">{{staleNotice}}</text>
   </view>
 
@@ -22,16 +22,96 @@
     <view class="jg-state-err-m">{{sessionError}}</view>
   </view>
 
-  <!-- 1. 今日训练：进入页面首先回答「今天要做什么」（局部时间轴仅用于今日训练） -->
-  <view class="jg-sect jg-stagger jg-stagger-0">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">今日训练</text>
-      <text class="jg-sect-c">{{todayDate}}</text>
+  <!-- 00 // 英雄遥测带：PB 计时主焦点 + 本月出勤仪表（首屏核心视觉焦点） -->
+  <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
+
+  <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
+    <view class="jg-state-err-t">个人数据加载失败</view>
+    <view class="jg-state-err-m">{{statsState.error}}</view>
+    <view class="jg-retry" bindtap="retryStats">重新加载</view>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{stats.hasPb}}" class="jg-stagger jg-stagger-0 jg-mb-12">
+      <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看成绩与出勤明细" back-action-text="翻回 PB 计时结论">
+        <view slot="front">
+          <view class="jg-flex-between">
+            <view class="jg-flex-1">
+              <view class="jg-hero-k"><text class="jg-dot-live"></text>{{stats.pbEventName}} · 个人最好成绩 PB</view>
+              <view class="jg-data-v">
+                <text class="jg-hero-num jg-num-roll">{{stats.pbRawValue}}</text>
+                <text wx:if="{{stats.pbUnit}}" class="jg-hero-unit">{{stats.pbUnit}}</text>
+              </view>
+              <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核正式成绩</view>
+            </view>
+            <view class="jg-ml-16">
+              <jg-stat-ring
+                percent="{{stats.attendanceRatePercent}}"
+                value-text="{{stats.attendanceRateText || '暂无'}}"
+                label="本月出勤"
+                empty="{{!stats.attendanceRateText}}"
+                daylight="{{uiDaylight}}"
+              />
+            </view>
+          </view>
+          <view class="jg-data-prog">
+            <view class="jg-data-prog-in" style="width:{{stats.attendanceRatePercent}}%"></view>
+          </view>
+          <view class="jg-data-foot">
+            <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
+            <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达目标</text>
+            <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">正式成绩 {{stats.approvedCount}} 条</text>
+          </view>
+        </view>
+        <view slot="back">
+          <view class="jg-hero-k">{{stats.pbEventName}} · 正式成绩与出勤明细</view>
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">取得日期</view>
+              <view class="jg-kv-v jg-mono">{{stats.pbDate || '未标注'}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">统计周期</view>
+              <view class="jg-kv-v">{{stats.periodLabel || '本月'}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">有效出勤 / 应签</view>
+              <view class="jg-kv-v jg-mono">{{stats.validAttendance}} / {{stats.actualExpected}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">迟到 / 未签</view>
+              <view class="jg-kv-v jg-mono">{{stats.late}} / {{stats.absent}}</view>
+            </view>
+          </view>
+          <view wx:if="{{stats.targetValueText}}" class="jg-data-meta">体考目标：{{stats.targetValueText}}（{{stats.targetAchieved ? '已达标' : '推进中'}}）</view>
+          <view class="jg-data-meta">仅教练审核通过的正式成绩计入 PB 与排行榜。</view>
+        </view>
+      </jg-flip-card>
     </view>
 
-    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-card">
-      <view class="jg-skeleton jg-skel-132"></view>
+    <view wx:else class="jg-hero-band jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">PB</text>
+          <text class="jg-band-title">个人最好成绩</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{stats.periodLabel}}</text>
+      </view>
+      <view class="jg-sub">暂无已审核的正式成绩。教练审核通过后，这里会显示你的 PB 计时与目标差距。</view>
     </view>
+  </block>
+
+  <!-- 01 // 今日训练：局部时间轴 + 2列键值对遥测 + 单行全宽科技蓝主行动 -->
+  <view class="jg-band jg-stagger jg-stagger-1">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">01</text>
+        <text class="jg-band-title">今日训练</text>
+      </view>
+      <text class="jg-band-meta jg-mono">{{todayDate}}</text>
+    </view>
+
+    <view wx:if="{{todayState.loading && !todayState.ready}}" class="jg-skeleton jg-skel-132"></view>
 
     <view wx:elif="{{todayState.error && !todayState.ready}}" class="jg-state-err">
       <view class="jg-state-err-t">今日训练加载失败</view>
@@ -53,113 +133,75 @@
             <text class="jg-card-t">{{item.title}}</text>
             <text class="jg-chip {{item.isDone ? 'jg-chip-ok' : 'jg-chip-brand'}}">{{item.statusLabel}}</text>
           </view>
-          <view class="jg-body-s">地点：{{item.locationName || '未填写地点'}}</view>
-          <view class="jg-body-s jg-mt-8">训练组：{{item.trainingGroupName || '未标注'}}</view>
-          <view wx:if="{{item.checkInOpenTime}}" class="jg-body-s jg-mt-8">
-            签到窗口：{{item.checkInOpenTime}} – {{item.checkInCloseTime}}（{{item.phaseLabel}}）
+          <view class="jg-kv-grid">
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练地点</view>
+              <view class="jg-kv-v">{{item.locationName || '未填写地点'}}</view>
+            </view>
+            <view class="jg-kv">
+              <view class="jg-kv-l">训练组</view>
+              <view class="jg-kv-v">{{item.trainingGroupName || '未标注'}}</view>
+            </view>
+            <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
+              <view class="jg-kv-l">签到窗口</view>
+              <view class="jg-kv-v jg-mono">{{item.checkInOpenTime}}–{{item.checkInCloseTime}}</view>
+            </view>
+            <view wx:if="{{item.checkInOpenTime}}" class="jg-kv">
+              <view class="jg-kv-l">当前阶段</view>
+              <view class="jg-kv-v">{{item.phaseLabel}}</view>
+            </view>
           </view>
           <button
             class="jg-btn jg-btn-block jg-mt-12 {{item.canCheckIn ? 'jg-btn-accent' : 'jg-btn-ghost'}}"
             bindtap="goAttendance"
-          >{{item.canCheckIn ? '去签到' : '查看考勤详情'}}</button>
+          >{{item.canCheckIn ? '立即前往签到 →' : '查看考勤详情'}}</button>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 2. 个人最好成绩（V1 结论先行 + V2 3D 翻面查看明细，自动降级 2D） -->
-  <view wx:if="{{statsState.loading && !statsState.ready}}" class="jg-skeleton jg-skeleton-card"></view>
-
-  <view wx:elif="{{statsState.error && !statsState.ready}}" class="jg-state-err">
-    <view class="jg-state-err-t">个人数据加载失败</view>
-    <view class="jg-state-err-m">{{statsState.error}}</view>
-    <view class="jg-retry" bindtap="retryStats">重新加载</view>
-  </view>
-
-  <block wx:else>
-    <view wx:if="{{stats.hasPb}}" class="jg-stagger jg-stagger-1">
-      <jg-flip-card daylight="{{uiDaylight}}" front-action-text="翻面查看成绩明细" back-action-text="翻回 PB 结论">
-        <view slot="front">
-          <view class="jg-flex-between">
-            <view class="jg-flex-1">
-              <view class="jg-data-k">{{stats.pbEventName}} · 个人最好成绩 PB</view>
-              <view class="jg-data-v">
-                <text class="jg-data-num jg-num-roll">{{stats.pbRawValue}}</text>
-                <text wx:if="{{stats.pbUnit}}" class="jg-data-unit">{{stats.pbUnit}}</text>
-              </view>
-              <view class="jg-data-meta">{{stats.pbDate}} · 教练已审核的正式成绩</view>
-            </view>
-            <view class="jg-ml-16">
-              <jg-stat-ring
-                percent="{{stats.attendanceRatePercent}}"
-                value-text="{{stats.attendanceRateText || '暂无'}}"
-                label="本月出勤"
-                empty="{{!stats.attendanceRateText}}"
-                daylight="{{uiDaylight}}"
-              />
-            </view>
-          </view>
-          <view class="jg-data-foot">
-            <text wx:if="{{stats.targetValueText}}" class="jg-data-chip jg-data-chip-goal">体考目标 {{stats.targetValueText}}</text>
-            <text wx:if="{{stats.targetAchieved}}" class="jg-data-chip jg-data-chip-up">已达到目标</text>
-            <text wx:if="{{stats.approvedCount}}" class="jg-data-chip">已审核成绩 {{stats.approvedCount}} 条</text>
-          </view>
-        </view>
-        <view slot="back">
-          <view class="jg-data-k">{{stats.pbEventName}} · 正式成绩与出勤明细</view>
-          <view class="jg-data-meta jg-mt-8">取得日期：{{stats.pbDate || '未标注'}} · 统计周期：{{stats.periodLabel || '本月'}}</view>
-          <view class="jg-data-meta">有效出勤 {{stats.validAttendance}} / 应签到 {{stats.actualExpected}} · 迟到 {{stats.late}} · 未签到 {{stats.absent}}</view>
-          <view wx:if="{{stats.targetValueText}}" class="jg-data-meta">体考目标：{{stats.targetValueText}}（{{stats.targetAchieved ? '已达标' : '推进中'}}）</view>
-          <view class="jg-data-meta">仅教练审核通过的正式成绩计入 PB 与排行榜。</view>
-        </view>
-      </jg-flip-card>
+  <!-- 02 // 本月出勤矩阵与近期进步（发丝十字 4 列，不重复出勤率卡片） -->
+  <view wx:if="{{!statsState.loading || statsState.ready}}" class="jg-band jg-stagger jg-stagger-2">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">02</text>
+        <text class="jg-band-title">本月出勤与进步</text>
+      </view>
+      <text class="jg-band-meta">{{stats.periodLabel || '本月'}}</text>
     </view>
 
-    <view wx:else class="jg-card jg-stagger jg-stagger-1">
-      <view class="jg-card-h">
-        <text class="jg-card-t">个人最好成绩</text>
-        <text class="jg-card-c">{{stats.periodLabel}}</text>
+    <view class="jg-matrix">
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">有效出勤</view>
+        <view class="jg-mcell-v jg-mcell-v-tech jg-num-roll">{{stats.validAttendance}}</view>
       </view>
-      <view class="jg-sub">暂无已审核的正式成绩。教练审核通过后，这里会显示你的 PB 与目标差距。</view>
-    </view>
-
-    <!-- 3. 个人考勤与目标进度 -->
-    <view class="jg-kpi-row">
-      <view class="jg-kpi">
-        <view class="jg-kpi-l">本月出勤率</view>
-        <view class="jg-kpi-v {{stats.attendanceRateText ? 'jg-kpi-v-ok' : 'jg-kpi-v-warn'}}">{{stats.attendanceRateText || '暂无'}}</view>
-        <view class="jg-prog">
-          <view class="jg-prog-in jg-prog-in-ok" style="width:{{stats.attendanceRatePercent}}%"></view>
-        </view>
-        <view class="jg-kpi-s">有效出勤 {{stats.validAttendance}} / 应签到 {{stats.actualExpected}}</view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">应签到</view>
+        <view class="jg-mcell-v jg-num-roll">{{stats.actualExpected}}</view>
       </view>
-      <view class="jg-kpi">
-        <view class="jg-kpi-l">本月出勤明细</view>
-        <view class="jg-kpi-v">{{stats.late}}</view>
-        <view class="jg-kpi-s">迟到 {{stats.late}} · 未签到 {{stats.absent}} · 待核实 {{stats.pendingVerification}}</view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">迟到</view>
+        <view class="jg-mcell-v">{{stats.late}}</view>
+      </view>
+      <view class="jg-mcell">
+        <view class="jg-mcell-l">待核实</view>
+        <view class="jg-mcell-v">{{stats.pendingVerification}}</view>
       </view>
     </view>
 
-    <!-- 4. 近期进步 -->
-    <view wx:if="{{stats.changes.length}}" class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">近期进步</text>
-        <text class="jg-sect-c">{{stats.periodLabel}}</text>
-      </view>
-      <view class="jg-list">
-        <block wx:for="{{stats.changes}}" wx:key="eventName">
-          <view class="jg-row">
-            <view class="{{item.improved ? 'jg-row-ic jg-row-ic-ok' : 'jg-row-ic jg-row-ic-plain'}}">{{item.improved ? '↑' : '—'}}</view>
-            <view class="jg-row-main">
-              <view class="jg-row-t">{{item.eventName}}</view>
-              <view class="jg-row-m">{{item.metaText}}</view>
-            </view>
-            <view class="jg-row-e">
-              <text class="jg-row-v {{item.improved ? 'jg-row-v-ok' : ''}}">{{item.changeText}}</text>
-            </view>
+    <view wx:if="{{stats.changes.length}}" class="jg-list">
+      <block wx:for="{{stats.changes}}" wx:key="eventName">
+        <view class="jg-row">
+          <view class="{{item.improved ? 'jg-row-ic jg-row-ic-ok' : 'jg-row-ic jg-row-ic-plain'}}">{{item.improved ? '↑' : '—'}}</view>
+          <view class="jg-row-main">
+            <view class="jg-row-t">{{item.eventName}}</view>
+            <view class="jg-row-m">{{item.metaText}}</view>
           </view>
-        </block>
-      </view>
+          <view class="jg-row-e">
+            <text class="jg-row-v {{item.improved ? 'jg-row-v-ok' : ''}}">{{item.changeText}}</text>
+          </view>
+        </view>
+      </block>
     </view>
 
     <view wx:elif="{{stats.periodLabel}}" class="jg-note">
@@ -175,13 +217,16 @@
         <view class="jg-note-m">{{stats.dataQualityNote}}出勤率仅以已结束场次计算，未签到不等同于无故缺勤。</view>
       </view>
     </view>
-  </block>
+  </view>
 
-  <!-- 5. 重要通知 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">俱乐部通知</text>
-      <text class="jg-sect-a" bindtap="goNotices">{{noticeActionText}}</text>
+  <!-- 03 // 俱乐部通知 -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">03</text>
+        <text class="jg-band-title">俱乐部通知</text>
+      </view>
+      <text class="jg-band-action" bindtap="goNotices">{{noticeActionText}}</text>
     </view>
 
     <view wx:if="{{noticeState.loading && !noticeState.ready}}" class="jg-list">
@@ -218,13 +263,16 @@
     </view>
   </view>
 
-  <!-- 6. 常用功能 -->
-  <view class="jg-sect">
-    <view class="jg-sect-h">
-      <text class="jg-sect-t">常用功能</text>
-      <text class="jg-sect-c">{{noticeMeta}}</text>
+  <!-- 04 // 常用功能（锐利 2x3 发丝索引栅格 + 通栏列表） -->
+  <view class="jg-band">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">04</text>
+        <text class="jg-band-title">常用功能</text>
+      </view>
+      <text class="jg-band-meta">{{noticeMeta}}</text>
     </view>
-    <!-- 学生常用入口：双列瑞士栅格面板（保留原有 6 项入口 + WXS 90ms 按压反馈） -->
+
     <view class="jg-tiles">
       <view class="jg-tile jg-tile-brand">
         <view class="jg-tile-in" hover-class="jg-row-hover" bindtouchstart="{{motion.onPressStart}}" bindtouchend="{{motion.onPressEnd}}" bindtouchcancel="{{motion.onPressEnd}}" bindtap="goPlans">
@@ -270,7 +318,7 @@
       </view>
     </view>
 
-    <view class="jg-list jg-mt-8">
+    <view class="jg-list jg-mt-12">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goAttendance">
         <view class="jg-row-ic jg-row-ic-ok">勤</view>
         <view class="jg-row-main">
@@ -322,8 +370,14 @@
     </view>
   </view>
 
-  <view class="jg-sect">
-    <view class="jg-sect-h"><text class="jg-sect-t">账户与安全</text></view>
+  <!-- 05 // 账户与安全 -->
+  <view class="jg-band jg-band-tight">
+    <view class="jg-band-head">
+      <view class="jg-band-title-wrap">
+        <text class="jg-band-idx">05</text>
+        <text class="jg-band-title">账户与安全</text>
+      </view>
+    </view>
     <view class="jg-list">
       <view class="jg-row" hover-class="jg-row-hover" bindtap="goHome">
         <view class="jg-row-ic jg-row-ic-plain">退</view>

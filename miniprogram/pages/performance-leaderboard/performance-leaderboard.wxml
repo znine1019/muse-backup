@@ -16,81 +16,73 @@
   </view>
 
   <block wx:if="{{!loading && metaLoaded}}">
-    <!-- 筛选条件 -->
-    <view class="jg-sect">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">筛选条件</text>
-        <text class="jg-sect-c">项目 · 训练组 · 周期</text>
+    <!-- 01 // 紧凑双列筛选条（减少滚动，榜单直接上浮至首屏） -->
+    <view class="jg-band jg-band-tight jg-stagger jg-stagger-0">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">01</text>
+          <text class="jg-band-title">赛道筛选</text>
+        </view>
+        <text class="jg-band-meta">项目 · 训练组 · 周期</text>
       </view>
 
-      <view class="jg-card">
-        <view class="jg-field-row jg-mt-0">
-          <text class="jg-field-label">运动项目</text>
-          <view class="jg-field-body">
-            <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
-              <view class="jg-input jg-picker">{{events[eventIndex].name}}</view>
-            </picker>
-          </view>
+      <view class="jg-form-2col">
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">运动项目</text>
+          <picker range="{{events}}" range-key="name" value="{{eventIndex}}" bindchange="onEventChange">
+            <view class="jg-input jg-picker">{{events[eventIndex].name}}</view>
+          </picker>
         </view>
 
-        <view class="jg-field-row">
-          <text class="jg-field-label">训练组</text>
-          <view class="jg-field-body">
-            <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
-              <view class="jg-input jg-picker">{{groupOptions[groupIndex].name}}</view>
-            </picker>
-          </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">训练组</text>
+          <picker range="{{groupOptions}}" range-key="name" value="{{groupIndex}}" bindchange="onGroupChange">
+            <view class="jg-input jg-picker">{{groupOptions[groupIndex].name}}</view>
+          </picker>
         </view>
 
-        <view class="jg-field-row">
-          <text class="jg-field-label">统计周期</text>
-          <view class="jg-field-body">
-            <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
-              <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
-            </picker>
-          </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">统计周期</text>
+          <picker range="{{periodTypeOptions}}" range-key="label" value="{{periodTypeIndex}}" bindchange="onPeriodTypeChange">
+            <view class="jg-input jg-picker">{{periodTypeOptions[periodTypeIndex].label}}</view>
+          </picker>
         </view>
 
-        <view class="jg-field-row">
-          <text class="jg-field-label">年份</text>
-          <view class="jg-field-body">
-            <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
-              <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
-            </picker>
-          </view>
+        <view class="jg-form-col">
+          <text class="jg-form-col-l">年份</text>
+          <picker range="{{yearOptions}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange">
+            <view class="jg-input jg-picker">{{yearOptions[yearIndex].label}}</view>
+          </picker>
         </view>
 
-        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-field-row">
-          <text class="jg-field-label">月份</text>
-          <view class="jg-field-body">
-            <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
-              <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
-            </picker>
-          </view>
+        <view wx:if="{{periodTypeOptions[periodTypeIndex].value === 'month'}}" class="jg-form-col">
+          <text class="jg-form-col-l">月份</text>
+          <picker range="{{monthOptions}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange">
+            <view class="jg-input jg-picker">{{monthOptions[monthIndex].label}}</view>
+          </picker>
         </view>
 
-        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-field-row">
-          <text class="jg-field-label">季度</text>
-          <view class="jg-field-body">
-            <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
-              <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
-            </picker>
-          </view>
+        <view wx:elif="{{periodTypeOptions[periodTypeIndex].value === 'quarter'}}" class="jg-form-col">
+          <text class="jg-form-col-l">季度</text>
+          <picker range="{{quarterOptions}}" range-key="label" value="{{quarterIndex}}" bindchange="onQuarterChange">
+            <view class="jg-input jg-picker">{{quarterOptions[quarterIndex].label}}</view>
+          </picker>
         </view>
       </view>
     </view>
 
-    <!-- 榜单 -->
-    <view wx:if="{{leaderboard}}">
-      <view class="jg-sect-h">
-        <text class="jg-sect-t">{{leaderboard.event.name}} · {{leaderboard.period.label}}</text>
-        <text class="jg-sect-c">{{leaderboard.rows.length}} 人</text>
+    <!-- 02 // 电子计时成绩板（左方标排名 + 中部选手信息 + 右侧超大电光蓝成绩读数） -->
+    <view wx:if="{{leaderboard}}" class="jg-band jg-stagger jg-stagger-1">
+      <view class="jg-band-head">
+        <view class="jg-band-title-wrap">
+          <text class="jg-band-idx">02</text>
+          <text class="jg-band-title">{{leaderboard.event.name}} · {{leaderboard.period.label}}</text>
+        </view>
+        <text class="jg-band-meta jg-mono">{{leaderboard.rows.length}} 人</text>
       </view>
 
-      <view class="jg-note jg-mb-12">
-        <view>
-          <view class="jg-note-m">排序方向：{{leaderboard.event.comparison == 'lower' ? '数值越低越好' : '数值越高越好'}}</view>
-        </view>
+      <view class="jg-body-s jg-mb-12">
+        排序规则：{{leaderboard.event.comparison == 'lower' ? '数值越低越好（计时）' : '数值越高越好（计分/远度）'}}
       </view>
 
       <jg-empty
@@ -104,10 +96,15 @@
         <view wx:for="{{rows}}" wx:key="studentUserId" class="jg-row jg-stagger {{item.isSelf ? 'ranking-self' : ''}}">
           <view class="rank-badge {{item.isSelf ? 'rank-badge-self' : ''}}">{{item.rank}}</view>
           <view class="jg-row-main">
-            <view class="jg-row-t">{{item.studentName}}{{item.isSelf ? '（本人）' : ''}}</view>
-            <view class="jg-row-m">周期最好成绩：<text class="jg-num-roll">{{item.valueText}}</text> · {{item.achievedAt}}</view>
-            <view class="jg-row-m">训练组：{{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}} · 教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}}</view>
-            <view class="jg-row-m">历史PB（不参与本周期排名）：{{item.historicalText}}</view>
+            <view class="jg-row-t">
+              <text>{{item.studentName}}</text>
+              <text wx:if="{{item.isSelf}}" class="jg-chip jg-chip-brand">本人</text>
+            </view>
+            <view class="jg-row-m">{{item.achievedAt}} · {{item.trainingGroupNames.length ? item.trainingGroupNames.join('、') : '未标注'}}</view>
+            <view class="jg-row-m">教练：{{item.coachNames.length ? item.coachNames.join('、') : '未标注'}} · 历史PB：{{item.historicalText}}</view>
+          </view>
+          <view class="jg-row-e">
+            <text class="rank-val jg-num-roll">{{item.valueText}}</text>
           </view>
         </view>
       </view>
